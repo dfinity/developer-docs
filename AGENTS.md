@@ -133,6 +133,8 @@ When drafting a new docs page:
 - Code examples: <30 lines inline, >30 lines link to `dfinity/examples`
 - No `.mdx` files. No JSX. Plain markdown only.
 - Max sidebar nesting: 3 levels
+- Images go in `src/assets/images/` organized by section (see CONTRIBUTING.md for details)
+- When writing a page, decide case-by-case whether portal images are worth carrying over. Keep the existing hand-drawn visual style.
 
 ## Linking rules
 

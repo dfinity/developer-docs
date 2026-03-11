@@ -63,6 +63,29 @@ icskills: [ckbtc, evm-rpc]                    # Optional: related icskills skill
 - **Concept-focused guides** → inline relevant `icp` commands, link to full icp-cli guide
 - **Missing icp-cli guide** → create in icp-cli repo first, then link from here
 
+## Images
+
+Images live in `src/assets/images/`, organized by docs section:
+
+```
+src/assets/images/
+├── concepts/          # Concept diagrams
+├── getting-started/   # Tutorial visuals
+├── guides/            # Guide diagrams, organized by subsection
+│   ├── canisters/
+│   ├── frontends/
+│   └── ...
+└── reference/         # Reference diagrams
+```
+
+**Rules:**
+- Use descriptive kebab-case filenames (e.g., `canister-internals.png`, `create-canister-flow.png`)
+- Always include alt text: `![Canister internals](../../assets/images/concepts/canister-internals.png)`
+- Prefer SVG for diagrams (scalable, smaller). Use PNG for hand-drawn illustrations and screenshots.
+- When carrying over portal images, keep the existing hand-drawn visual style
+- Decide case-by-case during content writing whether a portal image is worth carrying over
+- Portal images are in `portal/static/img/docs/` — copy and rename to match the new structure
+
 ## Synced content
 
 Some files are auto-synced from other repositories.

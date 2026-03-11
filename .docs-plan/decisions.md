@@ -111,3 +111,9 @@ Append new decisions at the bottom. Never modify existing entries.
 **Decision:** Remove both fields from the frontmatter schema and all stub pages. Directory structure already implies Diataxis type: `getting-started/` = tutorial, `guides/` = how-to, `concepts/` = explanation, `reference/` = reference. Page content conveys difficulty level.
 **Rationale:** Same principle as previous removals — no consumer means no value. The Diataxis directory structure IS the type classification. Maintaining redundant metadata on 79 pages adds noise. Re-add if a filtering UI, badge display, or llms.txt grouping requires it.
 **Alternatives considered:** Keep doc_type only (still redundant with directories), keep level for future filtering (no filtering UI planned)
+
+## 2026-03-11: Image/asset strategy — `src/assets/images/` with section-based organization
+**Context:** Portal has hand-drawn diagrams (canister internals, app architecture, create/install flows) worth carrying over. No image strategy existed for the new docs.
+**Decision:** Images live in `src/assets/images/`, organized by docs section (concepts/, guides/canisters/, etc.). Carry over portal images case-by-case during content writing — not bulk-imported upfront. Keep the existing hand-drawn visual style for consistency. Use descriptive kebab-case filenames.
+**Rationale:** `src/assets/` enables Astro image optimization (Sharp). Section-based organization mirrors the docs structure. Case-by-case approach avoids importing images for pages that may not need them or may need different visuals.
+**Alternatives considered:** `public/images/` (no optimization), co-located images next to .md files (clutters docs/), bulk import all portal images (wasteful, many won't be used)
