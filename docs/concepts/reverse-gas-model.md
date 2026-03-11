@@ -2,7 +2,7 @@
 title: "Reverse Gas Model"
 description: "Why users never pay gas on ICP: canisters pay cycles for compute, storage, and bandwidth"
 sidebar:
-  order: 9
+  order: 4
 icskills: []
 ---
 

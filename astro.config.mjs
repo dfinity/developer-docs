@@ -33,6 +33,11 @@ export default defineConfig({
         {
           label: "Guides",
           items: [
+            // Build: core development
+            {
+              label: "Canisters",
+              autogenerate: { directory: "guides/canisters" },
+            },
             {
               label: "Backends",
               autogenerate: { directory: "guides/backends" },
@@ -49,22 +54,20 @@ export default defineConfig({
               label: "Authentication",
               autogenerate: { directory: "guides/authentication" },
             },
+            // Quality & shipping
             {
               label: "Testing",
               autogenerate: { directory: "guides/testing" },
             },
             {
-              label: "Canisters",
-              autogenerate: { directory: "guides/canisters" },
+              label: "Security",
+              autogenerate: { directory: "guides/security" },
             },
             {
               label: "Production",
               autogenerate: { directory: "guides/production" },
             },
-            {
-              label: "Security",
-              autogenerate: { directory: "guides/security" },
-            },
+            // Advanced features
             {
               label: "Chain Fusion",
               autogenerate: { directory: "guides/chain-fusion" },

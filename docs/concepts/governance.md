@@ -2,7 +2,7 @@
 title: "Governance"
 description: "How ICP is governed: the NNS, SNS for dapp governance, neurons, and proposals"
 sidebar:
-  order: 12
+  order: 13
 icskills: []
 ---
 

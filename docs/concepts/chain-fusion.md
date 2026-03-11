@@ -2,7 +2,7 @@
 title: "Chain Fusion"
 description: "How ICP connects to Bitcoin, Ethereum, Solana, and other blockchains natively"
 sidebar:
-  order: 11
+  order: 10
 icskills: []
 ---
 
