@@ -1,0 +1,36 @@
+{
+  "name": "icp-developer-docs",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "validate": "npm run validate:frontmatter && npm run validate:no-dfx && npm run validate:no-mdx",
+    "validate:frontmatter": "node scripts/validate-frontmatter.mjs",
+    "validate:no-dfx": "bash scripts/validate-no-dfx.sh",
+    "validate:no-mdx": "bash scripts/validate-no-mdx.sh",
+    "generate:llms-txt": "node scripts/generate-llms-txt.mjs",
+    "generate:manifest": "node scripts/generate-manifest.mjs",
+    "sync:motoko": "bash scripts/sync-motoko.sh",
+    "sync:icp-cli-version": "bash scripts/sync-icp-cli-version.sh",
+    "generate": "npm run generate:llms-txt && npm run generate:manifest",
+    "prebuild": "npm run generate"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.37.3",
+    "astro": "^5.6.1",
+    "sharp": "^0.34.2"
+  },
+  "overrides": {
+    "//": "sitemap 3.7.1+ uses Zod v4 which conflicts with Starlight 0.37 — remove when upgrading Starlight",
+    "@astrojs/sitemap": "3.7.0"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3",
+    "glob": "^11.0.1"
+  }
+}

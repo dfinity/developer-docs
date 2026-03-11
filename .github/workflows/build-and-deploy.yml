@@ -1,0 +1,48 @@
+name: Build & Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Validate — no dfx references
+        run: npm run validate:no-dfx
+
+      - name: Validate — no .mdx files
+        run: npm run validate:no-mdx
+
+      - name: Validate — frontmatter schema
+        run: npm run validate:frontmatter
+
+      - name: Build site
+        run: npm run build
+
+      - name: Verify llms.txt generated
+        run: |
+          if [ ! -f dist/llms.txt ]; then
+            echo "ERROR: llms.txt not generated"
+            exit 1
+          fi
+          echo "llms.txt exists ($(wc -c < dist/llms.txt) bytes)"
+
+      - name: Verify docs-manifest.json generated
+        run: |
+          if [ ! -f dist/docs-manifest.json ]; then
+            echo "ERROR: docs-manifest.json not generated"
+            exit 1
+          fi
+          echo "docs-manifest.json exists ($(wc -c < dist/docs-manifest.json) bytes)"

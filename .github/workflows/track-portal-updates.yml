@@ -1,0 +1,60 @@
+name: Track Portal Updates
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # Daily at 8am UTC
+  workflow_dispatch:
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check portal for recent doc changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get commits from the last 24 hours in the portal repo
+          SINCE=$(date -u -d '1 day ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-1d +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Checking dfinity/portal for doc changes since $SINCE..."
+
+          # Get changed files
+          CHANGES=$(gh api repos/dfinity/portal/commits \
+            --jq '.[].sha' \
+            -f since="$SINCE" \
+            -f path="docs/" \
+            --paginate 2>/dev/null | head -20 || echo "")
+
+          if [ -z "$CHANGES" ]; then
+            echo "No portal doc changes in the last 24h."
+            exit 0
+          fi
+
+          # Get the actual file list
+          FILES=""
+          for SHA in $CHANGES; do
+            NEW_FILES=$(gh api "repos/dfinity/portal/commits/$SHA" \
+              --jq '.files[].filename' 2>/dev/null | grep '^docs/' || true)
+            FILES="$FILES\n$NEW_FILES"
+          done
+
+          UNIQUE_FILES=$(echo -e "$FILES" | sort -u | grep -v '^$' || true)
+
+          if [ -z "$UNIQUE_FILES" ]; then
+            echo "No doc file changes found."
+            exit 0
+          fi
+
+          echo "Portal docs changed:"
+          echo "$UNIQUE_FILES"
+
+          # Create a GitHub issue
+          BODY="The following files changed in \`dfinity/portal/docs/\` in the last 24 hours:\n\n\`\`\`\n${UNIQUE_FILES}\n\`\`\`\n\nReview these changes and determine if they need to be reflected in the new docs portal.\n\n**Triage guide:**\n- Ignore: dfx-only changes, JSX/component changes, release notes, NNS dapp guides\n- Flag for rewrite: Content updates to topics we cover\n- Evaluate: New content — does it belong in the new portal?"
+
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Portal tracking: doc changes $(date +%Y-%m-%d)" \
+            --body "$(echo -e "$BODY")" \
+            --label "portal-tracking" 2>/dev/null || echo "Could not create issue (label may not exist yet)"

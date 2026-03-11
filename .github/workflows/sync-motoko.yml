@@ -1,0 +1,96 @@
+name: Sync Motoko Docs
+
+on:
+  # Trigger when caffeinelabs/motoko creates a release
+  repository_dispatch:
+    types: [motoko-release]
+  # Manual trigger with optional tag
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. 1.3.0). Leave empty for latest."
+        required: false
+        type: string
+  # Also check daily in case we miss a webhook
+  schedule:
+    - cron: "30 8 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Run Motoko sync
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.tag || '' }}"
+          bash scripts/sync-motoko.sh $TAG
+
+      - name: Validate
+        run: npm run validate
+
+      - name: Build
+        run: npm run build
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected — Motoko docs are up to date."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            # Extract the version from source_ref in a synced file
+            VERSION=$(grep -m1 'source_ref:' src/content/docs/languages/motoko/fundamentals/actors-async.md | sed 's/.*: //')
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.changes.outputs.version }}"
+          BRANCH="sync/motoko-${VERSION}"
+
+          git checkout -b "$BRANCH"
+          git add -A src/content/docs/languages/motoko/
+          git commit -m "sync: update Motoko docs to ${VERSION}"
+
+          git push -u origin "$BRANCH"
+
+          gh pr create \
+            --title "sync: Motoko docs ${VERSION}" \
+            --body "$(cat <<'EOF'
+          ## Summary
+
+          Automated sync of Motoko language documentation from \`caffeinelabs/motoko@${{ steps.changes.outputs.version }}\`.
+
+          - Flattened directory structure
+          - Rewrote internal links to match portal paths
+          - Removed duplicate H1 headings
+          - Replaced core library links with mops.one URLs
+
+          ## Validation
+
+          - [x] \`npm run validate\` passed
+          - [x] \`npm run build\` passed
+          - [x] No unresolved links (postprocess-motoko.mjs exits 0)
+
+          Review the sidebar and spot-check a few pages before merging.
+          EOF
+          )" \
+            --label "sync"

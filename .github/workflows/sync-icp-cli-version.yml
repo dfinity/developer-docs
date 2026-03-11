@@ -1,0 +1,82 @@
+name: Sync icp-cli Version
+
+on:
+  repository_dispatch:
+    types: [icp-cli-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.2.1). Leave empty for latest."
+        required: false
+        type: string
+  schedule:
+    - cron: "0 9 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Sync icp-cli version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.tag || '' }}"
+          bash scripts/sync-icp-cli-version.sh $TAG
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet src/versions.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "icp-cli version already up to date."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('src/versions.json','utf-8'))['icp-cli'])")
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate and build
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          npm run validate
+          npm run build
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.changes.outputs.version }}"
+          BRANCH="sync/icp-cli-${VERSION}"
+
+          git checkout -b "$BRANCH"
+          git add src/versions.json
+          git commit -m "sync: update icp-cli version to ${VERSION}"
+
+          git push -u origin "$BRANCH"
+
+          gh pr create \
+            --title "sync: icp-cli docs version ${VERSION}" \
+            --body "$(cat <<'EOF'
+          Updates `src/versions.json` to icp-cli ${VERSION}.
+
+          The remark plugin will rewrite all `dfinity.github.io/icp-cli/` links to include the `/${VERSION}/` prefix at build time.
+
+          - [x] `npm run validate` passed
+          - [x] `npm run build` passed
+          EOF
+          )" \
+            --label "sync"

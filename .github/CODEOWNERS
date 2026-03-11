@@ -1,0 +1,28 @@
+* @dfinity/editorial
+
+# Security
+src/content/docs/security/ @dfinity/product-security @dfinity/editorial
+
+# DeFi and cross-chain
+src/content/docs/defi/ @dfinity/defi @dfinity/editorial
+src/content/docs/capabilities/chain-fusion/ @dfinity/defi @dfinity/editorial
+
+# Execution
+src/content/docs/capabilities/timers.md @dfinity/team-dsm @dfinity/editorial
+src/content/docs/references/execution-errors.md @dfinity/team-dsm @dfinity/editorial
+
+# Boundary Node
+src/content/docs/building-apps/frontends/custom-domains.md @dfinity/boundary-node @dfinity/editorial
+
+# Trust
+src/content/docs/building-apps/frontends/certification.md @dfinity/trust @dfinity/editorial
+
+# Interface Specification
+src/content/docs/references/ic-interface-spec.md @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus
+src/content/docs/references/http-gateway-spec.md @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus
+
+# Languages (synced)
+src/content/docs/languages/motoko/ @dfinity/languages
+
+# Tools / CLI
+src/content/docs/tools/ @dfinity/dx @dfinity/editorial
