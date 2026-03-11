@@ -66,7 +66,7 @@ For research artifacts (portal triage, Learn Hub mapping, examples inventory), s
 docs/                       # All documentation (.md only) — src/content/docs/ symlinks here
 ├── index.md                # Landing page
 ├── getting-started/        # Tutorials (4 pages)
-├── guides/                 # How-to guides (44 pages across 12 subsections)
+├── guides/                 # How-to guides (46 pages across 12 subsections)
 │   ├── backends/           # Backend development patterns
 │   ├── canisters/          # Canister management
 │   ├── frontends/          # Frontend development

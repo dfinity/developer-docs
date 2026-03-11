@@ -9,7 +9,7 @@ icskills: [icrc-ledger]
 TODO: Write content for this page.
 
 <!-- Content Brief -->
-Interact with token ledgers from canisters and frontends. Cover ICP ledger transfers, ICRC-1 fungible token transfers, ICRC-2 approve/transferFrom pattern, fee handling, subaccount management, and setting up a local test ledger. Show code for both Rust and Motoko canister-side, and JS using @icp-sdk/canisters. Open with a "building DeFi on ICP" overview that maps common patterns.
+Interact with token ledgers from canisters and frontends. Cover ICP ledger transfers, ICRC-1 fungible token transfers, ICRC-2 approve/transferFrom pattern, fee handling, subaccount management, and setting up a local test ledger. Show code for both Rust and Motoko canister-side, and JS using @icp-sdk/canisters. Open with a "building DeFi on ICP" overview that maps common patterns. Include a section on ICRC-7/ICRC-37 (NFTs) — creating and managing non-fungible token collections, minting, transferring, and approval patterns. Reference the nft-creator example.
 
 <!-- Source Material -->
 - Portal: defi/tokens/ (multiple files on token standards, transfers, ledger setup)

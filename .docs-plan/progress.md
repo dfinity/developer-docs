@@ -1,6 +1,6 @@
 # Progress Tracker
 
-Two tables: **project-level** (infrastructure, research, tooling) and **content** (all 79 pages in priority order).
+Two tables: **project-level** (infrastructure, research, tooling) and **content** (all 81 pages in priority order).
 
 Pick the highest row with status `stub` or `pending`. For execution details (dependencies, source material, effort), see `migration-plan.md`.
 
@@ -127,51 +127,53 @@ Pages are listed in execution order from `migration-plan.md`. Work top-to-bottom
 | 49 | guides/security/data-integrity.md | stub | | |
 | 50 | guides/security/dos-prevention.md | stub | | |
 | 51 | guides/security/inter-canister-calls.md | stub | | |
-| 52 | guides/tools/overview.md | stub | | |
-| 53 | guides/defi/chain-key-tokens.md | stub | | |
+| 52 | guides/security/encryption.md | stub | | |
+| 53 | guides/authentication/verifiable-credentials.md | stub | | |
+| 54 | guides/tools/overview.md | stub | | |
+| 55 | guides/defi/chain-key-tokens.md | stub | | |
 
 ### P1 — Sprint 7: Governance, Concepts, Languages
 
 | # | Page | Status | Agent/Author | Date |
 |---|------|--------|-------------|------|
-| 54 | guides/governance/launching.md | stub | | |
-| 55 | guides/governance/managing.md | stub | | |
-| 56 | guides/governance/testing.md | stub | | |
-| 57 | concepts/vetkeys.md | stub | | |
-| 58 | concepts/onchain-randomness.md | stub | | |
-| 59 | concepts/timers.md | stub | | |
-| 60 | concepts/governance.md | stub | | |
-| 61 | languages/rust/stable-structures.md | stub | | |
+| 56 | guides/governance/launching.md | stub | | |
+| 57 | guides/governance/managing.md | stub | | |
+| 58 | guides/governance/testing.md | stub | | |
+| 59 | concepts/vetkeys.md | stub | | |
+| 60 | concepts/onchain-randomness.md | stub | | |
+| 61 | concepts/timers.md | stub | | |
+| 62 | concepts/governance.md | stub | | |
+| 63 | languages/rust/stable-structures.md | stub | | |
 
 ### P1 — Sprint 8: Reference Pages
 
 | # | Page | Status | Agent/Author | Date |
 |---|------|--------|-------------|------|
-| 62 | reference/system-canisters.md | stub | | |
-| 63 | reference/protocol-canisters.md | stub | | |
-| 64 | reference/subnet-types.md | stub | | |
-| 65 | reference/execution-errors.md | stub | | |
-| 66 | reference/ic-interface-spec.md | stub | | |
-| 67 | reference/candid-spec.md | stub | | |
-| 68 | reference/glossary.md | stub | | |
+| 64 | reference/system-canisters.md | stub | | |
+| 65 | reference/protocol-canisters.md | stub | | |
+| 66 | reference/subnet-types.md | stub | | |
+| 67 | reference/execution-errors.md | stub | | |
+| 68 | reference/ic-interface-spec.md | stub | | |
+| 69 | reference/candid-spec.md | stub | | |
+| 70 | reference/glossary.md | stub | | |
 
 ### P2 — Sprint 9: Advanced Guides
 
 | # | Page | Status | Agent/Author | Date |
 |---|------|--------|-------------|------|
-| 69 | guides/backends/large-wasm.md | stub | | |
-| 70 | guides/backends/parallel-calls.md | stub | | |
-| 71 | guides/frontends/frameworks.md | stub | | |
-| 72 | guides/chain-fusion/solana.md | stub | | |
-| 73 | guides/chain-fusion/dogecoin.md | stub | | |
-| 74 | guides/defi/rosetta.md | stub | | |
-| 75 | guides/production/canister-discovery.md | stub | | |
+| 71 | guides/backends/large-wasm.md | stub | | |
+| 72 | guides/backends/parallel-calls.md | stub | | |
+| 73 | guides/frontends/frameworks.md | stub | | |
+| 74 | guides/chain-fusion/solana.md | stub | | |
+| 75 | guides/chain-fusion/dogecoin.md | stub | | |
+| 76 | guides/defi/rosetta.md | stub | | |
+| 77 | guides/production/canister-discovery.md | stub | | |
 
 ### P2 — Sprint 10: Remaining Reference and Languages
 
 | # | Page | Status | Agent/Author | Date |
 |---|------|--------|-------------|------|
-| 76 | reference/application-canisters.md | stub | | |
-| 77 | reference/http-gateway-spec.md | stub | | |
-| 78 | reference/internet-identity-spec.md | stub | | |
-| 79 | languages/rust/testing.md | stub | | |
+| 78 | reference/application-canisters.md | stub | | |
+| 79 | reference/http-gateway-spec.md | stub | | |
+| 80 | reference/internet-identity-spec.md | stub | | |
+| 81 | languages/rust/testing.md | stub | | |

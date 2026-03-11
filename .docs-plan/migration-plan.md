@@ -2,7 +2,7 @@
 
 > This file is the **execution playbook** — it tells you _how_ to do each task (dependencies, source material, effort, skills). For _what to do next_, check `progress.md`.
 
-Generated 2026-03-11. Covers all 79 content pages + infrastructure tasks (excluding synced Motoko pages).
+Generated 2026-03-11. Covers all 81 content pages + infrastructure tasks (excluding synced Motoko pages).
 
 ## How to use this file
 
@@ -136,7 +136,7 @@ These pages fill out the docs site with important secondary content.
 | 45 | `guides/frontends/certification.md` | M | asset-canister, certified-variables | Portal asset-security.mdx | rewrite |
 | 46 | `guides/authentication/wallet-integration.md` | M | internet-identity | Portal integrate-misc-wallets.mdx; icskills: wallet-integration | rewrite |
 
-### Sprint 6: Inter-Canister, Production, Security (7 pages)
+### Sprint 6: Inter-Canister, Production, Security (9 pages)
 
 | # | Page | Effort | Dependencies | Source Material | Skills |
 |---|------|--------|-------------|-----------------|--------|
@@ -145,33 +145,35 @@ These pages fill out the docs site with important secondary content.
 | 49 | `guides/security/data-integrity.md` | L | concepts/security | icskills: vetkd, certified-variables; examples: vetkeys, vetkd | rewrite |
 | 50 | `guides/security/dos-prevention.md` | M | concepts/security | icskills: canister-security | original |
 | 51 | `guides/security/inter-canister-calls.md` | M | inter-canister/calls | icskills: canister-security, multi-canister | original |
-| 52 | `guides/tools/overview.md` | M | None | Portal dev-tools-overview.mdx, cdks/index.mdx | rewrite |
-| 53 | `guides/defi/chain-key-tokens.md` | M | token-ledgers, bitcoin, ethereum | Portal chain-key-tokens files; icskills: ckbtc | rewrite |
+| 52 | `guides/security/encryption.md` | L | concepts/vetkeys | Portal vetkeys/ (9 files: intro, API, BLS, DKMS, encrypted-storage, IBE, timelock, VRF, demos); icskills: vetkd; examples: vetkd, vetkeys, encrypted-notes-dapp-vetkd, filevault | rewrite |
+| 53 | `guides/authentication/verifiable-credentials.md` | M | internet-identity | Portal verifiable-credentials/ (4 files: overview, how-it-works, issuer, relying-party); VC spec: github.com/dfinity/internet-identity/blob/main/docs/vc-spec.md | rewrite |
+| 54 | `guides/tools/overview.md` | M | None | Portal dev-tools-overview.mdx, cdks/index.mdx | rewrite |
+| 55 | `guides/defi/chain-key-tokens.md` | M | token-ledgers, bitcoin, ethereum | Portal chain-key-tokens files; icskills: ckbtc | rewrite |
 
 ### Sprint 7: Governance, Concepts, Languages (8 pages)
 
 | # | Page | Effort | Dependencies | Source Material | Skills |
 |---|------|--------|-------------|-----------------|--------|
-| 54 | `guides/governance/launching.md` | L | concepts/governance | Portal launching/ (4 files), tokenomics/ (4 files); icskills: sns-launch | rewrite |
-| 55 | `guides/governance/managing.md` | M | launching | Portal managing/ (4 files); icskills: sns-launch | rewrite |
-| 56 | `guides/governance/testing.md` | M | launching | Portal testing/ (3 files); icskills: sns-launch | rewrite |
-| 57 | `concepts/vetkeys.md` | M | chain-key-cryptography | Portal VetKeys sections; icskills: vetkd | rewrite |
-| 58 | `concepts/onchain-randomness.md` | S | None | Portal randomness conceptual parts | rewrite |
-| 59 | `concepts/timers.md` | S | None | Portal periodic-tasks conceptual parts | rewrite |
-| 60 | `concepts/governance.md` | M | None | Portal tokenomics/index.mdx | rewrite |
-| 61 | `languages/rust/stable-structures.md` | M | rust/index | Portal stable-structures.mdx, canister-state.mdx | rewrite |
+| 56 | `guides/governance/launching.md` | L | concepts/governance | Portal launching/ (4 files), tokenomics/ (4 files); icskills: sns-launch | rewrite |
+| 57 | `guides/governance/managing.md` | M | launching | Portal managing/ (4 files); icskills: sns-launch | rewrite |
+| 58 | `guides/governance/testing.md` | M | launching | Portal testing/ (3 files); icskills: sns-launch | rewrite |
+| 59 | `concepts/vetkeys.md` | M | chain-key-cryptography | Portal VetKeys sections; icskills: vetkd | rewrite |
+| 60 | `concepts/onchain-randomness.md` | S | None | Portal randomness conceptual parts | rewrite |
+| 61 | `concepts/timers.md` | S | None | Portal periodic-tasks conceptual parts | rewrite |
+| 62 | `concepts/governance.md` | M | None | Portal tokenomics/index.mdx | rewrite |
+| 63 | `languages/rust/stable-structures.md` | M | rust/index | Portal stable-structures.mdx, canister-state.mdx | rewrite |
 
-### Sprint 8: Reference Pages (6 pages)
+### Sprint 8: Reference Pages (7 pages)
 
 | # | Page | Effort | Dependencies | Source Material | Skills |
 |---|------|--------|-------------|-----------------|--------|
-| 62 | `reference/system-canisters.md` | M | None | Portal system-canisters references | reference |
-| 63 | `reference/protocol-canisters.md` | M | None | Portal protocol references; icskills: ckbtc, evm-rpc | reference |
-| 64 | `reference/subnet-types.md` | M | None | Portal deploy-specific-subnet | reference |
-| 65 | `reference/execution-errors.md` | M | None | Portal trapping.mdx, resource-limits.mdx | reference |
-| 66 | `reference/ic-interface-spec.md` | S | None | IC interface spec links | reference |
-| 67 | `reference/candid-spec.md` | S | None | Candid spec links | reference |
-| 68 | `reference/glossary.md` | L | All concept pages | Portal glossary; all concept pages | reference |
+| 64 | `reference/system-canisters.md` | M | None | Portal system-canisters references | reference |
+| 65 | `reference/protocol-canisters.md` | M | None | Portal protocol references; icskills: ckbtc, evm-rpc | reference |
+| 66 | `reference/subnet-types.md` | M | None | Portal deploy-specific-subnet | reference |
+| 67 | `reference/execution-errors.md` | M | None | Portal trapping.mdx, resource-limits.mdx | reference |
+| 68 | `reference/ic-interface-spec.md` | S | None | IC interface spec links | reference |
+| 69 | `reference/candid-spec.md` | S | None | Candid spec links | reference |
+| 70 | `reference/glossary.md` | L | All concept pages | Portal glossary; all concept pages | reference |
 
 ---
 
@@ -183,22 +185,22 @@ These pages cover niche or advanced topics. Ship after P0 and P1 are complete.
 
 | # | Page | Effort | Dependencies | Source Material | Skills |
 |---|------|--------|-------------|-----------------|--------|
-| 69 | `guides/backends/large-wasm.md` | M | lifecycle | Portal compile.mdx (large Wasm); examples: backend_wasm64 | rewrite |
-| 70 | `guides/backends/parallel-calls.md` | M | inter-canister/calls | Portal advanced-calls.mdx (composite queries); examples: parallel_calls | rewrite |
-| 71 | `guides/frontends/frameworks.md` | L | asset-canister | Portal existing-frontend.mdx; examples: react, svelte starters | rewrite |
-| 72 | `guides/chain-fusion/solana.md` | M | chain-fusion concept | Portal solana/overview.mdx | rewrite |
-| 73 | `guides/chain-fusion/dogecoin.md` | M | chain-fusion concept | Portal dogecoin/overview.mdx | rewrite |
-| 74 | `guides/defi/rosetta.md` | L | token-ledgers | Portal defi/rosetta/ files | rewrite |
-| 75 | `guides/production/canister-discovery.md` | M | settings | icskills: ic-dashboard | original |
+| 71 | `guides/backends/large-wasm.md` | M | lifecycle | Portal compile.mdx (large Wasm), simd.mdx; examples: backend_wasm64 | rewrite |
+| 72 | `guides/backends/parallel-calls.md` | M | inter-canister/calls | Portal advanced-calls.mdx (composite queries); examples: parallel_calls | rewrite |
+| 73 | `guides/frontends/frameworks.md` | L | asset-canister | Portal existing-frontend.mdx; examples: react, svelte starters | rewrite |
+| 74 | `guides/chain-fusion/solana.md` | M | chain-fusion concept | Portal solana/overview.mdx | rewrite |
+| 75 | `guides/chain-fusion/dogecoin.md` | M | chain-fusion concept | Portal dogecoin/overview.mdx | rewrite |
+| 76 | `guides/defi/rosetta.md` | L | token-ledgers | Portal defi/rosetta/ files | rewrite |
+| 77 | `guides/production/canister-discovery.md` | M | settings | icskills: ic-dashboard | original |
 
 ### Sprint 10: Remaining Reference and Languages (4 pages)
 
 | # | Page | Effort | Dependencies | Source Material | Skills |
 |---|------|--------|-------------|-----------------|--------|
-| 76 | `reference/application-canisters.md` | M | None | Portal application references | reference |
-| 77 | `reference/http-gateway-spec.md` | S | None | HTTP gateway spec links | reference |
-| 78 | `reference/internet-identity-spec.md` | S | None | II spec links | reference |
-| 79 | `languages/rust/testing.md` | M | rust/index, testing/strategies | examples: unit_testable_rust_canister | original |
+| 78 | `reference/application-canisters.md` | M | None | Portal application references | reference |
+| 79 | `reference/http-gateway-spec.md` | S | None | HTTP gateway spec links | reference |
+| 80 | `reference/internet-identity-spec.md` | S | None | II spec links | reference |
+| 81 | `languages/rust/testing.md` | M | rust/index, testing/strategies | examples: unit_testable_rust_canister | original |
 
 ---
 
@@ -207,9 +209,9 @@ These pages cover niche or advanced topics. Ship after P0 and P1 are complete.
 | Phase | Pages | S | M | L | XL | Estimated Total Hours |
 |-------|-------|---|---|---|----|-----------------------|
 | P0 (Sprint 1-4) | 38 | 3 | 19 | 10 | 3 | ~120 hours |
-| P1 (Sprint 5-8) | 29 | 3 | 19 | 3 | 0 | ~75 hours |
+| P1 (Sprint 5-8) | 31 | 3 | 20 | 4 | 0 | ~85 hours |
 | P2 (Sprint 9-10) | 11 | 2 | 6 | 3 | 0 | ~30 hours |
-| **Total** | **79** | **8** | **44** | **16** | **3** | **~225 hours** |
+| **Total** | **81** | **8** | **45** | **17** | **3** | **~235 hours** |
 
 ---
 
@@ -244,8 +246,13 @@ concepts/chain-key-cryptography.md
         └── guides/chain-fusion/bitcoin.md
         └── guides/chain-fusion/ethereum.md
 
+concepts/chain-key-cryptography.md
+  └── concepts/vetkeys.md
+        └── guides/security/encryption.md
+
 guides/frontends/asset-canister.md
   └── guides/authentication/internet-identity.md
+        └── guides/authentication/verifiable-credentials.md
 
 guides/testing/strategies.md
   └── guides/testing/pocket-ic.md
