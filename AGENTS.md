@@ -136,13 +136,14 @@ When drafting a new docs page:
 - Max sidebar nesting: 3 levels
 - Images go in `src/assets/images/` organized by section (see CONTRIBUTING.md for details)
 - When writing a page, decide case-by-case whether portal images are worth carrying over. Keep the existing hand-drawn visual style.
+- **Motoko standard library:** Always use `core` (`mops.one/core`), never `base`. The `core` library supersedes `base`. Link to the synced base→core migration guide for developers still on `base`.
 
 ## Linking rules
 
 | Content type | Link to |
 |-------------|---------|
 | CLI commands | https://dfinity.github.io/icp-cli/ |
-| Motoko core/base library | https://mops.one/core/docs or https://mops.one/base/docs |
+| Motoko standard library | https://mops.one/core/docs (core supersedes base) |
 | Rust CDK API | https://docs.rs/ic-cdk/latest/ic_cdk/ |
 | JS SDK | https://js.icp.build |
 | Protocol internals | https://learn.internetcomputer.org |
@@ -156,8 +157,7 @@ When drafting a new docs page:
 | JS SDK | https://js.icp.build |
 | icskills | https://skills.internetcomputer.org |
 | Learn Hub | https://learn.internetcomputer.org |
-| Motoko core library | https://mops.one/core/docs |
-| Motoko base library | https://mops.one/base/docs |
+| Motoko core library | https://mops.one/core/docs (supersedes base; migration guide is synced from Motoko repo) |
 | Rust CDK API | https://docs.rs/ic-cdk/latest/ic_cdk/ |
 
 ## Skills

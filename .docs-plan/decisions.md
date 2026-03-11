@@ -123,3 +123,9 @@ Append new decisions at the bottom. Never modify existing entries.
 **Decision:** All internal links must use relative paths with `.md` extension (e.g., `[Quickstart](getting-started/quickstart.md)`). Never use absolute URL paths.
 **Rationale:** Relative paths with `.md` work on GitHub natively. A remark plugin (`plugins/remark-strip-md-extension.mjs`) strips `.md` extensions at build time for Astro/Starlight. This ensures docs are readable and navigable wherever they're viewed — no pre-build scripts or temp directories needed.
 **Alternatives considered:** Absolute paths (break on GitHub), paths without extension (break on GitHub), pre-build sed script like icp-cli repo (fragile, adds build complexity)
+
+## 2026-03-11: Motoko core library is the standard; base is legacy
+**Context:** The Motoko `core` library (`mops.one/core`) supersedes the `base` library (`mops.one/base`). A migration guide exists in the Motoko repo (`doc/md/12-base-core-migration.md`) and is synced to the docs site.
+**Decision:** Always recommend `core` over `base` in all docs. Link to `mops.one/core/docs` as the standard library reference. Do not link to `mops.one/base/docs` as an equal alternative. The base→core migration guide is synced from `caffeinelabs/motoko` and should not be edited directly.
+**Rationale:** `core` is the actively developed standard library with AI-friendly design, consistent naming, and stable memory support. `base` is legacy. Docs should guide developers to the current standard.
+**Alternatives considered:** List both as equal options (confusing, encourages continued use of legacy library)

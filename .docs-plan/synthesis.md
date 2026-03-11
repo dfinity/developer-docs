@@ -155,7 +155,7 @@
 
 | # | Path | Title | doc_type | level | Content Brief | Source Material | Cross-Links | Priority |
 |---|------|-------|----------|-------|---------------|-----------------|-------------|----------|
-| 63 | `languages/motoko/index.md` | Motoko | explanation | beginner | Landing page for Motoko documentation. Overview of the language, links to synced fundamentals/ICP features/reference sections. Links to mops.one for core and base libraries. | Synced from caffeinelabs/motoko; Motoko core: https://mops.one/core/docs; Motoko base: https://mops.one/base/docs | getting-started/quickstart, guides/backends/data-persistence | P0 |
+| 63 | `languages/motoko/index.md` | Motoko | explanation | beginner | Landing page for Motoko documentation. Overview of the language, links to synced fundamentals/ICP features/reference sections. Link to mops.one/core (standard library; supersedes base). Note the base→core migration guide (synced). | Synced from caffeinelabs/motoko; Motoko core: https://mops.one/core/docs; base→core migration guide synced from Motoko repo | getting-started/quickstart, guides/backends/data-persistence | P0 |
 
 ### Languages -- Rust (3 pages)
 
