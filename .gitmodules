@@ -1,0 +1,27 @@
+[submodule ".sources/portal"]
+	path = .sources/portal
+	url = git@github.com:dfinity/portal.git
+	branch = master
+[submodule ".sources/icp-cli"]
+	path = .sources/icp-cli
+	url = git@github.com:dfinity/icp-cli.git
+[submodule ".sources/icp-cli-recipes"]
+	path = .sources/icp-cli-recipes
+	url = git@github.com:dfinity/icp-cli-recipes.git
+	branch = main
+[submodule ".sources/icp-cli-templates"]
+	path = .sources/icp-cli-templates
+	url = git@github.com:dfinity/icp-cli-templates.git
+	branch = main
+[submodule ".sources/icskills"]
+	path = .sources/icskills
+	url = git@github.com:dfinity/icskills.git
+	branch = main
+[submodule ".sources/examples"]
+	path = .sources/examples
+	url = git@github.com:dfinity/examples.git
+	branch = master
+[submodule ".sources/icp-js-sdk-docs"]
+	path = .sources/icp-js-sdk-docs
+	url = git@github.com:dfinity/icp-js-sdk-docs.git
+	branch = main
