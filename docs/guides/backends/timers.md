@@ -16,6 +16,9 @@ Set up one-shot and periodic timers in canisters. Cover the timer API for both R
 - Examples: periodic_tasks (Rust)
 - Rust CDK: https://docs.rs/ic-cdk/latest/ic_cdk/ (timers module)
 
+<!-- Writing Note -->
+Also cover ic0.time() behavior and timestamps (portal: time-and-timestamps.mdx) — developers looking for "how does time work on ICP" will land here.
+
 <!-- Cross-Links -->
 - concepts/timers -- how the global timer mechanism works
 - guides/canister-management/lifecycle -- timer setup during canister init

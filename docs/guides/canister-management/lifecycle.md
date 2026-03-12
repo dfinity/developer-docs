@@ -13,7 +13,7 @@ Walk through the full canister lifecycle: creation, code installation, upgrades 
 
 <!-- Source Material -->
 - Portal: building-apps/canister-management/upgrade.mdx, state.mdx, developing-canisters/create.mdx, compile.mdx, install.mdx, deploy.mdx, delete.mdx, history.mdx, trapping.mdx, advanced/canister-migration.mdx
-- icp-cli: concepts/build-deploy-sync.md
+- icp-cli: concepts/build-deploy-sync.md, guides/canister-migration.md
 - icskills: cycles-management, stable-memory
 - Examples: canister_factory (Motoko), classes (Motoko), canister-info (Rust)
 - Learn Hub: [Canister Control](https://learn.internetcomputer.org/hc/en-us/articles/34573932107796)

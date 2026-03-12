@@ -3,7 +3,7 @@ title: "HTTPS Outcalls"
 description: "How canisters make HTTP requests to external services with consensus on responses"
 sidebar:
   order: 6
-icskills: []
+icskills: [https-outcalls]
 ---
 
 TODO: Write content for this page.

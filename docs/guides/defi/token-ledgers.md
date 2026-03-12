@@ -3,7 +3,7 @@ title: "Token Ledgers"
 description: "Transfer ICP and ICRC-1/ICRC-2 tokens from canisters and frontends"
 sidebar:
   order: 1
-icskills: [icrc-ledger]
+icskills: [icrc-ledger, ckbtc]
 ---
 
 TODO: Write content for this page.

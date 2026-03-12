@@ -17,6 +17,9 @@ Overview of the ICP developer toolchain. Cover icp-cli (project management, depl
 - icp-cli docs: https://dfinity.github.io/icp-cli/
 - Rust CDK: https://docs.rs/ic-cdk/latest/ic_cdk/
 
+<!-- Writing Note -->
+Also mention: Quill (cold wallet signing, NNS governance), icp-cli telemetry opt-out, and link to icp-cli's creating-recipes.md and creating-templates.md for advanced users.
+
 <!-- Cross-Links -->
 - getting-started/quickstart -- icp-cli in action
 - guides/tools/migrating-from-dfx -- migration guide

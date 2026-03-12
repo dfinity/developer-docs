@@ -13,7 +13,7 @@ Walk the developer through installing icp-cli, scaffolding a project with `icp n
 
 <!-- Source Material -->
 - Portal: building-apps/getting-started/quickstart.mdx
-- icp-cli: quickstart.md, guides/installation.md
+- icp-cli: quickstart.md, guides/installation.md, guides/local-development.md
 - Template: hello-world (default `icp new` template)
 - Recipes: @dfinity/rust, @dfinity/motoko, @dfinity/asset-canister
 - Examples: hello_world (Rust), hello_world (Motoko)
