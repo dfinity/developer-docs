@@ -123,7 +123,7 @@ canisters:
   - frontend
 ```
 
-Each canister name maps to a directory containing its own `icp.yaml` with build configuration (recipe, source files, etc.). icp-cli handles the rest — compiling, optimizing, deploying, and wiring up canister-to-canister discovery.
+Each canister name maps to a directory containing its own `canister.yaml` with build configuration (recipe, source files, etc.). icp-cli handles the rest — compiling, optimizing, deploying, and wiring up canister-to-canister discovery.
 
 ## Next steps
 
