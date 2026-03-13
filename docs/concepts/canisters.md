@@ -3,7 +3,7 @@ title: "Canisters"
 description: "Smart contracts that run WebAssembly, hold state, serve HTTP, and pay for their own compute"
 sidebar:
   order: 3
-icskills: [icp-cli]
+icskills: []
 ---
 
 Canisters are smart contracts on the Internet Computer. Each canister bundles compiled WebAssembly code with its own persistent state into a single unit that the network executes, replicates, and secures. You deploy code to a canister, send it messages, and the network guarantees that every honest node in the subnet reaches the same result.
@@ -90,50 +90,19 @@ A canister goes through four lifecycle stages:
 
 Creating a canister allocates a canister ID and reserves resources on a subnet. At this point the canister exists but has no code.
 
-```sh
-icp canister create my_backend
-```
-
 ### Install
 
 Installing uploads a Wasm module to the canister and runs its initialization logic. After installation, the canister is running and accepting messages.
-
-```sh
-icp build my_backend
-icp canister install my_backend
-```
-
-In practice, `icp deploy` combines create, build, and install into a single command:
-
-```sh
-icp deploy my_backend
-```
 
 ### Upgrade
 
 Upgrading replaces the canister's Wasm module while preserving stable memory. The system runs a pre-upgrade hook (to save heap data to stable memory if needed), swaps the Wasm, then runs a post-upgrade hook (to restore data).
 
-```sh
-icp build my_backend
-icp canister install my_backend --mode upgrade
-```
-
-Or simply redeploy:
-
-```sh
-icp deploy my_backend
-```
-
 ### Stop and delete
 
 Stopping a canister prevents it from accepting new messages while letting in-flight messages complete. Once stopped, a canister can be deleted to reclaim its resources and remaining cycles.
 
-```sh
-icp canister stop my_backend
-icp canister delete my_backend
-```
-
-For detailed lifecycle management, see [Canister lifecycle](../guides/canister-management/lifecycle.md).
+For step-by-step CLI commands, see [Canister lifecycle management](../guides/canister-management/lifecycle.md).
 
 ## Controllers
 
