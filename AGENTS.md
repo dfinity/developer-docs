@@ -32,11 +32,31 @@ All tasks (content pages, infrastructure, tooling) are coordinated through [Bead
 
 ### First-time setup (once per clone)
 
+**Prerequisites** (install before running setup):
+
+| Tool | Install | Purpose |
+|------|---------|---------|
+| Node.js ≥ 20 | https://nodejs.org or `nvm install 20` | Astro build, npm packages |
+| Dolt | `brew install dolt` (macOS) or https://github.com/dolthub/dolt/releases | Version-controlled SQL database for task state |
+| Beads (`bd`) | `npm install -g @beads/bd` | Task tracking CLI that uses Dolt |
+
+**SSH access required:** Beads syncs task state via `refs/dolt/data` using the git remote. This requires SSH access to `github.com:dfinity/developer-docs.git`. If you cloned via HTTPS, ensure `git fetch origin refs/dolt/data` works — if not, add an SSH key or configure `gh auth setup-git`.
+
+Then run:
 ```bash
-./scripts/setup.sh    # submodules, npm deps, Beads task DB, build check
+./scripts/setup.sh    # submodules, npm deps, Beads task DB, Dolt server, build check
 ```
 
-If `bd` or `dolt` aren't installed, the script tells you how. Without them you can still write docs — check `.docs-plan/migration-plan.md` for tasks manually.
+The script will:
+1. Initialize git submodules (`.sources/` — upstream reference repos)
+2. Install npm dependencies
+3. Bootstrap the Beads/Dolt database from the git remote (or sync if already present)
+4. Start the Dolt server and verify the database is accessible
+5. Run a build check
+
+After setup, verify: `bd ready` should list ~47 open tasks.
+
+Without `bd`/`dolt` you can still write docs — check `.docs-plan/migration-plan.md` for tasks manually.
 
 ### Parallel agents (worktrees)
 
@@ -82,6 +102,7 @@ All task state is stored in `refs/dolt/data` in the git remote, so nothing is lo
 ### Session start
 
 ```bash
+bd dolt start   # ensure Dolt server is running (no-op if already up)
 bd dolt pull    # sync task state from remote
 ```
 

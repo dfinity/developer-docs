@@ -68,12 +68,34 @@ fi
 if $has_bd && $has_dolt; then
   if [ -d ".beads/dolt" ]; then
     echo "Syncing task state from remote..."
+    bd dolt start 2>/dev/null || true
     bd dolt pull
     ok "Task state synced"
   else
     echo "Bootstrapping task database..."
-    bd bootstrap
-    ok "Task database bootstrapped"
+    if bd bootstrap; then
+      ok "Task database bootstrapped"
+    else
+      fail "bd bootstrap failed — check SSH access to git@github.com:dfinity/developer-docs.git"
+      fail "If you cloned via HTTPS, ensure you have SSH keys configured for GitHub"
+      errors=$((errors + 1))
+      has_bd=false
+    fi
+  fi
+
+  # Start Dolt server and verify it works
+  if $has_bd; then
+    if ! bd dolt start 2>/dev/null; then
+      # Server may already be running — that's fine
+      true
+    fi
+    # Verify the database is actually accessible
+    if bd list --limit 1 --json >/dev/null 2>&1; then
+      ok "Dolt server running and database accessible"
+    else
+      fail "Dolt server started but database is not accessible — try: bd dolt stop && bd dolt start"
+      errors=$((errors + 1))
+    fi
   fi
 fi
 
@@ -93,7 +115,7 @@ fi
 # ---------------------------------------------------------------------------
 printf "\n"
 if [ $errors -eq 0 ]; then
-  ok "All set. Run 'bd dolt pull && bd ready' to see available tasks."
+  ok "All set. Run 'bd ready' to see available tasks."
 else
   warn "$errors issue(s) found — see above."
   if ! $has_bd || ! $has_dolt; then
