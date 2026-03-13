@@ -72,15 +72,18 @@ Developer: "pick up new work"
 | Review a PR | "Review PR #5" |
 | See what's ready | "Run `bd ready` and show me the options" |
 
+Agent reviews check links, code snippets, CLI commands, frontmatter, content brief coverage, and technical accuracy against `.sources/`. See [AGENTS.md](AGENTS.md) for the full review checklist. Agent reviews complement but don't replace human review — use them to catch mechanical issues and surface potential inaccuracies before you read through the content yourself.
+
 ### What agents handle vs. what developers handle
 
 | Agents | Developers |
 |--------|-----------|
 | Draft content from source material | Review content for accuracy |
+| Review PRs (links, code, technical claims) | Final approval and merge |
 | Fix PR feedback after confirmation | Decide which feedback to accept |
-| Verify links, code snippets, CLI commands | Merge PRs |
-| Track task state in Beads | Bump source submodules |
-| Open PRs | Make structural decisions |
+| Verify links, code snippets, CLI commands | Bump source submodules |
+| Track task state in Beads | Make structural decisions |
+| Open PRs | |
 
 ### Setup
 
