@@ -256,7 +256,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 ## Always (do these without asking)
 
 - Read `.docs-plan/decisions.md` before proposing structural changes
-- **Ensure all required skills are loaded** before starting any work (see "Skills (required)" section). This is a hard prerequisite — do not proceed without them.
+- **Ensure all required skills are loaded** before starting any work (see "Skills (required)" section). This is a hard prerequisite — if skills fail to install, do not create content or review PRs. Report the failure to the user and work on non-content tasks only (rebasing, housekeeping, infrastructure).
 - Use icp-cli commands in all CLI examples — never `dfx`
 - Write plain `.md` files only — never `.mdx` or JSX
 - Include complete frontmatter (see CONTRIBUTING.md for schema)
