@@ -3,7 +3,6 @@ title: "Cycles Costs"
 description: "Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations"
 sidebar:
   order: 6
-icskills: []
 ---
 
 Canisters pay for the resources they consume and operations they perform using **cycles**. The price of cycles is pegged to [XDR](glossary.md) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. As of May 22, 2025, 1 XDR ≈ $1.35 USD — this rate fluctuates; see the [IMF's XDR exchange data](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) for the current rate.
@@ -30,13 +29,17 @@ See [Subnet types](subnet-types.md) for subnet-specific details.
 
 ## Cost table
 
-| Operation | Description | Who pays | 13-node cycles | 13-node USD | 34-node cycles | 34-node USD |
+USD values are approximate and based on the May 2025 XDR rate (1 XDR ≈ $1.35). The XDR rate fluctuates — use cycle counts for precise budgeting.
+
+<!-- Needs human verification: cloud pricing comparison requested in content brief — no upstream source found in .sources/ for ICP vs. cloud provider cost comparison. -->
+
+| Operation | Description | Who pays | 13-node cycles | ~USD (May 2025) | 34-node cycles | ~USD (May 2025) |
 |-----------|-------------|----------|----------------|-------------|----------------|-------------|
 | Query call | Query information from a canister | N/A | Free | Free | Free | Free |
 | Canister creation | Create a new canister | Created canister | 500_000_000_000 | ~$0.677 | 1_307_692_307_692 | ~$1.772 |
 | Compute allocation (per % per second) | Reserved compute per second | Canister with allocation | 10_000_000 | ~$0.0000135 | 26_153_846 | ~$0.0000354 |
-| Update message execution | Per update message executed | Target canister | 5_000_000 | ~$0.0000068 | 13_076_923 | ~$0.0000177 |
-| 1B instructions executed | Per 1B Wasm instructions | Executing canister | 1_000_000_000 | ~$0.00135 | 2_615_384_615 | ~$0.00354 |
+| Update message execution | Per update message executed (base fee) | Target canister | 5_000_000 | ~$0.0000068 | 13_076_923 | ~$0.0000177 |
+| 1B instructions executed | Per 1B Wasm instructions (on top of base fee) | Executing canister | 1_000_000_000 | ~$0.00135 | 2_615_384_615 | ~$0.00354 |
 | Xnet call (request + response) | Inter-canister call overhead | Sending canister | 260_000 | ~$0.00000035 | 680_000 | ~$0.00000092 |
 | Xnet byte transmission | Per byte in inter-canister call | Sending canister | 1_000 | ~$0.00000000135 | 2_615 | ~$0.00000000354 |
 | Ingress message reception | Per ingress message received | Receiving canister | 1_200_000 | ~$0.0000016 | 3_138_461 | ~$0.0000043 |
@@ -45,10 +48,10 @@ See [Subnet types](subnet-types.md) for subnet-specific details.
 
 **Storage cost per GiB per month (30 days):**
 
-| Subnet | Cycles | USD |
-|--------|--------|-----|
-| 13-node | ~329B | ~$0.45 |
-| 34-node | ~861B | ~$1.70 |
+| Subnet | Cycles | ~USD (May 2025) |
+|--------|--------|-----------------|
+| 13-node | ~329 billion | ~$0.45 |
+| 34-node | ~861 billion | ~$1.70 |
 
 ## HTTPS outcalls
 
@@ -62,23 +65,23 @@ size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 
 `request_bytes` is the total serialized request size (URL + headers + body + transform name/context). `max_response_bytes` defaults to 2 MiB if not explicitly set by the canister.
 
-| Component | 13-node cycles | 13-node USD | 34-node cycles | 34-node USD |
-|-----------|----------------|-------------|----------------|-------------|
+| Component | 13-node cycles | ~USD (May 2025) | 34-node cycles | ~USD (May 2025) |
+|-----------|----------------|-----------------|----------------|-----------------|
 | Per call (base) | 49_140_000 | ~$0.0000666 | 171_360_000 | ~$0.000232 |
 | Per request byte | 5_200 | ~$0.000000007 | 13_600 | ~$0.0000000184 |
 | Per reserved response byte | 10_400 | ~$0.000000014 | 27_200 | ~$0.0000000369 |
 
-## Execution costs
+## Execution cost formula
 
-Execution cost formula:
+Each update message execution is charged as a base fee plus a per-instruction fee (the *Update message execution* and *1B instructions executed* rows in the Cost table above):
 
 ```
 total = base_fee + per_instruction_fee * num_instructions
 ```
 
 Current values (13-node subnet):
-- `base_fee` = 5_000_000 cycles (~$0.0000068 USD)
-- `per_instruction_fee` = 1 cycle (so 1B instructions = 1B cycles ≈ $0.00135)
+- `base_fee` = 5_000_000 cycles (~$0.0000068 USD, May 2025)
+- `per_instruction_fee` = 1 cycle (so 1B instructions = 1B cycles ≈ $0.00135, May 2025)
 
 ## Compute allocation
 
@@ -88,7 +91,7 @@ By default canisters are scheduled best-effort. Setting `compute_allocation` gua
 - **2%** — Scheduled every 50 rounds
 - **100%** — Scheduled every round
 
-Total allocatable compute capacity per subnet is 299%. The cost is `10M cycles * allocation_percent` per second on a 13-node subnet.
+Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet — see the *Compute allocation* row in the Cost table above for exact figures.
 
 ## Storage reservation
 
@@ -125,9 +128,11 @@ Reserved cycles are non-transferable. Controllers can disable reservation by set
 Certain ICP features have additional cycle costs beyond the base execution and messaging fees:
 
 - **HTTPS outcalls** — See the [HTTPS outcalls cost formula](#https-outcalls) above.
-- **Threshold ECDSA / Schnorr signing** — Charged per signing request. <!-- Needs human verification: exact signing cost figures not present in .sources/portal/docs/references/cycles-cost-formulas.mdx — verify against IC interface spec or management canister docs. -->
-- **Bitcoin integration API** — Per-call fees apply. <!-- Needs human verification: exact Bitcoin API cost figures not present in .sources/ — verify against IC interface spec. -->
-- **EVM RPC canister** — Costs depend on the external RPC call and the HTTPS outcall fees above.
+- **EVM RPC canister** — Costs depend on the underlying RPC call and the HTTPS outcall fees above.
+- **Threshold ECDSA / Schnorr signing** — Charged per signing request. Exact cost tables are not yet included on this page.
+- **Bitcoin integration API** — Per-call fees apply. Exact cost tables are not yet included on this page.
+
+<!-- TODO: add cost tables for threshold signing and Bitcoin API once figures are verified against the IC interface spec or management canister docs. -->
 
 ## Related pages
 
