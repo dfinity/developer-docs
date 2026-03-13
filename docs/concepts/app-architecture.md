@@ -98,10 +98,10 @@ Each user gets their own canister, giving them direct control over their data. A
 
 ## Data storage
 
-Canisters store data in [stable memory](../guides/backends/stable-memory.md) — there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
+Canisters store data in [stable memory](../guides/backends/data-persistence.md) — there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
 
 - **Motoko:** the [`core` standard library](https://mops.one/core/docs) includes persistent data structures that survive upgrades automatically.
-- **Rust:** [`ic-stable-structures`](https://docs.rs/ic-cdk/latest/ic_cdk/) provides `StableBTreeMap` and other structures for stable memory.
+- **Rust:** [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) provides `StableBTreeMap` and other structures for stable memory.
 
 For small to medium datasets, stable memory is straightforward. For applications with large data volumes (hundreds of GiB), see the [canister-per-service](#canister-per-service-default) or [canister-per-subnet](#canister-per-subnet) patterns to distribute storage across canisters.
 
