@@ -1,15 +1,18 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import rehypeRewriteLinks from "./plugins/rehype-rewrite-links.mjs";
+import rehypeExternalLinks from "./plugins/rehype-external-links.mjs";
 import remarkIcpCliVersion from "./plugins/remark-icp-cli-version.mjs";
-import remarkExternalLinks from "./plugins/remark-external-links.mjs";
-import remarkStripMdExtension from "./plugins/remark-strip-md-extension.mjs";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.internetcomputer.org",
   markdown: {
-    remarkPlugins: [remarkExternalLinks, remarkStripMdExtension, remarkIcpCliVersion],
+    // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
+    // See: https://github.com/dfinity/icp-cli/issues/423
+    rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
+    remarkPlugins: [remarkIcpCliVersion],
   },
   integrations: [
     starlight({
