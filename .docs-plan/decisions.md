@@ -155,3 +155,10 @@ Record decisions that constrain future work — things an agent needs to know th
 **Decision:** Do not install Beads git hooks. All `bd dolt pull`/`push` calls must be manual and serialized. Only the parent agent may run `bd` commands — worktree agents must never touch Beads.
 **Rationale:** Git hooks fire automatically on git operations (push, pull, checkout). Worktree agents perform these git operations concurrently, so hooks would trigger concurrent `bd` calls against the shared Dolt server, risking journal corruption. Manual serialized calls give the parent full control over when Beads is accessed.
 **Alternatives considered:** Install hooks only on the main worktree (hooks still fire on parent git ops during agent runs), install hooks with a lock file (Dolt doesn't support external locking), use `--sandbox` mode for agents (still shares the server)
+
+## 2026-03-13: Squash-merge only, auto-delete branches
+
+**Context:** Agent PRs accumulate multiple commits (draft, feedback fixes, rebases) that aren't meaningful individually.
+**Decision:** Enforce squash-merge as the only merge method on GitHub. Auto-delete branches after merge. Squash commit uses PR title and PR body.
+**Rationale:** Keeps `git log` on `main` clean (one commit per page/feature). PR history is always available on GitHub. Auto-delete prevents stale `docs/<slug>` branches from accumulating.
+**Alternatives considered:** Merge commits (noisy history), rebase merge (preserves individual commits nobody needs)

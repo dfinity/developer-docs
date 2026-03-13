@@ -82,7 +82,7 @@ bd ready               # unblocked tasks (dependencies met)
 bd show <id>           # task details
 ```
 
-**After merging a PR:** Agents automatically close the corresponding Beads task during their next session (Priority 0 housekeeping). If you have an agent session open, you can tell it to close merged tasks immediately. You can also close tasks manually: `bd update <id> --status closed && bd dolt push`.
+**Merging PRs:** Always use **squash and merge** (enforced in repo settings). This keeps `main` history clean — one commit per page. Branches are auto-deleted after merge. Agents automatically close the corresponding Beads task during their next session. You can also tell an active agent to close merged tasks immediately, or do it manually: `bd update <id> --status closed && bd dolt push`.
 
 ### What agents handle vs. what developers handle
 
