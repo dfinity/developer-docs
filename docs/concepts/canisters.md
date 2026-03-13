@@ -55,7 +55,13 @@ For applications that need authenticated reads (for example, a governance dapp s
 
 ### Composite queries
 
-Composite queries let a canister call other canisters during a query, then combine the results into a single response — all without going through consensus. This is useful for aggregating data from multiple canisters at query speed.
+Composite queries let a query call other queries on canisters **within the same subnet**, then combine the results into a single response — all without going through consensus. This is useful for aggregating data across multiple canisters at query speed.
+
+Key constraints:
+
+- **Same subnet only** — composite queries cannot call canisters on other subnets.
+- **Ingress only** — only external clients (browsers, CLI tools) can invoke composite queries. Other canisters cannot call them.
+- **No replicated mode** — unlike regular queries, composite queries cannot be executed as update calls for stronger authenticity.
 
 ## Memory model
 
