@@ -3,7 +3,7 @@ title: "Canisters"
 description: "Smart contracts that run WebAssembly, hold state, serve HTTP, and pay for their own compute"
 sidebar:
   order: 3
-icskills: []
+icskills: [icp-cli]
 ---
 
 Canisters are smart contracts on the Internet Computer. Each canister bundles compiled WebAssembly code with its own persistent state into a single unit that the network executes, replicates, and secures. You deploy code to a canister, send it messages, and the network guarantees that every honest node in the subnet reaches the same result.
@@ -51,7 +51,7 @@ Query calls read state without modifying it. A single replica handles the call a
 For applications that need authenticated reads (for example, a governance dapp showing proposal text that a user will vote on), you have two options:
 
 - Issue the query as an update call for full consensus, at the cost of higher latency.
-- Use [certified variables](../reference/certified-variables.md) to pre-sign data during updates and serve proofs in query responses.
+- Use [certified variables](../guides/backends/certified-variables.md) to pre-sign data during updates and serve proofs in query responses.
 
 ### Composite queries
 
@@ -63,12 +63,12 @@ Each canister has two storage regions:
 
 | Region | Max size | Persisted across upgrades | Access |
 |--------|----------|--------------------------|--------|
-| **Heap (Wasm) memory** | 6 GiB | No (cleared on upgrade) | Standard Wasm memory instructions |
+| **Heap (Wasm) memory** | 6 GiB | No (cleared on upgrade, unless using orthogonal persistence) | Standard Wasm memory instructions |
 | **Stable memory** | 500 GiB | Yes | System API calls |
 
 **Heap memory** is standard Wasm linear memory. It holds your program's heap-allocated data — variables, data structures, and anything your code allocates at runtime. Both 32-bit and 64-bit Wasm memory are supported. Heap memory is cleared when you upgrade the canister's Wasm module.
 
-**Stable memory** is a separate address space accessed through the [system API](../reference/ic-interface-spec.md). It survives upgrades, making it the right place for any data that must persist long-term. Libraries like `StableBTreeMap` (Rust) or the `core` persistent data structures (Motoko) let you work with stable memory through familiar abstractions.
+**Stable memory** is a separate address space accessed through the [system API](../reference/ic-interface-spec.md). It survives upgrades, making it the right place for any data that must persist long-term. Libraries like `StableBTreeMap` (Rust) or the [`core`](https://mops.one/core/docs) persistent data structures (Motoko) let you work with stable memory through familiar abstractions.
 
 After a message executes successfully, the system atomically commits all memory changes. If execution traps (fails), no changes are committed — the canister's state rolls back to what it was before that message.
 
