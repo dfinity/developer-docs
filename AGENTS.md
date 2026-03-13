@@ -59,11 +59,11 @@ bd update <id> --status closed && bd dolt push
 bd show <id> --json | jq -r .status                  # MUST print "closed"
 ```
 
-*Reclaim stale tasks:* If a task has been `in_progress` for >1 hour with no PR in notes, the previous agent likely crashed. Reclaim it:
+*Reclaim stale tasks:* If a task has been `in_progress` for >1 hour, the previous agent likely crashed. Reclaim it:
 ```bash
-bd list --status in_progress --json | jq '.[] | select(.notes == "" or .notes == null) | {id, title, updated_at}'
+bd list --status in_progress --json | jq '.[] | {id, title, notes, updated_at}'
 ```
-For each stale task: check how long it's been `in_progress` (compare `updated_at`). If >1 hour and no PR, it's safe to reclaim or reset to `open`.
+For each stale task: check how long it's been `in_progress` (compare `updated_at`). If >1 hour, it's safe to reclaim or reset to `open`. This applies to both fresh tasks and feedback fixes — an agent fixing PR feedback also sets the task to `in_progress`, so the same timeout catches crashed feedback-fix agents.
 
 **Priority A — Address PR feedback** (unblocks reviews, highest value)
 
@@ -72,15 +72,18 @@ Check for PRs with formal "changes requested" reviews OR unresolved comment thre
 # Formal change requests
 gh pr list --search "review:changes_requested" --json number,title,headRefName
 
-# PRs with unresolved comments (catches comment-only feedback)
+# PRs with comments (may contain feedback)
 gh pr list --state open --json number,title,headRefName,comments \
   --jq '.[] | select(.comments | length > 0) | {number, title, headRefName}'
 ```
-For PRs with comments but no formal review status, read the comments:
+For each PR with comments, read the timeline to determine if feedback is unaddressed:
 ```bash
 gh pr view <PR#> --comments
 ```
-If comments contain actionable feedback (bug reports, broken links, requested changes), treat them the same as a formal "changes requested" review. **Present the feedback to the user for confirmation before making changes** — the user decides which comments to address and how.
+
+**How to tell if feedback needs attention:** Read the PR comments chronologically. If the most recent substantive comment is a `<!-- feedback-addressed -->` reply (posted by an agent after fixing feedback), there is no unaddressed feedback — skip this PR. If there are review comments or feedback *after* the last `<!-- feedback-addressed -->` reply (or no such reply exists), there is unaddressed feedback to handle.
+
+If unaddressed feedback exists, treat it the same as a formal "changes requested" review.
 
 Cross-reference with Beads: the task should be in `draft` status. If it's `in_progress`, another agent is already on it — skip.
 
@@ -127,10 +130,30 @@ Three outcomes:
 
 - **Fresh task:** Follow the "Content authoring workflow" below (for content pages) or task-specific instructions in `migration-plan.md` (for infrastructure)
 - **PR feedback (formal reviews or comments):**
-  1. Read all feedback: `gh pr view <PR#> --comments` and `gh api repos/{owner}/{repo}/pulls/<PR#>/reviews --jq '.[] | {state, body}'`
-  2. **Present a summary of the feedback to the user** — list each actionable item and your proposed fix
-  3. **Wait for the user to confirm** which changes to make. Do not apply changes autonomously.
-  4. After confirmation, check out the branch, apply the fixes, and push to the existing branch
+  1. **Claim the task** — set Beads status from `draft` to `in_progress` and push. This prevents other agents from picking up the same feedback.
+     ```bash
+     bd update <id> --status in_progress && bd dolt push
+     bd show <id> --json | jq -r .status   # MUST print "in_progress"
+     ```
+  2. Read all feedback: `gh pr view <PR#> --comments` and `gh api repos/{owner}/{repo}/pulls/<PR#>/reviews --jq '.[] | {state, body}'`
+  3. **Present a summary of the feedback to the user** — list each actionable item and your proposed fix
+  4. **Wait for the user to confirm** which changes to make. Do not apply changes autonomously.
+  5. After confirmation, check out the branch, apply the fixes, and push to the existing branch
+  6. **Post a "Feedback addressed" reply** on the PR so future agents know this round of feedback is handled:
+     ```bash
+     gh pr comment <PR#> --body "$(cat <<'EOF'
+     <!-- feedback-addressed -->
+     Feedback addressed:
+     - <bullet list of what was fixed>
+     EOF
+     )"
+     ```
+  7. **Return task to `draft`:**
+     ```bash
+     bd update <id> --status draft && bd dolt push
+     bd show <id> --json | jq -r .status   # MUST print "draft"
+     git checkout main
+     ```
 
 ### Submitting
 
@@ -145,10 +168,17 @@ bd show <id> --json | jq -r .status   # MUST print "draft" — do not proceed un
 git checkout main                     # return to main so the workspace is clean for the next task
 ```
 
-**Changes requested fix:**
+**Changes requested fix** (also used after PR feedback fixes)**:**
 ```bash
 git fetch origin main && git rebase origin/main    # rebase as part of the fix
+npm run build                                      # must pass before pushing
 git push
+gh pr comment <PR#> --body "$(cat <<'EOF'
+<!-- feedback-addressed -->
+Feedback addressed:
+- <bullet list of what was fixed>
+EOF
+)"
 bd update <id> --status draft && bd dolt push
 bd show <id> --json | jq -r .status   # MUST print "draft" — do not proceed until verified
 git checkout main
