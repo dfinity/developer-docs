@@ -155,6 +155,40 @@ Three outcomes:
      git checkout main
      ```
 
+### Reviewing PRs
+
+When asked to review a PR, load the `technical-documentation` skill and the relevant icskill for the page topic first.
+
+**Mechanical checks:**
+1. **Internal links** — `ls` every `[text](path.md)` target. Flag any that don't resolve to an existing file.
+2. **External URLs** — verify against the linking rules table. Flag any guessed or wrong URLs (especially `docs.rs` crate links).
+3. **CLI commands** — verify all `icp` commands and flags against `.sources/icp-cli/docs/reference/cli.md`.
+4. **Frontmatter** — complete and consistent with the body (no contradictions in descriptions, time estimates, scope).
+5. **Content rules compliance** — no `dfx` references, no `.mdx`/JSX, code examples <30 lines inline, relative links with `.md` extension, `core` not `base` for Motoko.
+
+**Content quality checks:**
+6. **Content brief coverage** — read the stub's `<!-- Content Brief -->` and `<!-- Source Material -->` comments. Does the page address every point in the brief? Was the source material actually consulted? Flag significant gaps or divergences.
+7. **Completeness** — would a developer reading this page have enough information to accomplish the task or understand the concept? Flag missing prerequisites, unexplained terms, or logical gaps.
+8. **Accuracy** — cross-check technical claims (memory limits, latency numbers, API behavior) against `.sources/` material. Flag anything that looks wrong or outdated.
+9. **What's next links** — do they guide the reader to a logical next step? Are they all valid?
+
+**Post a single PR comment** using this format:
+
+```markdown
+## Review: <page title>
+
+### Must fix
+- **<issue>**: <description and suggested fix>
+
+### Suggestions
+- **<issue>**: <description>
+
+### Verified
+- <what checked out> (e.g., "All CLI commands verified against .sources/icp-cli/docs/reference/cli.md")
+```
+
+Omit any section that has no items. Every review must include the "Verified" section to show what was actually checked.
+
 ### Submitting
 
 **Fresh task:**
@@ -222,8 +256,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 ## Always (do these without asking)
 
 - Read `.docs-plan/decisions.md` before proposing structural changes
-- **Load the relevant icskill before any ICP-related work** — not just content writing. This includes CI workflows, `icp.yaml` config, deployment setup, and any task involving icp-cli commands or configuration. Load the skill first, then do the work.
-- Use the `technical-documentation` skill when drafting or reviewing docs (if available)
+- **Ensure all required skills are loaded** before starting any work (see "Skills (required)" section). This is a hard prerequisite — do not proceed without them.
 - Use icp-cli commands in all CLI examples — never `dfx`
 - Write plain `.md` files only — never `.mdx` or JSX
 - Include complete frontmatter (see CONTRIBUTING.md for schema)
@@ -420,12 +453,20 @@ When drafting a new docs page:
 | Rust CDK API (`ic-cdk`) | https://docs.rs/ic-cdk/latest/ic_cdk/ |
 | Rust stable structures (`ic-stable-structures`) | https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ |
 
-## Skills
+## Skills (required)
 
-When available, use these skills during docs work:
+Skills are a **hard prerequisite** — do not start any content work, review, or ICP-related task without them. At session start, verify skills are loaded. If not, install them:
 
-- **`technical-documentation`** — For drafting and reviewing docs quality
-- **icskills** (`npx skills add dfinity/icskills`) — 17 ICP development skills with canister IDs, tested code, and common pitfalls. Use the relevant skill when writing any feature guide.
+```bash
+# Technical documentation skill (drafting and reviewing docs quality)
+npx skills add https://github.com/vincentkoc/dotskills --skill technical-documentation
+
+# ICP development skills (canister IDs, code patterns, common pitfalls)
+npx skills add .sources/icskills
+```
+
+- **`technical-documentation`** — Load before drafting or reviewing any docs page
+- **icskills** (17 skills) — Load the relevant skill before writing any feature-specific content. Skills are in `.sources/icskills/` (pinned submodule). Use the skill that matches the page topic (e.g., `ckbtc` for Bitcoin guides, `multi-canister` for architecture pages, `icp-cli` for CLI guides).
 
 ## Frontmatter schema
 
