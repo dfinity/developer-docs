@@ -34,6 +34,62 @@ Documentation lives in `docs/` at the project root. Astro reads it via a symlink
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for content format, frontmatter schema, and review ownership.
 
+## Working with agents
+
+> **Migration-era workflow.** This agent-assisted setup is designed for the docs migration from [dfinity/portal](https://github.com/dfinity/portal). The tooling (Beads task coordination, source submodules, agent instructions) will be simplified or removed once the migration is complete.
+
+This project uses AI agents (Claude Code, Codex, etc.) to write documentation pages. Agents follow the workflow in [AGENTS.md](AGENTS.md). Human developers direct agents and review their output.
+
+### Workflow at a glance
+
+```
+Developer: "check for PR feedback"
+    │
+    ├─ Agent reads all comments (human + Copilot)
+    ├─ Agent evaluates each item, presents summary
+    ├─ Developer confirms which fixes to make
+    └─ Agent applies fixes, pushes, comments on PR
+```
+
+```
+Developer: "pick up new work"
+    │
+    ├─ Agent claims a task from Beads
+    ├─ Reads source material from .sources/
+    ├─ Writes content, verifies links and code
+    ├─ Builds, pushes, opens PR
+    └─ Developer reviews and merges
+```
+
+### Common commands to give an agent
+
+| What you want | What to tell the agent |
+|---------------|----------------------|
+| Check for PR feedback | "Check open PRs for unaddressed feedback" |
+| Write a new page | "Pick up the next ready task and write it" |
+| Fix a specific PR | "Address the feedback on PR #4" |
+| Rebase a PR | "Rebase PR #3 on main" |
+| Review a PR | "Review PR #5" |
+| See what's ready | "Run `bd ready` and show me the options" |
+
+### What agents handle vs. what developers handle
+
+| Agents | Developers |
+|--------|-----------|
+| Draft content from source material | Review content for accuracy |
+| Fix PR feedback after confirmation | Decide which feedback to accept |
+| Verify links, code snippets, CLI commands | Merge PRs |
+| Track task state in Beads | Bump source submodules |
+| Open PRs | Make structural decisions |
+
+### Setup
+
+```bash
+./scripts/setup.sh    # submodules, deps, Beads, build check
+```
+
+Then open Claude Code (or your preferred agent tool) in the repo root. The agent reads `AGENTS.md` automatically.
+
 ## For AI agents
 
 See [AGENTS.md](AGENTS.md) for the full workflow: orientation, rules, content authoring, and planning artifacts. `CLAUDE.md` symlinks to `AGENTS.md`.
