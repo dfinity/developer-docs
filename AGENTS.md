@@ -481,6 +481,11 @@ When drafting a new docs page:
 - Images go in `src/assets/images/` organized by section (see CONTRIBUTING.md for details)
 - When writing a page, decide case-by-case whether portal images are worth carrying over. Keep the existing hand-drawn visual style.
 - **Motoko standard library:** Always use `core` (`mops.one/core`), never `base`. The `core` library supersedes `base`. Link to the synced base→core migration guide for developers still on `base`.
+- **Diataxis content types** — match content to its section:
+  - `concepts/` — Explanations only. Describe *what* and *why*. No CLI commands, no step-by-step procedures. Link to the relevant guide for practical steps.
+  - `getting-started/` — Tutorials. Step-by-step with CLI commands. Linear, opinionated, complete.
+  - `guides/` — How-to guides. Task-oriented with CLI commands where relevant. May reference concepts for background.
+  - `reference/` — Specifications and lookups. Precise, complete, no tutorials.
 
 ## Linking rules
 

@@ -124,6 +124,12 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** Submodules pin exact commits, ensuring reproducible reads across agents and sessions. Bumps are explicit and reviewable in PRs.
 **Alternatives considered:** Document branch names only (agents still read different commits), local clones with documented paths (not portable), `gh api` fetches (slow, rate-limited, not reproducible)
 
+## 2026-03-13: Diataxis content-type rules — no CLI commands in concept pages
+
+**Context:** PR #2 (canisters concept page) included 6 `icp` CLI command blocks in the lifecycle section. Concept pages should explain *what* and *why*, not provide step-by-step procedures. The other concept pages (network-overview, app-architecture) correctly contained zero CLI commands, but the rule was implicit.
+**Decision:** Added explicit Diataxis content-type rules to both CLAUDE.md ("Content rules") and CONTRIBUTING.md ("Content types (Diataxis)"). `concepts/` pages must not contain CLI commands or step-by-step procedures — link to the relevant guide instead. `getting-started/` and `guides/` pages may include CLI commands. `reference/` pages use them sparingly for syntax examples only.
+**Rationale:** Making the rule explicit prevents future agents from mixing procedural content into explanatory pages. The Diataxis framework is already a stated design choice but the per-section implications for CLI command usage were not spelled out.
+
 ## 2026-03-13: Never link to internetcomputer.org/docs — it's being replaced
 
 **Context:** The quickstart page linked to `internetcomputer.org/docs/building-apps/...` for Candid concepts. These URLs come from icp-cli source material which references the old portal docs.

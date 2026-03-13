@@ -41,6 +41,17 @@ icskills: [ckbtc, evm-rpc]                    # Optional: related icskills skill
 
 ## Writing guidelines
 
+### Content types (Diataxis)
+
+Each top-level section has a specific purpose. Match your content accordingly:
+
+| Section | Type | Purpose | CLI commands? |
+|---------|------|---------|---------------|
+| `concepts/` | Explanation | What it is, how it works, why it matters | No — link to guides |
+| `getting-started/` | Tutorial | Step-by-step learning path | Yes — complete and linear |
+| `guides/` | How-to | Task-oriented instructions | Yes — where relevant |
+| `reference/` | Reference | Lookup information | Sparingly — for syntax examples only |
+
 ### Do
 - Write in plain, direct language
 - Use icp-cli commands for all CLI examples
