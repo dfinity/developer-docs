@@ -23,7 +23,7 @@ Canisters share the core properties of smart contracts: their execution is gover
 
 ## Execution model
 
-Canisters are WebAssembly module instances. You write code in any language that compiles to Wasm — Motoko, Rust, TypeScript, Python, and others — and the network runs it in a sandboxed Wasm virtual machine.
+Canisters are WebAssembly module instances. You write code in Motoko or Rust (the official CDKs), or community-supported languages like TypeScript and Python — any language that compiles to Wasm works. The network runs your code in a sandboxed Wasm virtual machine.
 
 Each canister runs on a single thread. It processes messages one at a time in sequence, which means there are no data races within a canister. However, many canisters execute concurrently across (and within) subnets, so the network as a whole achieves high throughput.
 
@@ -46,7 +46,7 @@ Update calls typically complete in 1–2 seconds. They cost cycles.
 
 ### Query calls
 
-Query calls read state without modifying it. A single replica handles the call and signs the response, so results come back in milliseconds. Because query responses are signed by one node rather than the entire subnet, they have weaker authenticity guarantees.
+Query calls read state without modifying it. A single node executes the call and returns the result directly, without consensus. Because the response is not threshold-signed by the subnet, query results should be treated as unverified unless you use certified variables. The tradeoff is speed — results come back in milliseconds.
 
 For applications that need authenticated reads (for example, a governance dapp showing proposal text that a user will vote on), you have two options:
 
@@ -69,7 +69,7 @@ Each canister has two storage regions:
 
 | Region | Max size | Persisted across upgrades | Access |
 |--------|----------|--------------------------|--------|
-| **Heap (Wasm) memory** | 6 GiB | No (cleared on upgrade, unless using orthogonal persistence) | Standard Wasm memory instructions |
+| **Heap (Wasm) memory** | 6 GiB | No (cleared on upgrade, unless using Motoko's orthogonal persistence) | Standard Wasm memory instructions |
 | **Stable memory** | 500 GiB | Yes | System API calls |
 
 **Heap memory** is standard Wasm linear memory. It holds your program's heap-allocated data — variables, data structures, and anything your code allocates at runtime. Both 32-bit and 64-bit Wasm memory are supported. Heap memory is cleared when you upgrade the canister's Wasm module.
