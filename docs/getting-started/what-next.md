@@ -3,11 +3,12 @@ title: "What Next?"
 description: "Choose your development path based on what you want to build"
 sidebar:
   order: 3
+icskills: []
 ---
 
 You have a running canister and understand how an ICP project is structured. The next step depends on what you want to build.
 
-Pick the path that matches your goal. Each one links to the first guide you should read, with a suggested progression from there. You can always come back and explore a different path later -- the guides are independent of each other.
+Pick the path that matches your goal. Each one links to the first guide you should read, with a suggested progression from there. You can always come back and explore a different path later -- the guides are independent of each other. Prefer to understand the platform before building? Jump to [Concepts](#understand-the-platform-first).
 
 ## Backend development
 
@@ -51,7 +52,7 @@ Chain fusion lets your canister hold native assets, sign transactions, and inter
 
 - [Ethereum integration](../guides/chain-fusion/ethereum.md) -- interact with EVM smart contracts and hold ETH
 - [Solana integration](../guides/chain-fusion/solana.md) -- connect to the Solana network
-- [Dogecoin integration](../guides/chain-fusion/dogecoin.md) -- work with Dogecoin using the same ECDSA patterns as Bitcoin
+- [Dogecoin integration](../guides/chain-fusion/dogecoin.md) -- work with Dogecoin using the same chain-key ECDSA signing as Bitcoin
 
 ## DeFi and tokens
 
