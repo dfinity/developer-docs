@@ -173,7 +173,7 @@ Three outcomes:
 
 - **Fresh task:** Follow the "Content authoring workflow" below (for content pages) or task-specific instructions in `migration-plan.md` (for infrastructure)
 - **PR feedback (formal reviews or comments):**
-  1. **Claim the task** — set Beads status from `draft` to `in_progress` and push. This prevents other agents from picking up the same feedback.
+  1. **Claim the task(s)** — set Beads status from `draft` to `in_progress` and push. This prevents other agents from picking up the same feedback. **When handling multiple PRs:** claim ALL tasks sequentially (see "Claiming multiple tasks" above) before launching any worktree agents or starting any fixes.
      ```bash
      bd update <id> --status in_progress && bd dolt push
      bd show <id> --json | jq -r .status   # MUST print "in_progress"
@@ -182,7 +182,7 @@ Three outcomes:
   3. **Evaluate each feedback item** — cross-check claims against `.sources/`. Is the reviewer's suggestion technically correct? Does the proposed fix actually improve the page? Flag any feedback you disagree with and explain why.
   4. **Present a summary of the feedback to the user** — list each actionable item with your assessment: agree (with proposed fix), partially agree (with alternative), or disagree (with reasoning). The user makes the final call.
   5. **Wait for the user to confirm** which changes to make. Do not apply changes autonomously.
-  6. After confirmation, check out the branch and apply the fixes
+  6. After confirmation, check out the branch and apply the fixes. **When fixing multiple PRs:** launch parallel worktree agents with specific instructions per PR (the parent has already done the analysis and gotten user confirmation — agents just execute).
   7. **Post-fix verification** — before pushing:
      1. Re-read the full page — does it still flow and make sense as a whole?
      2. `ls` any new or changed link targets to confirm they exist
