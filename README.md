@@ -61,18 +61,26 @@ Developer: "pick up new work"
     └─ Developer reviews and merges
 ```
 
-### Common commands to give an agent
+### Things you can ask an agent to do
 
-| What you want | What to tell the agent |
-|---------------|----------------------|
-| Check for PR feedback | "Check open PRs for unaddressed feedback" |
-| Write a new page | "Pick up the next ready task and write it" |
-| Fix a specific PR | "Address the feedback on PR #4" |
-| Rebase a PR | "Rebase PR #3 on main" |
-| Review a PR | "Review PR #5" |
-| See what's ready | "Run `bd ready` and show me the options" |
+- Check open PRs for unaddressed feedback
+- Write the next available page
+- Address feedback on a specific PR
+- Review a PR (checks links, code, CLI commands, technical accuracy against `.sources/`)
+- Rebase a PR on main
 
-Agent reviews check links, code snippets, CLI commands, frontmatter, content brief coverage, and technical accuracy against `.sources/`. See [AGENTS.md](AGENTS.md) for the full review checklist. Agent reviews complement but don't replace human review — use them to catch mechanical issues and surface potential inaccuracies before you read through the content yourself.
+Agent reviews complement but don't replace human review — use them to catch mechanical issues before you review the content yourself.
+
+### Task coordination (Beads)
+
+Tasks are tracked with [Beads](https://github.com/steveyegge/beads) (`bd`). Useful commands:
+
+```bash
+bd list                # all tasks
+bd list --status open  # available work
+bd ready               # unblocked tasks (dependencies met)
+bd show <id>           # task details
+```
 
 ### What agents handle vs. what developers handle
 
