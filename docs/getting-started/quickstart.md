@@ -53,7 +53,7 @@ This creates a full-stack project from the `hello-world` template with a Motoko 
 
 > **Prefer Rust?** Use `--define backend_type=rust` instead. You'll need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
 
-> **Backend only?** Create projects without a frontend by setting `--define frontend_type=none`.
+> **Backend only?** Use a language-specific template instead: `--subfolder rust` or `--subfolder motoko`. These templates have no frontend.
 
 Your new project contains:
 
