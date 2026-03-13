@@ -6,9 +6,17 @@ sidebar:
 icskills: []
 ---
 
-You have a running canister and understand how an ICP project is structured. The next step depends on what you want to build.
+Choose your next step based on what you want to build. Each path links to the first guide you should read, with a suggested progression from there. Not sure where to start? Most developers begin with [backend development](#backend-development).
 
-Pick the path that matches your goal. Each one links to the first guide you should read, with a suggested progression from there. You can always come back and explore a different path later -- the guides are independent of each other. Prefer to understand the platform before building? Jump to [Concepts](#understand-the-platform-first).
+## Understand the platform first
+
+If you prefer to learn the concepts before diving into guides, the [Concepts](../concepts/index.md) section explains how ICP works under the hood:
+
+- [Network overview](../concepts/network-overview.md) -- how the Internet Computer is structured
+- [Canisters](../concepts/canisters.md) -- the compute unit of ICP
+- [Orthogonal persistence](../concepts/orthogonal-persistence.md) -- how data survives canister upgrades
+- [Reverse gas model](../concepts/reverse-gas-model.md) -- why users don't pay gas fees
+- [Chain-key cryptography](../concepts/chain-key-cryptography.md) -- the cryptographic foundation enabling chain fusion
 
 ## Backend development
 
@@ -87,15 +95,5 @@ The Service Nervous System (SNS) lets you tokenize your application and create a
 ICP has a set of [icskills](https://skills.internetcomputer.org) -- structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, icskills give them the context they need.
 
 **Learn more:** [Agentic development](../guides/tools/agentic-development.md)
-
-## Understand the platform first
-
-If you prefer to learn the concepts before diving into guides, the [Concepts](../concepts/index.md) section explains how ICP works under the hood:
-
-- [Network overview](../concepts/network-overview.md) -- how the Internet Computer is structured
-- [Canisters](../concepts/canisters.md) -- the compute unit of ICP
-- [Orthogonal persistence](../concepts/orthogonal-persistence.md) -- how data survives canister upgrades
-- [Reverse gas model](../concepts/reverse-gas-model.md) -- why users don't pay gas fees
-- [Chain-key cryptography](../concepts/chain-key-cryptography.md) -- the cryptographic foundation enabling chain fusion
 
 <!-- Upstream: hand-written -->
