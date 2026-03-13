@@ -18,7 +18,7 @@ When you deploy a canister, it lands on one subnet and is replicated across ever
 
 - **Parallelism.** Subnets run in parallel, so the network scales by adding more subnets. Your canister's performance depends on its subnet's load, not the network's total load.
 - **Cross-subnet calls.** Canisters on different subnets can call each other through the network's messaging layer. These calls are slightly slower than calls within the same subnet (they require an extra consensus round), but they work transparently — you don't need to know which subnet a canister lives on.
-- **Subnet size and cost.** Subnets currently range from 13 to 40 nodes. Larger subnets provide stronger security guarantees (more nodes must collude to compromise state) but cost more cycles to run on. Most application canisters run on 13-node subnets.
+- **Subnet size and cost.** Subnets typically range from 13 to 40 nodes. Larger subnets provide stronger security guarantees (more nodes must collude to compromise state) but cost more cycles to run on. Most application canisters run on 13-node subnets.
 - **Finality.** ICP achieves finality in 1–2 seconds. Once your update call returns, the state change is committed and replicated — there are no probabilistic confirmations or reorgs.
 - **Geographic distribution.** Nodes within a subnet are distributed across data centers, operators, and jurisdictions to maximize decentralization. Localized subnets also exist for applications with data residency requirements.
 
@@ -41,9 +41,11 @@ Each subnet runs a four-phase consensus protocol:
 3. **Finalization.** Once a notarized block has no competing blocks, it is finalized.
 4. **Execution.** All nodes execute the messages in the finalized block deterministically, reaching the same resulting state.
 
-This produces one block per round (approximately every 1 second). Update calls complete within 1–2 seconds because finality is deterministic — there is no need to wait for multiple block confirmations.
+This produces one block per round (approximately every 1 second). Update calls achieve the rapid finality described above because there is no need to wait for multiple block confirmations.
 
 Query calls skip consensus entirely: a single node handles the request and returns its local state, which is why queries are fast (milliseconds) but provide weaker authenticity guarantees than update calls.
+
+For a deeper dive into the consensus protocol and other protocol internals, see the [Learn Hub](https://learn.internetcomputer.org).
 
 ## Boundary nodes
 
@@ -54,7 +56,7 @@ Boundary nodes are the entry point for all external traffic to ICP. They serve t
 
 Boundary nodes also cache query responses and provide TLS termination. They are not part of consensus and cannot modify canister state — they are routing infrastructure.
 
-From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or `icp` CLI, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](../reference/certified-variables.md) exist for applications that need authenticated query results.
+From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or `icp` CLI, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](../guides/backends/certified-variables.md) exist for applications that need authenticated query results.
 
 ## How it all fits together
 
@@ -65,7 +67,7 @@ Here is the path of a typical request:
 3. For update calls: the subnet's consensus protocol includes the message in a block, all nodes execute it, and the subnet signs the response. For query calls: a single node executes the call and signs the response.
 4. The boundary node returns the response to the user.
 
-The entire flow — from user request to signed response — typically takes 1–2 seconds for updates and under 100 milliseconds for queries.
+The entire flow — from user request to signed response — completes within the finality window described above for updates, and under 100 milliseconds for queries.
 
 ## Chain-key cryptography
 
