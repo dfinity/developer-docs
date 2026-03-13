@@ -9,6 +9,7 @@ on:
       - '.docs-plan/**'
       - '.claude/**'
       - '.beads/**'
+      - '.github/**'
   workflow_dispatch:
 
 concurrency:
