@@ -95,7 +95,7 @@ icp canister call backend greet '("World")'
 
 Output: `("Hello, World!")`
 
-The argument `'("World")'` uses [Candid](https://internetcomputer.org/docs/building-apps/interact-with-canisters/candid/candid-concepts) syntax — the interface description language for the Internet Computer. You can also omit the argument and `icp canister call` will prompt you interactively.
+The argument `'("World")'` uses [Candid](../reference/candid-spec.md) syntax — the interface description language for the Internet Computer. You can also omit the argument and `icp canister call` will prompt you interactively.
 
 ## Stop the network
 
@@ -109,7 +109,7 @@ icp network stop
 
 The hello-world template deploys two [canisters](../concepts/canisters.md) — smart contracts that run on the Internet Computer:
 
-1. **Backend canister** — Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](https://internetcomputer.org/docs/building-apps/interact-with-canisters/candid/candid-concepts) interface, making it callable from any client.
+1. **Backend canister** — Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](../reference/candid-spec.md) interface, making it callable from any client.
 
 2. **Frontend canister** — An asset canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
 
