@@ -181,10 +181,14 @@ During deployment:
 The asset canister exposes injected canister IDs through a cookie called `ic_env`. Your frontend JavaScript reads this cookie to discover backend canister IDs at runtime, with no code changes needed between environments:
 
 ```typescript
-import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
+import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-const canisterEnv = safeGetCanisterEnv();
-const backendId = canisterEnv?.["PUBLIC_CANISTER_ID:backend"];
+interface CanisterEnv {
+  "PUBLIC_CANISTER_ID:backend": string;
+  IC_ROOT_KEY: Uint8Array;
+}
+
+const env = getCanisterEnv<CanisterEnv>();
 ```
 
 ### Backend reads other backend IDs
@@ -194,14 +198,23 @@ Backend canisters read the injected variables directly:
 **Rust:**
 
 ```rust
-let backend_id = ic_cdk::api::env_var_value("PUBLIC_CANISTER_ID:other_canister");
+use candid::Principal;
+
+let backend_id = Principal::from_text(
+    &ic_cdk::api::env_var_value("PUBLIC_CANISTER_ID:other_canister")
+).unwrap();
 ```
 
 **Motoko:**
 
 ```motoko
 import Runtime "mo:core/Runtime";
-let otherId = Runtime.envVar("PUBLIC_CANISTER_ID:other_canister");
+import Principal "mo:core/Principal";
+
+switch (Runtime.envVar("PUBLIC_CANISTER_ID:other_canister")) {
+  case (?id) { Principal.fromText(id) };
+  case null { /* handle missing */ };
+};
 ```
 
 ## Binding generation
