@@ -3,6 +3,7 @@
     "allow": [
       "Bash(git fetch *)",
       "Bash(git checkout *)",
+      "Bash(git stash*)",
       "Bash(git rebase *)",
       "Bash(git add *)",
       "Bash(git commit *)",

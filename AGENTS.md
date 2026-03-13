@@ -57,7 +57,7 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
    git branch -D $(git branch | grep worktree-agent)  # delete backing branches
    ```
 
-**If agents fail with permission errors:** Check that `.claude/settings.json` exists and includes all required tools. The shared settings file is the authoritative source — per-user `~/.claude/projects/` settings don't apply to worktree agents (different path).
+**If agents fail with permission errors:** Check that `.claude/settings.json` exists and includes all required tools. The shared settings file is the authoritative source — per-user `~/.claude/projects/` settings don't apply to worktree agents (different path). **Important:** Permission patterns use prefix matching, so chained commands like `git stash && git rebase` won't match a `git stash*` pattern — the `&&` makes it a single shell string. Worktree agents should run git commands as **separate sequential tool calls**, not chained with `&&`.
 
 **Beads safety:** Worktree agents share the parent's `.beads/` directory and Dolt server. Concurrent `bd` commands can corrupt the Dolt journal.
 - **Only the parent agent** may run `bd` commands (claim, update, push, pull)
@@ -76,6 +76,8 @@ bd dolt start                         # start fresh server
 bd dolt pull                          # re-pull all state from git remote
 ```
 All task state is stored in `refs/dolt/data` in the git remote, so nothing is lost — only local state needs rebuilding.
+
+**Dolt restart after worktree work:** If you need to restart the Dolt server while worktrees exist, always ensure your working directory is the **main repo root** before running `bd dolt start`. If you restart from a worktree path, `bd` will serve the worktree's `.beads/` directory (which has no database), causing "database not found" errors.
 
 ### Session start
 
