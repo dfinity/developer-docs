@@ -162,15 +162,15 @@ When you build or deploy, `icp` creates a `.icp/` directory in your project root
 | Directory | Commit? | Why |
 |-----------|---------|-----|
 | `.icp/cache/` | No | Rebuilt automatically. Add to `.gitignore`. |
-| `.icp/data/` | Yes | Contains mainnet canister ID mappings. Losing these means you need to manually look up your deployed canister IDs. |
+| `.icp/data/` | Yes | Contains mainnet canister ID mappings. Deleting means `icp` won't know which canisters you've deployed (though the canisters still exist on-chain). |
 
 The hello-world template's `.gitignore` already excludes `.icp/cache/` and tracks `.icp/data/`.
 
 ## Canister discovery
 
-Canister IDs are assigned at deployment time and differ between environments. Hardcoding them creates problems when switching between local development and mainnet. `icp` solves this with automatic canister ID injection.
+Canister IDs are assigned at deployment time and differ between environments. Hardcoding them creates problems when switching between local development and mainnet. `icp` solves this with automatic canister ID injection — triggered by `icp deploy`.
 
-During `icp deploy`:
+During deployment:
 
 1. All canisters are created (or looked up) to get their IDs
 2. Each canister receives environment variables for every other canister: `PUBLIC_CANISTER_ID:<canister-name>`
