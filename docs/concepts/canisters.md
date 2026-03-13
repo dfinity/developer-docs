@@ -82,7 +82,7 @@ For a deeper dive, see [Orthogonal persistence](orthogonal-persistence.md).
 
 ## Canister IDs and principals
 
-Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](../reference/ic-interface-spec.md) — the same type of identifier used for users — and serves as the canister's address on the network.
+Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](https://learn.internetcomputer.org/hc/en-us/articles/34250491785108) — the same type of identifier used for users — and serves as the canister's address on the network.
 
 To send a message to a canister, you include its canister ID in the message header. The network routes the message to the correct subnet and places it in the canister's input queue for processing.
 
