@@ -179,10 +179,16 @@ Three outcomes:
      bd show <id> --json | jq -r .status   # MUST print "in_progress"
      ```
   2. Read all feedback: `gh pr view <PR#> --comments` and `gh api repos/{owner}/{repo}/pulls/<PR#>/reviews --jq '.[] | {state, body}'`
-  3. **Present a summary of the feedback to the user** — list each actionable item and your proposed fix
-  4. **Wait for the user to confirm** which changes to make. Do not apply changes autonomously.
-  5. After confirmation, check out the branch, apply the fixes, and push to the existing branch
-  6. **Post a "Feedback addressed" reply** on the PR so future agents know this round of feedback is handled:
+  3. **Evaluate each feedback item** — cross-check claims against `.sources/`. Is the reviewer's suggestion technically correct? Does the proposed fix actually improve the page? Flag any feedback you disagree with and explain why.
+  4. **Present a summary of the feedback to the user** — list each actionable item with your assessment: agree (with proposed fix), partially agree (with alternative), or disagree (with reasoning). The user makes the final call.
+  5. **Wait for the user to confirm** which changes to make. Do not apply changes autonomously.
+  6. After confirmation, check out the branch and apply the fixes
+  7. **Post-fix verification** — before pushing:
+     1. Re-read the full page — does it still flow and make sense as a whole?
+     2. `ls` any new or changed link targets to confirm they exist
+     3. If the fix moves content elsewhere, confirm the target page covers it (or flag with `<!-- TODO -->`)
+  8. Push to the existing branch
+  9. **Post a "Feedback addressed" reply** on the PR so future agents know this round of feedback is handled:
      ```bash
      gh pr comment <PR#> --body "$(cat <<'EOF'
      <!-- feedback-addressed -->
@@ -191,7 +197,7 @@ Three outcomes:
      EOF
      )"
      ```
-  7. **Return task to `draft`:**
+  10. **Return task to `draft`:**
      ```bash
      bd update <id> --status draft && bd dolt push
      bd show <id> --json | jq -r .status   # MUST print "draft"
