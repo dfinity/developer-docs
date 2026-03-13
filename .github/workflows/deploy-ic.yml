@@ -9,7 +9,6 @@ on:
       - '.docs-plan/**'
       - '.claude/**'
       - '.beads/**'
-      - '.github/workflows/deploy-ic.yml'
   workflow_dispatch:
 
 concurrency:
