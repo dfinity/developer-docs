@@ -6,21 +6,128 @@ sidebar:
 icskills: [icp-cli]
 ---
 
-TODO: Write content for this page.
+Deploy a full-stack app to a local Internet Computer network in under 5 minutes.
 
-<!-- Content Brief -->
-Walk the developer through installing icp-cli, scaffolding a project with `icp new my-project`, starting a local network with `icp network start -d` (background mode), deploying with `icp deploy`, and calling the canister. Single linear path with no decision forks. Should take under 10 minutes. Show the hello-world template as the default path, with footnotes for Rust-only and Motoko-only templates. **Verify all commands, flags, and installation instructions against the icp-cli docs (quickstart.md, guides/installation.md) and command reference at https://dfinity.github.io/icp-cli/ — do not guess CLI syntax.**
+## Prerequisites
 
-<!-- Source Material -->
-- Portal: building-apps/getting-started/quickstart.mdx
-- icp-cli: quickstart.md, guides/installation.md, guides/local-development.md
-- Template: hello-world (default `icp new` template)
-- Recipes: @dfinity/rust, @dfinity/motoko, @dfinity/asset-canister
-- Examples: hello_world (Rust), hello_world (Motoko)
+- [Node.js](https://nodejs.org/) LTS (v22+)
 
-<!-- Cross-Links -->
-- getting-started/project-structure -- next step after quickstart
-- ../guides/tools/agentic-development -- AI-assisted development (moved to guides/tools/)
-- getting-started/what-next -- routing page after completion
-- concepts/canisters -- what is a canister?
-- icp-cli docs: https://dfinity.github.io/icp-cli/
+> **Windows users:** You also need [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) and [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/). Run all commands inside WSL.
+
+## Install the tools
+
+```bash
+npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
+```
+
+This installs:
+
+- **icp-cli** — builds and deploys canisters on the Internet Computer
+- **ic-wasm** — optimizes WebAssembly modules for onchain deployment
+
+For Motoko projects, also install the Motoko package manager:
+
+```bash
+npm install -g ic-mops
+```
+
+Verify everything is installed:
+
+```bash
+icp --version
+ic-wasm --version
+```
+
+> **Alternative methods:** [Homebrew, shell scripts, and other options](https://dfinity.github.io/icp-cli/guides/installation.html) are also available.
+
+## Create a project
+
+```bash
+icp new my-project --subfolder hello-world \
+  --define backend_type=motoko \
+  --define frontend_type=react \
+  --define network_type=Default && cd my-project
+```
+
+This creates a full-stack project from the `hello-world` template with a Motoko backend and React frontend. The `--define` flags skip interactive prompts — without them, `icp new` asks you to choose a template, language, and network type.
+
+> **Prefer Rust?** Use `--define backend_type=rust` instead. You'll need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
+
+Your new project contains:
+
+| Path | Description |
+|------|-------------|
+| `icp.yaml` | Project configuration — lists your canisters |
+| `backend/` | Motoko source code with a `greet` function |
+| `frontend/` | React app that calls the backend |
+
+## Start a local network
+
+```bash
+icp network start -d
+```
+
+This starts a local Internet Computer replica in the background. The local network comes pre-funded — you can deploy immediately without setting up a wallet or acquiring cycles.
+
+## Deploy
+
+```bash
+icp deploy
+```
+
+This single command builds your Motoko code into WebAssembly, compiles the React frontend, creates canisters on the local network, and installs your code. When it finishes, you'll see output like:
+
+```
+Deployed canisters:
+  backend (Candid UI): http://...localhost:8000/?id=...
+  frontend: http://...localhost:8000
+```
+
+Open the **frontend URL** in your browser to see your app running. The **Candid UI URL** opens a web interface where you can test backend methods directly — try calling `greet` with your name.
+
+## Call your canister
+
+You can also interact with your backend from the terminal:
+
+```bash
+icp canister call backend greet '("World")'
+```
+
+Output: `("Hello, World!")`
+
+The argument `'("World")'` uses [Candid](https://internetcomputer.org/docs/building-apps/interact-with-canisters/candid/candid-concepts) syntax — the interface description language for the Internet Computer. You can also omit the argument and `icp canister call` will prompt you interactively.
+
+## Stop the network
+
+When you're done developing:
+
+```bash
+icp network stop
+```
+
+## What's happening under the hood
+
+The hello-world template deploys two [canisters](../concepts/canisters.md) — smart contracts that run on the Internet Computer:
+
+1. **Backend canister** — Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](https://internetcomputer.org/docs/building-apps/interact-with-canisters/candid/candid-concepts) interface, making it callable from any client.
+
+2. **Frontend canister** — An asset canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
+
+The `icp.yaml` file ties everything together:
+
+```yaml
+canisters:
+  - backend
+  - frontend
+```
+
+Each canister name maps to a directory containing its own `icp.yaml` with build configuration (recipe, source files, etc.). icp-cli handles the rest — compiling, optimizing, deploying, and wiring up canister-to-canister discovery.
+
+## Next steps
+
+- [Project structure](project-structure.md) — Understand how icp-cli projects are organized
+- [What next?](what-next.md) — Choose your path based on what you want to build
+- [Concepts: Canisters](../concepts/canisters.md) — Learn what canisters are and how they work
+- [icp-cli documentation](https://dfinity.github.io/icp-cli/) — Full CLI reference and guides
+
+<!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->
