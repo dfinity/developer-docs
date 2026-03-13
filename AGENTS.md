@@ -49,7 +49,12 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
 **How it works:**
 1. The parent agent claims tasks in Beads, then launches one background agent per PR using `isolation: "worktree"`
 2. Each agent gets its own git worktree (isolated copy of the repo), checks out its branch, makes edits, and commits
-3. The parent agent collects results, pushes branches, and posts feedback-addressed comments
+3. The parent agent collects results, pushes branches from worktrees (`git -C <worktree-path> push`), and posts feedback-addressed comments
+4. The parent agent cleans up worktrees after all work is done:
+   ```bash
+   git worktree remove <path>    # for each worktree
+   git worktree prune            # clean up stale references
+   ```
 
 **If agents fail with permission errors:** Check that `.claude/settings.json` exists and includes all required tools. The shared settings file is the authoritative source — per-user `~/.claude/projects/` settings don't apply to worktree agents (different path).
 
@@ -562,9 +567,15 @@ bd create "Found bug" -t bug -p 1 --deps discovered-from:<parent-id> --json
 The "Submitting" section above handles the normal flow (build → push → PR → Beads update → checkout main). This checklist covers anything that may remain at session end:
 
 1. **No uncommitted changes** — `git status` must show a clean working tree. If you have unfinished work, either commit + push it on the task branch, or stash and reset the task to `open` (see "Agent can't finish")
-2. **File issues** for discovered work with `bd create`
-3. **Beads is synced** — every status change was followed by `bd dolt push` and verified
-4. **On `main`** — you should already be on `main` from the submit step. If not: `git checkout main`
+2. **Clean up worktrees** — remove any worktrees created during the session:
+   ```bash
+   git worktree list                    # check for leftover worktrees
+   git worktree remove <path>           # remove each one
+   git worktree prune                   # clean up stale references
+   ```
+3. **File issues** for discovered work with `bd create`
+4. **Beads is synced** — every status change was followed by `bd dolt push` and verified
+5. **On `main`** — you should already be on `main` from the submit step. If not: `git checkout main`
 
 Work is NOT complete until all changes are pushed and Beads is synced. Never stop before pushing — that leaves work stranded locally.
 <!-- END BEADS INTEGRATION -->
