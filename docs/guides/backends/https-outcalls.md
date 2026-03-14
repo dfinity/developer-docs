@@ -180,6 +180,8 @@ icp canister call backend getIcpPrice
 
 HTTPS outcalls work on the local replica — icp-cli proxies requests through the local HTTP gateway.
 
+> **Note:** The local replica runs a single node, so all responses reach consensus automatically — even without a transform function. Make sure to verify your transform produces identical output for varying inputs (different headers, timestamps) before deploying to a multi-node subnet, where mismatches cause "no consensus" errors.
+
 ## What's next
 
 - [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md) — how consensus works for outcalls
