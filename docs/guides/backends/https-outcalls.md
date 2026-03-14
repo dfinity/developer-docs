@@ -8,7 +8,7 @@ icskills: [https-outcalls]
 
 Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications — all from onchain code.
 
-HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. Both `GET`, `HEAD`, and `POST` methods are supported. Only HTTPS (not plain HTTP) is supported.
+HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. Only HTTPS (not plain HTTP) is supported.
 
 For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md).
 
@@ -105,7 +105,6 @@ Add the following dependencies to `Cargo.toml`:
 [dependencies]
 ic-cdk = "0.19"
 candid = "0.10"
-serde_json = "1"
 ```
 
 For a complete working project, see the [send_http_get example](https://github.com/dfinity/examples/tree/master/rust/send_http_get) (Rust) or [Motoko version](https://github.com/dfinity/examples/tree/master/motoko/send_http_get).
@@ -175,7 +174,7 @@ Unused cycles are refunded. See [Cycles Costs](../../reference/cycles-costs.md) 
 ```bash
 icp network start -d
 icp deploy backend
-icp canister call backend getIcpPrice
+icp canister call backend getIcpPrice  # Rust: get_icp_price
 ```
 
 HTTPS outcalls work on the local replica — icp-cli proxies requests through the local HTTP gateway.
