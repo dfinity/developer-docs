@@ -6,7 +6,7 @@ sidebar:
 icskills: [https-outcalls]
 ---
 
-Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch off-chain data, call REST APIs, or send notifications — all from onchain code.
+Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications — all from onchain code.
 
 HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. Both `GET`, `HEAD`, and `POST` methods are supported. Only HTTPS (not plain HTTP) is supported.
 
