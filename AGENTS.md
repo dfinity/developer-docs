@@ -88,14 +88,7 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
 - **NEVER run `bd dolt push` after a re-init** without verifying the local DB has the correct data — pushing an empty or corrupted DB overwrites the remote
 - **NEVER delete `refs/dolt/data`** — this is the only remote copy of all task state. Do not run `git push origin --delete refs/dolt/data` or any command that modifies this ref directly.
 
-**Dolt recovery:** If the Dolt journal becomes corrupted (symptoms: `circuit breaker is open`, `corrupted journal`, `invalid journal record length`):
-```bash
-pkill -9 -f dolt                      # kill all dolt processes
-rm -rf .beads/dolt                    # remove corrupted data
-bd dolt start                         # start fresh server
-bd dolt pull                          # re-pull all state from git remote
-```
-All task state is stored in `refs/dolt/data` in the git remote, so nothing is lost — only local state needs rebuilding.
+**Dolt recovery:** If the Dolt journal becomes corrupted (symptoms: `circuit breaker is open`, `corrupted journal`, `invalid journal record length`), or the local DB is stale after another agent updated the remote, use the clean recovery procedure in "Session start" below.
 
 **Dolt restart after worktree work:** If you need to restart the Dolt server while worktrees exist, always ensure your working directory is the **main repo root** before running `bd dolt start`. If you restart from a worktree path, `bd` will serve the worktree's `.beads/` directory (which has no database), causing "database not found" errors.
 
@@ -247,21 +240,7 @@ Three outcomes:
      3. If the fix moves content elsewhere, confirm the target page covers it (or flag with `<!-- TODO -->`)
   8. Push to the existing branch
   9. **Update the PR description** to reflect the current state of the page. The description is used as the squash-merge commit message, so it must accurately describe what the PR delivers — not what the original draft contained. Keep the "Summary" and "Sync recommendation" sections (see PR template in "Submitting"). Use `gh pr edit <PR#> --body "..."` to update it.
-  10. **Post a "Feedback addressed" reply** on the PR so future agents know this round of feedback is handled:
-     ```bash
-     gh pr comment <PR#> --body "$(cat <<'EOF'
-     <!-- feedback-addressed -->
-     Feedback addressed:
-     - <bullet list of what was fixed>
-     EOF
-     )"
-     ```
-  11. **Return task to `draft`:**
-     ```bash
-     bd update <id> --status draft && bd dolt push
-     bd show <id> --json | jq -r .status   # MUST print "draft"
-     git checkout main
-     ```
+  10. Submit using the "Changes requested fix" flow in "Submitting" below (build, push, post feedback-addressed comment, return task to `draft`).
 
 ### Reviewing PRs
 
@@ -471,15 +450,7 @@ Read these when writing specific pages:
 
 ## Content authoring workflow
 
-Read `.docs-plan/content-authoring.md` before writing any page. It covers the full workflow: reading stubs and source material, writing content, code snippet verification, sync recommendations, and linking rules.
-
-Key rules that apply everywhere (not just content authoring):
-- **NEVER reference `dfx`** — it is deprecated. Use icp-cli instead.
-- **Spelling:** "onchain" and "offchain" (no hyphens). Use "icp-cli" in prose; `icp` only in code blocks.
-- Plain `.md` only — never `.mdx` or JSX.
-- Relative paths with `.md` extension for internal links. Never absolute paths.
-- `core` not `base` for Motoko standard library.
-- Code examples: <30 lines inline, >30 lines link to `dfinity/examples`.
+Read `.docs-plan/content-authoring.md` before writing any page. It covers the full workflow: reading stubs and source material, writing content, code snippet verification, sync recommendations, linking rules, and external docs. The Always/Never rules above also apply to all content work.
 
 ## Skills (required)
 
