@@ -8,7 +8,7 @@ icskills: [https-outcalls]
 
 Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications — all from onchain code.
 
-HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. Only HTTPS (not plain HTTP) is supported.
+HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. `HEAD` works identically to `GET` but returns only headers — useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
 
 For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md).
 
@@ -18,6 +18,7 @@ Because a canister runs on a subnet of multiple replica nodes, every node indepe
 
 1. Every HTTPS outcall **must include a transform function** — a query method exported by your canister that strips non-deterministic fields (timestamps, request IDs, dynamic headers) from the response.
 2. Cycles to cover the request cost **must be attached** at call time. If you use the CDK wrappers shown below, this is handled automatically.
+3. The **maximum response body is 2MB** (2,097,152 bytes). Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound — omitting it defaults to 2MB and charges cycles accordingly (~21.5 billion cycles on a 13-node subnet).
 
 ## GET request
 
@@ -49,7 +50,6 @@ persistent actor {
       body = null;
       method = #get;
       transform = ?{ function = transform; context = Blob.fromArray([]) };
-      is_replicated = null;
     };
     // Call.httpRequest auto-computes and attaches the required cycles
     let response = await Call.httpRequest(request);
@@ -89,7 +89,6 @@ async fn get_icp_price() -> String {
             function: TransformFunc::new(canister_self(), "transform".to_string()),
             context: vec![],
         }),
-        is_replicated: None,
     };
     // http_request auto-attaches the required cycles
     match http_request(&request).await {
@@ -116,34 +115,37 @@ POST requests work the same way, with two additional considerations:
 - **Idempotency:** Because all replicas independently send the same request, a non-idempotent endpoint (e.g., "create order") will be called once per replica — typically 13 times on a 13-node subnet. Use an idempotency key header so the server can deduplicate.
 - **Transform:** The POST transform often needs to strip the response body too, since some servers include per-request fields (like the caller's IP) in the response body.
 
-```motoko
-public query func transformPost({
-  context : Blob;
-  response : IC.http_request_result;
-}) : async IC.http_request_result {
-  // Strip both headers and body — httpbin.org echoes sender IP in body
-  { response with headers = []; body = Blob.fromArray([]) };
-};
+Add these methods inside the actor from the GET example above:
 
-public func postData(payload : Text) : async Text {
-  let request : IC.http_request_args = {
-    url = "https://httpbin.org/post";
-    max_response_bytes = ?(50_000 : Nat64);
-    headers = [
-      { name = "Content-Type"; value = "application/json" },
-      { name = "Idempotency-Key"; value = "unique-request-id-12345" },
-    ];
-    body = ?Text.encodeUtf8(payload);
-    method = #post;
-    transform = ?{ function = transformPost; context = Blob.fromArray([]) };
-    is_replicated = null;
+```motoko
+  // POST transform: also discard the body because httpbin.org includes the
+  // sender's IP in the "origin" field, which differs across replicas.
+  public query func transformPost({
+    context : Blob;
+    response : IC.http_request_result;
+  }) : async IC.http_request_result {
+    { response with headers = []; body = Blob.fromArray([]) };
   };
-  let response = await Call.httpRequest(request);
-  if (response.status == 200) "POST successful" else "POST failed";
-};
+
+  public func postData(payload : Text) : async Text {
+    let request : IC.http_request_args = {
+      url = "https://httpbin.org/post";
+      max_response_bytes = ?(50_000 : Nat64);
+      headers = [
+        { name = "Content-Type"; value = "application/json" },
+        { name = "Idempotency-Key"; value = "unique-request-id-12345" },
+      ];
+      body = ?Text.encodeUtf8(payload);
+      method = #post;
+      transform = ?{ function = transformPost; context = Blob.fromArray([]) };
+    };
+    let response = await Call.httpRequest(request);
+
+    if (response.status == 200) "POST successful" else "POST failed";
+  };
 ```
 
-For a complete example, see [send_http_post](https://github.com/dfinity/examples/tree/master/rust/send_http_post).
+For complete working projects, see [send_http_post](https://github.com/dfinity/examples/tree/master/rust/send_http_post) (Rust) or [Motoko version](https://github.com/dfinity/examples/tree/master/motoko/send_http_post).
 
 ## Transform functions
 
@@ -169,6 +171,14 @@ For reference, on a 13-node subnet:
 
 Unused cycles are refunded. See [Cycles Costs](../../reference/cycles-costs.md) for the full pricing table.
 
+## Limitations and pitfalls
+
+- **Public endpoints only.** HTTPS outcalls can only reach public internet endpoints. Localhost (`127.0.0.1`), private IP ranges (`10.x.x.x`, `192.168.x.x`), and other non-routable addresses are blocked.
+- **`Host` header may be required.** Some API endpoints require the `Host` header to be explicitly set. The IC does not automatically set it from the URL — add it to your headers if the server requires it.
+- **~30-second timeout.** If the external server does not respond within the timeout, the call traps. Design for failure and handle errors gracefully.
+
+> **Non-replicated (flexible) outcalls** — a mode where only a single replica makes the request instead of all replicas — is under development. This page will be updated when the feature is available. <!-- See dfinity/portal#5890 for the upstream tracking PR. -->
+
 ## Testing locally
 
 ```bash
@@ -184,6 +194,7 @@ HTTPS outcalls work on the local replica — icp-cli proxies requests through th
 ## What's next
 
 - [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md) — how consensus works for outcalls
+- [Exchange Rate Canister (XRC)](https://github.com/dfinity/exchange-rate-canister) — a production service powered by HTTPS outcalls that fetches cryptocurrency and fiat exchange rates
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md) — the EVM RPC canister uses HTTPS outcalls under the hood
 - [Cycles Costs](../../reference/cycles-costs.md) — outcall pricing details
 
