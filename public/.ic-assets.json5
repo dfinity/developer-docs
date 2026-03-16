@@ -14,6 +14,20 @@
     }
   },
   {
+    // Agent-friendly docs: markdown endpoints and llms.txt
+    // Explicit charset ensures correct rendering in browsers.
+    "match": "**/*.md",
+    "headers": {
+      "Content-Type": "text/markdown; charset=utf-8"
+    }
+  },
+  {
+    "match": "llms.txt",
+    "headers": {
+      "Content-Type": "text/plain; charset=utf-8"
+    }
+  },
+  {
     // Hashed assets — cache forever
     "match": "_astro/**/*",
     "headers": {
