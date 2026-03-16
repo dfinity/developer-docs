@@ -6,20 +6,198 @@ sidebar:
 icskills: [multi-canister]
 ---
 
-TODO: Write content for this page.
+Canisters on the Internet Computer communicate by calling each other's functions. A caller canister sends a request message containing the method name, arguments, and optionally attached cycles. The callee executes the method and returns a response. If the callee cannot be reached or a resource limit is hit, the system produces a reject response instead.
 
-<!-- Content Brief -->
-Call functions on other canisters from your canister code. Start with the query vs update decision: queries are fast (~200ms), free, and run on a single node but aren't replicated (caller must trust the node); updates go through consensus (~2s), cost cycles, and modify state reliably. Explain when to use each and the trust tradeoffs. Cover canister discovery (env vars, ic_env cookie), error handling (reject codes, trap handling), calling third-party canisters, and the pub/sub pattern. Show Rust (ic_cdk::call) and Motoko (async message sends) patterns for both query and update calls. Explain the 2MB response limit. Link to parallel-calls for composite queries (the advanced query pattern) and to certified-variables for making query responses verifiable.
+This guide covers making inter-canister calls in both Motoko and Rust, choosing between query and update calls, handling errors, and avoiding common pitfalls. For the messaging model behind these calls, see [Canisters](../../concepts/canisters.md).
 
-<!-- Source Material -->
-- Portal: building-apps/integrations/advanced-calls.mdx, advanced/using-third-party-canisters.mdx, developer-tools/cdks/rust/intercanister.mdx
-- icp-cli: concepts/canister-discovery.md
-- icskills: multi-canister
-- Examples: inter-canister-calls (Rust), pub-sub (Motoko), composite_query (both)
+## Query vs update calls
 
-<!-- Cross-Links -->
-- concepts/canisters -- messaging model
-- guides/canister-calls/candid -- interface definitions
-- guides/canister-calls/parallel-calls -- concurrent calls and composite queries
-- guides/backends/certified-variables -- making query responses verifiable
-- guides/security/inter-canister-calls -- async safety
+There are two types of canister methods, and the choice affects latency, cost, and trust:
+
+| | Query | Update |
+|---|---|---|
+| **Latency** | ~200ms | ~2s |
+| **Cycle cost** | Free | Costs cycles |
+| **Execution** | Single replica | Full consensus |
+| **State changes** | Not persisted | Persisted |
+| **Trust model** | Caller trusts one replica | Replicated and verifiable |
+
+**Use query calls** when reading data where the caller trusts the subnet (or will verify the response independently). Queries are fast and free, but the response comes from a single node and is not replicated.
+
+**Use update calls** when modifying state, transferring cycles, or when the caller needs a consensus-backed guarantee that the call was executed correctly.
+
+To make query responses verifiable without the cost of update calls, see [Certified Variables](../backends/certified-variables.md). For running multiple query calls in parallel, see [Parallel Calls and Composite Queries](parallel-calls.md).
+
+## Making calls in Motoko
+
+Import another canister by name (the name must match your `icp.yaml` configuration) and call its methods with `await`:
+
+```motoko
+import Counter "canister:counter";
+
+persistent actor {
+  public func getCount() : async Nat {
+    await Counter.get()
+  };
+
+  public func incrementAndGet() : async Nat {
+    await Counter.increment();
+    await Counter.get()
+  };
+};
+```
+
+### Error handling in Motoko
+
+Wrap inter-canister calls in `try`/`catch` to handle rejects:
+
+```motoko
+import Counter "canister:counter";
+import Error "mo:base/Error";
+import Runtime "mo:base/Runtime";
+
+persistent actor {
+  public shared ({ caller }) func safeIncrement() : async Result.Result<Nat, Text> {
+    let originalCaller = caller;
+
+    try {
+      await Counter.increment();
+      let count = await Counter.get();
+      #ok(count)
+    } catch (e : Error.Error) {
+      #err("Counter call failed: " # Error.message(e))
+    };
+  };
+};
+```
+
+Note that `caller` is captured before the first `await`. In Motoko, `public shared ({ caller })` binds the caller at method entry, so it is safe to use after `await`. However, binding it to a local variable makes the intent explicit.
+
+## Making calls in Rust
+
+The Rust CDK provides `Call::unbounded_wait` and `Call::bounded_wait` to call other canisters. Both return a builder that lets you attach arguments, cycles, and timeout settings.
+
+### Basic call
+
+```rust
+use candid::{Nat, Principal};
+use ic_cdk::call::{Call, CallErrorExt};
+use ic_cdk_macros::update;
+
+#[update]
+pub async fn call_get_and_set(counter: Principal, new_value: Nat) -> Nat {
+    Call::unbounded_wait(counter, "get_and_set")
+        .with_arg(&new_value)
+        .await
+        .expect("Failed to get the old value")
+        .candid::<Nat>()
+        .expect("Candid decoding failed")
+}
+```
+
+### Error handling in Rust
+
+The call returns a `Result` where the error type distinguishes **clean rejects** (the call definitively did not execute) from **non-clean rejects** (the outcome is unknown):
+
+```rust
+use candid::Principal;
+use ic_cdk::call::{Call, CallErrorExt};
+use ic_cdk_macros::update;
+
+#[update]
+pub async fn call_increment(counter: Principal) -> Result<(), String> {
+    match Call::unbounded_wait(counter, "increment").await {
+        Ok(_) => Ok(()),
+        Err(e) if !e.is_clean_reject() => {
+            Err(format!("Non-clean reject: {:?}. Outcome unknown.", e))
+        }
+        Err(e) => {
+            Err(format!("Clean reject: {:?}. Counter was not incremented.", e))
+        }
+    }
+}
+```
+
+The distinction matters for correctness:
+
+- **Clean reject** -- the callee never executed the method. Safe to retry.
+- **Non-clean reject** -- the callee may or may not have executed. Use idempotent APIs or provide a separate endpoint to query the outcome.
+
+## Bounded vs unbounded wait
+
+Every inter-canister call must choose a wait strategy:
+
+### Unbounded wait
+
+```rust
+Call::unbounded_wait(callee, "method")
+```
+
+The caller waits until the callee produces a response. Response delivery (including rejects) is guaranteed. Use this for calls to canisters you control, where you trust the callee to respond in a timely manner.
+
+### Bounded wait
+
+```rust
+use ic_cdk::call::Call;
+
+Call::bounded_wait(callee, "method")
+    .change_timeout(1)
+    .await
+```
+
+The caller may receive a `SYS_UNKNOWN` response after the timeout expires or if the subnet runs low on resources. Response delivery is best-effort. Use this for calls to third-party or untrusted canisters.
+
+**Upgrade safety:** unbounded wait calls may prevent your canister from upgrading until the callee responds. If the callee is unresponsive or malicious, your canister could be stuck indefinitely. Prefer bounded wait when calling canisters you do not control.
+
+## Important caveats
+
+### 2 MB payload limit
+
+Request and response payloads are each limited to 2 MB. For larger data transfers, chunk the payload across multiple calls.
+
+### Non-atomic execution across await
+
+Update methods that make inter-canister calls are **not** executed atomically. Code before `await` runs as one atomic message; code after `await` runs as a separate message. If the callback traps after `await`:
+
+- State changes made **before** `await` are persisted
+- State changes made **after** `await` are rolled back
+
+This means a trap in your callback does not undo work done before the call. Design accordingly -- use idempotent operations and check postconditions.
+
+### Caller identity across await (Rust)
+
+In Rust, `ic_cdk::api::msg_caller()` returns the caller of the **current message**, not the original ingress caller. After an `await`, the "caller" is the callee returning a response. Always bind the caller to a local variable before the first `await`:
+
+```rust
+#[update]
+pub async fn transfer(to: Principal, amount: Nat) -> Result<(), String> {
+    let caller = ic_cdk::api::msg_caller(); // Bind BEFORE await
+    // ... use `caller` after await points
+    Ok(())
+}
+```
+
+In Motoko, `public shared ({ caller })` captures the original caller at method entry, so this issue does not apply.
+
+### Reentrancy
+
+Inter-canister calls are not atomic, which creates reentrancy risks. Between your outgoing call and the callback, other messages (including calls from the same canister) can execute and modify state. This can lead to double-spending or other inconsistencies.
+
+Mitigate with locking patterns: set a flag before the call, clear it in the callback. For detailed guidance, see [Inter-Canister Call Security](../security/inter-canister-calls.md).
+
+### canister_inspect_message does not apply
+
+The `canister_inspect_message` hook is only called for ingress messages (calls from external users). It is **not** called for inter-canister calls. Do not rely on it for access control between canisters -- perform authorization checks inside the method body instead.
+
+### Cross-subnet latency
+
+Calls between canisters on the same subnet complete within a single round. Cross-subnet calls require 2-3 consensus rounds and are noticeably slower. Keep this in mind when designing multi-canister architectures.
+
+## What's next
+
+- [Parallel Calls and Composite Queries](parallel-calls.md) -- make multiple calls concurrently and use composite queries for efficient read patterns
+- [Candid](candid.md) -- define the interface your canister exposes for inter-canister calls
+- [Certified Variables](../backends/certified-variables.md) -- make query responses verifiable without update call overhead
+- [Inter-Canister Call Security](../security/inter-canister-calls.md) -- reentrancy guards, async safety patterns, and trust considerations
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, and multi-canister icskill -->
