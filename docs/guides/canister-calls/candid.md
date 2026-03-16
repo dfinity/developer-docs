@@ -245,7 +245,7 @@ The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types int
 
 ```bash
 # Using @icp-sdk/bindgen (recommended for JS/TS projects)
-npx @icp-sdk/bindgen --canister my_canister
+npx @icp-sdk/bindgen --did-file my_canister.did --out-dir src/declarations/my_canister
 
 # Or using didc directly
 didc bind my_canister.did -t js
@@ -346,4 +346,4 @@ Using `reserved` prevents future developers from accidentally reusing the field'
 - [Binding generation](binding-generation.md) — auto-generate typed clients from `.did` files
 - [Candid specification](../../reference/candid-spec.md) — full type reference and subtyping rules
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files) and docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files) and docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx. Type mappings verified against .sources/candid (spec), .sources/motoko (IDL-Motoko.md), and .sources/cdk-rs. -->
