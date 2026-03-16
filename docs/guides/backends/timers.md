@@ -26,7 +26,7 @@ import Time "mo:core/Time";
 let now_ns : Int = Time.now();
 ```
 
-System time is the same for all messages in the same round. It does not advance within a single message execution.
+System time is constant within a single message execution — it does not advance mid-call. Different messages in the same round may observe different timestamps.
 
 ## One-shot timers
 
