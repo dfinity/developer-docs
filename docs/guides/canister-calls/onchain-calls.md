@@ -53,8 +53,8 @@ Wrap inter-canister calls in `try`/`catch` to handle rejects:
 
 ```motoko
 import Counter "canister:counter";
-import Error "mo:base/Error";
-import Runtime "mo:base/Runtime";
+import Error "mo:core/Error";
+import Result "mo:core/Result";
 
 persistent actor {
   public shared ({ caller }) func safeIncrement() : async Result.Result<Nat, Text> {
