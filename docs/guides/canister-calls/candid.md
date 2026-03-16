@@ -91,6 +91,8 @@ Candid has a fixed set of types that map to native types in each supported langu
 | `record { ... }` | `{ field : T; ... }` | `struct` (with `CandidType` derive) | `Object` |
 | `variant { ... }` | `{ #tag : T; ... }` | `enum` (with `CandidType` derive) | `{ tag: value }` |
 
+> **JavaScript `opt T` tip:** The `[value] | []` representation is the raw IDL encoding. In practice, use `fromNullable()` and `toNullable()` from `@dfinity/utils` to convert between `opt` values and idiomatic JavaScript (`value | undefined`).
+
 For the complete type reference, including subtyping rules, see the [Candid specification](../../reference/candid-spec.md).
 
 ## Generating `.did` files
@@ -132,13 +134,6 @@ cargo build --release --target wasm32-unknown-unknown --package my_canister
 
 # Extract the .did file
 candid-extractor target/wasm32-unknown-unknown/release/my_canister.wasm > my_canister.did
-```
-
-Alternatively, the [`generate-did`](https://crates.io/crates/generate-did) tool combines the build and extraction into a single command:
-
-```bash
-cargo install generate-did
-generate-did my_canister
 ```
 
 Reference the generated `.did` file in your `icp.yaml`:
@@ -246,7 +241,17 @@ icp canister call my_canister set_address '("Alice", record { street = "123 Main
 
 ### From JavaScript
 
-The [JS SDK](https://js.icp.build) translates Candid types into native JavaScript values. A canister's generated declarations export a `createActor` function and an `idlFactory` that describes the interface:
+The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types into native JavaScript values. To call a canister from JavaScript, you need typed declarations generated from the `.did` file. Generate them using [`@icp-sdk/bindgen`](https://js.icp.build/bindgen) or the `didc` CLI:
+
+```bash
+# Using @icp-sdk/bindgen (recommended for JS/TS projects)
+npx @icp-sdk/bindgen --canister my_canister
+
+# Or using didc directly
+didc bind my_canister.did -t js
+```
+
+The generated declarations export a `createActor` function and an `idlFactory` that describes the interface:
 
 ```javascript
 import { createActor } from "./declarations/my_canister";
@@ -256,12 +261,6 @@ const canister = createActor(canisterId, { agentOptions: { host } });
 // Call a method — arguments and return values are native JS types
 const greeting = await canister.greet("World");
 console.log(greeting); // "Hello, World!"
-```
-
-The `idlFactory` is generated from the `.did` file during the build process. You can also generate JavaScript bindings manually using the `didc` CLI:
-
-```bash
-didc bind my_canister.did -t js
 ```
 
 ### From another canister
