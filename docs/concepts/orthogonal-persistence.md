@@ -102,10 +102,11 @@ Key properties of Rust stable structures:
 
 - **`MemoryManager`** partitions stable memory into virtual memories, each assigned a unique `MemoryId`
 - **`StableBTreeMap`**, **`StableCell`**, and **`StableLog`** are the primary data structures, each backed by a virtual memory region
+- **Custom types need `Storable`** -- keys require `Storable + Ord`, values require `Storable`. Primitive types (`u64`, `String`, `Vec<u8>`) implement it automatically
 - **`#[init]` and `#[post_upgrade]`** handlers must be defined. Stable structures auto-restore, so `post_upgrade` only needs to reinitialize transient state (timers, caches)
 - **No `pre_upgrade` serialization needed** -- data is already in stable memory
 
-For full implementation patterns, see the [Rust stable structures](../languages/rust/stable-structures.md) guide.
+For complete implementation patterns including `Storable` implementations for custom types, see the [Rust stable structures](../languages/rust/stable-structures.md) guide.
 
 ## The dangerous pattern: heap serialization
 
