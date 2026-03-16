@@ -443,11 +443,7 @@ Some submodules (`portal`, `examples`) contain **nested submodules** of their ow
 
 - **Always read source material from `.sources/`** — never from local clones, `gh api`, or your training data
 - **Stub shorthand mapping:** `Portal: building-apps/foo.mdx` → `.sources/portal/docs/building-apps/foo.mdx`, `icp-cli: guides/bar.md` → `.sources/icp-cli/docs/guides/bar.md`
-- **CLI command verification:** Check `.sources/icp-cli/docs/reference/cli.md` — do not guess flags or syntax
-- **Motoko syntax verification:** Check `.sources/motoko/` (compiler) for system function names, keywords, and language features. Check `.sources/motoko-core/` for `mo:core` module APIs and signatures.
-- **Rust CDK verification:** Check `.sources/cdk-rs/` for `ic-cdk` API signatures, management canister types, and timer APIs.
-- **Candid verification:** Check `.sources/candid/` for the Candid spec (`candid/spec/Candid.md`), type system rules, and `didc` command behavior.
-- **Response verification:** Check `.sources/response-verification/` for certified variables, certificate tree implementations, and response verification patterns.
+- **Consult relevant repos before writing.** The stub's `<!-- Source Material -->` lists portal pages, but also check the upstream source repos that cover your page's topic. For any page with Motoko code, read the API from `motoko-core`; for Rust code, check `cdk-rs`; for Candid content, check `candid`; for certified data or query verification, check `response-verification`; for CLI commands, check `icp-cli`. These repos are the ground truth — use them to write accurate content, not just to verify after the fact.
 - **Do not modify `.sources/`** — these are read-only references. Edits go to the upstream repos.
 
 ### Bumping submodules
