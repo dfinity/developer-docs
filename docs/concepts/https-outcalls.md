@@ -28,9 +28,13 @@ When a canister calls the management canister's `http_request` method, the follo
 
 4. **The transform function normalizes responses.** The canister provides a transform function (a query method) that each replica runs locally on its response. The transform strips or normalizes the non-deterministic parts so that all honest replicas produce the same transformed response.
 
-5. **Consensus agrees on the response.** The IC's consensus protocol requires at least 2/3 of replicas (specifically 2f+1, where f is the number of faulty replicas tolerated) to produce the same transformed response. If enough replicas agree, that response is returned to the canister. If they can't agree, the call fails with a timeout.
+5. **Consensus agrees on the response.** The IC's consensus protocol requires at least 2/3 of replicas to produce the same transformed response. If enough replicas agree, that response is returned to the canister. If they can't agree, the call fails with a timeout.
 
-The transform function is critical. Without it, even minor differences between responses — a header timestamp off by a millisecond — prevent consensus. For practical guidance on writing transform functions, see the [HTTPS outcalls guide](../guides/backends/https-outcalls.md).
+The transform function is critical. Without it, even minor differences between responses — a header timestamp off by a millisecond — prevent consensus. If consensus cannot be reached, the call eventually times out — this is the most common failure mode when developing outcalls.
+
+> **Local testing caveat:** The local replica runs a single node, so all responses pass consensus automatically — even without a transform function. Transform and consensus issues only surface when you deploy to a multi-node subnet.
+
+For practical guidance on writing transform functions, see the [HTTPS outcalls guide](../guides/backends/https-outcalls.md).
 
 ## The transform function
 
@@ -50,7 +54,7 @@ A common pattern is stripping all response headers (they frequently contain time
 
 HTTPS outcalls support `GET`, `HEAD`, and `POST` methods.
 
-**GET and HEAD** requests are straightforward — they're inherently idempotent (repeating them doesn't change server state), so having 13 replicas send the same GET is harmless.
+**GET and HEAD** requests are straightforward — they're inherently idempotent (repeating them doesn't change server state), so having 13 replicas send the same GET is harmless. `HEAD` is particularly useful for determining a resource's response size before making the actual request, which helps you set `max_response_bytes` accurately.
 
 **POST requests** require more care. Because all replicas send the request independently, a non-idempotent POST endpoint (like "create order") will be called once per replica — potentially 13 times on a standard subnet. To prevent this:
 
@@ -81,7 +85,7 @@ For exact pricing formulas, see the [cycles costs reference](../reference/cycles
 - **No streaming or WebSocket.** Outcalls are single request-response pairs. Long-lived connections are not supported.
 - **~30-second timeout.** If the external server doesn't respond in time, the call fails.
 - **Rate limiting.** All canisters on a subnet share the same IPv6 prefixes. If many canisters on the same subnet call the same server, they share its rate limit quota. Using API keys with per-key quotas mitigates this.
-- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use it to make unauthorized requests. Consider this in your security model.
+- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service — not just replay the canister's intended request. Consider this in your security model.
 
 ## HTTPS outcalls vs. oracles
 
@@ -95,10 +99,18 @@ For exact pricing formulas, see the [cycles costs reference](../reference/cycles
 
 HTTPS outcalls can replace oracles for most use cases: price feeds, API queries, webhook notifications, and data verification. Oracles may still be useful if you need features like aggregated multi-source data feeds or historical data caching that an oracle provider maintains as a service.
 
+## Future extensions
+
+Two extensions are under consideration that may affect architecture decisions:
+
+- **Flexible quorum:** A canister could specify that only a single replica (instead of all replicas) makes the request. This would solve the idempotency problem for POST requests and reduce rate-limit pressure on external servers.
+- **Multiple responses:** Instead of consensus on a single response, the canister could receive all individual replica responses and resolve differences in application logic — useful for fast-moving data like price feeds.
+
 ## Next steps
 
 - [HTTPS outcalls guide](../guides/backends/https-outcalls.md) — practical how-to with code examples in Motoko and Rust
 - [Chain Fusion: Ethereum integration](../guides/chain-fusion/ethereum.md) — uses HTTPS outcalls via the EVM RPC canister
 - [Cycles costs reference](../reference/cycles-costs.md) — detailed pricing formulas
+- [Learn Hub: HTTPS Outcalls](https://learn.internetcomputer.org/hc/en-us/articles/34211194553492) — additional learning material
 
 <!-- Upstream: informed by dfinity/portal docs/references/https-outcalls-how-it-works.mdx -->
