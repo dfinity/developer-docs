@@ -215,7 +215,7 @@ The CDK timers library (`ic-cdk-timers` for Rust, `mo:core/Timer` for Motoko) bu
 3. In `canister_global_timer`, runs each expired task as a self-canister call to isolate tasks from each other and from the library code
 4. Reschedules recurring tasks at the end of their execution
 
-For protocol internals, see [Timers](../../concepts/timers.md) and the [IC specification](https://learn.internetcomputer.org).
+For protocol internals, see [Timers](../../concepts/timers.md) and the [IC interface specification](../../reference/ic-interface-spec.md).
 
 ## Frequently asked questions
 
