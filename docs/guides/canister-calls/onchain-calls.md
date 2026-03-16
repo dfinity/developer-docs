@@ -58,20 +58,18 @@ import Result "mo:core/Result";
 
 persistent actor {
   public shared ({ caller }) func safeIncrement() : async Result.Result<Nat, Text> {
-    let originalCaller = caller;
-
     try {
       await Counter.increment();
       let count = await Counter.get();
       #ok(count)
-    } catch (e : Error.Error) {
+    } catch (e) {
       #err("Counter call failed: " # Error.message(e))
     };
   };
 };
 ```
 
-Note that `caller` is captured before the first `await`. In Motoko, `public shared ({ caller })` binds the caller at method entry, so it is safe to use after `await`. However, binding it to a local variable makes the intent explicit.
+In Motoko, `public shared ({ caller })` binds the original caller at method entry, so `caller` remains valid after `await` points.
 
 ## Making calls in Rust
 
