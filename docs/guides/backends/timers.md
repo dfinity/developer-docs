@@ -40,19 +40,11 @@ use std::time::Duration;
 
 let timer_id: TimerId = ic_cdk_timers::set_timer(
     Duration::from_secs(60),
-    || ic_cdk::println!("60 seconds have passed"),
+    async { ic_cdk::println!("60 seconds have passed") },
 );
 ```
 
-To drive an async function from a timer, use `ic_cdk::spawn`:
-
-```rust
-ic_cdk_timers::set_timer(Duration::from_secs(60), || {
-    ic_cdk::spawn(async {
-        // async work here
-    })
-});
-```
+`set_timer` takes a future directly — no closure or `ic_cdk::spawn` wrapper needed.
 
 **Motoko:**
 
@@ -78,9 +70,11 @@ use std::time::Duration;
 
 let timer_id: TimerId = ic_cdk_timers::set_timer_interval(
     Duration::from_secs(3600),
-    || ic_cdk::println!("Hourly task running"),
+    || async { ic_cdk::println!("Hourly task running") },
 );
 ```
+
+`set_timer_interval` takes a closure that returns a future (`|| async { ... }`), not a plain closure.
 
 **Motoko:**
 
@@ -94,7 +88,18 @@ func cleanup() : async () {
 let timerId : Timer.TimerId = Timer.recurringTimer<system>(#seconds 3600, cleanup);
 ```
 
-A duration of `0` in Motoko will only fire once, not repeatedly.
+A duration of `0` in Motoko will only expire once, not repeatedly (see [Timer.mo](https://github.com/caffeinelabs/motoko-core/blob/v2.1.0/src/Timer.mo#L53)).
+
+For recurring tasks that mutate state, use `set_timer_interval_serial` in Rust to prevent concurrent invocations — if the interval fires while the previous invocation is still running, the new one is skipped:
+
+```rust
+ic_cdk_timers::set_timer_interval_serial(
+    Duration::from_secs(3600),
+    async || {
+        // safe to mutate state — only one invocation runs at a time
+    },
+);
+```
 
 ## Canceling a timer
 
@@ -112,6 +117,13 @@ ic_cdk_timers::clear_timer(timer_id);
 Timer.cancelTimer(timerId);
 ```
 
+## Common patterns
+
+- **Periodic cleanup** — purge expired cache entries, remove stale sessions, or compact data structures on a fixed schedule.
+- **Scheduled data aggregation** — periodically fetch exchange rates, collect metrics, or roll up statistics from child canisters.
+- **Timed state transitions** — expire auctions, unlock funds after a vesting period, or transition a proposal from "voting" to "decided" after a deadline.
+- **Heartbeat-to-timer migration** — replace a `canister_heartbeat` export with a recurring timer at the desired interval (see [Heartbeats](#heartbeats-legacy) below).
+
 ## Starting timers on canister init
 
 A common pattern is to start a recurring timer when the canister is first installed:
@@ -123,7 +135,7 @@ A common pattern is to start a recurring timer when the canister is first instal
 fn init() {
     ic_cdk_timers::set_timer_interval(
         std::time::Duration::from_secs(3600),
-        || ic_cdk::println!("Hourly task"),
+        || async { ic_cdk::println!("Hourly task") },
     );
 }
 ```
@@ -144,7 +156,7 @@ fn post_upgrade() {
     // Re-register the same timers as in init
     ic_cdk_timers::set_timer_interval(
         std::time::Duration::from_secs(3600),
-        || ic_cdk::println!("Hourly task"),
+        || async { ic_cdk::println!("Hourly task") },
     );
 }
 ```
@@ -171,17 +183,17 @@ persistent actor {
 
 Each timer execution is implemented as a self-canister call. Normal inter-canister call costs apply to each invocation. The [periodic_tasks example](https://github.com/dfinity/examples/tree/master/rust/periodic_tasks) benchmarks timers vs heartbeats and shows timers are more cost-effective than heartbeats for infrequent tasks.
 
-Timer tasks are added to the canister's input queue. If the canister or subnet is under load, actual execution may be delayed beyond the requested interval. The timer interval is a minimum, not a guarantee.
+Timer tasks are added to the canister's input queue. If the canister or subnet is under load, actual execution may be delayed beyond the requested interval, and timeouts may result in duplicate execution. The timer interval is a minimum, not a guarantee. Make interval timer callbacks **idempotent** with respect to canister state to handle this safely.
 
-The canister output queue is limited to 500 messages. This caps how many timers can fire in a single round.
+The canister output queue is limited to 500 messages. This caps how many timers can fire in a single round. The CDK also enforces internal rate limits (250 concurrent timer calls globally, 5 per interval timer).
 
 See [Cycles and costs](../../reference/cycles-costs.md) for current pricing.
 
 ## Heartbeats (legacy)
 
-Heartbeats call `canister_heartbeat` on every subnet block (~1 second). They predate timers and have significant drawbacks:
+Heartbeats call `canister_heartbeat` at intervals close to the blockchain finalization rate (~1s). They predate timers and have significant drawbacks:
 
-- Fixed ~1s interval — cannot be adjusted
+- Fixed interval close to block rate — cannot be adjusted
 - Run every block regardless of whether work is needed — burns cycles continuously
 - Cannot be disabled without upgrading to remove the export
 
@@ -205,10 +217,40 @@ The CDK timers library (`ic-cdk-timers` for Rust, `mo:core/Timer` for Motoko) bu
 
 For protocol internals, see [Timers](../../concepts/timers.md) and the [IC specification](https://learn.internetcomputer.org).
 
+## Frequently asked questions
+
+**Do timers support deterministic time slicing (DTS)?**
+Yes. Each timer executes as a self-canister call, so normal update message instruction limits apply with DTS enabled.
+
+**What happens if a timer handler awaits an inter-canister call?**
+Normal await point rules apply — any new execution can start at the await point (a new message, another timer, or a heartbeat). The current timer handler resumes after the new execution finishes or reaches its own await point.
+
+**What happens if a periodic timer takes longer than its interval?**
+With `set_timer_interval`, multiple invocations can run concurrently. With `set_timer_interval_serial`, the new invocation is skipped if the previous one is still running. If there are no await points, the timer is rescheduled after execution completes.
+
+## Time conversion
+
+System time is returned in nanoseconds. For DateTime conversions, use these packages:
+
+- **Motoko:** [`time`](https://mops.one/time) (milliseconds, string format) and [`dateTime`](https://mops.one/datetime) (UTC, local timezone)
+- **Rust:** [`time`](https://time-rs.github.io/api/time/index.html) and [`datetimeutils`](https://crates.io/crates/datetimeutils)
+
+## Limitations
+
+- Timer resolution is similar to the block rate — choose durations well above ~1s.
+- The CDK timers library uses **relative time** only. To schedule at an absolute time, calculate the duration from `now` to the target time manually.
+- Using timers for security (e.g., access control) is strongly discouraged. Timers vanish on upgrades and reinstalls, and reentrancy can undermine access checks.
+
 ## Full example
 
 For a complete working example with cycle tracking and multiple timers:
 
 - [Rust periodic tasks example](https://github.com/dfinity/examples/tree/master/rust/periodic_tasks)
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx and docs/building-apps/network-features/time-and-timestamps.mdx -->
+## What's next
+
+- [Canister lifecycle](../canister-management/lifecycle.md) — init, pre/post-upgrade hooks
+- [Timers (concept)](../../concepts/timers.md) — how the IC protocol timer works
+- [Cycles and costs](../../reference/cycles-costs.md) — current pricing
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, docs/building-apps/network-features/time-and-timestamps.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, and caffeinelabs/motoko-core src/Timer.mo -->
