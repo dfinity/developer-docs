@@ -177,7 +177,7 @@ Unused cycles are refunded. See [Cycles Costs](../../reference/cycles-costs.md) 
 - **`Host` header may be required.** Some API endpoints require the `Host` header to be explicitly set. The IC does not automatically set it from the URL — add it to your headers if the server requires it.
 - **~30-second timeout.** If the external server does not respond within the timeout, the call traps. Design for failure and handle errors gracefully.
 
-> **Non-replicated (flexible) outcalls** — a mode where only a single replica makes the request instead of all replicas — is under development. This page will be updated when the feature is available. <!-- See dfinity/portal#5890 for the upstream tracking PR. -->
+> **Non-replicated outcalls** are available as an experimental feature. Setting `is_replicated` to `false` in the request causes only a single replica to make the HTTP call. This avoids idempotency concerns but currently uses the same pricing as replicated outcalls. **Flexible outcalls** — with dedicated pricing and additional capabilities — are under development. <!-- See dfinity/portal#5890 for the upstream tracking PR. -->
 
 ## Testing locally
 
