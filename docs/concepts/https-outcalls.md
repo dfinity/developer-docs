@@ -85,7 +85,7 @@ For exact pricing formulas, see the [cycles costs reference](../reference/cycles
 - **No streaming or WebSocket.** Outcalls are single request-response pairs. Long-lived connections are not supported.
 - **~30-second timeout.** If the external server doesn't respond in time, the call fails.
 - **Rate limiting.** All canisters on a subnet share the same IPv6 prefixes. If many canisters on the same subnet call the same server, they share its rate limit quota. Using API keys with per-key quotas mitigates this.
-- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service — not just replay the canister's intended request. Consider this in your security model.
+- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service — not just replay the canister's intended request. [TEE-enabled subnets](https://learn.internetcomputer.org/hc/en-us/articles/46124920595988-Trusted-Execution-Environments) mitigate this by running replicas in hardware-enforced enclaves, preventing node operators from reading canister memory. Consider deploying canisters that store sensitive credentials on a TEE-enabled subnet.
 
 ## HTTPS outcalls vs. oracles
 
