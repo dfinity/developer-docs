@@ -373,6 +373,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - `.docs-plan/` — Analysis artifacts, decisions, and progress tracking (see `.docs-plan/README.md`)
 - `.sources/` — **Pinned submodules of upstream source repos** (see "Source material repos" below)
 - `.claude/settings.json` — Shared Claude Code permissions (committed to git). Ensures worktree/background agents can run without interactive approval.
+- `plugins/` — Astro build plugins (rehype/remark transforms and the agent-docs integration)
 - `icp.yaml` — icp-cli project config (asset canister recipe)
 - `.icp/data/` — Canister ID mappings (committed to git). `.icp/cache/` is gitignored.
 
@@ -499,6 +500,27 @@ When reviewing portal tracking issues:
 > **Note:** Validation scripts (`validate`, `generate`, `sync`) were removed during the clean slate. They are preserved on `restructuring-attempt-1` and will be restored when the docs are ready for production.
 
 > **Tech stack note:** Using Astro 6 + Starlight 0.38. The Zod v4 sitemap override from earlier versions has been removed.
+
+## Agent-friendly documentation
+
+The site implements the [Agent-Friendly Documentation Spec](https://agentdocsspec.com) so AI agents can consume docs as clean markdown. Three build-time plugins handle this:
+
+| Plugin | File | What it does |
+|--------|------|-------------|
+| `agentDocs()` | `plugins/astro-agent-docs.mjs` | Generates `/llms.txt` index and `.md` endpoints for every page |
+| `rehypeAgentSignaling` | `plugins/rehype-agent-signaling.mjs` | Injects a visually-hidden `/llms.txt` pointer into every HTML page |
+
+**Build output:**
+- `/llms.txt` — discovery index listing all pages with links to `.md` endpoints
+- `/<path>.md` — clean markdown for every page (frontmatter and HTML comments stripped)
+
+### SECTIONS array (keep in sync)
+
+The `SECTIONS` array in `plugins/astro-agent-docs.mjs` maps directory prefixes to section labels in `llms.txt`. **When adding or renaming sidebar sections in `astro.config.mjs`, update the `SECTIONS` array to match.** Pages in directories not covered by `SECTIONS` will be silently excluded from `llms.txt`.
+
+### Asset canister headers
+
+`public/.ic-assets.json5` sets `Content-Type: text/markdown; charset=utf-8` for `.md` files and `text/plain; charset=utf-8` for `llms.txt`.
 
 ## Previous work
 

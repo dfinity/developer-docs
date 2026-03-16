@@ -98,6 +98,13 @@ src/assets/images/
 - Decide case-by-case during content writing whether a portal image is worth carrying over
 - Portal images are in `portal/static/img/docs/` — copy and rename to match the new structure
 
+## Agent-friendly documentation
+
+The build generates `/llms.txt` and per-page `.md` endpoints from your content. This is automatic — no extra work needed when writing pages. However:
+
+- **Frontmatter `description`** is used as the page summary in `llms.txt` — write clear, useful descriptions
+- **Adding a new sidebar section** in `astro.config.mjs` requires updating the `SECTIONS` array in `plugins/astro-agent-docs.mjs` to match, otherwise pages in that section won't appear in `llms.txt`
+
 ## Synced content
 
 Some files are auto-synced from other repositories.
