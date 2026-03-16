@@ -105,6 +105,12 @@ Then open Claude Code (or your preferred agent tool) in the repo root. The agent
 
 ## For AI agents
 
+The site is built to be agent-friendly per the [Agent-Friendly Documentation Spec](https://agentdocsspec.com):
+
+- **`/llms.txt`** — discovery index listing all pages with descriptions
+- **`/<path>.md`** — clean markdown endpoint for every page (e.g., `/concepts/canisters.md`)
+- **Agent signaling** — every HTML page includes a hidden pointer to `/llms.txt`
+
 See [AGENTS.md](AGENTS.md) for the full workflow: orientation, rules, content authoring, and planning artifacts. `CLAUDE.md` symlinks to `AGENTS.md`.
 
 ## Related resources

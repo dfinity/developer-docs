@@ -3,7 +3,9 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import rehypeRewriteLinks from "./plugins/rehype-rewrite-links.mjs";
 import rehypeExternalLinks from "./plugins/rehype-external-links.mjs";
+import rehypeAgentSignaling from "./plugins/rehype-agent-signaling.mjs";
 import remarkIcpCliVersion from "./plugins/remark-icp-cli-version.mjs";
+import agentDocs from "./plugins/astro-agent-docs.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,10 +13,11 @@ export default defineConfig({
   markdown: {
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
-    rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
+    rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks, rehypeAgentSignaling],
     remarkPlugins: [remarkIcpCliVersion],
   },
   integrations: [
+    agentDocs(),
     starlight({
       title: "ICP Developer Docs",
       customCss: [

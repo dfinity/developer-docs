@@ -55,6 +55,24 @@
 
 /* ── Light mode ───────────────────────────────────────────── */
 
+/* ── Agent signaling ──────────────────────────────────────── */
+
+/* Visually hidden but present in DOM for HTML-to-markdown converters.
+   Uses clip-rect (not display:none) per agentdocsspec.com. */
+.agent-signaling {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ── Light mode ───────────────────────────────────────────── */
+
 :root[data-theme='light'] {
 	/* Accent — exact brand purple #3b00b9 = hsl(259, 100%, 36%) */
 	--sl-color-accent-high: hsl(259, 100%, 28%);
