@@ -206,7 +206,7 @@ The publisher/subscriber pattern is a natural fit for inter-canister communicati
 The publisher stores subscriber callbacks and invokes them when publishing:
 
 ```motoko
-import List "mo:base/List";
+import List "mo:core/List";
 
 persistent actor Publisher {
 
@@ -217,14 +217,14 @@ persistent actor Publisher {
     callback : shared Event -> ();
   };
 
-  var subscribers = List.nil<Subscriber>();
+  var subscribers = List.empty<Subscriber>();
 
   public func subscribe(subscriber : Subscriber) {
-    subscribers := List.push(subscriber, subscribers);
+    List.add(subscribers, subscriber);
   };
 
   public func publish(event : Event) {
-    for (sub in List.toArray(subscribers).vals()) {
+    for (sub in List.values(subscribers)) {
       if (sub.topic == event.topic) {
         sub.callback(event);
       };
@@ -288,10 +288,10 @@ In Rust, `ic_cdk::api::msg_caller()` returns the caller of the **current message
 
 ```rust
 #[update]
-pub async fn transfer(to: Principal, amount: Nat) -> Result<(), String> {
+pub async fn transfer(ledger: Principal, to: Principal, amount: Nat) -> Result<(), String> {
     let caller = ic_cdk::api::msg_caller(); // Bind BEFORE await
 
-    Call::unbounded_wait(LEDGER, "transfer")
+    Call::unbounded_wait(ledger, "transfer")
         .with_arg(&(caller, to, amount))
         .await
         .map_err(|e| format!("Transfer failed: {:?}", e))?;
