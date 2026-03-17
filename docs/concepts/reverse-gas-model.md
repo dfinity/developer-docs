@@ -6,16 +6,90 @@ sidebar:
 icskills: [cycles-management]
 ---
 
-TODO: Write content for this page.
+On most blockchains, users pay a gas fee every time they interact with a smart contract. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing. This is the **reverse gas model**.
 
-<!-- Content Brief -->
-Explain the reverse gas model. Cover why ICP flips the gas model (users do not pay, canisters do), what cycles are (unit of compute payment, pegged to SDR), how ICP tokens convert to cycles via the CMC, what canisters pay for (compute, storage, bandwidth, special operations), and cost predictability compared to other chains. This is one of ICP's biggest differentiators -- make it compelling.
+The result is a Web2-like user experience. Users can interact with any dapp on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management — and the responsibility that comes with it.
 
-<!-- Source Material -->
-- Portal: building-apps/essentials/gas-cost.mdx, getting-started/tokens-and-cycles.mdx
-- Learn Hub: [Cycles](https://learn.internetcomputer.org/hc/en-us/articles/34573913497108)
+## What are cycles?
 
-<!-- Cross-Links -->
-- guides/canister-management/cycles-management -- practical cycles management
-- reference/cycles-costs -- exact cost tables
-- concepts/canisters -- canisters as the paying entity
+Cycles are the unit of payment for resources on ICP. Every canister operation that consumes resources burns cycles from the canister's balance:
+
+- **Compute** — executing instructions (update calls, timers, heartbeats)
+- **Storage** — Wasm heap memory and stable memory, charged per byte per second
+- **Messaging** — ingress messages from users, inter-canister calls, responses
+- **Special features** — HTTPS outcalls, threshold signatures, Bitcoin integration, EVM RPC
+
+Query calls are free — they run on a single node, do not go through consensus, and are not charged.
+
+### Cycles are pegged to XDR
+
+Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) — a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
+
+## ICP tokens and cycles
+
+Cycles are obtained by converting ICP tokens. The conversion happens through the **Cycles Minting Canister (CMC)** (`rkp4c-7iaaa-aaaaa-aaaca-cai`), a system canister that accepts ICP and mints the equivalent value in cycles at the current XDR exchange rate.
+
+Once minted, cycles are held by principals via the **cycles ledger** (`um5iw-rqaaa-aaaaq-qaaba-cai`) and transferred to canisters to fund their operation. Cycles flow in one direction: they can only be burned (consumed by canisters), never converted back to ICP tokens.
+
+## What canisters pay for
+
+### Compute
+
+By default, canisters are scheduled for execution on a best-effort basis — the subnet schedules them when capacity is available. Canisters that need guaranteed execution can set a `compute_allocation` in their settings, expressed as a percentage of one execution core:
+
+| Allocation | Guarantee |
+|---|---|
+| 1% | Scheduled at least every 100 rounds |
+| 50% | Scheduled at least every other round |
+| 100% | Scheduled every round |
+
+Compute allocation costs 10M cycles per 1% per second. Best-effort scheduling (0% allocation) incurs no idle allocation cost, but execution is not guaranteed under high subnet load.
+
+### Storage
+
+Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles (≈$5.35 USD). The cost is the same whether the data is in heap or stable memory.
+
+When a canister allocates new storage bytes on a subnet that is more than 750 GiB full, the system moves cycles from the canister's main balance into a **reserved cycles balance** to cover future storage payments for those bytes. This reservation is non-transferable and grows linearly as the subnet fills toward its 2 TiB capacity.
+
+### Messaging
+
+| Message type | Cost |
+|---|---|
+| Query call | Free |
+| Ingress update (user → canister) | 1.2M base + 2K cycles/byte, paid by receiving canister |
+| Inter-canister call | 260K base + 1K cycles/byte, paid by sending canister |
+| Canister creation | 500B cycles (≈$0.65) |
+
+### Replication factor
+
+Every canister is replicated across all nodes on its subnet. Costs scale with subnet size: a 34-node subnet charges `34/13` times the base rate compared to a 13-node subnet. Choosing a 13-node subnet minimizes cost; 34-node subnets offer higher replication and security for sensitive workloads.
+
+## Developer responsibility
+
+The reverse gas model shifts payment from users to developers. This comes with ongoing obligations:
+
+**Topping up** — canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
+
+**Freezing threshold** — each canister has a configurable freezing threshold (default: 30 days of idle burn). If the cycle balance falls below this threshold, the canister is frozen before it can be deleted, giving developers time to top up. Increase this threshold for production canisters as a safety buffer.
+
+**Deletion** — a frozen canister that is not topped up within the threshold window is eventually deleted by the network, along with all its data. Deletion is permanent and irreversible.
+
+These responsibilities can be automated. Tools like [CycleOps](https://cycleops.dev/) monitor balances and top up canisters automatically.
+
+## Cost predictability
+
+The XDR peg and flat per-resource pricing make ICP costs predictable in a way that transaction-fee blockchains are not:
+
+- **No gas auctions** — there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
+- **No per-transaction fees for users** — apps absorb all costs, like SaaS businesses absorb server bills.
+- **Stable unit economics** — because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
+
+The tradeoff is that developers must forecast and fund usage upfront rather than letting users pay as they go.
+
+## Related
+
+- [Cycles Management](../guides/canister-management/cycles-management.md) — how to check balances, top up canisters, and set freezing thresholds
+- [Cycles Costs Reference](../reference/cycles-costs.md) — exact cost tables for all operations
+- [Canisters](./canisters.md) — canisters as the paying entity in the reverse gas model
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx -->
