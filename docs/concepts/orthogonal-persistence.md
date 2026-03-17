@@ -8,9 +8,9 @@ icskills: [stable-memory]
 
 On traditional backends, application state lives in memory only while the process runs. To persist data across restarts, you need a database -- PostgreSQL, Redis, SQLite, or a file system. The application logic and the storage layer are separate concerns that developers must wire together.
 
-On the Internet Computer, persistence is built into the execution model. A canister's memory persists between calls automatically -- no database, no file system, no explicit save/load. You declare a variable, assign it a value, and that value is still there the next time the canister executes. This property is called **orthogonal persistence**: persistence is orthogonal to (independent of) the programming model.
+On the Internet Computer, persistence is built into the execution model. A canister's memory persists between calls automatically -- no database and no file system. In Motoko, this is fully transparent: you declare a variable, assign it a value, and that value is still there the next time the canister executes -- no explicit save or load. In Rust, you choose persistent data structures that write directly to stable memory, giving you full control over what survives upgrades. Either way, the canister IS its own storage. This property is called **orthogonal persistence**: persistence is orthogonal to (independent of) the programming model.
 
-The practical effect is that the canister IS the database. There is no separate storage tier to configure, query, or maintain.
+There is no separate storage tier to configure, query, or maintain.
 
 ## Two memory regions
 
@@ -84,7 +84,7 @@ In Motoko with `persistent actor`, this trade-off is largely invisible -- the ru
 | **Configuration** | Connection strings, schemas, migrations | None (declare variables) |
 | **Deployment** | App server + database server | Single canister |
 | **Upgrade safety** | Database persists independently of app | Stable memory persists across upgrades |
-| **Scaling storage** | Provision database storage separately | Stable memory grows with usage (up to subnet limit) |
+| **Scaling storage** | Provision database storage separately | Stable memory grows with usage (up to 500 GiB per canister, subject to subnet storage budget) |
 
 The mental model shift: instead of "my app talks to a database," think "my app IS the database." Canister state is the program's state, and the Internet Computer ensures it persists.
 

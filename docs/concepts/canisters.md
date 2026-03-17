@@ -69,7 +69,7 @@ Each canister has two storage regions:
 
 | Region | Max size | Persisted across upgrades | Access |
 |--------|----------|--------------------------|--------|
-| **Heap (Wasm) memory** | 6 GiB | No (cleared on upgrade, unless using Motoko's orthogonal persistence) | Standard Wasm memory instructions |
+| **Heap (Wasm) memory** | 4 GiB (wasm32) / 6 GiB (wasm64) | No (cleared on upgrade, unless using Motoko's orthogonal persistence) | Standard Wasm memory instructions |
 | **Stable memory** | 500 GiB | Yes | System API calls |
 
 **Heap memory** is standard Wasm linear memory. It holds your program's heap-allocated data — variables, data structures, and anything your code allocates at runtime. Both 32-bit and 64-bit Wasm memory are supported. Heap memory is cleared when you upgrade the canister's Wasm module.

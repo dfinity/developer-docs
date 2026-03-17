@@ -115,7 +115,7 @@ Reserved cycles are non-transferable. Controllers can disable reservation by set
 | Max same-subnet inter-canister request payload | 10 MiB |
 | Max response size (replicated execution) | 2 MiB |
 | Max response size (query) | 3 MiB |
-| Wasm heap memory per canister | 4 GiB |
+| Wasm heap memory per canister | 4 GiB (wasm32) / 6 GiB (wasm64) |
 | Wasm stable memory per canister | 500 GiB |
 | Subnet capacity (total memory) | 2 TiB |
 | Wasm module total size | 100 MiB |
