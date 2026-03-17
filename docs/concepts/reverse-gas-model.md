@@ -40,14 +40,14 @@ By default, canisters are scheduled for execution on a best-effort basis — the
 | Allocation | Guarantee |
 |---|---|
 | 1% | Scheduled at least every 100 rounds |
-| 50% | Scheduled at least every other round |
+| 2% | Scheduled at least every 50 rounds |
 | 100% | Scheduled every round |
 
 Compute allocation costs 10M cycles per 1% per second. Best-effort scheduling (0% allocation) incurs no idle allocation cost, but execution is not guaranteed under high subnet load.
 
 ### Storage
 
-Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles (≈$5.35 USD). The cost is the same whether the data is in heap or stable memory.
+Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles (≈$5.40 USD, May 2025). The cost is the same whether the data is in heap or stable memory.
 
 When a canister allocates new storage bytes on a subnet that is more than 750 GiB full, the system moves cycles from the canister's main balance into a **reserved cycles balance** to cover future storage payments for those bytes. This reservation is non-transferable and grows linearly as the subnet fills toward its 2 TiB capacity.
 
@@ -58,7 +58,7 @@ When a canister allocates new storage bytes on a subnet that is more than 750 Gi
 | Query call | Free |
 | Ingress update (user → canister) | 1.2M base + 2K cycles/byte, paid by receiving canister |
 | Inter-canister call | 260K base + 1K cycles/byte, paid by sending canister |
-| Canister creation | 500B cycles (≈$0.65) |
+| Canister creation | 500B cycles (≈$0.68, May 2025) |
 
 ### Replication factor
 
