@@ -9,7 +9,7 @@ icskills: [stable-memory]
 TODO: Write content for this page.
 
 <!-- Content Brief -->
-Guide developers through storing data in canisters. Cover stable structures (StableBTreeMap in Rust), persistent actors (Motoko), MemoryManager for multiple data structures, and pre/post-upgrade hooks. Include idempotency patterns for safe data mutation. Show code examples for both Rust and Motoko.
+Guide developers through storing data in canisters. This is the how-to companion to concepts/orthogonal-persistence (which explains what and why; this page shows how). Cover: Motoko persistent actors (persistent actor, transient var, let/var persistence, schema evolution rules), Rust stable structures (StableBTreeMap, StableCell, StableLog, MemoryManager, MemoryId partitioning, Storable trait implementations for custom types, #[init]/#[post_upgrade] hook patterns), and the dangerous pre_upgrade heap serialization anti-pattern. Include idempotency patterns for safe data mutation. Show complete code examples for both Rust and Motoko.
 
 <!-- Source Material -->
 - Portal: building-apps/canister-management/storage.mdx, best-practices/storage.mdx, best-practices/idempotency.mdx

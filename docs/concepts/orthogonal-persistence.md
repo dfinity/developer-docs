@@ -38,83 +38,31 @@ The distinction between these two regions is the foundation of all persistence s
 
 The two mainstream canister languages -- Motoko and Rust -- take fundamentally different approaches to persistence.
 
-### Motoko: automatic persistence
+### Motoko: true orthogonal persistence
 
-With `persistent actor` and `mo:core` 2.0, Motoko delivers true orthogonal persistence. All `let` and `var` declarations inside the actor body are automatically persisted across upgrades. No explicit stable memory management is needed.
+Motoko is the only ICP language that delivers true orthogonal persistence. With `persistent actor`, all variable declarations inside the actor body are automatically persisted across upgrades. Developers do not think about persistence at all -- they write normal code and data survives.
 
-```motoko
-import Map "mo:core/Map";
-import Nat "mo:core/Nat";
+The runtime transparently manages the mapping between the program's heap and stable memory during upgrades. Fields marked `transient var` reset to their initial value on upgrade, giving developers explicit control over what is ephemeral (caches, counters) versus durable.
 
-persistent actor {
-  let users = Map.empty<Nat, Text>();
-  var userCount : Nat = 0;
+This is orthogonal persistence in its purest form: persistence is completely invisible to the programming model.
 
-  // This resets to 0 on every upgrade
-  transient var requestCount : Nat = 0;
-
-  public func addUser(name : Text) : async Nat {
-    let id = userCount;
-    Map.add(users, Nat.compare, id, name);
-    userCount += 1;
-    requestCount += 1;
-    id
-  };
-}
-```
-
-Key properties of Motoko persistent actors:
-
-- **`let` and `var`** declarations persist across upgrades automatically
-- **`transient var`** marks data that should reset to its initial value on upgrade (caches, request counters, temporary state)
-- **No `stable` keyword needed** -- it is redundant in persistent actors and produces compiler warnings
-- **No `pre_upgrade`/`post_upgrade` hooks needed** -- the runtime handles serialization transparently
-- **Schema rule:** never change a field's type between upgrades (for example, `Nat` to `Int` will trap and data is unrecoverable). Only add new optional fields.
-
-This is orthogonal persistence in its purest form -- developers do not think about persistence at all. They write normal code and data survives.
+For implementation details and code examples, see the [Data persistence guide](../guides/backends/data-persistence.md).
 
 ### Rust: explicit stable structures
 
-Rust canisters take an explicit approach using the `ic-stable-structures` crate. Data structures are backed directly by stable memory, which means they survive upgrades without any serialization step.
+Rust canisters take an explicit approach. The `ic-stable-structures` crate provides data structures (`StableBTreeMap`, `StableCell`, `StableLog`) that are backed directly by stable memory. Data written to these structures survives upgrades without any serialization step.
 
-```rust
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    DefaultMemoryImpl, StableBTreeMap,
-};
-use std::cell::RefCell;
+This is not orthogonal persistence -- developers must consciously choose which data structures to use and how to partition stable memory. The tradeoff is full control: Rust developers decide exactly what persists, how it's stored, and how memory is allocated.
 
-type Memory = VirtualMemory<DefaultMemoryImpl>;
-
-thread_local! {
-    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
-        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-
-    // This data lives in stable memory -- survives upgrades
-    static USERS: RefCell<StableBTreeMap<u64, Vec<u8>, Memory>> =
-        RefCell::new(StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
-        ));
-}
-```
-
-Key properties of Rust stable structures:
-
-- **`MemoryManager`** partitions stable memory into virtual memories, each assigned a unique `MemoryId`
-- **`StableBTreeMap`**, **`StableCell`**, and **`StableLog`** are the primary data structures, each backed by a virtual memory region
-- **Custom types need `Storable`** -- keys require `Storable + Ord`, values require `Storable`. Primitive types (`u64`, `String`, `Vec<u8>`) implement it automatically
-- **`#[init]` and `#[post_upgrade]`** handlers should be defined to reinitialize transient state (timers, caches). Stable structures auto-restore without these hooks, but omitting them may silently leave transient state uninitialized
-- **No `pre_upgrade` serialization needed** -- data is already in stable memory
-
-For complete implementation patterns including `Storable` implementations for custom types, see the [Rust stable structures](../languages/rust/stable-structures.md) guide.
+For implementation details and code examples, see the [Data persistence guide](../guides/backends/data-persistence.md).
 
 ## The dangerous pattern: heap serialization
 
-Before stable structures existed, the standard approach in Rust was to store data in heap memory (`thread_local! { RefCell<HashMap<...>> }`) and serialize it to stable memory in `pre_upgrade`, then deserialize it back in `post_upgrade`.
+Before stable structures existed, the standard approach in Rust was to store data in heap memory and serialize it to stable memory in `pre_upgrade`, then deserialize it back in `post_upgrade`.
 
 This pattern has a critical failure mode: `pre_upgrade` runs with a fixed instruction limit. If the dataset grows large enough, serialization exceeds the limit and the hook traps. The upgrade fails, and recovery requires the `skip_pre_upgrade` flag, which bypasses the failing hook but may result in data loss.
 
-Stable structures avoid this entirely by writing directly to stable memory during normal operation. There is nothing to serialize at upgrade time.
+Stable structures avoid this entirely by writing directly to stable memory during normal operation. There is nothing to serialize at upgrade time. New Rust canisters should always use stable structures rather than heap serialization.
 
 ## Heap vs. stable memory: trade-offs
 
@@ -139,6 +87,12 @@ In Motoko with `persistent actor`, this trade-off is largely invisible -- the ru
 | **Scaling storage** | Provision database storage separately | Stable memory grows with usage (up to subnet limit) |
 
 The mental model shift: instead of "my app talks to a database," think "my app IS the database." Canister state is the program's state, and the Internet Computer ensures it persists.
+
+## Further reading
+
+- [IC Internals: Orthogonal Persistence](https://medium.com/dfinity/ic-internals-orthogonal-persistence-9e0c094aac1a) -- deep dive into how orthogonal persistence works at the protocol level
+- [A Journey into Stellarator (Part 2)](https://medium.com/dfinity/a-journey-into-stellarator-part-2-d4a83c631748) -- the Stellarator engine that powers Motoko's persistent actors
+- [Orthogonal Persistence in 60 Seconds](https://www.youtube.com/shorts/g3sC2wjLzew) -- quick visual explainer
 
 ## Next steps
 
