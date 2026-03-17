@@ -6,7 +6,7 @@ sidebar:
 icskills: [stable-memory]
 ---
 
-Canister state lives in two places: **heap memory** (fast, temporary, wiped on upgrade) and **stable memory** (persistent, survives upgrades). Any data you care about must end up in stable memory, or it will be lost the next time the canister is deployed.
+Canister state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade — any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.
 
 This guide shows how to store data durably in both Motoko and Rust. For a conceptual explanation of why stable memory works this way, see [Orthogonal Persistence](../../concepts/orthogonal-persistence.md).
 
@@ -84,7 +84,7 @@ core = "2.0.0"
 
 ### Schema evolution rules
 
-When upgrading a Motoko canister, the type of every persistent field must be compatible with its stored value. Violating this traps the upgrade and data is unrecoverable.
+When upgrading a Motoko canister, the type of every persistent field must be compatible with its stored value. Violating this causes the upgrade to trap — the canister continues running on the old Wasm with its data intact, but cannot be upgraded until the type conflict is resolved.
 
 **Safe changes (always OK):**
 - Add new `let` or `var` fields with initial values
@@ -137,8 +137,10 @@ struct User {
 
 impl Storable for User {
     // Prefer Unbounded — avoids breakage when adding new fields.
-    // Bounded requires a fixed max_size; exceeding it after a schema change
-    // breaks deserialization of existing data.
+    // Bounded requires a fixed max_size; if the encoded size of a value
+    // exceeds max_size after a schema change, writes will trap.
+    // Existing stored data is unaffected, but no new or updated records
+    // can be written until the type fits within the declared max_size.
     const BOUND: Bound = Bound::Unbounded;
 
     fn to_bytes(&self) -> Cow<'_, [u8]> {
@@ -236,10 +238,26 @@ ic_cdk::export_candid!();
 
 ### Multiple stable structures
 
-When using more than one stable structure, give each a unique `MemoryId`. `StableLog` requires two memory regions (index + data):
+When using more than one stable structure, give each a unique `MemoryId`. `StableLog` requires two memory regions (index + data).
+
+This example extends the [MemoryManager and stable structures](#memorymanager-and-stable-structures) snippet above — it reuses the same `Memory` type alias, `MemoryManager`, `DefaultMemoryImpl`, `RefCell`, and `User` struct defined there, and adds `Post` and `AUDIT_LOG`:
 
 ```rust
-use ic_stable_structures::{StableBTreeMap, StableCell, StableLog};
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    DefaultMemoryImpl, StableBTreeMap, StableCell, StableLog,
+};
+use candid::CandidType;
+use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
+
+type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+#[derive(CandidType, Serialize, Deserialize, Clone)]
+struct Post {
+    id: u64,
+    content: String,
+}
 
 // Assign one MemoryId per structure — never reuse
 const USERS_MEM_ID: MemoryId = MemoryId::new(0);
@@ -294,8 +312,11 @@ Avoid serializing heap data to stable memory in `pre_upgrade` hooks. This patter
 #[pre_upgrade]
 fn pre_upgrade() {
     // If STATE is large, this hits the instruction limit and traps.
-    // A trapped pre_upgrade bricks the canister — the upgrade cannot complete
-    // and the canister is stuck on the old code with no way to recover.
+    // A trapped pre_upgrade prevents the upgrade from completing —
+    // the canister is stuck on the old code. Recovery is possible via
+    // the skip_pre_upgrade flag (which bypasses the hook at the cost of
+    // losing any state it would have serialized), but it's an emergency
+    // measure. Avoid this pattern entirely.
     let state = STATE.with(|s| s.borrow().clone());
     ic_cdk::storage::stable_save((state,)).unwrap();
 }
@@ -319,6 +340,12 @@ Track a per-caller counter. A call is only accepted if it carries the next expec
 
 ```motoko
 // Motoko example — persistent actor
+import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Principal "mo:core/Principal";
+
+persistent actor {
+
 var callerSeq = Map.empty<Principal, Nat>();
 
 public shared(msg) func transferWithSeq(amount : Nat, seq : Nat) : async Bool {
@@ -332,6 +359,8 @@ public shared(msg) func transferWithSeq(amount : Nat, seq : Nat) : async Bool {
   Map.add(callerSeq, Principal.compare, caller, seq + 1);
   true
 };
+
+}
 ```
 
 Best for low-throughput, per-account flows (similar to Ethereum nonces). Limits concurrency to one in-flight call per caller.
@@ -342,7 +371,11 @@ Callers attach a unique ID per operation. The canister rejects duplicates within
 
 ```motoko
 // Motoko example — persistent actor
+import Map "mo:core/Map";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
+
+persistent actor {
 
 type DedupeEntry = { executed_at : Int };
 let executed = Map.empty<Text, DedupeEntry>();
@@ -360,6 +393,8 @@ public func transferWithId(amount : Nat, idempotency_key : Text) : async Bool {
   Map.add(executed, Text.compare, idempotency_key, { executed_at = now });
   true
 };
+
+}
 ```
 
 Supports higher throughput and concurrent callers. Requires bounded storage — expire entries after the deduplication window.
@@ -367,6 +402,8 @@ Supports higher throughput and concurrent callers. Requires bounded storage — 
 ## Verify persistence across upgrades
 
 The definitive test: deploy, write data, upgrade, confirm data survived.
+
+**Motoko backend** (method names are camelCase):
 
 ```bash
 icp network start -d
@@ -393,6 +430,31 @@ icp canister call backend getUser '(0)'
 # Transient state resets
 icp canister call backend getRequestCount '()'
 # Returns: (0 : nat) — expected, transient var resets on upgrade
+```
+
+**Rust backend** (method names are snake_case):
+
+```bash
+icp network start -d
+icp deploy backend
+
+# Write some data
+icp canister call backend add_user '("Alice")'
+icp canister call backend add_user '("Bob")'
+
+# Record the count
+icp canister call backend get_user_count '()'
+# Returns: (2 : nat64)
+
+# Upgrade the canister (redeploy with code change)
+icp deploy backend
+
+# Data must still be there
+icp canister call backend get_user_count '()'
+# Must still return: (2 : nat64)
+
+icp canister call backend get_user '(0 : nat64)'
+# Returns: (opt record { id = 0 : nat64; name = "Alice"; created = ... })
 ```
 
 If the count drops to 0 after upgrade, the data is not in stable memory. Review your storage declarations.
