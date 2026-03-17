@@ -144,16 +144,14 @@ let counter_id = Principal::from_text(
 **Motoko:**
 
 ```motoko
-import Prim "mo:⛔";
+import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 
-let ?counterIdText = Prim.envVar<system>("PUBLIC_CANISTER_ID:counter") else {
+let ?counterIdText = Runtime.envVar<system>("PUBLIC_CANISTER_ID:counter") else {
     return #err("counter canister ID not set");
 };
 let counterId = Principal.fromText(counterIdText);
 ```
-
-> **Note:** `Prim.envVar` uses an internal module (`mo:⛔`). This functionality will move to the Motoko core library in a future release.
 
 Deployment order does not matter — `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
 
@@ -326,4 +324,4 @@ Calls between canisters on the same subnet complete within a single round. Cross
 - [Certified Variables](../backends/certified-variables.md) -- make query responses verifiable without update call overhead
 - [Inter-Canister Call Security](../security/inter-canister-calls.md) -- reentrancy guards, async safety patterns, and trust considerations
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, and dfinity/examples motoko/pub-sub -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, icp-cli icskill, dfinity/icp-cli docs/concepts/canister-discovery.md, and dfinity/examples motoko/pub-sub -->
