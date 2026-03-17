@@ -363,6 +363,7 @@ npx @icp-sdk/bindgen
 ```
 
 By default, the CLI reads `icp.yaml` and generates bindings for all canisters. See the [`@icp-sdk/bindgen` documentation](https://js.icp.build/bindgen) for configuration options.
+<!-- Needs human verification: verify @icp-sdk/bindgen Vite plugin import path (icpBindgen from "@icp-sdk/bindgen/vite") and CLI invocation (npx @icp-sdk/bindgen with no subcommand) -->
 
 ### Rust
 
@@ -380,7 +381,7 @@ Create a `build.rs` that points to the callee's `.did` file:
 // build.rs
 fn main() {
     ic_cdk_bindgen::Config::new("callee", "candid/callee.did")
-        .dynamic_callee("ICP_CANISTER_ID:callee")
+        .dynamic_callee("PUBLIC_CANISTER_ID:callee")
         .generate();
 }
 ```
@@ -399,7 +400,8 @@ async fn invoke_callee() {
 }
 ```
 
-The `.dynamic_callee("ICP_CANISTER_ID:callee")` mode reads the canister ID from an environment variable at runtime, which is compatible with [canister discovery](onchain-calls.md#canister-discovery) via `icp deploy`. For canisters with fixed IDs, use `.static_callee(principal)` instead.
+The `.dynamic_callee("PUBLIC_CANISTER_ID:callee")` mode reads the canister ID from a canister environment variable at runtime — the same `PUBLIC_CANISTER_ID:<name>` variables that `icp deploy` injects (see [canister discovery](onchain-calls.md#canister-discovery)). For canisters with fixed IDs, use `.static_callee(principal)` instead.
+<!-- Needs human verification: the upstream ic-cdk-bindgen README uses ICP_CANISTER_ID: in its example, but icp-cli sets PUBLIC_CANISTER_ID:. We use PUBLIC_CANISTER_ID: here to match icp-cli. An issue has been filed on dfinity/cdk-rs to align the upstream README. -->
 
 For type selector configuration and advanced options, see the [`ic-cdk-bindgen` documentation](https://crates.io/crates/ic-cdk-bindgen).
 

@@ -155,7 +155,7 @@ let counterId = Principal.fromText(counterIdText);
 
 Deployment order does not matter — `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
 
-> **Tip:** For Rust canisters that make inter-canister calls, [`ic-cdk-bindgen`](candid.md#rust-1) can generate type-safe call stubs from `.did` files — so you call typed functions instead of manually constructing `Call::unbounded_wait` with string method names. See [Binding generation](candid.md#binding-generation) for details.
+> **Tip:** For Rust canisters that make inter-canister calls, [`ic-cdk-bindgen`](candid.md#binding-generation) can generate type-safe call stubs from `.did` files — so you call typed functions instead of manually constructing `Call::unbounded_wait` with string method names. See [Binding generation](candid.md#binding-generation) for details.
 
 ### Alternative approaches
 
