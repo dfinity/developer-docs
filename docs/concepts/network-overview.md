@@ -20,6 +20,7 @@ When you deploy a canister, it lands on one subnet and is replicated across ever
 - **Cross-subnet calls.** Canisters on different subnets can call each other through the network's messaging layer. These calls are slightly slower than calls within the same subnet (they require an extra consensus round), but they work transparently — you don't need to know which subnet a canister lives on.
 - **Subnet size and cost.** Subnets typically range from 13 to 40 nodes. Larger subnets provide stronger security guarantees (more nodes must collude to compromise state) but cost more cycles to run on. Most application canisters run on 13-node subnets.
 - **Finality.** ICP achieves finality in 1–2 seconds. Once your update call returns, the state change is committed and replicated — there are no probabilistic confirmations or reorgs.
+- **Shared storage budget.** All canisters on a subnet share a common storage budget. Each canister can use up to 500 GiB of stable memory, but the total available depends on the subnet's current utilization. Storage-heavy applications should consider subnet selection.
 - **Geographic distribution.** Nodes within a subnet are distributed across data centers, operators, and jurisdictions to maximize decentralization. Localized subnets also exist for applications with data residency requirements.
 
 For details on subnet types and how to choose one, see [Subnet types](../reference/subnet-types.md) and [Subnet selection](../guides/canister-management/subnet-selection.md).

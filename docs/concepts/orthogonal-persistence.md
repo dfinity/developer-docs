@@ -20,15 +20,15 @@ Every canister has two distinct memory regions, each with different characterist
 
 This is regular program memory -- the space where variables, data structures, and the call stack live during execution. It maps to the Wasm linear memory of the canister module.
 
-- **Size limit:** 4 GB for wasm32 canisters, 6 GB for wasm64
+- **Size limit:** 4 GiB for wasm32 canisters, 6 GiB for wasm64
 - **Performance:** Fast, native Wasm memory access
-- **Upgrade behavior:** Historically wiped on canister upgrade (Rust); automatically preserved in Motoko with `persistent actor`
+- **Upgrade behavior:** Wiped on canister upgrade (Rust) -- use stable structures to persist data; automatically preserved in Motoko with `persistent actor`
 
 ### Stable memory
 
 A separate, dedicated memory region provided by the Internet Computer runtime. Its sole purpose is to survive canister upgrades.
 
-- **Size limit:** Hundreds of GB (bounded by the subnet storage limit, approximately 500 GB)
+- **Size limit:** Up to 500 GiB per canister. The actual available capacity also depends on the subnet's total storage usage, since all canisters on a subnet share a common storage budget. For storage-heavy applications, consider [subnet selection](../guides/canister-management/subnet-selection.md).
 - **Performance:** Slower than heap memory -- each access goes through system API calls rather than direct Wasm memory operations
 - **Upgrade behavior:** Always survives upgrades
 
@@ -103,7 +103,7 @@ Key properties of Rust stable structures:
 - **`MemoryManager`** partitions stable memory into virtual memories, each assigned a unique `MemoryId`
 - **`StableBTreeMap`**, **`StableCell`**, and **`StableLog`** are the primary data structures, each backed by a virtual memory region
 - **Custom types need `Storable`** -- keys require `Storable + Ord`, values require `Storable`. Primitive types (`u64`, `String`, `Vec<u8>`) implement it automatically
-- **`#[init]` and `#[post_upgrade]`** handlers must be defined. Stable structures auto-restore, so `post_upgrade` only needs to reinitialize transient state (timers, caches)
+- **`#[init]` and `#[post_upgrade]`** handlers should be defined to reinitialize transient state (timers, caches). Stable structures auto-restore without these hooks, but omitting them may silently leave transient state uninitialized
 - **No `pre_upgrade` serialization needed** -- data is already in stable memory
 
 For complete implementation patterns including `Storable` implementations for custom types, see the [Rust stable structures](../languages/rust/stable-structures.md) guide.
@@ -112,7 +112,7 @@ For complete implementation patterns including `Storable` implementations for cu
 
 Before stable structures existed, the standard approach in Rust was to store data in heap memory (`thread_local! { RefCell<HashMap<...>> }`) and serialize it to stable memory in `pre_upgrade`, then deserialize it back in `post_upgrade`.
 
-This pattern has a critical failure mode: `pre_upgrade` runs with a fixed instruction limit. If the dataset grows large enough, serialization exceeds the limit, the hook traps, and the canister is **bricked** -- the upgrade fails and the data cannot be recovered.
+This pattern has a critical failure mode: `pre_upgrade` runs with a fixed instruction limit. If the dataset grows large enough, serialization exceeds the limit and the hook traps. The upgrade fails, and recovery requires the `skip_pre_upgrade` flag, which bypasses the failing hook but may result in data loss.
 
 Stable structures avoid this entirely by writing directly to stable memory during normal operation. There is nothing to serialize at upgrade time.
 
@@ -120,11 +120,11 @@ Stable structures avoid this entirely by writing directly to stable memory durin
 
 | | Heap memory | Stable memory |
 |---|---|---|
-| **Size limit** | 4 GB (wasm32) / 6 GB (wasm64) | Hundreds of GB |
+| **Size limit** | 4 GiB (wasm32) / 6 GiB (wasm64) | Up to 500 GiB |
 | **Access speed** | Fast (native Wasm) | Slower (system API calls) |
 | **Upgrade safety** | Automatic in Motoko `persistent actor`; wiped in Rust | Always survives upgrades |
 | **API** | Native language constructs | `StableBTreeMap` etc. (Rust); automatic (Motoko) |
-| **Use case** | Caches, temporary computation | All persistent application data |
+| **Use case** | All data in Motoko `persistent actor`; caches and temporary computation in Rust | All persistent application data (Rust) |
 
 In Motoko with `persistent actor`, this trade-off is largely invisible -- the runtime manages the mapping between heap and stable memory during upgrades. In Rust, developers choose explicitly: heap data (fast but ephemeral) or stable structures (slightly slower but durable).
 
