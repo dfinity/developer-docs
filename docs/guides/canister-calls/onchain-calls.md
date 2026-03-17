@@ -79,8 +79,8 @@ The Rust CDK provides `Call::unbounded_wait` and `Call::bounded_wait` to call ot
 
 ```rust
 use candid::{Nat, Principal};
-use ic_cdk::call::{Call, CallErrorExt};
-use ic_cdk_macros::update;
+use ic_cdk::call::Call;
+use ic_cdk::update;
 
 #[update]
 pub async fn call_get_and_set(counter: Principal, new_value: Nat) -> Nat {
@@ -100,7 +100,7 @@ The call returns a `Result` where the error type distinguishes **clean rejects**
 ```rust
 use candid::Principal;
 use ic_cdk::call::{Call, CallErrorExt};
-use ic_cdk_macros::update;
+use ic_cdk::update;
 
 #[update]
 pub async fn call_increment(counter: Principal) -> Result<(), String> {
@@ -121,6 +121,21 @@ The distinction matters for correctness:
 - **Clean reject** -- the callee never executed the method. Safe to retry.
 - **Non-clean reject** -- the callee may or may not have executed. Use idempotent APIs or provide a separate endpoint to query the outcome.
 
+## Canister discovery
+
+Before making an inter-canister call, your canister needs the `Principal` of the target canister. There are three common approaches:
+
+**Motoko — import by name.** Use `import Counter "canister:counter"` where the name matches your `icp.yaml` configuration. The build toolchain resolves the canister ID at compile time.
+
+**Rust — init argument.** Accept the target canister's `Principal` as an `#[init]` argument and store it for later use. Pass the canister ID at deploy time:
+
+```bash
+TARGET_ID=$(icp canister id counter)
+icp deploy my_canister --argument "(principal \"$TARGET_ID\")"
+```
+
+**Hardcoded principal.** For well-known system canisters (like the management canister `aaaaa-aa` or the NNS ledger), you can hardcode the `Principal` directly. Avoid this for application canisters since their IDs may differ between local and mainnet deployments.
+
 ## Bounded vs unbounded wait
 
 Every inter-canister call must choose a wait strategy:
@@ -139,13 +154,83 @@ The caller waits until the callee produces a response. Response delivery (includ
 use ic_cdk::call::Call;
 
 Call::bounded_wait(callee, "method")
-    .change_timeout(1)
+    .change_timeout(5) // timeout in seconds
     .await
 ```
 
 The caller may receive a `SYS_UNKNOWN` response after the timeout expires or if the subnet runs low on resources. Response delivery is best-effort. Use this for calls to third-party or untrusted canisters.
 
 **Upgrade safety:** unbounded wait calls may prevent your canister from upgrading until the callee responds. If the callee is unresponsive or malicious, your canister could be stuck indefinitely. Prefer bounded wait when calling canisters you do not control.
+
+**Calling third-party canisters:** When calling canisters outside your control, always use bounded wait and design for uncertainty. The callee may be upgraded, become unresponsive, or behave unexpectedly. Use idempotent operations where possible and provide a way to query the outcome of a call separately, so your canister can recover from ambiguous responses.
+
+## Pub/sub pattern
+
+The publisher/subscriber pattern is a natural fit for inter-canister communication on ICP. A publisher canister maintains a list of subscribers and notifies them when events occur. Unlike traditional pub/sub systems, ICP's reliable message delivery means subscribers are guaranteed to receive notifications (as long as both canisters have sufficient cycles).
+
+### Publisher
+
+The publisher stores subscriber callbacks and invokes them when publishing:
+
+```motoko
+import List "mo:base/List";
+
+persistent actor Publisher {
+
+  type Event = { topic : Text; value : Nat };
+
+  type Subscriber = {
+    topic : Text;
+    callback : shared Event -> ();
+  };
+
+  var subscribers = List.nil<Subscriber>();
+
+  public func subscribe(subscriber : Subscriber) {
+    subscribers := List.push(subscriber, subscribers);
+  };
+
+  public func publish(event : Event) {
+    for (sub in List.toArray(subscribers).vals()) {
+      if (sub.topic == event.topic) {
+        sub.callback(event);
+      };
+    };
+  };
+};
+```
+
+### Subscriber
+
+The subscriber registers a callback with the publisher using an inter-canister call:
+
+```motoko
+import Publisher "canister:pub";
+
+persistent actor Subscriber {
+
+  type Event = { topic : Text; value : Nat };
+
+  var count : Nat = 0;
+
+  public func init(topic : Text) {
+    Publisher.subscribe({
+      topic;
+      callback = onEvent;
+    });
+  };
+
+  public func onEvent(event : Event) {
+    count += event.value;
+  };
+
+  public query func getCount() : async Nat { count };
+};
+```
+
+The key mechanism is passing a **shared function reference** (`callback`) across canisters. When the publisher calls `sub.callback(event)`, it makes an inter-canister call back to the subscriber.
+
+<!-- TODO: Create a Rust pub/sub example in dfinity/examples — Rust currently has no equivalent of this Motoko pattern in the examples repo -->
 
 ## Important caveats
 
@@ -170,7 +255,13 @@ In Rust, `ic_cdk::api::msg_caller()` returns the caller of the **current message
 #[update]
 pub async fn transfer(to: Principal, amount: Nat) -> Result<(), String> {
     let caller = ic_cdk::api::msg_caller(); // Bind BEFORE await
-    // ... use `caller` after await points
+
+    Call::unbounded_wait(LEDGER, "transfer")
+        .with_arg(&(caller, to, amount))
+        .await
+        .map_err(|e| format!("Transfer failed: {:?}", e))?;
+
+    ic_cdk::println!("Transfer initiated by {}", caller); // Safe: captured before await
     Ok(())
 }
 ```
@@ -198,4 +289,4 @@ Calls between canisters on the same subnet complete within a single round. Cross
 - [Certified Variables](../backends/certified-variables.md) -- make query responses verifiable without update call overhead
 - [Inter-Canister Call Security](../security/inter-canister-calls.md) -- reentrancy guards, async safety patterns, and trust considerations
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, and multi-canister icskill -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, and dfinity/examples motoko/pub-sub -->
