@@ -30,7 +30,9 @@ To make query responses verifiable without the cost of update calls, see [Certif
 
 ## Making calls in Motoko
 
-Import another canister by name (the name must match your `icp.yaml` configuration) and call its methods with `await`:
+Import another canister by name and call its methods with `await`:
+
+> **Note:** The `canister:name` import syntax is being redesigned for icp-cli compatibility. See [Canister discovery](#canister-discovery) for the recommended environment variable approach.
 
 ```motoko
 import Counter "canister:counter";
@@ -123,18 +125,51 @@ The distinction matters for correctness:
 
 ## Canister discovery
 
-Before making an inter-canister call, your canister needs the `Principal` of the target canister. There are three common approaches:
+Before making an inter-canister call, your canister needs the `Principal` of the target canister. Canister IDs are assigned at deployment time and differ between environments (local, staging, mainnet), so hardcoding them creates portability problems.
 
-**Motoko — import by name.** Use `import Counter "canister:counter"` where the name matches your `icp.yaml` configuration. The build toolchain resolves the canister ID at compile time.
+### Environment variables (recommended)
 
-**Rust — init argument.** Accept the target canister's `Principal` as an `#[init]` argument and store it for later use. Pass the canister ID at deploy time:
+`icp deploy` automatically injects `PUBLIC_CANISTER_ID:<name>` environment variables into every canister in the environment. This means each canister can discover any other canister's ID at runtime without hardcoding:
+
+**Rust:**
+
+```rust
+use candid::Principal;
+
+let counter_id = Principal::from_text(
+    &ic_cdk::api::env_var_value("PUBLIC_CANISTER_ID:counter")
+).unwrap();
+```
+
+**Motoko:**
+
+```motoko
+import Prim "mo:⛔";
+import Principal "mo:core/Principal";
+
+let ?counterIdText = Prim.envVar<system>("PUBLIC_CANISTER_ID:counter") else {
+    return #err("counter canister ID not set");
+};
+let counterId = Principal.fromText(counterIdText);
+```
+
+> **Note:** `Prim.envVar` uses an internal module (`mo:⛔`). This functionality will move to the Motoko core library in a future release.
+
+Deployment order does not matter — `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
+
+### Alternative approaches
+
+**Init arguments.** Accept the target `Principal` as an `#[init]` argument and store it. This avoids the environment variable lookup at call time but requires passing the ID at every deploy and upgrade:
 
 ```bash
 TARGET_ID=$(icp canister id counter)
 icp deploy my_canister --argument "(principal \"$TARGET_ID\")"
 ```
 
-**Hardcoded principal.** For well-known system canisters (like the management canister `aaaaa-aa` or the NNS ledger), you can hardcode the `Principal` directly. Avoid this for application canisters since their IDs may differ between local and mainnet deployments.
+**Hardcoded principal.** Acceptable for well-known system canisters (like the management canister `aaaaa-aa` or the NNS ledger). Avoid for application canisters.
+
+> **Motoko named imports:** Motoko's `import Counter "canister:counter"` syntax resolves canister IDs at compile time. This syntax is currently being redesigned to work with icp-cli's environment-based discovery model. Use environment variables for now if you are building with icp-cli.
+<!-- Needs human verification: check back with Motoko team on the status of canister:name redesign -->
 
 ## Bounded vs unbounded wait
 
@@ -229,6 +264,8 @@ persistent actor Subscriber {
 ```
 
 The key mechanism is passing a **shared function reference** (`callback`) across canisters. When the publisher calls `sub.callback(event)`, it makes an inter-canister call back to the subscriber.
+
+> **Note:** The subscriber uses `canister:pub` to import the publisher. See [Canister discovery](#canister-discovery) for the note on this syntax and the recommended environment variable alternative.
 
 <!-- TODO: Create a Rust pub/sub example in dfinity/examples — Rust currently has no equivalent of this Motoko pattern in the examples repo -->
 
