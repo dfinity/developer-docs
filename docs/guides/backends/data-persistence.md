@@ -6,19 +6,402 @@ sidebar:
 icskills: [stable-memory]
 ---
 
-TODO: Write content for this page.
+Canister state lives in two places: **heap memory** (fast, temporary, wiped on upgrade) and **stable memory** (persistent, survives upgrades). Any data you care about must end up in stable memory, or it will be lost the next time the canister is deployed.
 
-<!-- Content Brief -->
-Guide developers through storing data in canisters. This is the how-to companion to concepts/orthogonal-persistence (which explains what and why; this page shows how). Cover: Motoko persistent actors (persistent actor, transient var, let/var persistence, schema evolution rules), Rust stable structures (StableBTreeMap, StableCell, StableLog, MemoryManager, MemoryId partitioning, Storable trait implementations for custom types, #[init]/#[post_upgrade] hook patterns), and the dangerous pre_upgrade heap serialization anti-pattern. Include idempotency patterns for safe data mutation. Show complete code examples for both Rust and Motoko.
+This guide shows how to store data durably in both Motoko and Rust. For a conceptual explanation of why stable memory works this way, see [Orthogonal Persistence](../../concepts/orthogonal-persistence.md).
 
-<!-- Source Material -->
-- Portal: building-apps/canister-management/storage.mdx, best-practices/storage.mdx, best-practices/idempotency.mdx
-- icskills: stable-memory
-- Examples: daily_planner (both), superheroes (Motoko), photo_gallery (Rust)
-- Rust CDK: https://docs.rs/ic-cdk/latest/ic_cdk/
+## Motoko: persistent actor
 
-<!-- Cross-Links -->
-- concepts/orthogonal-persistence -- conceptual background
-- guides/canister-management/lifecycle -- upgrade hooks
-- languages/rust/stable-structures -- Rust-specific deep dive
-- languages/motoko/ -- Motoko persistence patterns
+In Motoko, use `persistent actor`. All `let` and `var` declarations inside the actor body are automatically persisted across upgrades — no `stable` keyword, no upgrade hooks.
+
+```motoko
+import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Text "mo:core/Text";
+import Time "mo:core/Time";
+
+persistent actor {
+
+  // Custom type — defined inside the actor body
+  type User = {
+    id : Nat;
+    name : Text;
+    created : Int;
+  };
+
+  // Automatically persisted across upgrades — no "stable" keyword needed
+  let users = Map.empty<Nat, User>();
+  var userCounter : Nat = 0;
+
+  // Transient data — resets to 0 on every upgrade
+  transient var requestCount : Nat = 0;
+
+  public func addUser(name : Text) : async Nat {
+    let id = userCounter;
+    Map.add(users, Nat.compare, id, {
+      id;
+      name;
+      created = Time.now();
+    });
+    userCounter += 1;
+    requestCount += 1;
+    id
+  };
+
+  public query func getUser(id : Nat) : async ?User {
+    Map.get(users, Nat.compare, id)
+  };
+
+  public query func getUserCount() : async Nat {
+    Map.size(users)
+  };
+
+  // Resets to 0 after every upgrade — use transient for ephemeral state
+  public query func getRequestCount() : async Nat {
+    requestCount
+  };
+}
+```
+
+**Rules for Motoko persistent actors:**
+
+- `let` for collections (`Map`, `List`, `Set`) — auto-persisted, no serialization needed
+- `var` for simple values (`Nat`, `Text`, `Bool`) — auto-persisted
+- `transient var` for caches or counters that should reset on upgrade
+- No `pre_upgrade` / `post_upgrade` hooks needed — the runtime handles persistence
+- Do not write `stable let` or `stable var` — redundant in `persistent actor` and produces compiler warnings
+
+### mops.toml
+
+```toml
+[package]
+name = "my-project"
+version = "0.1.0"
+
+[dependencies]
+core = "2.0.0"
+```
+
+### Schema evolution rules
+
+When upgrading a Motoko canister, the type of every persistent field must be compatible with its stored value. Violating this traps the upgrade and data is unrecoverable.
+
+**Safe changes (always OK):**
+- Add new `let` or `var` fields with initial values
+- Add new optional record fields (e.g., change `{ name : Text }` to `{ name : Text; email : ?Text }`)
+
+**Unsafe changes (will trap on upgrade):**
+- Remove or rename a persistent field
+- Change a field's type (e.g., `Nat` → `Int`)
+- Change a non-optional field to a different type
+
+## Rust: stable structures
+
+Rust canisters use [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) for persistent storage. The `MemoryManager` partitions stable memory into virtual memories, each backing a separate data structure. Data lives in stable memory from the start — no serialization on upgrade.
+
+### Cargo.toml
+
+```toml
+[package]
+name = "stable_memory_backend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ic-cdk = "0.19"
+ic-stable-structures = "0.7"
+candid = "0.10"
+serde = { version = "1", features = ["derive"] }
+ciborium = "0.2"
+```
+
+### Implementing Storable for custom types
+
+`StableBTreeMap` keys must implement `Storable + Ord`, values must implement `Storable`. Primitive types (`u64`, `bool`, `String`, `Vec<u8>`, `Principal`) already implement `Storable`. For custom structs, implement it manually using CBOR serialization:
+
+```rust
+use ic_stable_structures::storable::{Bound, Storable};
+use candid::CandidType;
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+
+#[derive(CandidType, Serialize, Deserialize, Clone)]
+struct User {
+    id: u64,
+    name: String,
+    created: u64,
+}
+
+impl Storable for User {
+    // Prefer Unbounded — avoids breakage when adding new fields.
+    // Bounded requires a fixed max_size; exceeding it after a schema change
+    // breaks deserialization of existing data.
+    const BOUND: Bound = Bound::Unbounded;
+
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        let mut buf = vec![];
+        ciborium::into_writer(self, &mut buf).expect("Failed to encode User");
+        Cow::Owned(buf)
+    }
+
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
+        ciborium::from_reader(bytes.as_ref()).expect("Failed to decode User")
+    }
+}
+```
+
+### MemoryManager and stable structures
+
+```rust
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    storable::{Bound, Storable},
+    DefaultMemoryImpl, StableBTreeMap, StableCell,
+};
+use ic_cdk::{init, post_upgrade, query, update};
+use candid::CandidType;
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::cell::RefCell;
+
+type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+// Each structure gets its own MemoryId — NEVER reuse IDs across structures
+const USERS_MEM_ID: MemoryId = MemoryId::new(0);
+const COUNTER_MEM_ID: MemoryId = MemoryId::new(1);
+
+thread_local! {
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
+        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    static USERS: RefCell<StableBTreeMap<u64, User, Memory>> =
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEM_ID))
+        ));
+
+    // StableCell for a single value (counter, config, etc.)
+    static COUNTER: RefCell<StableCell<u64, Memory>> =
+        RefCell::new(StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(COUNTER_MEM_ID)),
+            0u64,
+        ).expect("Failed to init counter"));
+}
+
+#[init]
+fn init() {
+    // One-time initialization — stable structures auto-initialize from above
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    // Stable structures auto-restore — no deserialization needed here.
+    // Re-initialize timers or other transient state if needed.
+}
+
+#[update]
+fn add_user(name: String) -> u64 {
+    let id = COUNTER.with(|c| {
+        let mut cell = c.borrow_mut();
+        let current = *cell.get();
+        cell.set(current + 1).expect("Counter update failed");
+        current
+    });
+
+    USERS.with(|users| {
+        users.borrow_mut().insert(id, User {
+            id,
+            name,
+            created: ic_cdk::api::time(),
+        });
+    });
+
+    id
+}
+
+#[query]
+fn get_user(id: u64) -> Option<User> {
+    USERS.with(|users| users.borrow().get(&id))
+}
+
+#[query]
+fn get_user_count() -> u64 {
+    USERS.with(|users| users.borrow().len())
+}
+
+ic_cdk::export_candid!();
+```
+
+### Multiple stable structures
+
+When using more than one stable structure, give each a unique `MemoryId`. `StableLog` requires two memory regions (index + data):
+
+```rust
+use ic_stable_structures::{StableBTreeMap, StableCell, StableLog};
+
+// Assign one MemoryId per structure — never reuse
+const USERS_MEM_ID: MemoryId = MemoryId::new(0);
+const POSTS_MEM_ID: MemoryId = MemoryId::new(1);
+const COUNTER_MEM_ID: MemoryId = MemoryId::new(2);
+const LOG_INDEX_MEM_ID: MemoryId = MemoryId::new(3); // StableLog needs two
+const LOG_DATA_MEM_ID: MemoryId = MemoryId::new(4);
+
+thread_local! {
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
+        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    static USERS: RefCell<StableBTreeMap<u64, User, Memory>> =
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEM_ID))
+        ));
+
+    static POSTS: RefCell<StableBTreeMap<u64, Post, Memory>> =
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(POSTS_MEM_ID))
+        ));
+
+    static COUNTER: RefCell<StableCell<u64, Memory>> =
+        RefCell::new(StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(COUNTER_MEM_ID)),
+            0u64,
+        ).expect("Failed to init counter"));
+
+    static AUDIT_LOG: RefCell<StableLog<Vec<u8>, Memory, Memory>> =
+        RefCell::new(StableLog::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(LOG_INDEX_MEM_ID)),
+            MEMORY_MANAGER.with(|m| m.borrow().get(LOG_DATA_MEM_ID)),
+        ).expect("Failed to init audit log"));
+}
+```
+
+**Rules for Rust stable structures:**
+
+- Each structure gets a unique `MemoryId` — reusing IDs corrupts both structures
+- `StableBTreeMap` for keyed collections; keys need `Storable + Ord`
+- `StableCell` for single values (counters, config flags)
+- `StableLog` for append-only logs — requires two `MemoryId`s (index + data)
+- `thread_local! { RefCell<StableBTreeMap<...>> }` is the correct pattern — `RefCell` wraps the stable structure, not a heap `HashMap`
+- No `pre_upgrade`/`post_upgrade` serialization needed — data is already in stable memory
+
+## Anti-pattern: pre_upgrade serialization (Rust)
+
+Avoid serializing heap data to stable memory in `pre_upgrade` hooks. This pattern is fragile and will brick the canister under load:
+
+```rust
+// DO NOT DO THIS
+#[pre_upgrade]
+fn pre_upgrade() {
+    // If STATE is large, this hits the instruction limit and traps.
+    // A trapped pre_upgrade bricks the canister — the upgrade cannot complete
+    // and the canister is stuck on the old code with no way to recover.
+    let state = STATE.with(|s| s.borrow().clone());
+    ic_cdk::storage::stable_save((state,)).unwrap();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    let (state,) = ic_cdk::storage::stable_restore().unwrap();
+    STATE.with(|s| *s.borrow_mut() = state);
+}
+```
+
+Use `StableBTreeMap` and other stable structures instead. Data lives in stable memory from the start, so no serialization step is needed on upgrade.
+
+## Idempotency for safe data mutation
+
+When an update call's result is unknown (network interruption, ingress expiry), callers may retry. Without idempotency, retries can cause double-writes, double-spends, or duplicate records. Two patterns handle this:
+
+### Sequence numbers
+
+Track a per-caller counter. A call is only accepted if it carries the next expected sequence number:
+
+```motoko
+// Motoko example — persistent actor
+var callerSeq = Map.empty<Principal, Nat>();
+
+public shared(msg) func transferWithSeq(amount : Nat, seq : Nat) : async Bool {
+  let caller = msg.caller;
+  let expected = switch (Map.get(callerSeq, Principal.compare, caller)) {
+    case null 0;
+    case (?n) n;
+  };
+  if (seq != expected) return false; // reject out-of-order or duplicate calls
+  // ... perform transfer ...
+  Map.add(callerSeq, Principal.compare, caller, seq + 1);
+  true
+};
+```
+
+Best for low-throughput, per-account flows (similar to Ethereum nonces). Limits concurrency to one in-flight call per caller.
+
+### ID deduplication
+
+Callers attach a unique ID per operation. The canister rejects duplicates within a time window:
+
+```motoko
+// Motoko example — persistent actor
+import Time "mo:core/Time";
+
+type DedupeEntry = { executed_at : Int };
+let executed = Map.empty<Text, DedupeEntry>();
+let WINDOW_NS : Int = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
+
+public func transferWithId(amount : Nat, idempotency_key : Text) : async Bool {
+  let now = Time.now();
+  switch (Map.get(executed, Text.compare, idempotency_key)) {
+    case (?entry) {
+      if (now - entry.executed_at < WINDOW_NS) return true; // already done
+    };
+    case null {};
+  };
+  // ... perform transfer ...
+  Map.add(executed, Text.compare, idempotency_key, { executed_at = now });
+  true
+};
+```
+
+Supports higher throughput and concurrent callers. Requires bounded storage — expire entries after the deduplication window.
+
+## Verify persistence across upgrades
+
+The definitive test: deploy, write data, upgrade, confirm data survived.
+
+```bash
+icp network start -d
+icp deploy backend
+
+# Write some data
+icp canister call backend addUser '("Alice")'
+icp canister call backend addUser '("Bob")'
+
+# Record the count
+icp canister call backend getUserCount '()'
+# Returns: (2 : nat)
+
+# Upgrade the canister (redeploy with code change)
+icp deploy backend
+
+# Data must still be there
+icp canister call backend getUserCount '()'
+# Must still return: (2 : nat)
+
+icp canister call backend getUser '(0)'
+# Returns: (opt record { id = 0 : nat; name = "Alice"; ... })
+
+# Transient state resets
+icp canister call backend getRequestCount '()'
+# Returns: (0 : nat) — expected, transient var resets on upgrade
+```
+
+If the count drops to 0 after upgrade, the data is not in stable memory. Review your storage declarations.
+
+## Related
+
+- [Orthogonal Persistence](../../concepts/orthogonal-persistence.md) — conceptual explanation of heap vs. stable memory
+- [Canister Lifecycle](../canister-management/lifecycle.md) — upgrade hooks and canister lifecycle
+- [Stable Structures (Rust)](../../languages/rust/stable-structures.md) — deep dive into `ic-stable-structures`
+- [Motoko](../../languages/motoko/index.md) — Motoko language overview and persistence model
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/canister-management/storage.mdx, docs/building-apps/best-practices/storage.mdx, docs/building-apps/best-practices/idempotency.mdx -->
