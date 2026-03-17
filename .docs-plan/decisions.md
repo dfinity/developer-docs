@@ -162,3 +162,10 @@ Record decisions that constrain future work — things an agent needs to know th
 **Decision:** Enforce squash-merge as the only merge method on GitHub. Auto-delete branches after merge. Squash commit uses PR title and PR body.
 **Rationale:** Keeps `git log` on `main` clean (one commit per page/feature). PR history is always available on GitHub. Auto-delete prevents stale `docs/<slug>` branches from accumulating.
 **Alternatives considered:** Merge commits (noisy history), rebase merge (preserves individual commits nobody needs)
+
+## 2026-03-17: Merge binding-generation page into Candid interface guide
+
+**Context:** The planned `guides/canister-calls/binding-generation.md` had significant overlap with the existing Candid interface guide, which already covered `.did` generation and JS binding usage. The two dedicated binding tools are `@icp-sdk/bindgen` (JS/TS) and `ic-cdk-bindgen` (Rust) — `didc bind` should not be advertised for binding generation.
+**Decision:** (1) Merged all binding-generation content into `candid.md` as a "Binding generation" section. (2) Removed the `binding-generation.md` stub. (3) Updated `didc` tool table to focus on validation/encoding (removed `didc bind` rows). (4) Documented both auto-generated and hand-written `.did` file paths for Motoko. (5) Updated `onchain-calls.md` canister discovery section with a cross-link to the new bindings section. (6) Removed Beads task and updated migration plan dependencies.
+**Rationale:** The developer flow is linear: define interface → generate `.did` → generate bindings → use them. Splitting bindings into a separate page creates an artificial seam. The Candid guide is the natural home for the full flow.
+**Alternatives considered:** Keep separate page (creates overlap and navigation friction), move all `.did` generation to the bindings page (splits related content)

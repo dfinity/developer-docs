@@ -231,8 +231,8 @@ These pages fill out the docs site with important secondary content.
 
 | # | Layer | Page | Effort | Dependencies | Source Material | Skills |
 |---|-------|------|--------|-------------|-----------------|--------|
-| 47 | 2 | `guides/canister-calls/binding-generation.md` | M | candid | icp-cli binding-generation; JS SDK: @icp-sdk/bindgen | sync |
-| 47b | 3 | `guides/canister-calls/offchain-calls.md` | M | candid, binding-generation | JS SDK: @icp-sdk/core, @icp-sdk/canisters; icp-cli canister-discovery; hello-world template | original |
+| ~~47~~ | — | ~~`guides/canister-calls/binding-generation.md`~~ | — | — | Merged into `candid.md` "Binding generation" section | — |
+| 47b | 3 | `guides/canister-calls/offchain-calls.md` | M | candid | JS SDK: @icp-sdk/core, @icp-sdk/canisters; icp-cli canister-discovery; hello-world template | original |
 | 48 | 5+ | `guides/canister-management/subnet-selection.md` | M | cycles-management | Portal deploy-specific-subnet.mdx; icp-cli deploying-to-specific-subnets | rewrite, sync |
 | 49 | 2 | `guides/security/data-integrity.md` | L | concepts/security | icskills: vetkd, certified-variables; examples: vetkeys, vetkd | rewrite |
 | 50 | 2 | `guides/security/dos-prevention.md` | M | concepts/security | icskills: canister-security | original |
@@ -338,8 +338,7 @@ concepts/canisters.md                          ← HUB: most pages depend on thi
   │     │     │     └── guides/defi/chain-key-tokens.md
   │     │     ├── guides/security/inter-canister-calls.md
   │     │     └── guides/canister-calls/parallel-calls.md
-  │     └── guides/canister-calls/binding-generation.md
-  │           └── guides/canister-calls/offchain-calls.md
+  │     └── guides/canister-calls/offchain-calls.md
   ├── guides/backends/data-persistence.md      (also needs: orthogonal-persistence)
   │     └── guides/canister-management/lifecycle.md
   │           ├── guides/canister-management/settings.md

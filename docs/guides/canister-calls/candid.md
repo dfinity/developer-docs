@@ -99,7 +99,21 @@ For the complete type reference, including subtyping rules, see the [Candid spec
 
 ### Motoko
 
-The Motoko compiler generates Candid descriptions automatically from your actor's type signature. When you build with icp-cli, the `.did` file is placed in the build output directory. You do not need to write or maintain a `.did` file by hand for Motoko canisters.
+The Motoko compiler generates Candid descriptions automatically from your actor's type signature. When you build with icp-cli, the `.did` file is placed in the build output directory — no manual authoring needed.
+
+You can also provide a hand-written `.did` file by setting the `candid` field in `icp.yaml`. This is useful when you want an explicit API contract that is versioned independently of the implementation:
+
+```yaml
+canisters:
+  - name: backend
+    recipe:
+      type: "@dfinity/motoko@v4.1.0"
+      configuration:
+        main: backend/app.mo
+        candid: backend/backend.did  # Optional — overrides auto-generation
+```
+
+If `candid` is omitted, the Motoko recipe auto-generates the interface from the source.
 
 ### Rust
 
@@ -147,6 +161,8 @@ canisters:
         package: my_canister
         candid: src/my_canister/my_canister.did
 ```
+
+As with Motoko, the Rust recipe can also auto-extract the Candid interface from the compiled Wasm using `candid-extractor` if you omit the `candid` field. Providing an explicit file is recommended for stable APIs.
 
 ## Type mapping in practice
 
@@ -241,15 +257,7 @@ icp canister call my_canister set_address '("Alice", record { street = "123 Main
 
 ### From JavaScript
 
-The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types into native JavaScript values. To call a canister from JavaScript, you need typed declarations generated from the `.did` file. Generate them using [`@icp-sdk/bindgen`](https://js.icp.build/bindgen) or the `didc` CLI:
-
-```bash
-# Using @icp-sdk/bindgen (recommended for JS/TS projects)
-npx @icp-sdk/bindgen --did-file my_canister.did --out-dir src/declarations/my_canister
-
-# Or using didc directly
-didc bind my_canister.did -t js
-```
+The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types into native JavaScript values. To call a canister from JavaScript, you need typed declarations generated from the `.did` file — see [Binding generation](#binding-generation) below for how to set this up.
 
 The generated declarations export a `createActor` function and an `idlFactory` that describes the interface:
 
@@ -324,15 +332,84 @@ type UserProfile = record {
 
 Using `reserved` prevents future developers from accidentally reusing the field's hash for a different purpose.
 
+## Binding generation
+
+Once you have a `.did` file, generate type-safe client bindings so callers get compile-time type checking instead of working with raw Candid values.
+
+### JavaScript / TypeScript
+
+[`@icp-sdk/bindgen`](https://js.icp.build/bindgen) generates TypeScript declarations from `.did` files. It supports both a CLI and a Vite plugin for automatic regeneration during development.
+
+**Vite plugin (recommended for frontend projects):**
+
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import { icpBindgen } from "@icp-sdk/bindgen/vite";
+
+export default defineConfig({
+  plugins: [
+    icpBindgen(),
+  ],
+});
+```
+
+The plugin reads your `icp.yaml`, finds each canister's `.did` file, and generates bindings into your source tree automatically when the dev server starts or when `.did` files change.
+
+**CLI (for non-Vite projects or CI):**
+
+```bash
+npx @icp-sdk/bindgen
+```
+
+By default, the CLI reads `icp.yaml` and generates bindings for all canisters. See the [`@icp-sdk/bindgen` documentation](https://js.icp.build/bindgen) for configuration options.
+
+### Rust
+
+[`ic-cdk-bindgen`](https://crates.io/crates/ic-cdk-bindgen) generates Rust bindings from `.did` files at build time via a Cargo build script. This gives you typed functions for inter-canister calls.
+
+Add it as a build dependency:
+
+```bash
+cargo add --build ic-cdk-bindgen
+```
+
+Create a `build.rs` that points to the callee's `.did` file:
+
+```rust
+// build.rs
+fn main() {
+    ic_cdk_bindgen::Config::new("callee", "candid/callee.did")
+        .dynamic_callee("ICP_CANISTER_ID:callee")
+        .generate();
+}
+```
+
+Then include the generated module in your canister code:
+
+```rust
+#[allow(dead_code, unused_imports)]
+mod callee {
+    include!(concat!(env!("OUT_DIR"), "/callee.rs"));
+}
+
+#[ic_cdk::update]
+async fn invoke_callee() {
+    let _result = callee::some_method().await;
+}
+```
+
+The `.dynamic_callee("ICP_CANISTER_ID:callee")` mode reads the canister ID from an environment variable at runtime, which is compatible with [canister discovery](onchain-calls.md#canister-discovery) via `icp deploy`. For canisters with fixed IDs, use `.static_callee(principal)` instead.
+
+For type selector configuration and advanced options, see the [`ic-cdk-bindgen` documentation](https://crates.io/crates/ic-cdk-bindgen).
+
 ## Candid tools
 
-**`didc`** — the Candid CLI for checking `.did` files, generating language bindings, encoding/decoding values, and testing subtype compatibility. Download from the [Candid releases page](https://github.com/dfinity/candid/releases).
+**`didc`** — the Candid CLI for checking `.did` files, encoding/decoding values, and testing subtype compatibility. Download from the [Candid releases page](https://github.com/dfinity/candid/releases).
 
 | Command | What it does |
 |---------|-------------|
 | `didc check service.did` | Validate a `.did` file |
-| `didc bind service.did -t js` | Generate JavaScript bindings |
-| `didc bind service.did -t rs` | Generate Rust bindings |
 | `didc encode '(42, "hello")'` | Encode a Candid value to hex |
 | `didc decode <hex>` | Decode binary Candid back to text |
 | `didc subtype new.did old.did` | Check that `new` is a safe upgrade from `old` |
@@ -343,7 +420,6 @@ Using `reserved` prevents future developers from accidentally reusing the field'
 
 - [Onchain calls](onchain-calls.md) — make inter-canister calls using Candid interfaces
 - [Offchain calls](offchain-calls.md) — call canisters from JavaScript frontends and agents
-- [Binding generation](binding-generation.md) — auto-generate typed clients from `.did` files
 - [Candid specification](../../reference/candid-spec.md) — full type reference and subtyping rules
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files) and docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx. Type mappings verified against .sources/candid (spec), .sources/motoko (IDL-Motoko.md), and .sources/cdk-rs. -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files), docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx, icp-cli concepts/binding-generation.md, ic-cdk-bindgen README, and @icp-sdk/bindgen. Type mappings verified against .sources/candid (spec), .sources/motoko (IDL-Motoko.md), and .sources/cdk-rs. -->

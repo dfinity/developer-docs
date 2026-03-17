@@ -155,6 +155,8 @@ let counterId = Principal.fromText(counterIdText);
 
 Deployment order does not matter — `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
 
+> **Tip:** Instead of looking up canister IDs manually, you can generate type-safe bindings that handle discovery for you. In Rust, [`ic-cdk-bindgen`](candid.md#rust-1) generates call stubs from `.did` files with built-in support for `ICP_CANISTER_ID:` environment variables. See [Binding generation](candid.md#binding-generation) for details.
+
 ### Alternative approaches
 
 **Init arguments.** Accept the target `Principal` as an `#[init]` argument and store it. This avoids the environment variable lookup at call time but requires passing the ID at every deploy and upgrade:

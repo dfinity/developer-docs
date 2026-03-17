@@ -30,7 +30,7 @@ Call canister functions from outside the IC using agent libraries. Explain the I
 
 <!-- Cross-Links -->
 - guides/canister-calls/candid -- interface definitions (shared by all agents)
-- guides/canister-calls/binding-generation -- generating typed clients
+- guides/canister-calls/candid#binding-generation -- generating typed clients
 - guides/canister-calls/onchain-calls -- canister-to-canister alternative
 - guides/frontends/asset-canister -- deploying the frontend that makes these calls
 - guides/authentication/internet-identity -- adding auth to calls
