@@ -88,30 +88,7 @@ For signing costs, see [Cycles costs](../reference/cycles-costs.md).
 
 ## Supported chains
 
-Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. The following table lists a selection of supported chains:
-
-| Chain | Signature scheme | Integration method |
-|-------|-----------------|-------------------|
-| Bitcoin | ECDSA, Schnorr (Taproot) | Direct |
-| Ethereum | ECDSA | EVM RPC canister |
-| EVM chains (Arbitrum, Base, Optimism, etc.) | ECDSA | EVM RPC canister |
-| Solana | Ed25519 | SOL RPC canister |
-| Dogecoin | ECDSA | Direct |
-| Aptos | ECDSA, Ed25519 | HTTPS outcalls |
-| Avalanche | ECDSA | HTTPS outcalls |
-| Cardano | Ed25519 | HTTPS outcalls |
-| Cosmos | ECDSA | HTTPS outcalls |
-| Hedera | ECDSA, Ed25519 | HTTPS outcalls |
-| NEAR | Ed25519 | HTTPS outcalls |
-| Polkadot | ECDSA, Ed25519 | HTTPS outcalls |
-| Stacks | ECDSA | HTTPS outcalls |
-| Stellar | Ed25519 | HTTPS outcalls |
-| Sui | ECDSA, Ed25519 | HTTPS outcalls |
-| TON | Ed25519 | HTTPS outcalls |
-| TRON | ECDSA | HTTPS outcalls |
-| XRP | ECDSA, Ed25519 | HTTPS outcalls |
-
-This is not exhaustive. If a chain uses a supported signature scheme and has RPC providers accessible over IPv6, integration is possible. For chain-specific implementation details, see the Bitcoin, Ethereum, and other guides under [Chain Fusion](../guides/chain-fusion/bitcoin.md).
+Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion — Supported chains](chain-fusion.md#supported-chains).
 
 ## Chain evolution
 

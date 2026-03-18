@@ -37,7 +37,7 @@ Two schemes are available:
 | Threshold Schnorr (`bip340secp256k1`) | Bitcoin Taproot, Ordinals |
 | Threshold Schnorr (`ed25519`) | Solana, TON, Polkadot, Cardano, NEAR, Stellar |
 
-See [Chain-key cryptography](chain-key-cryptography.md) for the full list of supported chains and the cryptographic details.
+See [Chain-key cryptography](chain-key-cryptography.md) for details on the threshold signing protocols, key derivation, and deployed keys.
 
 ### 2. Reading external chain state
 
@@ -97,6 +97,16 @@ Any blockchain whose transactions use ECDSA (secp256k1), Schnorr (BIP340 over se
 | XRP | ECDSA, Ed25519 | HTTPS outcalls | — |
 
 This is not exhaustive. If a chain uses a supported signature scheme and has RPC providers accessible over IPv6, integration is possible.
+
+## Building blocks
+
+Several reusable canisters and protocol APIs are available for building Chain Fusion applications:
+
+- **Bitcoin API.** The management canister exposes `bitcoin_get_utxos`, `bitcoin_get_balance`, and `bitcoin_send_transaction` — a direct protocol-level integration with no intermediary. See [Bitcoin integration](../guides/chain-fusion/bitcoin.md).
+- **EVM RPC canister** (`7hfb6-caaaa-aaaar-qadga-cai`). A canister providing a typed Candid interface for Ethereum and EVM-compatible chains. Queries multiple RPC providers and returns consensus results. See [Ethereum integration](../guides/chain-fusion/ethereum.md).
+- **SOL RPC canister.** A similar canister for Solana, providing typed access to Solana's JSON-RPC API. See [Solana integration](../guides/chain-fusion/solana.md).
+- **Chain-key tokens.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20 — trustless 1:1 representations of external assets on ICP. See [Chain-key tokens](../guides/defi/chain-key-tokens.md).
+- **Chain Fusion Signer.** A reusable canister that exposes threshold signature APIs directly to web apps and CLI users, with cycle payments via ICRC-2 approval. [OISY Wallet](https://oisy.com) is a prominent production example — a multichain wallet built on ICP that uses the Chain Fusion Signer to manage keys for Bitcoin, Ethereum, and other chains. See the [chain-fusion-signer repository](https://github.com/dfinity/chain-fusion-signer).
 
 ## Example use cases
 

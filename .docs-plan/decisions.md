@@ -163,6 +163,24 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** Keeps `git log` on `main` clean (one commit per page/feature). PR history is always available on GitHub. Auto-delete prevents stale `docs/<slug>` branches from accumulating.
 **Alternatives considered:** Merge commits (noisy history), rebase merge (preserves individual commits nobody needs)
 
+## 2026-03-18: Supported chains table belongs in chain-fusion, not chain-key-cryptography
+
+**Context:** Both `concepts/chain-key-cryptography.md` and `concepts/chain-fusion.md` had a full supported-chains table with integration methods. This duplicated content and muddied the Diataxis separation — the crypto page should explain *how signing works*, the Chain Fusion page should explain *what you can integrate with*.
+**Decision:** (1) Removed the full chains table from `chain-key-cryptography.md`, replaced with a one-liner cross-link to `chain-fusion.md#supported-chains`. (2) Kept the 3-row signature scheme table in `chain-key-cryptography.md` (maps schemes to algorithms — that's about the crypto). (3) The Chain Fusion page is now the single source of truth for the supported chains list.
+**Rationale:** Each concept page should own one topic cleanly. The chain-key-cryptography page owns the signing protocols; Chain Fusion owns the integration story.
+
+## 2026-03-18: Chain Fusion Signer mentioned in concept page; dedicated guide deferred
+
+**Context:** The [chain-fusion-signer](https://github.com/dfinity/chain-fusion-signer) is a reusable signing canister used by OISY Wallet and others. It needed a home in the docs.
+**Decision:** (1) Added a "Building blocks" section to `concepts/chain-fusion.md` listing the key infrastructure components (Bitcoin API, EVM RPC canister, SOL RPC canister, chain-key tokens, Chain Fusion Signer). OISY Wallet is mentioned as a production example. (2) A dedicated guide for using the Chain Fusion Signer will be filed as a GitHub issue for future work.
+**Rationale:** The concept page is the natural map of the Chain Fusion ecosystem. A guide would require how-to content that doesn't exist in the current migration plan — better to propose it as a separate page.
+
+## 2026-03-18: Consider moving wallet-integration from authentication to DeFi
+
+**Context:** `guides/authentication/wallet-integration.md` covers ICRC signer-standard wallets (OISY, Plug, NFID) for transaction approval. This is closer to DeFi/token workflows than to authentication (which is about identity/login).
+**Decision:** Filed as a GitHub issue for discussion. Not changing the structure in this PR — it affects sidebar config and multiple cross-links. The wallet-integration skill already distinguishes between II (auth) and wallet signers (transaction approval), supporting the case for a move.
+**Rationale:** Structural moves should be deliberate and reviewed, not done as a side-effect of a content PR.
+
 ## 2026-03-17: Merge binding-generation page into Candid interface guide
 
 **Context:** The planned `guides/canister-calls/binding-generation.md` had significant overlap with the existing Candid interface guide, which already covered `.did` generation and JS binding usage. The two dedicated binding tools are `@icp-sdk/bindgen` (JS/TS) and `ic-cdk-bindgen` (Rust) — `didc bind` should not be advertised for binding generation.
