@@ -47,10 +47,10 @@ The `persistent actor` declaration means `count` survives canister upgrades. The
 Create a new Motoko project with icp-cli:
 
 ```bash
-icp project new my-project --template motoko
+icp new my-project --subfolder motoko
 ```
 
-This generates a project with an `icp.yaml` build configuration and a Motoko source file. The build configuration uses the Motoko recipe:
+This generates a Motoko canister project with an `icp.yaml` build configuration and a source file. The build configuration uses the Motoko recipe:
 
 ```yaml
 canisters:
@@ -62,11 +62,11 @@ canisters:
         shrink: true
 ```
 
-Build and deploy locally:
+Start a local network and deploy:
 
 ```bash
-icp build
-icp deploy --local
+icp network start -d
+icp deploy
 ```
 
 For a guided walkthrough, see the [Quickstart](../../getting-started/quickstart.md).
@@ -79,7 +79,10 @@ Add it to your project's `mops.toml`:
 
 ```toml
 [dependencies]
-core = "0.0.0" # Check the latest version at https://mops.one/core
+core = "2.2.0" # Check the latest version at https://mops.one/core
+
+[toolchain]
+moc = "1.3.0" # Check the latest version at https://github.com/caffeinelabs/motoko/releases
 ```
 
 Then import modules:
@@ -95,45 +98,19 @@ Key improvements in `core` over `base`:
 - All data structures can be stored in stable memory without pre/post-upgrade hooks
 - Clear separation between mutable (`Map`, `Set`, `List`) and immutable (`pure/Map`, `pure/Set`, `pure/List`) data structures
 - Hash-based collections removed in favor of ordered maps and sets (better security against collision attacks)
-- Consistent naming: `values()` instead of `vals()`, `flatMap()` instead of `chain()`
+- Consistent naming: `values()` instead of `vals()`, `Cycles` instead of `ExperimentalCycles`
 
-If you have an existing project using `base`, you can migrate incrementally — both libraries can coexist in the same project. See the [base to core migration guide](https://mops.one/core/docs/migration) for detailed instructions.
+If you have an existing project using `base`, you can migrate incrementally — both libraries can coexist in the same project. See the [base to core migration guide](base-core-migration.md) for detailed instructions.
 
-## Package management with Mops
+`core` and all other Motoko packages are managed with [Mops](https://mops.one), which handles dependency resolution, compiler toolchain management, and publishing. Browse community packages at [mops.one](https://mops.one).
 
-[Mops](https://mops.one) is the package manager for Motoko. It handles dependency resolution, compiler toolchain management, and publishing.
+## Further reading
 
-```bash
-mops add core          # Add the core standard library
-mops install           # Install all dependencies
-```
-
-Browse community packages at [mops.one](https://mops.one).
-
-## Documentation sections
-
-The Motoko documentation is organized into three sections that will be available here as they are synced from the upstream [Motoko repository](https://github.com/caffeinelabs/motoko):
-
-**Fundamentals** covers language basics: syntax, types, declarations, control flow, actors, async messaging, modules and imports, data persistence, pattern matching, and error handling. Start here if you are new to Motoko.
-
-**ICP Features** covers Motoko APIs for ICP-specific capabilities: randomness, timers, caller identification, Candid serialization, stable memory regions, and system functions.
-
-**Reference** includes error codes, the language grammar, and the changelog.
-
-In the meantime, the full Motoko documentation is available at the [Motoko documentation site](https://docs.motoko.org).
-
-## Related pages
-
-- [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first Motoko canister
+- [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
 - [Data persistence](../../guides/backends/data-persistence.md) — Persistence patterns for Motoko and Rust canisters
-- [Orthogonal persistence](../../concepts/orthogonal-persistence.md) — How ICP preserves canister state across upgrades
 - [Rust](../rust/index.md) — Alternative language for ICP development using the Rust CDK
-
-## External resources
-
-- [Motoko documentation](https://docs.motoko.org) — Full language documentation
+- [Motoko documentation](https://docs.motoko.org) — Full language reference (fundamentals, ICP features, error codes)
 - [core library API docs](https://mops.one/core/docs) — Standard library reference
-- [Mops package registry](https://mops.one) — Community packages for Motoko
 - [Motoko GitHub](https://github.com/caffeinelabs/motoko) — Compiler source and issue tracker
 
 <!-- Upstream: hand-written -->
