@@ -20,54 +20,66 @@ export const sidebar = [
       // Build: core development
       {
         label: "Backends",
+        collapsed: true,
         autogenerate: { directory: "guides/backends" },
       },
       {
         label: "Canister Calls",
+        collapsed: true,
         autogenerate: { directory: "guides/canister-calls" },
       },
       {
         label: "Frontends",
+        collapsed: true,
         autogenerate: { directory: "guides/frontends" },
       },
       {
         label: "Authentication",
+        collapsed: true,
         autogenerate: { directory: "guides/authentication" },
       },
       // Quality & shipping
       {
         label: "Testing",
+        collapsed: true,
         autogenerate: { directory: "guides/testing" },
       },
       {
         label: "Canister Management",
+        collapsed: true,
         autogenerate: { directory: "guides/canister-management" },
       },
       {
         label: "Security",
+        collapsed: true,
         autogenerate: { directory: "guides/security" },
       },
       // Advanced features
       {
         label: "Chain Fusion",
+        collapsed: true,
         autogenerate: { directory: "guides/chain-fusion" },
       },
       {
         label: "DeFi",
+        collapsed: true,
         autogenerate: { directory: "guides/defi" },
       },
       {
         label: "Governance",
+        collapsed: true,
         autogenerate: { directory: "guides/governance" },
       },
       {
         label: "Tools",
+        collapsed: true,
         autogenerate: { directory: "guides/tools" },
       },
     ],
   },
   {
     label: "Concepts",
+    collapsed: true,
     autogenerate: { directory: "concepts" },
   },
   {
@@ -76,6 +88,7 @@ export const sidebar = [
       { slug: "languages", label: "Overview" },
       {
         label: "Motoko",
+        collapsed: true,
         items: [
           { slug: "languages/motoko", label: "Overview" },
           {
@@ -100,12 +113,14 @@ export const sidebar = [
       },
       {
         label: "Rust",
+        collapsed: true,
         autogenerate: { directory: "languages/rust" },
       },
     ],
   },
   {
     label: "Reference",
+    collapsed: true,
     autogenerate: { directory: "reference" },
   },
 ];
