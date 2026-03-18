@@ -1,6 +1,6 @@
 ---
 title: "Chain-Key Cryptography"
-description: "Threshold signatures that enable cross-chain integration, fast finality, and chain evolution"
+description: "Threshold signatures that enable cross-chain integration, fast verification, and chain evolution"
 sidebar:
   order: 9
 icskills: []
@@ -17,7 +17,7 @@ This design has several consequences for developers:
 - **Fast verification.** Clients verify subnet responses with a single public key check. There is no need to download block headers or maintain a light client.
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified variables](../guides/backends/certified-variables.md).
 - **Onchain randomness.** The threshold BLS scheme produces unique signatures — for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Onchain randomness](onchain-randomness.md).
-- **Cross-chain signing.** Canisters can request threshold ECDSA, Schnorr, and EdDSA signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion.md).
+- **Cross-chain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion.md).
 
 ## Core protocols
 
@@ -36,17 +36,17 @@ BLS was chosen for two properties:
 1. **Non-interactive signing.** A node holding a key share can independently produce a signature share. Shares are combined into a full signature with no further communication between nodes.
 2. **Unique signatures.** For a given public key and message, exactly one valid BLS signature exists. This uniqueness is what makes onchain randomness unbiasable — no coalition of nodes can influence the output.
 
-### Chain-key signatures (threshold ECDSA, Schnorr, EdDSA)
+### Chain-key signatures (threshold ECDSA and Schnorr)
 
 Chain-key signatures extend threshold cryptography beyond ICP's internal operations. They let canisters hold keys for external signature schemes and sign arbitrary messages, which means canisters can control accounts on other blockchains.
 
-Three signature schemes are supported:
+Two signature schemes are supported, with the Schnorr API offering two algorithm variants:
 
 | Scheme | Algorithm | Key ID examples | Use cases |
 |--------|-----------|-----------------|-----------|
 | Threshold ECDSA | `secp256k1` | `key_1`, `test_key_1` | Bitcoin (legacy/SegWit), Ethereum, EVM chains, Filecoin |
-| Threshold Schnorr (BIP340) | `bip340secp256k1` | `key_1`, `test_key_1` | Bitcoin Taproot, Ordinals |
-| Threshold Schnorr (Ed25519) | `ed25519` | `key_1`, `test_key_1` | Solana, TON, Cardano, Polkadot, NEAR |
+| Threshold Schnorr | `bip340secp256k1` | `key_1`, `test_key_1` | Bitcoin Taproot, Ordinals |
+| Threshold Schnorr | `ed25519` | `key_1`, `test_key_1` | Solana, TON, Polkadot, Cardano, NEAR |
 
 Each scheme is backed by a pair of management canister methods:
 
@@ -82,27 +82,34 @@ The following master keys are deployed at the time of writing. The NNS can add n
 | `(ed25519, test_key_1)` | Schnorr (Ed25519) | Development and testing | 13-node subnet |
 | `(ed25519, key_1)` | Schnorr (Ed25519) | Production | High-replication subnet |
 
-Test keys are available for development and run on smaller subnets with lower signing costs. They should not be used for anything of value. Production keys run on high-replication subnets (34+ nodes) for stronger security guarantees.
+Test keys are available for development and run on smaller subnets with lower signing costs. They should not be used for anything of value. Production keys run on high-replication subnets (34+ nodes) for stronger security guarantees. Each key is also reshared to a backup subnet for availability — if the signing subnet fails, the backup can take over without generating a new key.
 
 For signing costs, see [Cycles costs](../reference/cycles-costs.md).
 
 ## Supported chains
 
-Any blockchain whose transaction authentication uses ECDSA (secp256k1), Schnorr (BIP340), or EdDSA (Ed25519) can be integrated with ICP through chain-key signatures. The following table lists a selection of supported chains:
+Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. The following table lists a selection of supported chains:
 
 | Chain | Signature scheme | Integration method |
 |-------|-----------------|-------------------|
-| Bitcoin | ECDSA, Schnorr (Taproot) | Direct (Bitcoin adapter) |
+| Bitcoin | ECDSA, Schnorr (Taproot) | Direct |
 | Ethereum | ECDSA | EVM RPC canister |
 | EVM chains (Arbitrum, Base, Optimism, etc.) | ECDSA | EVM RPC canister |
-| Solana | EdDSA | SOL RPC canister |
-| Dogecoin | ECDSA | Direct (Dogecoin canister) |
-| Cardano | ECDSA, EdDSA | HTTPS outcalls to RPC |
-| Polkadot | ECDSA, EdDSA | HTTPS outcalls to RPC |
-| NEAR | EdDSA | HTTPS outcalls to RPC |
-| TON | EdDSA | HTTPS outcalls to RPC |
-| Cosmos | ECDSA, EdDSA | HTTPS outcalls to RPC |
-| Stellar | EdDSA | HTTPS outcalls to RPC |
+| Solana | Ed25519 | SOL RPC canister |
+| Dogecoin | ECDSA | Direct |
+| Aptos | ECDSA, Ed25519 | HTTPS outcalls |
+| Avalanche | ECDSA | HTTPS outcalls |
+| Cardano | Ed25519 | HTTPS outcalls |
+| Cosmos | ECDSA | HTTPS outcalls |
+| Hedera | ECDSA, Ed25519 | HTTPS outcalls |
+| NEAR | Ed25519 | HTTPS outcalls |
+| Polkadot | ECDSA, Ed25519 | HTTPS outcalls |
+| Stacks | ECDSA | HTTPS outcalls |
+| Stellar | Ed25519 | HTTPS outcalls |
+| Sui | ECDSA, Ed25519 | HTTPS outcalls |
+| TON | Ed25519 | HTTPS outcalls |
+| TRON | ECDSA | HTTPS outcalls |
+| XRP | ECDSA, Ed25519 | HTTPS outcalls |
 
 This is not exhaustive. If a chain uses a supported signature scheme and has RPC providers accessible over IPv6, integration is possible. For chain-specific implementation details, see the Bitcoin, Ethereum, and other guides under [Chain Fusion](../guides/chain-fusion/bitcoin.md).
 
@@ -112,11 +119,12 @@ The same threshold cryptographic infrastructure that enables signing also enable
 
 Combined with the NNS governance system, this enables **autonomous protocol upgrades**: the NNS approves an upgrade, the orchestrator on each node downloads the new replica software, and the subnet transitions at the next epoch boundary — all while preserving canister state and maintaining the same public key.
 
-For more on how upgrades work at the protocol level, see the [Learn Hub](https://learn.internetcomputer.org).
+For more on how upgrades work at the protocol level, see the [Chain Evolution](https://learn.internetcomputer.org/hc/en-us/articles/34210120121748) article on the Learn Hub.
 
 ## What's next
 
 - [Chain Fusion](chain-fusion.md) — how canisters use chain-key signatures to interact with other blockchains
+- [Ethereum integration](../guides/chain-fusion/ethereum.md) — using threshold ECDSA with Ethereum and EVM chains
 - [VetKeys](vetkeys.md) — a related cryptographic primitive for onchain encryption
 - [Management canister reference](../reference/management-canister.md) — the threshold signing API
 
