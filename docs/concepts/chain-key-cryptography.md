@@ -25,7 +25,7 @@ Chain-key cryptography is not a single algorithm but a protocol suite. The main 
 
 ### Distributed key generation (DKG)
 
-Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a novel DKG protocol that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing** — transferring key material to a new set of nodes when subnet membership changes — without ever reconstructing the private key.
+Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a novel DKG protocol that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing** — transferring key material to a new set of nodes when subnet membership changes — without ever reconstructing the private key. Resharing also runs periodically within a subnet to defend against adaptive attackers: each resharing invalidates all previously obtained shares, so compromising nodes over time does not help an adversary accumulate enough shares to forge signatures.
 
 ### Threshold BLS signatures
 
@@ -71,7 +71,7 @@ Under high load, pre-signatures may be temporarily exhausted and signing request
 
 ## Deployed keys
 
-Six master keys are currently deployed across two subnets — one for signing and one as a backup for key availability:
+The following master keys are deployed at the time of writing. The NNS can add new keys or change subnet assignments via proposals, so consult the [IC dashboard](https://dashboard.internetcomputer.org) for the current state.
 
 | Key ID | Scheme | Purpose | Signing subnet |
 |--------|--------|---------|----------------|
@@ -104,13 +104,11 @@ Any blockchain whose transaction authentication uses ECDSA (secp256k1), Schnorr 
 | Cosmos | ECDSA, EdDSA | HTTPS outcalls to RPC |
 | Stellar | EdDSA | HTTPS outcalls to RPC |
 
-This is not exhaustive. If a chain uses a supported signature scheme and has RPC providers accessible over IPv6, integration is possible. For chain-specific guides, see the [Chain Fusion guides](../guides/chain-fusion/bitcoin.md).
+This is not exhaustive. If a chain uses a supported signature scheme and has RPC providers accessible over IPv6, integration is possible. For chain-specific implementation details, see the Bitcoin, Ethereum, and other guides under [Chain Fusion](../guides/chain-fusion/bitcoin.md).
 
 ## Chain evolution
 
 The same threshold cryptographic infrastructure that enables signing also enables ICP to upgrade itself without downtime or forks. When a subnet's membership changes (nodes are added, removed, or replaced), the DKG protocol **reshares** the existing keys to the new set of nodes. The subnet's public key stays the same, but the underlying shares change — meaning old shares held by removed nodes become useless.
-
-This resharing also happens periodically within a subnet as a defense against adaptive attackers who might try to compromise nodes over time. Each resharing invalidates all previously obtained shares.
 
 Combined with the NNS governance system, this enables **autonomous protocol upgrades**: the NNS approves an upgrade, the orchestrator on each node downloads the new replica software, and the subnet transitions at the next epoch boundary — all while preserving canister state and maintaining the same public key.
 
