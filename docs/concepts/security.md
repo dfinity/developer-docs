@@ -16,7 +16,7 @@ Canisters execute in two modes, each with different trust properties:
 
 **Update calls** go through consensus. Every node on the subnet executes the same code against the same state and must agree on the result. This makes update calls tamper-proof — a single malicious node cannot alter the outcome. The tradeoff is latency (~2 seconds).
 
-**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls.
+**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree — clients then verify the subnet's signature to confirm the response hasn't been tampered with.
 
 This distinction is the most important security boundary on the IC. Any data returned by a query call that is not backed by a certificate should be treated as unverified.
 
@@ -42,13 +42,15 @@ As a dapp developer, you should understand who trusts whom in the IC stack:
 - **Query call integrity.** A single replica responds to query calls. Without certified data, the response is not verified by consensus.
 - **Canister code correctness.** The protocol executes whatever code you deploy. If your code has bugs, the protocol faithfully executes the buggy code.
 - **Access control.** There is no built-in permission system. Every update method is callable by anyone on the internet unless your code explicitly checks the caller.
-- **Memory confidentiality on application subnets.** Node operators on standard application subnets can read canister memory. Do not store secrets (private keys, API tokens, passwords) in canister state. For onchain secret management, see [VetKeys](vetkeys.md).
+- **Memory confidentiality on application subnets.** Node operators on standard application subnets can read canister memory. The network is gradually rolling out SEV-SNP (hardware-level memory encryption) to mitigate this, but until full deployment, do not store secrets (private keys, API tokens, passwords) in canister state. For onchain secret management, see [VetKeys](vetkeys.md).
 
 ### Boundary nodes
 
 Boundary nodes are the HTTP entry point to the IC. They route requests to the correct subnet but are not part of the trust model for update calls — the response is verified by the client against the subnet's public key regardless of which boundary node served it.
 
 For query calls, the situation is different. A malicious boundary node could return a fabricated response to a query call. This is another reason to use certified data for any query response that users depend on for security-critical decisions.
+
+### canister_inspect_message
 
 `canister_inspect_message` is a hook that runs on a **single replica** before an update call enters consensus. It can reject messages early to save cycles (for example, dropping calls from the anonymous principal before Candid decoding). But it is not a security boundary — a malicious boundary node can bypass it, and it is never called for inter-canister calls, query calls, or management canister calls. Always enforce access control inside each method.
 
@@ -92,7 +94,7 @@ Users can verify a canister's controllers through the IC dashboard or by queryin
 
 ### Unverified builds
 
-Users have no way to verify that a canister's running code matches its published source unless the developer provides reproducible builds. Without reproducibility, the source code could say one thing while the deployed Wasm does another. Developers building trust-sensitive applications should ensure their builds are reproducible so that anyone can verify the deployed code.
+Users have no way to verify that a canister's running code matches its published source unless the developer provides reproducible builds. Without reproducibility, the source code could say one thing while the deployed Wasm does another. Developers building trust-sensitive applications should ensure their builds are reproducible so that anyone can verify the deployed code. See [Reproducible builds](../guides/canister-management/reproducible-builds.md) for how to set this up.
 
 ## What's next
 
