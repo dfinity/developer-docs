@@ -84,8 +84,8 @@ Any blockchain whose transactions use ECDSA (secp256k1), Schnorr (BIP340 over se
 | Bitcoin | ECDSA, Schnorr | Direct | ckBTC |
 | Ethereum | ECDSA | EVM RPC canister | ckETH, ckERC20 |
 | EVM chains (Arbitrum, Base, Optimism, etc.) | ECDSA | EVM RPC canister | — |
-| Solana | Ed25519 | SOL RPC canister | — |
-| Dogecoin | ECDSA | Direct | ckDOGE (upcoming) |
+| Solana | Ed25519 | SOL RPC canister | ckSOL |
+| Dogecoin | ECDSA | Direct | ckDOGE |
 | Aptos | ECDSA, Ed25519 | HTTPS outcalls | — |
 | Avalanche | ECDSA | HTTPS outcalls | — |
 | Cardano | Ed25519 | HTTPS outcalls | — |
