@@ -50,7 +50,7 @@
 |------------|---------------|--------|-------------------|----------|-------|
 | building-apps/authentication/overview.mdx | explanation | ALREADY-PLANNED | guides/authentication/internet-identity.md | high | Auth overview |
 | building-apps/authentication/integrate-internet-identity.mdx | how-to | KEEP-REWRITE | guides/authentication/internet-identity.md | high | II integration guide |
-| building-apps/authentication/integrate-misc-wallets.mdx | how-to | KEEP-REWRITE | guides/authentication/wallet-integration.md | medium | NFID, Plug, etc. |
+| building-apps/authentication/integrate-misc-wallets.mdx | how-to | KEEP-REWRITE | guides/defi/wallet-integration.md | medium | NFID, Plug, etc. |
 | building-apps/authentication/alternative-origins.mdx | how-to | KEEP-REWRITE | guides/authentication/internet-identity.md | medium | Alternative origins for II |
 | building-apps/authentication/independently-verifying-ic-signatures.mdx | reference | KEEP-REWRITE | guides/security/data-integrity.md | low | Signature verification |
 

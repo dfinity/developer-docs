@@ -169,3 +169,10 @@ Record decisions that constrain future work — things an agent needs to know th
 **Decision:** (1) Merged all binding-generation content into `candid.md` as a "Binding generation" section. (2) Removed the `binding-generation.md` stub. (3) Updated `didc` tool table to focus on validation/encoding (removed `didc bind` rows). (4) Documented both auto-generated and hand-written `.did` file paths for Motoko. (5) Updated `onchain-calls.md` canister discovery section with a cross-link to the new bindings section. (6) Removed Beads task and updated migration plan dependencies.
 **Rationale:** The developer flow is linear: define interface → generate `.did` → generate bindings → use them. Splitting bindings into a separate page creates an artificial seam. The Candid guide is the natural home for the full flow.
 **Alternatives considered:** Keep separate page (creates overlap and navigation friction), move all `.did` generation to the bindings page (splits related content)
+
+## 2026-03-18: Move wallet-integration from authentication to DeFi section
+
+**Context:** The wallet-integration page covers ICRC signer standards (ICRC-21/25/27/29/49) for transaction approval, not authentication. The wallet-integration icskill itself distinguishes wallet signers (transaction approval) from Internet Identity (authentication/login). Under `guides/authentication/`, the page was grouped with II and verifiable credentials — a different concern.
+**Decision:** Move `guides/authentication/wallet-integration.md` → `guides/defi/wallet-integration.md`. Update cross-links in `what-next.md`, `internet-identity.md`, and `token-standards.md`. Update Beads task title. No sidebar config change needed (both directories use `autogenerate`).
+**Rationale:** Transaction signing is closer to the DeFi/token workflow than to authentication. Developers looking for wallet transaction approval would look in DeFi, not Authentication. Discussed in PR #23 and filed as GitHub issue #25.
+**Alternatives considered:** Keep in authentication (misleading grouping), create a new "Wallets" subsection (over-engineering for one page)

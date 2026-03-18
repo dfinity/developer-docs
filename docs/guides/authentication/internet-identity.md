@@ -20,5 +20,5 @@ Integrate Internet Identity (II) for passkey-based user authentication. Cover fr
 <!-- Cross-Links -->
 - concepts/security -- identity and trust
 - guides/frontends/frameworks -- framework-specific auth setup
-- guides/authentication/wallet-integration -- alternative to II
+- guides/defi/wallet-integration -- alternative to II
 - reference/internet-identity-spec -- protocol details

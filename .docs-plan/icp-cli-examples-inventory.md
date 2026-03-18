@@ -27,7 +27,7 @@ Compiled 2026-03-11. Sources: icp-cli/docs (33 files), icp-cli-recipes (4 recipe
 | `guides/canister-snapshots.md` | guides/canister-management/snapshots | sync candidate — this IS the snapshots guide |
 | `guides/canister-migration.md` | guides/canister-management/lifecycle | link — advanced canister migration |
 | `guides/managing-environments.md` | guides/canister-management/cycles-management | link — multi-env setup |
-| `guides/managing-identities.md` | guides/authentication/wallet-integration | link — identity management reference |
+| `guides/managing-identities.md` | guides/defi/wallet-integration | link — identity management reference |
 | `guides/tokens-and-cycles.md` | guides/canister-management/cycles-management, guides/defi/token-ledgers | link — ICP/cycles/ICRC-1 token commands |
 | `guides/containerized-networks.md` | guides/testing/strategies | link — Docker-based test networks |
 | `guides/using-recipes.md` | getting-started/project-structure | link — how to configure build recipes |
@@ -228,7 +228,7 @@ canisters:
 | hosting/godot-html5-template | Godot | Godot game hosting | guides/frontends/frameworks | Link |
 | hosting/unity-webgl-template | Unity | Unity WebGL hosting | guides/frontends/frameworks | Link |
 | hosting/my_crypto_blog | JS | Blog with crypto features | guides/frontends/asset-canister | Link |
-| hosting/oisy-signer-demo | JS | OISY wallet signer demo | guides/authentication/wallet-integration | Link |
+| hosting/oisy-signer-demo | JS | OISY wallet signer demo | guides/defi/wallet-integration | Link |
 | svelte/svelte-motoko-starter | Svelte+Motoko | Svelte + Motoko starter | guides/frontends/frameworks | Link |
 | svelte/sveltekit-starter | SvelteKit | SvelteKit starter | guides/frontends/frameworks | Link |
 

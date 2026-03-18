@@ -57,7 +57,7 @@
 | `sns-launch` | `guides/governance/launching`, `guides/governance/managing`, `guides/governance/testing`, `concepts/governance` | Maps to all three governance guide pages |
 | `stable-memory` | `guides/backends/data-persistence`, `guides/canister-management/lifecycle`, `concepts/orthogonal-persistence` | Primary is data-persistence; lifecycle covers upgrade patterns |
 | `vetkd` | `concepts/vetkeys`, `guides/security/data-integrity` | Primary is concepts/vetkeys; security/data-integrity for encryption use cases |
-| `wallet-integration` | `guides/authentication/wallet-integration` | Direct 1:1 mapping |
+| `wallet-integration` | `guides/defi/wallet-integration` | Direct 1:1 mapping |
 | `wallet` (alias) | (same as `cycles-management`) | Not a separate mapping needed |
 
 ## JS SDK to Docs Pages Mapping
@@ -71,7 +71,7 @@
 | | `guides/canister-calls/candid` | Agent/actor creation from JS side |
 | | `concepts/app-architecture` | Frontend-to-canister communication overview |
 | **Auth** (`@icp-sdk/auth`) | `guides/authentication/internet-identity` | "Frontend integration" section; link to https://js.icp.build/auth |
-| | `guides/authentication/wallet-integration` | Auth prerequisites section |
+| | `guides/defi/wallet-integration` | Auth prerequisites section |
 | | `guides/frontends/frameworks` | Auth setup in React/Svelte/Vue apps |
 | **Canisters** (`@icp-sdk/canisters`) | `guides/frontends/asset-canister` | "Programmatic uploads" section; link to https://js.icp.build/canisters |
 | | `guides/defi/token-ledgers` | JS ledger actor usage examples |

@@ -46,7 +46,7 @@ ICP can serve web assets directly from the blockchain through an asset canister,
 - [Framework integration](../guides/frontends/frameworks.md) -- use React, Vue, Svelte, or other frameworks
 - [Custom domains](../guides/frontends/custom-domains.md) -- serve your app from your own domain name
 - [Internet Identity](../guides/authentication/internet-identity.md) -- add passwordless authentication
-- [Wallet integration](../guides/authentication/wallet-integration.md) -- connect user wallets
+- [Wallet integration](../guides/defi/wallet-integration.md) -- connect user wallets
 
 ## Chain fusion (cross-chain)
 

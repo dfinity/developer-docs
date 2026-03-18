@@ -223,7 +223,7 @@ These pages fill out the docs site with important secondary content.
 | 43 | 4 | `guides/canister-management/snapshots.md` | M | lifecycle | Portal snapshots.mdx; icp-cli canister-snapshots | rewrite, sync |
 | 44 | 3 | `guides/frontends/custom-domains.md` | M | asset-canister | Portal custom-domains/ (2 files) | rewrite |
 | 45 | 3+ | `guides/frontends/certification.md` | M | asset-canister, certified-variables | Portal asset-security.mdx | rewrite |
-| 46 | 4 | `guides/authentication/wallet-integration.md` | M | internet-identity | Portal integrate-misc-wallets.mdx; icskills: wallet-integration | rewrite |
+| 46 | 4 | `guides/defi/wallet-integration.md` | M | internet-identity | Portal integrate-misc-wallets.mdx; icskills: wallet-integration | rewrite |
 
 ### Sprint 6: Canister Calls, Production, Security, Tools (11 pages)
 
@@ -368,7 +368,7 @@ concepts/network-overview.md
 getting-started/project-structure.md
   └── guides/frontends/asset-canister.md
         ├── guides/authentication/internet-identity.md
-        │     ├── guides/authentication/wallet-integration.md
+        │     ├── guides/defi/wallet-integration.md
         │     └── guides/authentication/verifiable-credentials.md
         ├── guides/frontends/custom-domains.md
         ├── guides/frontends/certification.md  (also needs: certified-variables)

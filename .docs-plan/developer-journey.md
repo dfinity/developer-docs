@@ -66,7 +66,7 @@
 | Framework integration | guides/frontends/frameworks.md | [JS SDK](https://js.icp.build) | — |
 | Custom domains | guides/frontends/custom-domains.md | — | — |
 | User login | guides/authentication/internet-identity.md | — | `icp-internet-identity` |
-| Wallet connection | guides/authentication/wallet-integration.md | — | — |
+| Wallet connection | guides/defi/wallet-integration.md | — | — |
 | Response verification | guides/frontends/certification.md | — | — |
 
 **Templates used:** `react-starter`, `vanilla-js-starter`.
@@ -348,7 +348,7 @@ guides/
     frameworks.md
   authentication/             # Add user login
     internet-identity.md
-    wallet-integration.md
+    wallet-integration.md  (moved to guides/defi/)
   testing/                    # Test before deploying
     strategies.md
     pocket-ic.md

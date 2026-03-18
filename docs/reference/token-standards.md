@@ -17,5 +17,5 @@ Reference for ICP token standards. Document ICRC-1 (fungible token transfers, ba
 
 <!-- Cross-Links -->
 - guides/defi/token-ledgers -- practical token operations
-- guides/authentication/wallet-integration -- ICRC signer standards
+- guides/defi/wallet-integration -- ICRC signer standards
 - guides/defi/chain-key-tokens -- ckBTC/ckETH are ICRC-1 tokens
