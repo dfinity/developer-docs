@@ -12,11 +12,11 @@ ICP canisters compile to WebAssembly, so any language that targets Wasm can be u
 
 ### [Motoko](motoko/index.md)
 
-A language designed specifically for the Internet Computer with built-in actor model, orthogonal persistence, and async/await for inter-canister calls. Best for: rapid prototyping, developers new to ICP, and projects that benefit from ICP-native language features.
+Purpose-built for the Internet Computer. Built-in actor model, orthogonal persistence, and async/await for inter-canister calls. Compiles directly to Wasm with no external toolchain.
 
 ### [Rust](rust/index.md)
 
-The most popular choice for ICP development. Use the `ic-cdk` canister development kit with the full Rust ecosystem -- any crate that compiles to `wasm32-unknown-unknown` works. Best for: performance-critical canisters, leveraging existing Rust libraries, and teams with Rust experience.
+Use the `ic-cdk` canister development kit with the full Rust ecosystem -- any crate that compiles to `wasm32-unknown-unknown` works. Ideal when leveraging existing Rust libraries or integrating with Rust-based tooling.
 
 ## Community CDKs
 
