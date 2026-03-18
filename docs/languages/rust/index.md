@@ -2,7 +2,7 @@
 title: "Rust CDK"
 description: "Build ICP canisters with Rust using the ic-cdk canister development kit"
 sidebar:
-  order: 1
+  order: 2
 icskills: []
 ---
 
@@ -65,10 +65,10 @@ Install the Rust toolchain and the Wasm compilation target:
 rustup target add wasm32-unknown-unknown
 ```
 
-You also need two build utilities that the icp-cli Rust recipe uses:
+You also need `candid-extractor`, which the Rust recipe uses to auto-generate Candid interface files:
 
 ```bash
-cargo install ic-wasm candid-extractor
+cargo install candid-extractor
 ```
 
 ### Project setup with icp-cli
@@ -76,7 +76,7 @@ cargo install ic-wasm candid-extractor
 Create a new project using the Rust template:
 
 ```bash
-icp new my_project --template rust
+icp new my_project --subfolder rust
 ```
 
 This generates an `icp.yaml` with a Rust canister recipe and a Cargo workspace. The key files are:
@@ -104,10 +104,10 @@ ic-cdk = "0.19"
 candid = "0.10"
 ```
 
-Deploy locally with:
+Start a local network and deploy:
 
 ```bash
-icp start --background
+icp network start -d
 icp deploy
 ```
 
@@ -146,7 +146,7 @@ fn greet_user(name: String) -> String {
 | Macro | Purpose |
 |-------|---------|
 | `#[heartbeat]` | Called once per round by the system. Prefer `ic-cdk-timers` for scheduled work. |
-| `#[inspect_message]` | Runs before update calls. Return `ic_cdk::api::call::accept_message()` to allow the call, or trap to reject it. |
+| `#[inspect_message]` | Runs before update calls. Call `ic_cdk::api::accept_message()` to allow the call, or trap to reject it. |
 | `#[on_low_wasm_memory]` | Triggered when Wasm memory usage crosses the configured threshold. |
 | `export_candid!()` | Generates the `.did` Candid interface file from all annotated endpoints. Place this at the module root. |
 
@@ -155,33 +155,33 @@ fn greet_user(name: String) -> String {
 Entry points can be `async`. The CDK embeds its own async executor, so you can `.await` inter-canister calls directly:
 
 ```rust
-use candid::{encode_args, decode_one, Principal};
+use candid::Principal;
+use ic_cdk::call::Call;
 
 #[ic_cdk::update]
 async fn call_other(canister: Principal) -> String {
-    let (result,): (String,) = ic_cdk::call(
-        canister,
-        "greet",
-        ("World",),
-    )
-    .await
-    .expect("call failed");
-    result
+    Call::bounded_wait(canister, "greet")
+        .with_arg("World")
+        .await
+        .expect("call failed")
+        .candid::<(String,)>()
+        .expect("decode failed")
+        .0
 }
 ```
 
-If you need to run work in the background after replying, use `ic_cdk::spawn`:
+If you need to run work in the background after replying, use `ic_cdk::futures::spawn`:
 
 ```rust
 #[ic_cdk::update]
 async fn fire_and_forget() {
-    ic_cdk::spawn(async {
+    ic_cdk::futures::spawn(async {
         // background work here
     });
 }
 ```
 
-> **Important:** Do not use `tokio`, `async-std`, or other async runtimes. They rely on OS threading and I/O primitives that are not available in the Wasm execution environment. Use the CDK's built-in executor and `ic_cdk::spawn` instead.
+> **Important:** Do not use `tokio`, `async-std`, or other async runtimes. They rely on OS threading and I/O primitives that are not available in the Wasm execution environment. Use the CDK's built-in executor and `ic_cdk::futures::spawn` instead.
 
 ## Data persistence
 
@@ -200,22 +200,22 @@ Rust canisters compile to `wasm32-unknown-unknown`. Most pure-computation crates
 
 | What you need | Standard Rust | ICP equivalent |
 |---------------|--------------|----------------|
-| Threads / parallelism | `std::thread`, `rayon` | Not available. Use `ic_cdk::spawn` for concurrent async tasks. |
+| Threads / parallelism | `std::thread`, `rayon` | Not available. Use `ic_cdk::futures::spawn` for concurrent async tasks. |
 | Sleep / delays | `std::thread::sleep` | Use `ic-cdk-timers` to schedule future execution. |
 | Current time | `std::time::Instant` | `ic_cdk::api::time()` returns nanoseconds since the epoch. |
 | Environment variables | `std::env::var` | Not available at runtime. Use `env!()` or `option_env!()` to embed values at compile time. |
-| Random numbers | `rand`, `getrandom` | Use `ic_cdk::api::management_canister::main::raw_rand()` for onchain randomness, or implement `register_custom_getrandom!` for crates that depend on `getrandom`. |
+| Random numbers | `rand`, `getrandom` | Use `ic_cdk::management_canister::raw_rand()` for onchain randomness, or implement `getrandom::register_custom_getrandom!` for crates that depend on `getrandom`. |
 | Network I/O | `reqwest`, `hyper` | Use [HTTPS outcalls](../../guides/canister-calls/offchain-calls.md) via the management canister. |
 
 Most crates that target `wasm32-unknown-unknown` for browser use (via `wasm-bindgen` or `wasm-pack`) will **not** work because they depend on JavaScript host bindings that do not exist in the ICP runtime.
 
 ## Further reading
 
-- [Stable Structures](stable-structures.md) — persistent data structures for Rust canisters
-- [Testing Rust Canisters](testing.md) — unit and integration testing strategies
-- [Data persistence guide](../../guides/backends/data-persistence.md) — persistence patterns across languages
-- [`ic-cdk` API docs](https://docs.rs/ic-cdk) — complete API reference
-- [`ic-cdk-timers` API docs](https://docs.rs/ic-cdk-timers) — timer scheduling API
-- [Motoko](../motoko/index.md) — alternative language for ICP canister development
+- [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
+- [Stable Structures](stable-structures.md) — Persistent data structures for Rust canisters
+- [Testing Rust Canisters](testing.md) — Unit and integration testing strategies
+- [`ic-cdk` API docs](https://docs.rs/ic-cdk) — Complete API reference
+- [`ic-cdk-timers` API docs](https://docs.rs/ic-cdk-timers) — Timer scheduling API
+- [Motoko](../motoko/index.md) — Alternative language for ICP canister development
 
 <!-- Upstream: informed by dfinity/cdk-rs ic-cdk/README.md, dfinity/portal docs/building-apps/developer-tools/cdks/rust/ -->
