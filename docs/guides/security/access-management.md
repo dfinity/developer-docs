@@ -27,12 +27,12 @@ When a canister receives a message, the network includes the caller's principal.
 
 Every principal is one of these types:
 
-| Type | Example | Meaning |
-|------|---------|---------|
-| User | `wo5qg-...` | Human with an identity (Internet Identity, seed phrase, etc.) |
-| Canister | `rrkah-fqaaa-...` | Another canister making an inter-canister call |
-| Anonymous | `2vxsx-fae` | Unauthenticated caller — no identity attached |
-| Management | `aaaaa-aa` | The IC management canister (system calls, heartbeats, timers) |
+| Type | Format | Example | Meaning |
+|------|--------|---------|---------|
+| User | Varies (self-authenticating) | `wo5qg-ysjaa-aaaaa-...` | Human with a cryptographic identity |
+| Canister | 10 bytes, ends in `-cai` | `rrkah-fqaaa-aaaaa-aaaaq-cai` | Another canister making an inter-canister call |
+| Anonymous | Fixed | `2vxsx-fae` | Unauthenticated caller — no identity |
+| Management | Fixed | `aaaaa-aa` | IC management canister (system calls) |
 
 ## Reject anonymous callers
 
@@ -185,6 +185,9 @@ fn require_admin() -> Result<(), String> {
 fn init(owner: Principal) {
     OWNER.with(|o| *o.borrow_mut() = owner);
 }
+// Unlike Motoko's shared(msg) pattern which captures the deployer automatically,
+// the Rust #[init] requires passing the owner explicitly at deploy time:
+//   icp canister deploy backend --argument '(principal "your-principal-here")'
 
 #[update(guard = "require_owner")]
 fn add_admin(new_admin: Principal) {
@@ -212,6 +215,7 @@ Controllers are the principals authorized to manage a canister (install code, ch
 
 ```motoko
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 
 // Inside persistent actor { ... }
 
@@ -222,6 +226,8 @@ import Principal "mo:core/Principal";
     // ...
   };
 ```
+
+In Rust, there is no built-in `is_controller` function — checking controllers requires an async call to the management canister. See [onchain calls](../canister-calls/onchain-calls.md) for inter-canister call patterns.
 
 **Managing controllers with icp-cli:**
 
@@ -336,4 +342,4 @@ icp canister call backend whoami
 - [Canister settings](../canister-management/settings.md) — configure controllers and freezing thresholds
 - [DoS prevention](dos-prevention.md) — rate limiting as an access control mechanism
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/general.mdx -->
+<!-- Upstream: informed by dfinity/icskills — skills/canister-security/SKILL.md, dfinity/portal — docs/building-apps/best-practices/general.mdx -->
