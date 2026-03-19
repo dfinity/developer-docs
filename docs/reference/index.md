@@ -3,7 +3,6 @@ title: "Reference"
 description: "Specifications, canister IDs, token standards, cycle costs, and technical reference for ICP"
 sidebar:
   hidden: true
-icskills: []
 ---
 
 Technical reference material for ICP development. These pages cover exact specifications, canister IDs, costs, and error codes.

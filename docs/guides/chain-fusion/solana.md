@@ -3,7 +3,6 @@ title: "Solana Integration"
 description: "Interact with Solana from ICP canisters using the Sol RPC canister"
 sidebar:
   order: 3
-icskills: []
 ---
 
 TODO: Write content for this page.

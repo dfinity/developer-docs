@@ -3,7 +3,6 @@ title: "Orthogonal Persistence"
 description: "How canister memory survives across executions and upgrades without databases"
 sidebar:
   order: 5
-icskills: [stable-memory]
 ---
 
 On traditional backends, application state lives in memory only while the process runs. To persist data across restarts, you need a database -- PostgreSQL, Redis, SQLite, or a file system. The application logic and the storage layer are separate concerns that developers must wire together.

@@ -3,7 +3,6 @@ title: "Chain-Key Cryptography"
 description: "Threshold signatures that enable cross-chain integration, fast verification, and chain evolution"
 sidebar:
   order: 9
-icskills: []
 ---
 
 Chain-key cryptography is a set of threshold cryptographic protocols that underpin the Internet Computer. Instead of any single node holding a private key, keys are split into shares distributed across the nodes of a [subnet](network-overview.md). Nodes collaboratively sign messages without ever reconstructing the full key — and this single capability enables everything from fast response verification to canisters signing transactions on Bitcoin, Ethereum, and dozens of other blockchains.

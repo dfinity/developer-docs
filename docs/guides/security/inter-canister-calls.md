@@ -3,7 +3,6 @@ title: "Inter-Canister Call Safety"
 description: "Handle reentrancy, callback traps, and async safety in inter-canister calls"
 sidebar:
   order: 5
-icskills: [canister-security, multi-canister]
 ---
 
 TODO: Write content for this page.

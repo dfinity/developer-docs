@@ -3,7 +3,6 @@ title: "Onchain Calls"
 description: "Call functions on other canisters from your canister code"
 sidebar:
   order: 3
-icskills: [multi-canister]
 ---
 
 Canisters on the Internet Computer communicate by calling each other's functions. A caller canister sends a request message containing the method name, arguments, and optionally attached cycles. The callee executes the method and returns a response. If the callee cannot be reached or a resource limit is hit, the system produces a reject response instead.

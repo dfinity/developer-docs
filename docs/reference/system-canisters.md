@@ -3,7 +3,6 @@ title: "System Canisters"
 description: "NNS canisters, Internet Identity, ICP ledger, and other system-level canisters with IDs"
 sidebar:
   order: 2
-icskills: [ic-dashboard]
 ---
 
 TODO: Write content for this page.

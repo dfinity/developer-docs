@@ -3,7 +3,6 @@ title: "Response Certification"
 description: "Verify that frontend responses are authentic and untampered using IC certificates"
 sidebar:
   order: 3
-icskills: [certified-variables]
 ---
 
 TODO: Write content for this page.

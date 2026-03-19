@@ -184,6 +184,13 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** Developers need the Candid interface for binding generation and type checking. Copying rather than symlinking ensures the file is served by the docs site. The portal version is the released source of truth; the IC repo version may be ahead with unreleased changes.
 **Alternatives considered:** Symlink to `.sources/` (not served by Astro build), link to GitHub raw URL (breaks offline, no version control), add IC repo as submodule (too large)
 
+## 2026-03-19: Drop icskills frontmatter field — advertise via skills registry instead
+
+**Context:** Every docs page had an optional `icskills: [ckbtc, evm-rpc]` frontmatter field tagging related IC skills for AI agent discovery. However, `cleanMarkdown()` in the agent-docs plugin strips all frontmatter, so agents consuming `.md` endpoints or `llms.txt` never see it. The only consumers were agents reading raw repo files.
+**Decision:** Remove the `icskills` field from the frontmatter schema, Zod validation, all stub pages, and documentation. Instead, advertise the skills registry endpoint (`https://skills.internetcomputer.org/.well-known/skills/index.json`) in `llms.txt`. icskills remain a source material repo — agents still read from `.sources/icskills/` and list them in `<!-- Upstream: -->` comments when used as source.
+**Rationale:** The skills registry solves agent discovery at the site level. Per-page skill tags add maintenance overhead with no current consumer. If per-page hints are needed later, they can be added to the `.md` endpoints or `llms.txt` entries.
+**Alternatives considered:** Emit skill tags in clean markdown output (adds complexity for narrow use case), keep frontmatter for future use (maintenance burden with no consumer)
+
 ## 2026-03-18: Move wallet-integration from authentication to DeFi section
 
 **Context:** The wallet-integration page covers ICRC signer standards (ICRC-21/25/27/29/49) for transaction approval, not authentication. The wallet-integration icskill itself distinguishes wallet signers (transaction approval) from Internet Identity (authentication/login). Under `guides/authentication/`, the page was grouped with II and verifiable credentials — a different concern.

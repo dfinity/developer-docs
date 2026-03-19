@@ -3,7 +3,6 @@ title: "Guides"
 description: "Task-oriented how-to guides for building, shipping, and scaling ICP applications"
 sidebar:
   hidden: true
-icskills: []
 ---
 
 Practical how-to guides organized by development stage. Each guide solves a specific task with working code.

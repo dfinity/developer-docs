@@ -3,7 +3,6 @@ title: "Data Persistence"
 description: "Store and retrieve data in canisters using stable structures, persistent actors, and upgrade hooks"
 sidebar:
   order: 1
-icskills: [stable-memory]
 ---
 
 Canister state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade — any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.

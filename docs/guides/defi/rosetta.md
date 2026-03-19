@@ -3,7 +3,6 @@ title: "Rosetta API"
 description: "Integrate with exchanges and block explorers using the Rosetta API"
 sidebar:
   order: 3
-icskills: []
 ---
 
 TODO: Write content for this page.

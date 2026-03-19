@@ -3,7 +3,6 @@ title: "Chain Fusion"
 description: "How ICP connects to Bitcoin, Ethereum, Solana, and other blockchains natively"
 sidebar:
   order: 10
-icskills: [ckbtc, evm-rpc]
 ---
 
 Chain Fusion is ICP's approach to cross-chain interoperability. Instead of relying on bridges or oracles, canisters interact with other blockchains directly — they can read state, hold assets, and sign and submit transactions on Bitcoin, Ethereum, Solana, and dozens of other chains. All of this runs onchain with the same trust assumptions as the Internet Computer itself.

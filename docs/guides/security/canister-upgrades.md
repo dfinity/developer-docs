@@ -3,7 +3,6 @@ title: "Secure Upgrades"
 description: "Upgrade canisters safely with pre/post hooks, stable memory, and snapshot rollbacks"
 sidebar:
   order: 2
-icskills: [canister-security]
 ---
 
 TODO: Write content for this page.

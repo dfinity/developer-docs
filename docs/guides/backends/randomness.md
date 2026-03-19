@@ -3,7 +3,6 @@ title: "Onchain Randomness"
 description: "Generate unpredictable random numbers using the IC management canister"
 sidebar:
   order: 4
-icskills: []
 ---
 
 TODO: Write content for this page.

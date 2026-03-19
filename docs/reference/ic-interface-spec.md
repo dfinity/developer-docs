@@ -3,7 +3,6 @@ title: "IC Interface Specification"
 description: "Summary and links to the IC interface specification: System API, HTTP interface, certified data"
 sidebar:
   order: 9
-icskills: []
 ---
 
 TODO: Write content for this page.

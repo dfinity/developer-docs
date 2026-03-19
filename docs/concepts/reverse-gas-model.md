@@ -3,7 +3,6 @@ title: "Reverse Gas Model"
 description: "Why users never pay gas on ICP: canisters pay cycles for compute, storage, and bandwidth"
 sidebar:
   order: 4
-icskills: [cycles-management]
 ---
 
 On most blockchains, users pay a gas fee every time they interact with a smart contract. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing. This is the **reverse gas model**.

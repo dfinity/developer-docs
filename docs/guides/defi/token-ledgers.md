@@ -3,7 +3,6 @@ title: "Token Ledgers"
 description: "Transfer ICP and ICRC-1/ICRC-2 tokens from canisters and frontends"
 sidebar:
   order: 1
-icskills: [icrc-ledger, ckbtc]
 ---
 
 Every token on ICP — ICP, ckBTC, ckETH, and custom tokens — is managed by a **ledger canister** that implements the ICRC token standards. Because all ledgers share the same interface, code that works with the ICP ledger also works with ckBTC, ckETH, or any ICRC-1 compliant token. You only need to swap the canister ID and fee.

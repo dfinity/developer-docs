@@ -3,7 +3,6 @@ title: "Build on the Internet Computer"
 description: "Build tamperproof full-stack applications on the Internet Computer -- no cloud, no bridges, no external dependencies"
 sidebar:
   order: 0
-icskills: []
 ---
 
 Build full-stack applications that run entirely onchain -- frontend, backend, and data -- with no cloud dependencies. The Internet Computer (ICP) is a network of independent nodes that provides tamperproof execution, certified storage, and native cross-chain integration.

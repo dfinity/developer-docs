@@ -8,7 +8,7 @@
 2. **Developer-journey ordered** -- Sidebar follows build -> ship -> scale progression
 3. **Agent-friendly** -- Predictable paths: "how to X" = `guides/{category}/X.md`, "what is X" = `concepts/X.md`
 4. **No duplication** -- Link to icp-cli docs, JS SDK, Learn Hub, mops.one, docs.rs for external content
-5. **icskills-integrated** -- Every relevant guide has `icskills` frontmatter for AI agent discovery
+5. **icskills as source material** -- Agents read icskills from `.sources/icskills/` for accurate canister IDs and code patterns; skills are discoverable via the skills registry endpoint in `llms.txt`
 
 ---
 
@@ -214,9 +214,9 @@ Note: Motoko synced pages (~52) are not counted here. The `guides/tools/migratin
 
 ---
 
-## icskills Mapping Summary
+## icskills Source Material Summary
 
-17 skills mapped to docs pages. See `.docs-plan/jssdk-skills-mapping.md` for the full mapping table.
+17 skills used as source material for docs pages. See `.docs-plan/jssdk-skills-mapping.md` for the full mapping table. Skills are discoverable by agents via the skills registry endpoint advertised in `llms.txt`.
 
 ## JS SDK Mapping Summary
 

@@ -3,7 +3,6 @@ title: "Project Structure"
 description: "Understand icp.yaml, recipes, binding generation, and the .icp/ directory"
 sidebar:
   order: 2
-icskills: [icp-cli]
 ---
 
 After running `icp new`, you have a complete project ready to build and deploy. This page explains every file and directory that `icp new` creates, how they fit together, and the key concepts behind the project model.

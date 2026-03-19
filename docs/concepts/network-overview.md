@@ -3,7 +3,6 @@ title: "Network Overview"
 description: "How the Internet Computer works: subnets, nodes, consensus, and boundary nodes"
 sidebar:
   order: 1
-icskills: []
 ---
 
 The Internet Computer (ICP) is a network of independent blockchains called **subnets** that run smart contracts ([canisters](canisters.md)) at web speed. From a developer's perspective, the key things to understand are how your code gets replicated, how fast it runs, and how requests reach it.

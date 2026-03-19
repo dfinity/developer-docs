@@ -3,7 +3,6 @@ title: "DoS Prevention"
 description: "Protect canisters from denial-of-service attacks with rate limiting and resource management"
 sidebar:
   order: 4
-icskills: [canister-security]
 ---
 
 TODO: Write content for this page.

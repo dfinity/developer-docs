@@ -3,7 +3,6 @@ title: "HTTP Gateway Specification"
 description: "How boundary nodes serve canister HTTP responses with certification verification"
 sidebar:
   order: 10
-icskills: []
 ---
 
 TODO: Write content for this page.

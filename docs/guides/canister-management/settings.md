@@ -3,7 +3,6 @@ title: "Canister Settings"
 description: "Configure controllers, memory limits, freezing threshold, and compute allocation"
 sidebar:
   order: 2
-icskills: [cycles-management]
 ---
 
 TODO: Write content for this page.

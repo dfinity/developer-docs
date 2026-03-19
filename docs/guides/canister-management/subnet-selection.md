@@ -3,7 +3,6 @@ title: "Subnet Selection"
 description: "Choose the right subnet for your canister deployment based on requirements"
 sidebar:
   order: 8
-icskills: []
 ---
 
 TODO: Write content for this page.

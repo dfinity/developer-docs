@@ -3,7 +3,6 @@ title: "Asset Canister"
 description: "Deploy and serve frontend assets from an ICP canister with SPA routing, canister discovery, programmatic uploads, and security configuration"
 sidebar:
   order: 1
-icskills: [asset-canister]
 ---
 
 The asset canister hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the subnet so that HTTP gateways and browsers can verify that content was served by the blockchain rather than a centralized server.

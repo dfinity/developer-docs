@@ -3,7 +3,6 @@ title: "HTTPS Outcalls"
 description: "Make HTTP GET and POST requests from canisters to external web APIs"
 sidebar:
   order: 2
-icskills: [https-outcalls]
 ---
 
 Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications — all from onchain code.

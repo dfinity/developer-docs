@@ -3,7 +3,6 @@ title: "Application Canisters"
 description: "Asset canister, SNS canisters, and other notable application-layer canisters"
 sidebar:
   order: 4
-icskills: [asset-canister, sns-launch]
 ---
 
 TODO: Write content for this page.

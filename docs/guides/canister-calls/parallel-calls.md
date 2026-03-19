@@ -3,7 +3,6 @@ title: "Parallel Calls"
 description: "Execute multiple inter-canister calls concurrently for better performance"
 sidebar:
   order: 5
-icskills: [multi-canister]
 ---
 
 TODO: Write content for this page.

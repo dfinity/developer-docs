@@ -3,7 +3,6 @@ title: "Data Integrity"
 description: "Protect data with VetKeys encryption, certified variables, and signature verification"
 sidebar:
   order: 3
-icskills: [canister-security, vetkd, certified-variables]
 ---
 
 TODO: Write content for this page.

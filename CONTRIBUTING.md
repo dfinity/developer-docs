@@ -26,7 +26,6 @@ title: "Page Title"                           # Required
 description: "One-line description"           # Required
 sidebar:
   order: 1                                    # Optional: only where reading order matters
-icskills: [ckbtc, evm-rpc]                    # Optional: related icskills skill files
 ---
 ```
 
@@ -36,7 +35,6 @@ icskills: [ckbtc, evm-rpc]                    # Optional: related icskills skill
 |-------|----------|--------|-------|
 | `title` | Yes | string | Page title |
 | `description` | Yes | string | Used in search, llms.txt, and meta tags |
-| `icskills` | No | string array | Related skill files from github.com/dfinity/icskills |
 | `sidebar.order` | No | number | Controls position within auto-generated sidebar sections. Only set where reading order matters (e.g., getting-started tutorials). Omit to use alphabetical order. |
 
 ## Writing guidelines
@@ -57,7 +55,6 @@ Each top-level section has a specific purpose. Match your content accordingly:
 - Use icp-cli commands for all CLI examples
 - Make code examples self-contained and copy-pasteable
 - Link to external docs for tool-specific details (see AGENTS.md linking rules)
-- Link to icskills skill files where they provide implementation details
 - Use standard markdown features (code blocks, tables, links, headings)
 - Use relative paths with `.md` extension for internal links (e.g., `[Quickstart](../getting-started/quickstart.md)`) — works on both the Astro site and GitHub
 

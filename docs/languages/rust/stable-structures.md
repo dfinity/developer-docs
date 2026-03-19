@@ -3,7 +3,6 @@ title: "Stable Structures"
 description: "Use StableBTreeMap, StableVec, and MemoryManager for upgrade-safe Rust data"
 sidebar:
   order: 2
-icskills: [stable-memory]
 ---
 
 TODO: Write content for this page.

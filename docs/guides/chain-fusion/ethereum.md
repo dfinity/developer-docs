@@ -3,7 +3,6 @@ title: "Ethereum Integration"
 description: "Interact with Ethereum and EVM chains from ICP canisters via the EVM RPC canister"
 sidebar:
   order: 2
-icskills: [evm-rpc]
 ---
 
 TODO: Write content for this page.

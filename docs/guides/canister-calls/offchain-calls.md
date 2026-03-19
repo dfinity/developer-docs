@@ -3,7 +3,6 @@ title: "Offchain Calls"
 description: "Call canister functions from frontends, scripts, and backend services using IC agent libraries"
 sidebar:
   order: 4
-icskills: []
 ---
 
 TODO: Write content for this page.

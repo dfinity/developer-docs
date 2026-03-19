@@ -3,7 +3,6 @@ title: "Timers"
 description: "Schedule one-shot and periodic tasks in your canister"
 sidebar:
   order: 3
-icskills: []
 ---
 
 Canisters can schedule code to run automatically after a delay or on a repeating interval — no external cron job required. This guide covers the timer APIs for Rust and Motoko, how system time works, upgrade handling, and when to use heartbeats instead.

@@ -3,7 +3,6 @@ title: "Testing Rust Canisters"
 description: "Unit and integration testing patterns for Rust canisters with PocketIC"
 sidebar:
   order: 3
-icskills: []
 ---
 
 TODO: Write content for this page.

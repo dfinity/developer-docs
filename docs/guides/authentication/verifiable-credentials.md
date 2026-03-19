@@ -1,7 +1,6 @@
 ---
 title: "Verifiable Credentials"
 description: "Issue and verify credentials on ICP using Internet Identity and the VC specification"
-icskills: [internet-identity]
 ---
 
 TODO: Write content for this page.

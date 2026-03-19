@@ -3,7 +3,6 @@ title: "Concepts"
 description: "Developer-focused explanations of ICP architecture, capabilities, and design decisions"
 sidebar:
   hidden: true
-icskills: []
 ---
 
 Understand the ideas behind the Internet Computer before you build on it. These explanations cover architecture, capabilities, and design decisions that shape how you write ICP applications.

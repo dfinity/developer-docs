@@ -3,7 +3,6 @@ title: "Access Management"
 description: "Control who can call your canister with guards, caller checks, and controller management"
 sidebar:
   order: 1
-icskills: [canister-security]
 ---
 
 Every canister method is callable by anyone on the internet. Without explicit access checks, any user or canister can invoke any of your public functions. This guide covers the patterns you need to restrict access.

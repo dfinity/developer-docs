@@ -3,7 +3,6 @@ title: "Protocol Canisters"
 description: "Bitcoin canister, EVM RPC canister, exchange rate canister, and other protocol-level canisters"
 sidebar:
   order: 3
-icskills: [ckbtc, evm-rpc]
 ---
 
 TODO: Write content for this page.

@@ -3,7 +3,6 @@ title: "Candid Interface"
 description: "Define and use Candid interfaces for type-safe canister communication"
 sidebar:
   order: 1
-icskills: []
 ---
 
 Candid is the interface description language for the Internet Computer. Every canister exposes its public API through a Candid `.did` file that describes which methods it offers, what arguments they accept, and what they return. Because Candid is language-agnostic, a Motoko canister, a Rust canister, and a JavaScript frontend can all communicate through the same interface without any manual serialization code.

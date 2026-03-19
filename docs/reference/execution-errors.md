@@ -3,7 +3,6 @@ title: "Execution Errors"
 description: "Common canister execution errors with explanations and fixes"
 sidebar:
   order: 8
-icskills: []
 ---
 
 TODO: Write content for this page.

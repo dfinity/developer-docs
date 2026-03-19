@@ -3,7 +3,6 @@ title: "Candid Specification"
 description: "The Candid interface description language: type system, encoding, and subtyping rules"
 sidebar:
   order: 11
-icskills: []
 ---
 
 TODO: Write content for this page.

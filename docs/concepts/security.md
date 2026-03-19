@@ -3,7 +3,6 @@ title: "Security Model"
 description: "The IC security model: canister isolation, trust boundaries, and the threat model for dapp developers"
 sidebar:
   order: 12
-icskills: [canister-security]
 ---
 
 The Internet Computer provides strong security guarantees at the protocol level — replicated execution, threshold cryptography, and deterministic state machines. But the protocol cannot prevent bugs in your code. Understanding where the platform's guarantees end and your responsibilities begin is essential for building secure dapps.

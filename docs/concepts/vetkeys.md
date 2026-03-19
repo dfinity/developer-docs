@@ -3,7 +3,6 @@ title: "VetKeys"
 description: "Verifiable encrypted threshold key derivation for onchain encryption and secret management"
 sidebar:
   order: 11
-icskills: [vetkd]
 ---
 
 TODO: Write content for this page.

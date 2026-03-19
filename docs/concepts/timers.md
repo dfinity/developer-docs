@@ -3,7 +3,6 @@ title: "Timers"
 description: "How the IC schedules periodic and one-shot tasks via the global timer mechanism"
 sidebar:
   order: 8
-icskills: []
 ---
 
 TODO: Write content for this page.

@@ -12,7 +12,6 @@ export const collections = {
           .optional(),
         level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
         features: z.array(z.string()).optional(),
-        icskills: z.array(z.string()).optional(),
         last_verified: z.coerce.date().optional(),
         source_repo: z.string().nullable().optional(),
         source_ref: z.string().nullable().optional(),

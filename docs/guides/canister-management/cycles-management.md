@@ -3,7 +3,6 @@ title: "Cycles Management"
 description: "Acquire cycles, manage canister budgets, and deploy to mainnet"
 sidebar:
   order: 7
-icskills: [cycles-management]
 ---
 
 TODO: Write content for this page.

@@ -3,7 +3,6 @@ title: "Onchain AI"
 description: "Call large language models directly from canister code using the LLM canister"
 sidebar:
   order: 8
-icskills: []
 ---
 
 TODO: Write content for this page.

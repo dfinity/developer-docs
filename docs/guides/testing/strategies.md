@@ -3,7 +3,6 @@ title: "Testing Strategies"
 description: "Test canisters with unit tests, PocketIC integration tests, and benchmarking"
 sidebar:
   order: 1
-icskills: []
 ---
 
 TODO: Write content for this page.

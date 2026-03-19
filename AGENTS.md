@@ -355,7 +355,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
   - `<!-- Upstream: hand-written -->` — original content, not derived from another repo
   - `<!-- Upstream: sync from <repo> <path> -->` — auto-synced, do not edit directly
   - `<!-- Upstream: informed by <repo> — <files> -->` — rewritten from upstream sources
-  List **every** `.sources/` repo used — including icskills. The frontmatter `icskills:` field tags related skills for discovery; the `<!-- Upstream: -->` comment tracks source provenance. Both are required when icskills informed the content. Example: `<!-- Upstream: informed by dfinity/portal — ...; dfinity/icskills — skills/icrc-ledger/SKILL.md -->`.
+  List **every** `.sources/` repo used — including icskills when they informed the content. Example: `<!-- Upstream: informed by dfinity/portal — ...; dfinity/icskills — skills/icrc-ledger/SKILL.md -->`.
   Do NOT use `<!-- Sync recommendation: -->` or any other format — only `<!-- Upstream: -->` passes CI.
 - **Every PR description must include a `## Sync recommendation` section** — this mirrors the in-page `<!-- Upstream: -->` comment in human-readable form and becomes the squash-merge commit message. See the PR template in "Submitting".
 
@@ -554,7 +554,6 @@ title: "Page Title"                           # Required
 description: "One-line description"           # Required
 sidebar:
   order: 1                                    # Optional: only where reading order matters
-icskills: [ckbtc, evm-rpc]                    # Optional: related icskills
 ---
 ```
 

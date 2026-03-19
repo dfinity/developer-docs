@@ -3,7 +3,6 @@ title: "Quickstart"
 description: "Install icp-cli, create a project, and deploy your first canister in under 10 minutes"
 sidebar:
   order: 1
-icskills: [icp-cli]
 ---
 
 Deploy a full-stack app to a local Internet Computer network in under 10 minutes.

@@ -3,7 +3,6 @@ title: "PocketIC"
 description: "Run integration tests against a lightweight IC replica with PocketIC"
 sidebar:
   order: 2
-icskills: []
 ---
 
 TODO: Write content for this page.

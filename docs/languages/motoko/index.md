@@ -3,7 +3,6 @@ title: "Motoko"
 description: "A language designed for the Internet Computer with built-in actor model and orthogonal persistence"
 sidebar:
   order: 1
-icskills: []
 ---
 
 Motoko is a high-level programming language designed specifically for building canisters on the Internet Computer. It combines a familiar syntax (drawing from JavaScript, Rust, Swift, and Java) with features that map directly to how ICP works: an actor-based programming model, orthogonal persistence, async/await for inter-canister messaging, and compilation to WebAssembly.

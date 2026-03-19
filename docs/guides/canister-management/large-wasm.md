@@ -3,7 +3,6 @@ title: "Large Wasm Modules"
 description: "Deploy canisters that exceed the 2MB Wasm limit using chunk store and compression"
 sidebar:
   order: 9
-icskills: []
 ---
 
 TODO: Write content for this page.

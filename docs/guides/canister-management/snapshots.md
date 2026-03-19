@@ -3,7 +3,6 @@ title: "Canister Snapshots"
 description: "Create, restore, and manage canister snapshots for backup and recovery"
 sidebar:
   order: 5
-icskills: []
 ---
 
 TODO: Write content for this page.

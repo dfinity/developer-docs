@@ -1,7 +1,6 @@
 ---
 title: "Encryption with VetKeys"
 description: "Encrypt and decrypt data on ICP using VetKeys for onchain privacy, key management, and identity-based encryption"
-icskills: [vetkd]
 ---
 
 TODO: Write content for this page.

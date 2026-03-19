@@ -3,7 +3,6 @@ title: "Internet Identity"
 description: "Integrate passkey-based authentication with Internet Identity"
 sidebar:
   order: 1
-icskills: [internet-identity]
 ---
 
 TODO: Write content for this page.

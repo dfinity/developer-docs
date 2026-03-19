@@ -3,7 +3,6 @@ title: "Canister Lifecycle"
 description: "Create, deploy, upgrade, and delete canisters using icp-cli"
 sidebar:
   order: 1
-icskills: [cycles-management, stable-memory]
 ---
 
 Every canister on ICP goes through a predictable lifecycle: creation, code installation, upgrades, and eventually deletion. Understanding this lifecycle is essential for managing your application in development and production.

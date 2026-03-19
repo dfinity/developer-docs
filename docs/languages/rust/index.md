@@ -3,7 +3,6 @@ title: "Rust CDK"
 description: "Build ICP canisters with Rust using the ic-cdk canister development kit"
 sidebar:
   order: 2
-icskills: []
 ---
 
 Rust is a natural fit for building canisters on the Internet Computer. Its strong type system, zero-cost abstractions, and memory safety guarantees produce reliable, high-performance Wasm modules. The **Rust CDK** (Canister Development Kit) provides the libraries and macros that connect your Rust code to the ICP system API.

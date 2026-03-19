@@ -3,7 +3,6 @@ title: "Subnet Types Reference"
 description: "All subnet types with node counts, replication factors, and cycle cost multipliers"
 sidebar:
   order: 7
-icskills: []
 ---
 
 TODO: Write content for this page.
