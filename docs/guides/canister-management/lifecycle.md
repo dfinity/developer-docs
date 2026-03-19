@@ -122,7 +122,7 @@ The canister transitions through **Stopping** (waiting for in-flight messages to
 icp canister start my-canister
 ```
 
-Returns the canister to the **Running** state. Note that `icp deploy` does not restart a manually stopped canister — you must explicitly start it.
+Returns the canister to the **Running** state.
 
 ## Upgrade a canister
 
@@ -148,11 +148,18 @@ icp-cli supports four install modes:
 
 ### What happens during an upgrade
 
-1. The system calls `pre_upgrade` on the running code (if defined)
-2. Stable memory is preserved
-3. The new Wasm module is loaded
-4. The system calls `post_upgrade` on the new code (if defined)
-5. The canister resumes processing messages
+When you run `icp deploy` on an existing canister, icp-cli automatically:
+
+1. **Stops** the canister (waits for in-flight messages to finish)
+2. Calls `pre_upgrade` on the running code (if defined)
+3. Preserves stable memory
+4. Loads the new Wasm module
+5. Calls `post_upgrade` on the new code (if defined)
+6. **Restarts** the canister
+
+Stopping before the upgrade prevents data inconsistencies from messages being processed during the code swap.
+
+> **Note:** `--mode upgrade` is rarely needed explicitly — `auto` mode (the default) already upgrades existing canisters. Use `--mode upgrade` in CI pipelines where you want the command to fail if the canister doesn't already exist.
 
 ### Preserving state across upgrades
 
@@ -178,9 +185,11 @@ persistent actor Counter {
 All `var` declarations in a `persistent actor` are automatically stable — they survive upgrades without any additional code. Use `transient var` for values that should reset on each upgrade (such as caches):
 
 ```motoko
+import Map "mo:core/Map";
+
 persistent actor Cache {
-  var entries : [(Text, Text)] = [];     // survives upgrades
-  transient var lookupCache = HashMap.HashMap<Text, Text>(16, Text.equal, Text.hash); // resets on upgrade
+  var entries : [(Text, Text)] = [];                      // survives upgrades
+  transient var lookupCache : Map.Map<Text, Text> = Map.empty(); // resets on upgrade
 };
 ```
 
@@ -261,7 +270,17 @@ icp canister stop my-canister -e ic
 icp canister delete my-canister -e ic
 ```
 
-Remaining cycles are refunded to the caller's cycles balance.
+Remaining cycles are refunded to the controller who made the delete request.
+
+## Migrate a canister between subnets
+
+You can move a canister's ID from one subnet to another using `icp canister migrate-id`. This is useful when you need to relocate a canister to a different subnet (for example, to move to a subnet with different replication or closer to a dependency).
+
+```bash
+icp canister migrate-id my-canister --replace <target-canister> -e ic
+```
+
+The migration transfers the canister ID to the target subnet. The canister must be stopped before migration. For full details and options, see the [icp-cli canister migration guide](https://github.com/dfinity/icp-cli/blob/main/docs/guides/canister-migration.md).
 
 ## Programmatic canister management
 
@@ -277,13 +296,13 @@ import Management "ic:aaaaa-aa";
 
 persistent actor Factory {
 
-  public func create() : async Principal {
+  public shared ({ caller }) func create() : async Principal {
     let cycles = 1_000_000_000_000;
     let result = await (with cycles)
       Management.create_canister({
         sender_canister_version = null;
         settings = ?{
-          controllers = ?[Principal.fromActor(Factory)];
+          controllers = ?[caller, Principal.fromActor(Factory)];
           compute_allocation = null;
           memory_allocation = null;
           freezing_threshold = null;
@@ -326,7 +345,7 @@ For a complete canister factory example, see the [canister factory example](http
 
 ## Canister history
 
-Every canister maintains a history of its most recent 20 changes — including creation, code installations, upgrades, reinstalls, and controller changes. This is useful for security audits and verifying code integrity.
+Every canister maintains a history of at least its most recent 20 changes — including creation, code installations, upgrades, reinstalls, and controller changes. Older entries may be dropped, but the 20 most recent are always retained. This is useful for security audits and verifying code integrity.
 
 ### Query history from Rust
 
