@@ -12,7 +12,7 @@ This guide covers the most common token operations: transfers, approvals, subacc
 
 ## Well-known token ledgers
 
-The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
+The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a broader overview. Anyone can deploy an ICRC-1 compliant ledger.
 
 | Token | Ledger canister ID | Decimals |
 |-------|-------------------|----------|
