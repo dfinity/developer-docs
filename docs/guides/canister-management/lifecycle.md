@@ -274,13 +274,27 @@ Remaining cycles are refunded to the controller who made the delete request.
 
 ## Migrate a canister between subnets
 
-You can move a canister's ID from one subnet to another using `icp canister migrate-id`. This is useful when you need to relocate a canister to a different subnet (for example, to move to a subnet with different replication or closer to a dependency).
+Sometimes you need to move a canister to a different subnet. Common reasons include:
 
-```bash
-icp canister migrate-id my-canister --replace <target-canister> -e ic
-```
+- **Wrong subnet** — the canister was deployed to an unintended subnet
+- **Geographic requirements** — data residency rules require a specific region
+- **Replication needs** — moving to a larger subnet for higher fault tolerance
+- **Colocation** — consolidating canisters onto the same subnet for efficient inter-canister calls
 
-The migration transfers the canister ID to the target subnet. The canister must be stopped before migration. For full details and options, see the [icp-cli canister migration guide](https://github.com/dfinity/icp-cli/blob/main/docs/guides/canister-migration.md).
+There are two approaches, depending on whether you need to keep the canister ID:
+
+| Approach | State | Canister ID | When to use |
+|----------|-------|-------------|-------------|
+| **Snapshot transfer** | Preserved | New ID | Default — simpler and safer |
+| **Full migration** | Preserved | Preserved | When the canister ID is load-bearing |
+
+Preserving the canister ID matters when:
+
+- **Threshold signatures (tECDSA/tSchnorr)** — signing keys are cryptographically bound to the canister's principal. A new ID means losing access to derived keys and any assets they control on other blockchains.
+- **VetKeys** — decryption keys are derived from the canister ID. A new ID makes previously encrypted data inaccessible.
+- **External references** — other canisters, frontends, or off-chain systems reference the canister by ID. This includes Internet Identity sessions tied to a canister-ID-based domain.
+
+Both approaches use [canister snapshots](snapshots.md) to transfer state. For the complete step-by-step procedure, see the [icp-cli canister migration guide](https://github.com/dfinity/icp-cli/blob/main/docs/guides/canister-migration.md).
 
 ## Programmatic canister management
 
@@ -416,4 +430,4 @@ The IC decompresses the module automatically during installation. For strategies
 - [Upgrade safety](../security/canister-upgrades.md) — security considerations for safe upgrades
 - [Testing strategies](../testing/strategies.md) — test lifecycle operations locally
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/canister-management/ and docs/building-apps/developing-canisters/ — dfinity/icp-cli docs/concepts/build-deploy-sync.md -->
+<!-- Sync recommendation: informed by dfinity/portal — docs/building-apps/canister-management/, docs/building-apps/developing-canisters/ — dfinity/icp-cli — docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md -->
