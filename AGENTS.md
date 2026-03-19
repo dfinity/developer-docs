@@ -232,7 +232,7 @@ Three outcomes:
 
 ### Doing the work
 
-- **Fresh task:** Follow the "Content authoring workflow" below (for content pages) or task-specific instructions in `migration-plan.md` (for infrastructure)
+- **Fresh task:** Follow the "Content authoring workflow" below (for content pages) or task-specific instructions in `migration-plan.md` (for infrastructure). Every content page must include an `<!-- Upstream: -->` comment (see "Always" section) and the PR must include a `## Sync recommendation` section.
 - **PR feedback (formal reviews or comments):**
   1. **Claim the task(s)** — set Beads status from `draft` to `in_progress` and push. This prevents other agents from picking up the same feedback. **When handling multiple PRs:** claim ALL tasks sequentially (see "Claiming multiple tasks" above) before launching any worktree agents or starting any fixes.
      ```bash
@@ -350,6 +350,12 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - Sync Beads before and after work: `bd dolt pull` at session start, `bd dolt push` after every status change
 - Update task status in Beads immediately — claim before working, set `draft` after PR creation, set `closed` after merge
 - Record structural decisions in `.docs-plan/decisions.md` immediately when making them — don't wait to be asked. This includes: new files/symlinks, path changes, config changes, cleanup of stale references, and any choice that a future agent would need to understand.
+- **Every non-stub content page must end with an `<!-- Upstream: -->` comment** — this is enforced by CI (`check-upstream-notes` workflow). Use exactly one of these formats:
+  - `<!-- Upstream: hand-written -->` — original content, not derived from another repo
+  - `<!-- Upstream: sync from <repo> <path> -->` — auto-synced, do not edit directly
+  - `<!-- Upstream: informed by <repo> — <files> -->` — rewritten from upstream sources
+  Do NOT use `<!-- Sync recommendation: -->` or any other format — only `<!-- Upstream: -->` passes CI.
+- **Every PR description must include a `## Sync recommendation` section** — this mirrors the in-page `<!-- Upstream: -->` comment in human-readable form and becomes the squash-merge commit message. See the PR template in "Submitting".
 
 ## Ask first (confirm with the user before doing these)
 
