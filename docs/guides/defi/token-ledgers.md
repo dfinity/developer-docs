@@ -10,9 +10,9 @@ Every token on ICP — ICP, ckBTC, ckETH, and custom tokens — is managed by a 
 
 This guide covers the most common token operations: transfers, approvals, subaccounts, and local test ledger setup. For the formal standard specifications, see [Token standards](../../reference/token-standards.md).
 
-## Common ledger canister IDs
+## Well-known token ledgers
 
-The following are DFINITY-maintained ledgers. Many other ICRC-1 tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
+The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
 
 | Token | Ledger canister ID | Decimals |
 |-------|-------------------|----------|
