@@ -248,8 +248,9 @@ Three outcomes:
      1. Re-read the full page — does it still flow and make sense as a whole?
      2. `ls` any new or changed link targets to confirm they exist
      3. If the fix moves content elsewhere, confirm the target page covers it (or flag with `<!-- TODO -->`)
+     4. **Update the `<!-- Upstream: -->` comment** if new source material was referenced — every `.sources/` repo or upstream doc used must be listed. This comment is checked by CI.
   8. Push to the existing branch
-  9. **Update the PR description** to reflect the current state of the page. The description is used as the squash-merge commit message, so it must accurately describe what the PR delivers — not what the original draft contained. Keep the "Summary" and "Sync recommendation" sections (see PR template in "Submitting"). Use `gh pr edit <PR#> --body "..."` to update it.
+  9. **Update the PR description** to reflect the current state of the page. The description is used as the squash-merge commit message, so it must accurately describe what the PR delivers — not what the original draft contained. Update **both** the "Summary" (to reflect new/changed content) **and** "Sync recommendation" (to match the in-page `<!-- Upstream: -->` comment). Use `gh pr edit <PR#> --body "..."` to update it.
   10. Submit using the "Changes requested fix" flow in "Submitting" below (build, push, post feedback-addressed comment, return task to `draft`).
 
 ### Reviewing PRs
