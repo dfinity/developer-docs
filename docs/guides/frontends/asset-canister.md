@@ -329,4 +329,4 @@ icp canister call frontend http_request '(record {
 - [Authentication with Internet Identity](../authentication/internet-identity.md) -- add user login to your frontend
 - [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage) -- programmatic uploads with AssetManager
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
+<!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
