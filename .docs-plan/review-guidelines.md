@@ -4,7 +4,7 @@
 
 When asked to review a PR, load the `technical-documentation` skill and the relevant icskill for the page topic first.
 
-**When delegating to sub-agents:** Sub-agents cannot load skills. Before launching a sub-agent for writing or reviewing, read the relevant `.sources/icskills/skills/<topic>/SKILL.md` file yourself and include key details (canister IDs, correct API patterns, common pitfalls) in the sub-agent's prompt. Without this, sub-agents will write or review code from memory instead of verified upstream patterns.
+**When delegating to sub-agents:** Worktree agents have full access to skills and `.sources/` after running `git submodule update --init --depth 1` (see "Submodule initialization in worktrees" in CLAUDE.md). The parent agent must include this command as a mandatory first step in every worktree agent's prompt. Once submodules are initialized, agents can load skills and verify code against `.sources/` directly.
 
 ## Initial review (first time reviewing a page)
 

@@ -67,15 +67,22 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
 - `.claude/settings.local.json` and `.claude/worktrees/` are gitignored (local-only).
 
 **How it works:**
-1. The parent agent claims tasks in Beads, then launches one background agent per PR using `isolation: "worktree"`
+1. The parent agent claims tasks in Beads, then launches one background agent per PR/task using `isolation: "worktree"`
 2. Each agent gets its own git worktree (isolated copy of the repo), checks out its branch, makes edits, and commits
-3. The parent agent collects results, pushes branches from worktrees (`git -C <worktree-path> push`), and posts feedback-addressed comments
-4. The parent agent cleans up worktrees after all work is done:
+3. **Each worktree agent must initialize submodules as its first step** (see "Submodule initialization in worktrees" below)
+4. The parent agent collects results, pushes branches from worktrees (`git -C <worktree-path> push`), and posts feedback-addressed comments
+5. The parent agent cleans up worktrees after all work is done:
    ```bash
    git worktree remove --force <path>           # for each worktree (--force needed due to submodules)
    git worktree prune                           # clean up stale references
    git branch -D $(git branch | grep worktree-agent)  # delete backing branches
    ```
+
+**Submodule initialization in worktrees:** Git worktrees do NOT automatically initialize submodules. A freshly created worktree has empty `.sources/` directories, which means all skill symlinks (`.claude/skills/` → `.agents/skills/` → `.sources/`) are broken and source material is inaccessible. **Every worktree agent must run this as its very first command before any other work:**
+```bash
+git submodule update --init --depth 1
+```
+This takes ~30 seconds and uses ~336MB of disk per worktree (shallow clones). The disk space is reclaimed when the worktree is removed. Without this step, the agent cannot load skills, read source material from `.sources/`, or verify code snippets — it will produce lower quality content or fail entirely. The parent agent must include this instruction in every worktree agent's prompt.
 
 **If agents fail with permission errors:** Check that `.claude/settings.json` exists and includes all required tools. The shared settings file is the authoritative source — per-user `~/.claude/projects/` settings don't apply to worktree agents (different path). **Important:** Permission patterns use prefix matching, so chained commands like `git stash && git rebase` won't match a `git stash*` pattern — the `&&` makes it a single shell string. Worktree agents should run git commands as **separate sequential tool calls**, not chained with `&&`.
 
@@ -247,7 +254,9 @@ Three outcomes:
 
 ### Reviewing PRs
 
-**Only review PRs when explicitly asked by a human.** See `.docs-plan/review-guidelines.md` for the full review checklist (mechanical checks, content quality, post format). Key points: load the `technical-documentation` skill and relevant icskill first. Sub-agents cannot load skills — include key details from `.sources/icskills/` in their prompt.
+**Only review PRs when explicitly asked by a human.** See `.docs-plan/review-guidelines.md` for the full review checklist (mechanical checks, content quality, post format). Key points: load the `technical-documentation` skill and relevant icskill first.
+
+**Parallel reviews use worktrees** — reviews need to check out the PR branch (to read the full page, verify links with `ls`, run `npm run build`). For parallel reviews, launch worktree agents the same way as for content writing. Each agent must run `git submodule update --init --depth 1` first (see "Submodule initialization in worktrees" above) to access skills and `.sources/`.
 
 ### Submitting
 

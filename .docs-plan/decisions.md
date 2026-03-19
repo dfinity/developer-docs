@@ -170,6 +170,13 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** The developer flow is linear: define interface → generate `.did` → generate bindings → use them. Splitting bindings into a separate page creates an artificial seam. The Candid guide is the natural home for the full flow.
 **Alternatives considered:** Keep separate page (creates overlap and navigation friction), move all `.did` generation to the bindings page (splits related content)
 
+## 2026-03-19: Worktree agents must initialize submodules before starting work
+
+**Context:** Skills and source material are accessed via a symlink chain: `.claude/skills/` → `.agents/skills/` → `.sources/<submodule>/skills/`. All `.sources/` entries are git submodules. When `git worktree add` creates a new worktree, submodules are NOT initialized — `.sources/` contains only empty directories, breaking all skill symlinks and making source material inaccessible.
+**Decision:** Every worktree agent must run `git submodule update --init --depth 1` as its very first command. The parent agent must include this instruction in every worktree agent's prompt. This costs ~336MB disk and ~30 seconds per worktree; both are reclaimed when the worktree is removed.
+**Rationale:** Alternatives were evaluated and rejected: (1) Symlinking `.sources/` to the main repo's copy — works for file access but causes 13 spurious deletion entries in `git status` that could confuse agents into staging them; symlinking individual submodule dirs causes a hard `git status` error (exit 128). (2) `submodule.recurse=true` git config — does not auto-init submodules on `git worktree add`. (3) Vendoring skills into the repo — loses automatic sync with upstream skill repos. The submodule init approach is the only one with zero git side effects (clean status, no surprises), which is critical for agents operating autonomously.
+**Alternatives considered:** Shared `.sources/` symlink (dirty git status confuses agents), `submodule.recurse` config (doesn't work for worktree creation), vendored skills (manual sync burden)
+
 ## 2026-03-18: Move wallet-integration from authentication to DeFi section
 
 **Context:** The wallet-integration page covers ICRC signer standards (ICRC-21/25/27/29/49) for transaction approval, not authentication. The wallet-integration icskill itself distinguishes wallet signers (transaction approval) from Internet Identity (authentication/login). Under `guides/authentication/`, the page was grouped with II and verifiable credentials — a different concern.
