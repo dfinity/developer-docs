@@ -1,26 +1,433 @@
 ---
 title: "Canister Lifecycle"
-description: "Create, install, upgrade, and delete canisters with icp-cli"
+description: "Create, deploy, upgrade, and delete canisters using icp-cli"
 sidebar:
   order: 1
 icskills: [cycles-management, stable-memory]
 ---
 
-TODO: Write content for this page.
+Every canister on ICP goes through a predictable lifecycle: creation, code installation, upgrades, and eventually deletion. Understanding this lifecycle is essential for managing your application in development and production.
 
-<!-- Content Brief -->
-Walk through the full canister lifecycle: creation, code installation, upgrades (with pre/post-upgrade hooks), reinstallation, and deletion. Cover the canister factory pattern for programmatic creation. Explain state management across upgrades, the difference between install and upgrade modes, and migration between subnets. Show icp-cli commands for each operation.
+This guide walks through each phase with practical icp-cli commands and explains how state is preserved (or reset) at each step.
 
-<!-- Source Material -->
-- Portal: building-apps/canister-management/upgrade.mdx, state.mdx, developing-canisters/create.mdx, compile.mdx, install.mdx, deploy.mdx, delete.mdx, history.mdx, trapping.mdx, advanced/canister-migration.mdx
-- icp-cli: concepts/build-deploy-sync.md, guides/canister-migration.md
-- icskills: cycles-management, stable-memory
-- Examples: canister_factory (Motoko), classes (Motoko), canister-info (Rust)
-- Learn Hub: [Canister Control](https://learn.internetcomputer.org/hc/en-us/articles/34573932107796)
+## Lifecycle overview
 
-<!-- Cross-Links -->
-- concepts/canisters -- what is a canister
-- guides/backends/data-persistence -- state across upgrades
-- guides/canister-management/cycles-management -- cycles for canister creation
-- guides/security/canister-upgrades -- upgrade safety
-- icp-cli docs: https://cli.internetcomputer.org/
+A canister progresses through these phases:
+
+1. **Create** — register an empty canister on the network, receiving a unique canister ID
+2. **Install** — load compiled WebAssembly code into the canister
+3. **Run** — the canister processes messages and serves requests
+4. **Upgrade** — replace the code while preserving stable state
+5. **Stop** — pause message processing (required before deletion)
+6. **Delete** — permanently remove the canister and reclaim cycles
+
+In practice, `icp deploy` handles steps 1–3 automatically. You interact with individual steps when you need finer control.
+
+## Create a canister
+
+Creating a canister registers an empty placeholder on the network. The canister receives a unique ID (a [principal](../../concepts/canisters.md)) but has no code yet.
+
+```bash
+icp canister create my-canister
+```
+
+On mainnet, canister creation costs cycles. You can specify the initial balance:
+
+```bash
+icp canister create my-canister -e ic --cycles 2t
+```
+
+The default is 2T cycles, which is sufficient for most canisters at creation time.
+
+When you run `icp deploy`, canister creation happens automatically for any canister that doesn't already exist.
+
+## Build and install code
+
+### Build
+
+Building compiles your source code to a WebAssembly (Wasm) module. icp-cli delegates to the language toolchain — Cargo for Rust, moc for Motoko:
+
+```bash
+icp build
+```
+
+The output is a `.wasm` file ready for installation on the network.
+
+### Install
+
+Installing loads the compiled Wasm into an empty canister:
+
+```bash
+icp canister install my-canister
+```
+
+You can pass initialization arguments in Candid format:
+
+```bash
+icp canister install my-canister --args '(record { owner = principal "aaaaa-aa" })'
+```
+
+Or from a file:
+
+```bash
+icp canister install my-canister --args-file init-args.candid
+```
+
+### Deploy (build + create + install)
+
+For most workflows, `icp deploy` handles everything in one command:
+
+```bash
+icp deploy              # all canisters, local network
+icp deploy my-canister  # specific canister
+icp deploy -e ic        # deploy to mainnet
+```
+
+What `icp deploy` does:
+
+1. **Build** — compile all target canisters to Wasm
+2. **Create** — create canisters on the network (if they don't already exist)
+3. **Install or upgrade** — install code on new canisters, upgrade existing ones
+4. **Sync** — run post-deployment steps (such as uploading frontend assets)
+
+## Canister states
+
+A running canister can be in one of three states:
+
+| State | Description |
+|-------|-------------|
+| **Running** | Default. Processes incoming messages normally. |
+| **Stopping** | Transitional. Rejects new messages while in-flight messages complete. |
+| **Stopped** | Fully paused. No messages processed. Required before deletion or migration. |
+
+### Check canister status
+
+```bash
+icp canister status my-canister
+```
+
+This shows the canister's current state, cycle balance, memory usage, and controller list.
+
+### Stop a canister
+
+```bash
+icp canister stop my-canister
+```
+
+The canister transitions through **Stopping** (waiting for in-flight messages to complete) to **Stopped**. While stopping, new messages are rejected.
+
+### Start a canister
+
+```bash
+icp canister start my-canister
+```
+
+Returns the canister to the **Running** state.
+
+## Upgrade a canister
+
+Upgrading replaces the canister's code while preserving its stable state. This is how you ship new features to a running application without losing data.
+
+```bash
+icp deploy my-canister          # auto mode: upgrades if canister exists
+icp deploy my-canister --mode upgrade  # explicitly request upgrade mode
+```
+
+### Install modes
+
+icp-cli supports four install modes:
+
+| Mode | Behavior | When to use |
+|------|----------|-------------|
+| `auto` (default) | Install on new canisters, upgrade on existing ones | Normal development |
+| `install` | Only works on empty canisters | First deployment |
+| `upgrade` | Preserves stable state, runs upgrade hooks | Shipping updates |
+| `reinstall` | Wipes all state and reinstalls from scratch | Resetting during development |
+
+> **Warning:** `reinstall` permanently deletes all canister state. Use it only during development.
+
+### What happens during an upgrade
+
+When you run `icp deploy` on an existing canister, icp-cli automatically:
+
+1. **Stops** the canister (waits for in-flight messages to finish)
+2. Calls `pre_upgrade` on the running code (if defined)
+3. Preserves stable memory
+4. Loads the new Wasm module
+5. Calls `post_upgrade` on the new code (if defined)
+6. **Restarts** the canister
+
+Stopping before the upgrade prevents data inconsistencies from messages being processed during the code swap.
+
+> **Note:** `--mode upgrade` is rarely needed explicitly — `auto` mode (the default) already upgrades existing canisters. Use `--mode upgrade` in CI pipelines where you want the command to fail if the canister doesn't already exist.
+
+### Preserving state across upgrades
+
+The approach to state persistence differs between Motoko and Rust.
+
+#### Motoko: persistent actors
+
+In Motoko, declare your actor as `persistent` to automatically persist all top-level variables across upgrades:
+
+```motoko
+persistent actor Counter {
+  var count : Nat = 0;
+
+  public func increment() : async Nat {
+    count += 1;
+    count;
+  };
+
+  public query func get() : async Nat { count };
+};
+```
+
+All `var` declarations in a `persistent actor` are automatically stable — they survive upgrades without any additional code. Use `transient var` for values that should reset on each upgrade (such as caches):
+
+```motoko
+import Map "mo:core/Map";
+
+persistent actor Cache {
+  var entries : [(Text, Text)] = [];                      // survives upgrades
+  transient var lookupCache : Map.Map<Text, Text> = Map.empty(); // resets on upgrade
+};
+```
+
+> **Tip:** `persistent actor` is the recommended pattern. Avoid `pre_upgrade`/`post_upgrade` hooks in Motoko when possible — if `pre_upgrade` traps, the canister becomes permanently non-upgradeable.
+
+#### Rust: stable structures
+
+In Rust, use `ic-stable-structures` to store data directly in stable memory. Data in stable structures persists automatically across upgrades:
+
+```rust
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    DefaultMemoryImpl, StableBTreeMap, Cell as StableCell};
+use std::cell::RefCell;
+
+type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+thread_local! {
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
+        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    static COUNTER: RefCell<StableCell<u64, Memory>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))),
+            0,
+        ).unwrap()
+    );
+}
+```
+
+> **Important:** Each `MemoryId` must map to exactly one data structure. Reusing a `MemoryId` for a different structure corrupts data.
+
+For smaller state, you can use `pre_upgrade`/`post_upgrade` hooks with serialization:
+
+```rust
+use ic_cdk::{pre_upgrade, post_upgrade};
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    STATE.with(|s| ic_cdk::storage::stable_save((s,)).unwrap());
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    let (state,): (MyState,) = ic_cdk::storage::stable_restore().unwrap();
+    STATE.with(|s| *s.borrow_mut() = state);
+}
+```
+
+> **Warning:** Serializing large state in `pre_upgrade` can hit the instruction limit and brick the canister. Prefer stable structures for data that grows over time.
+
+For a deeper dive into persistence strategies, see [Data persistence](../backends/data-persistence.md).
+
+## Reinstall a canister
+
+Reinstalling wipes all canister state (heap and stable memory) and installs fresh code:
+
+```bash
+icp deploy my-canister --mode reinstall
+```
+
+This is useful during development when you want a clean slate. The canister ID is preserved, but all data is lost.
+
+> **Warning:** Never reinstall a production canister unless you intentionally want to erase all data.
+
+## Delete a canister
+
+Deleting permanently removes a canister from the network. The canister ID cannot be reused.
+
+1. Stop the canister first:
+
+```bash
+icp canister stop my-canister -e ic
+```
+
+2. Delete it:
+
+```bash
+icp canister delete my-canister -e ic
+```
+
+Remaining cycles are refunded to the controller who made the delete request.
+
+## Migrate a canister between subnets
+
+Sometimes you need to move a canister to a different subnet. Common reasons include:
+
+- **Wrong subnet** — the canister was deployed to an unintended subnet
+- **Geographic requirements** — data residency rules require a specific region
+- **Replication needs** — moving to a larger subnet for higher fault tolerance
+- **Colocation** — consolidating canisters onto the same subnet for efficient inter-canister calls
+
+There are two approaches, depending on whether you need to keep the canister ID:
+
+| Approach | State | Canister ID | When to use |
+|----------|-------|-------------|-------------|
+| **Snapshot transfer** | Preserved | New ID | Default — simpler and safer |
+| **Full migration** | Preserved | Preserved | When the canister ID is load-bearing |
+
+Preserving the canister ID matters when:
+
+- **Threshold signatures (tECDSA/tSchnorr)** — signing keys are cryptographically bound to the canister's principal. A new ID means losing access to derived keys and any assets they control on other blockchains.
+- **VetKeys** — decryption keys are derived from the canister ID. A new ID makes previously encrypted data inaccessible.
+- **External references** — other canisters, frontends, or off-chain systems reference the canister by ID. This includes Internet Identity sessions tied to a canister-ID-based domain.
+
+Both approaches use [canister snapshots](snapshots.md) to transfer state. For the complete step-by-step procedure, see the [icp-cli canister migration guide](https://github.com/dfinity/icp-cli/blob/main/docs/guides/canister-migration.md).
+
+## Programmatic canister management
+
+Canisters can manage other canisters by calling the [management canister](../../reference/management-canister.md) (`aaaaa-aa`). This enables patterns like canister factories that create and manage child canisters dynamically.
+
+### Motoko: create and install a canister
+
+<!-- Source: .sources/examples/motoko/canister_factory/src/backend/Main.mo -->
+
+```motoko
+import Principal "mo:core/Principal";
+import Management "ic:aaaaa-aa";
+
+persistent actor Factory {
+
+  public shared ({ caller }) func create() : async Principal {
+    let cycles = 1_000_000_000_000;
+    let result = await (with cycles)
+      Management.create_canister({
+        sender_canister_version = null;
+        settings = ?{
+          controllers = ?[caller, Principal.fromActor(Factory)];
+          compute_allocation = null;
+          memory_allocation = null;
+          freezing_threshold = null;
+          reserved_cycles_limit = null;
+          log_visibility = null;
+          wasm_memory_limit = null;
+          wasm_memory_threshold = null;
+        };
+      });
+    result.canister_id;
+  };
+};
+```
+
+### Rust: create a canister
+
+<!-- Source: .sources/cdk-rs/ic-management-canister-types/src/lib.rs -->
+
+```rust
+use candid::Principal;
+use ic_cdk::api::management_canister::main::{
+    create_canister, CreateCanisterArgument, CanisterSettings,
+};
+
+#[ic_cdk::update]
+async fn create_child() -> Principal {
+    let settings = CanisterSettings {
+        controllers: Some(vec![ic_cdk::id()]),
+        ..Default::default()
+    };
+    let (result,) = create_canister(
+        CreateCanisterArgument { settings: Some(settings) },
+        1_000_000_000_000, // cycles
+    ).await.unwrap();
+    result.canister_id
+}
+```
+
+For a complete canister factory example, see the [canister factory example](https://github.com/dfinity/examples/tree/master/motoko/canister_factory).
+
+## Canister history
+
+Every canister maintains a history of at least its most recent 20 changes — including creation, code installations, upgrades, reinstalls, and controller changes. Older entries may be dropped, but the 20 most recent are always retained. This is useful for security audits and verifying code integrity.
+
+### Query history from Rust
+
+<!-- Source: .sources/examples/rust/canister-info/src/lib.rs -->
+
+```rust
+use ic_cdk::api::management_canister::main::{
+    canister_info, CanisterInfoRequest, CanisterInfoResponse,
+};
+use candid::Principal;
+
+#[ic_cdk::update]
+async fn info(canister_id: Principal) -> CanisterInfoResponse {
+    let request = CanisterInfoRequest {
+        canister_id,
+        num_requested_changes: Some(20),
+    };
+    canister_info(request).await.unwrap().0
+}
+```
+
+### Query history with icp-cli
+
+```bash
+icp canister status my-canister -e ic
+```
+
+The status output includes the module hash and controller list. For full change history, use the `canister_info` management canister call.
+
+## Trapping and error handling
+
+A **trap** is an unrecoverable error during WebAssembly execution — caused by panics, division by zero, out-of-bounds memory access, or explicit trap calls. When a canister traps:
+
+- The current message execution ends with an error
+- All state changes from the current message are rolled back
+- For inter-canister calls, only the callback's state changes roll back — state changes made before the `await` persist
+
+### Traps during upgrades
+
+Traps in upgrade hooks are particularly dangerous:
+
+- **`pre_upgrade` trap:** The upgrade fails. The old code remains, but you may have lost access to state needed for future upgrades. In Motoko, this can make the canister permanently non-upgradeable.
+- **`post_upgrade` trap:** The new code is installed but initialization failed. The canister may be in an inconsistent state.
+
+To avoid these risks:
+- Prefer stable structures over serialization-based upgrade hooks
+- In Motoko, use `persistent actor` instead of manual `pre_upgrade`/`post_upgrade`
+- Test upgrades locally before deploying to mainnet
+- Take a [snapshot](snapshots.md) before risky upgrades for rollback capability
+
+## Wasm module size limits
+
+The IC enforces a 10 MiB limit on Wasm modules. If your module exceeds this, compress it with gzip:
+
+```bash
+gzip my-canister.wasm
+icp canister install my-canister --wasm my-canister.wasm.gz
+```
+
+The IC decompresses the module automatically during installation. For strategies to reduce Wasm size, see [Optimization](optimization.md).
+
+## Next steps
+
+- [Canister settings](settings.md) — configure controllers, memory allocation, and freezing thresholds
+- [Cycles management](cycles-management.md) — fund canisters and monitor cycle consumption
+- [Data persistence](../backends/data-persistence.md) — deep dive into stable memory and persistence strategies
+- [Canister snapshots](snapshots.md) — create backups before risky upgrades
+- [Upgrade safety](../security/canister-upgrades.md) — security considerations for safe upgrades
+- [Testing strategies](../testing/strategies.md) — test lifecycle operations locally
+
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/, docs/building-apps/developing-canisters/ — dfinity/icp-cli — docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md -->
