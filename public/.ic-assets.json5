@@ -36,6 +36,13 @@
     }
   },
   {
+    // Markdown endpoints and llms.txt — short cache so updates are visible quickly
+    "match": "**/*.{md,txt}",
+    "headers": {
+      "Cache-Control": "public, max-age=300"
+    }
+  },
+  {
     // Hashed assets — cache forever
     "match": "_astro/**/*",
     "headers": {

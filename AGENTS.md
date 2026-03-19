@@ -577,15 +577,10 @@ When reviewing portal tracking issues:
 
 ## Agent-friendly documentation
 
-The site implements the [Agent-Friendly Documentation Spec](https://agentdocsspec.com) so AI agents can consume docs as clean markdown. Three build-time plugins handle this:
-
-| Plugin | File | What it does |
-|--------|------|-------------|
-| `agentDocs()` | `plugins/astro-agent-docs.mjs` | Generates `/llms.txt` index and `.md` endpoints for every page |
-| `rehypeAgentSignaling` | `plugins/rehype-agent-signaling.mjs` | Injects a visually-hidden `/llms.txt` pointer into every HTML page |
+The site implements the [Agent-Friendly Documentation Spec](https://agentdocsspec.com) so AI agents can consume docs as clean markdown. The `agentDocs()` integration (`plugins/astro-agent-docs.mjs`) generates `/llms.txt` and `.md` endpoints at build time. A `<link rel="help">` in `<head>` (configured in `astro.config.mjs`) points crawlers to `/llms.txt` early in the page.
 
 **Build output:**
-- `/llms.txt` — discovery index listing all pages with links to `.md` endpoints
+- `/llms.txt` — discovery index listing all pages with links to `.md` endpoints, plus the IC skills registry URL
 - `/<path>.md` — clean markdown for every page (frontmatter and HTML comments stripped)
 
 ### SECTIONS array (keep in sync)
@@ -594,7 +589,7 @@ The `SECTIONS` array in `plugins/astro-agent-docs.mjs` maps directory prefixes t
 
 ### Asset canister headers
 
-`public/.ic-assets.json5` sets `Content-Type: text/markdown; charset=utf-8` for `.md` files and `text/plain; charset=utf-8` for `llms.txt`.
+`public/.ic-assets.json5` sets `Content-Type: text/markdown; charset=utf-8` for `.md` files, `text/plain; charset=utf-8` for `llms.txt`, and `Cache-Control: public, max-age=300` for both.
 
 ## Previous work
 

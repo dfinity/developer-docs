@@ -109,7 +109,7 @@ The site is built to be agent-friendly per the [Agent-Friendly Documentation Spe
 
 - **`/llms.txt`** — discovery index listing all pages with descriptions
 - **`/<path>.md`** — clean markdown endpoint for every page (e.g., `/concepts/canisters.md`)
-- **Agent signaling** — every HTML page includes a hidden pointer to `/llms.txt`
+- **Agent signaling** — every HTML page includes a `<link rel="help">` in `<head>` pointing to `/llms.txt`
 
 See [AGENTS.md](AGENTS.md) for the full workflow: orientation, rules, content authoring, and planning artifacts. `CLAUDE.md` symlinks to `AGENTS.md`.
 

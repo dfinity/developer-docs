@@ -112,6 +112,8 @@ function generateLlmsTxt(pages, siteUrl) {
     "",
     "> Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.",
     "",
+    "Agent skills for IC development: https://skills.internetcomputer.org/.well-known/skills/index.json",
+    "",
   ];
 
   // Root index page
