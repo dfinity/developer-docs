@@ -26,8 +26,6 @@ ICP is a strong fit when your application needs:
 - **Cross-chain interop** -- native Bitcoin/Ethereum signing without bridges
 - **User-friendly onboarding** -- no wallet or gas fees required for end users
 
-For workloads that prioritize raw throughput, sub-millisecond latency, or very large data storage, a traditional cloud may be more appropriate -- or consider a hybrid architecture where ICP handles the trust-critical layer.
-
 ## What makes ICP different
 
 ### Chain-key cryptography
