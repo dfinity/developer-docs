@@ -430,4 +430,4 @@ The IC decompresses the module automatically during installation. For strategies
 - [Upgrade safety](../security/canister-upgrades.md) — security considerations for safe upgrades
 - [Testing strategies](../testing/strategies.md) — test lifecycle operations locally
 
-<!-- Sync recommendation: informed by dfinity/portal — docs/building-apps/canister-management/, docs/building-apps/developing-canisters/ — dfinity/icp-cli — docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/, docs/building-apps/developing-canisters/ — dfinity/icp-cli — docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md -->
