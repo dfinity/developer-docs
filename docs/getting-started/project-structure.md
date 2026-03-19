@@ -235,7 +235,7 @@ For a deep dive on binding generation, see [Binding generation](../guides/canist
 
 ## Next steps
 
-- [What next?](what-next.md) -- explore paths for building on ICP
+- [What next?](choose-your-path.md) -- pick a development path based on what you want to build
 - [Binding generation](../guides/canister-calls/binding-generation.md) -- deep dive on generating type-safe client code
 - [Asset canister](../guides/frontends/asset-canister.md) -- how the frontend recipe and asset upload work
 - [Canister lifecycle](../guides/canister-management/lifecycle.md) -- build, deploy, upgrade, and manage canisters

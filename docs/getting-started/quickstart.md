@@ -128,7 +128,7 @@ Each canister name maps to a directory containing its own `canister.yaml` with b
 ## Next steps
 
 - [Project structure](project-structure.md) — Understand how icp-cli projects are organized
-- [What next?](what-next.md) — Choose your path based on what you want to build
+- [Choose your path](choose-your-path.md) — pick a development path based on what you want to build
 - [Concepts: Canisters](../concepts/canisters.md) — Learn what canisters are and how they work
 - [Agentic development](../guides/tools/agentic-development.md) — Use AI agents to build on the Internet Computer
 - [icp-cli documentation](https://cli.internetcomputer.org/) — Full CLI reference and guides

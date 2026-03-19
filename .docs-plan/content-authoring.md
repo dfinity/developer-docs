@@ -58,7 +58,7 @@ When drafting a new docs page:
   - `getting-started/` — Tutorials. Step-by-step with CLI commands. Linear, opinionated, complete.
   - `guides/` — How-to guides. Task-oriented with CLI commands where relevant. May reference concepts for background.
   - `reference/` — Specifications and lookups. Precise, complete, no tutorials.
-- **End-of-page navigation:** End every page with a `## Next steps` section linking to related pages. Always use the heading "Next steps" — never "What's next" or other variants (avoids collision with the "What Next?" page title).
+- **End-of-page navigation:** End every page with a `## Next steps` section linking to related pages. Always use the heading "Next steps" — never "What's next" or other variants.
 
 ## Linking rules
 
