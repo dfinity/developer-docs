@@ -24,19 +24,6 @@ export default defineConfig({
         EditLink: "./src/components/EditLink.astro",
         Banner: "./src/components/AgentSignaling.astro",
       },
-      head: [
-        {
-          // Agent-friendly docs: surface llms.txt directive early in <head>
-          // so crawlers find it before the content area (agentdocsspec.com)
-          tag: "link",
-          attrs: {
-            rel: "help",
-            href: "/llms.txt",
-            type: "text/plain",
-            title: "LLM-friendly documentation index",
-          },
-        },
-      ],
       customCss: [
         "@fontsource/inter/400.css",
         "@fontsource/inter/500.css",
