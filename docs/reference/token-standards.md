@@ -6,7 +6,9 @@ sidebar:
 icskills: [icrc-ledger, wallet-integration]
 ---
 
-ICP uses the ICRC standard family for tokens and token-related operations. ICRC stands for Internet Computer Request for Comments. Standards are proposed by the [ICRC working group](https://github.com/dfinity/ICRC), refined through community consensus, and adopted or rejected through NNS governance proposals. While ICRC standards can cover any topic (services, canister calls, authentication), this page focuses on the token and wallet signer standards.
+ICP uses the ICRC standard family for tokens and token-related operations. This page covers the token standards (ICRC-1 through ICRC-37) and wallet signer standards (ICRC-21 through ICRC-49) that developers need to build DeFi applications, wallets, and token integrations.
+
+ICRC stands for Internet Computer Request for Comments. Standards are proposed by the [ICRC working group](https://github.com/dfinity/ICRC), refined through community consensus, and adopted or rejected through NNS governance proposals.
 
 ## Standards overview
 
@@ -99,13 +101,17 @@ type TransferError = variant {
 | `icrc1:decimals` | `Nat` | `8` |
 | `icrc1:fee` | `Nat` | `10000` |
 
-### Canonical ledger canister IDs
+### Common ICRC-1 ledgers
 
-| Token | Ledger canister ID | Fee | Decimals |
-|-------|-------------------|-----|----------|
+The following are DFINITY-maintained ledgers. Many other ICRC-1 tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
+
+| Token | Ledger canister ID | Default fee | Decimals |
+|-------|-------------------|-------------|----------|
 | ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 10,000 e8s (0.0001 ICP) | 8 |
 | ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 10 satoshis | 8 |
 | ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 2,000,000,000,000 wei (0.000002 ETH) | 18 |
+
+> Fees can change through governance proposals. Always call `icrc1_fee` to get the current fee rather than hardcoding these values.
 
 Index canisters (for transaction history):
 
@@ -225,25 +231,31 @@ ICP, ckBTC, and ckETH all implement ICRC-2.
 
 ICRC-3 extends ICRC-1 with a standardized transaction log interface. It defines how ledgers expose their block history, enabling clients and index canisters to retrieve and verify transaction records.
 
+### Archive model
+
+Ledgers store recent blocks directly and move older blocks to **archive canisters** to manage memory. When fetching blocks, `icrc3_get_blocks` returns blocks the ledger holds directly plus callbacks to fetch archived blocks from the appropriate archive canister. Use `icrc3_get_archives` to discover all archive canisters and the block ranges they hold.
+
 ### Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `icrc3_get_transactions` | `(GetTransactionsRequest) -> (GetTransactionsResponse) query` | Retrieve transactions from the ledger or its archive canisters |
-| `icrc3_get_blocks` | `(vec GetBlocksRequest) -> (GetBlocksResult) query` | Retrieve blocks by index range |
-| `icrc3_get_tip_certificate` | `() -> (opt DataCertificate) query` | Return a certificate for the last block hash |
-| `icrc3_supported_block_types` | `() -> (vec BlockType) query` | List the block types the ledger produces |
+| `icrc3_get_blocks` | `(vec record { start : nat; length : nat }) -> (GetBlocksResult) query` | Retrieve blocks by index range; returns callbacks for archived blocks |
+| `icrc3_get_archives` | `(GetArchivesArgs) -> (vec record { canister_id; start; end }) query` | List archive canisters and the block ranges they hold |
+| `icrc3_get_tip_certificate` | `() -> (opt DataCertificate) query` | Return a certificate for the last block hash and index |
+| `icrc3_supported_block_types` | `() -> (vec record { block_type : text; url : text }) query` | List the block types the ledger produces |
 
 ### Block schema
 
-ICRC-3 blocks use a generic value representation. Each block contains:
+ICRC-3 blocks use a generic `Value` representation that preserves all data for verification. Each block contains:
 
 - **`phash`** — hash of the previous block (absent for the genesis block)
 - **`btype`** — block type string (e.g., `"1xfer"` for ICRC-1 transfers, `"2approve"` for ICRC-2 approvals)
 - **`ts`** — timestamp in nanoseconds
 - **Transaction-specific fields** — vary by block type (e.g., `from`, `to`, `amt` for transfers)
 
-Standard block types include:
+### Adopted block types
+
+Block type identifiers follow the naming convention `<icrc-number><operation>` (e.g., `1xfer` for ICRC-1 transfer). Anyone can define new block types for custom standards following this convention.
 
 | Block type | Standard | Description |
 |------------|----------|-------------|
@@ -252,6 +264,19 @@ Standard block types include:
 | `1mint` | ICRC-1 | Mint |
 | `2approve` | ICRC-2 | Approval |
 | `2xfer` | ICRC-2 | Transfer-from |
+
+### Proposed block types
+
+The following block types are currently in the ICRC proposal process and not yet adopted:
+
+| Block type(s) | Proposal | Status |
+|---------------|----------|--------|
+| ICRC-122 | [Ledger notification blocks](https://github.com/dfinity/ICRC/pull/125) | Proposed |
+| ICRC-123 | [Batch call blocks](https://github.com/dfinity/ICRC/pull/134) | Proposed |
+| ICRC-124 | [Canister management blocks](https://github.com/dfinity/ICRC/pull/135) | Proposed |
+| ICRC-152 | [RWA compliance blocks](https://github.com/dfinity/ICRC/pull/156) | Proposed |
+| ICRC-153 | [RWA regulatory blocks](https://github.com/dfinity/ICRC/pull/157) | Proposed |
+| ICRC-154 | [RWA lifecycle blocks](https://github.com/dfinity/ICRC/pull/158) | Proposed |
 
 [Read the full ICRC-3 standard](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-3)
 
