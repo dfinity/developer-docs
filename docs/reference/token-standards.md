@@ -101,25 +101,7 @@ type TransferError = variant {
 | `icrc1:decimals` | `Nat` | `8` |
 | `icrc1:fee` | `Nat` | `10000` |
 
-### Common ICRC-1 ledgers
-
-The following are DFINITY-maintained ledgers. Many other ICRC-1 tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
-
-| Token | Ledger canister ID | Decimals |
-|-------|-------------------|----------|
-| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 8 |
-| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 8 |
-| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 18 |
-
-> Fees can change at any time. Always call `icrc1_fee` to get the current fee rather than hardcoding values.
-
-Index canisters (for transaction history):
-
-| Token | Index canister ID |
-|-------|------------------|
-| ICP | `qhbym-qaaaa-aaaaa-aaafq-cai` |
-| ckBTC | `n5wcd-faaaa-aaaar-qaaea-cai` |
-| ckETH | `s3zol-vqaaa-aaaar-qacpa-cai` |
+For common ledger canister IDs (ICP, ckBTC, ckETH) and index canisters, see [Token ledgers](../../guides/defi/token-ledgers.md#common-ledger-canister-ids). For a comprehensive list of all tokens on ICP, see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens).
 
 [Read the full ICRC-1 standard](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1)
 

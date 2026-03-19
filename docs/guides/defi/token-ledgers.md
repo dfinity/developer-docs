@@ -10,17 +10,19 @@ Every token on ICP — ICP, ckBTC, ckETH, and custom tokens — is managed by a 
 
 This guide covers the most common token operations: transfers, approvals, subaccounts, and local test ledger setup. For the formal standard specifications, see [Token standards](../../reference/token-standards.md).
 
-## Canister IDs
+## Common ledger canister IDs
 
-These are the mainnet ledger canister IDs for the most common tokens:
+The following are DFINITY-maintained ledgers. Many other ICRC-1 tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
 
-| Token | Ledger canister ID | Fee | Decimals |
-|-------|-------------------|-----|----------|
-| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 10,000 e8s (0.0001 ICP) | 8 |
-| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 10 satoshis | 8 |
-| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 2,000,000,000,000 wei (0.000002 ETH) | 18 |
+| Token | Ledger canister ID | Decimals |
+|-------|-------------------|----------|
+| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 8 |
+| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 8 |
+| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 18 |
 
-Index canisters provide transaction history:
+> Fees can change at any time. Always call `icrc1_fee` to get the current fee rather than hardcoding values.
+
+Index canisters (for transaction history):
 
 | Token | Index canister ID |
 |-------|------------------|
