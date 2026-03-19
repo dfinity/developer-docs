@@ -136,11 +136,7 @@ icp deploy
 icp deploy frontend
 ```
 
-After deployment, open your browser to `http://<canister-id>.localhost:8000/`. The canister ID appears in the deploy output, or you can retrieve it:
-
-```bash
-icp canister id frontend
-```
+After deployment, open your browser to `http://<canister-id>.localhost:8000/`. The canister ID appears in the deploy output, or you can retrieve it with `icp canister list`.
 
 ### Mainnet deployment
 
@@ -159,7 +155,7 @@ npm run build
 icp deploy frontend
 ```
 
-You can also re-sync assets without a full redeploy:
+If only static assets changed (no WASM update needed), use `icp sync` instead of a full redeploy — it skips canister reinstallation and only uploads changed files:
 
 ```bash
 icp sync frontend
@@ -186,9 +182,9 @@ const canisterEnv = safeGetCanisterEnv();
 const backendId = canisterEnv?.["PUBLIC_CANISTER_ID:backend"];
 ```
 
-This replaces the legacy `dfx` pattern of reading canister IDs from `.env` files. icp-cli does not generate `.env` files. The `ic_env` cookie is the standard mechanism for frontend canister discovery.
+icp-cli does not generate `.env` files. The `ic_env` cookie is the standard mechanism for frontend canister discovery.
 
-For the complete pattern (creating an agent and making calls), see the [hello-world template](https://github.com/dfinity/icp-cli-templates/tree/main/hello-world) which demonstrates reading the `ic_env` cookie and calling a backend canister.
+For the complete pattern (creating an agent and making calls), see the [hello-world template](https://github.com/dfinity/icp-cli-templates/tree/main/hello-world) which demonstrates reading the `ic_env` cookie and calling a backend canister. For frontend-only projects without a backend, see the [static-website template](https://github.com/dfinity/icp-cli-templates/tree/main/static-website).
 
 ### Local development with a dev server
 
@@ -277,7 +273,7 @@ icp canister call frontend revoke_permission '(record {
 })'
 ```
 
-> **Security note:** Do not use `icp canister update-settings frontend --add-controller <principal-id>` for upload access. Controllers have full canister control (upgrade WASM, change settings, delete the canister, drain cycles). Use `grant_permission` with the appropriate role instead.
+> **Security note:** Do not use `icp canister settings update frontend --add-controller <principal-id>` for upload access. Controllers have full canister control (upgrade WASM, change settings, delete the canister, drain cycles). Use `grant_permission` with the appropriate role instead.
 
 ## Verify deployment
 
@@ -331,5 +327,6 @@ icp canister call frontend http_request '(record {
 - [Custom domains](custom-domains.md) -- serve your frontend from your own domain
 - [Response certification](certification.md) -- verify that asset canister responses are authentic
 - [Authentication with Internet Identity](../authentication/internet-identity.md) -- add user login to your frontend
+- [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage) -- programmatic uploads with AssetManager
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal docs/building-apps/frontends/uploading-serving-assets.mdx -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
