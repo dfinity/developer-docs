@@ -21,13 +21,9 @@ errors=0
 # 1. Git submodules (.sources/)
 # ---------------------------------------------------------------------------
 printf "\n== Source material submodules ==\n"
-if [ -f ".sources/portal/docs/building-apps/essentials/canisters.mdx" ]; then
-  ok "Submodules already initialized"
-else
-  echo "Initializing submodules (shallow)..."
-  git submodule update --init --depth 1
-  ok "Submodules initialized"
-fi
+echo "Initializing submodules (shallow, no-op for already-initialized ones)..."
+git submodule update --init --depth 1
+ok "Submodules initialized"
 
 # ---------------------------------------------------------------------------
 # 2. Node dependencies
