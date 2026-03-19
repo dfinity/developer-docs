@@ -177,6 +177,13 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** Alternatives were evaluated and rejected: (1) Symlinking `.sources/` to the main repo's copy — works for file access but causes 13 spurious deletion entries in `git status` that could confuse agents into staging them; symlinking individual submodule dirs causes a hard `git status` error (exit 128). (2) `submodule.recurse=true` git config — does not auto-init submodules on `git worktree add`. (3) Vendoring skills into the repo — loses automatic sync with upstream skill repos. The submodule init approach is the only one with zero git side effects (clean status, no surprises), which is critical for agents operating autonomously.
 **Alternatives considered:** Shared `.sources/` symlink (dirty git status confuses agents), `submodule.recurse` config (doesn't work for worktree creation), vendored skills (manual sync burden)
 
+## 2026-03-19: Sync ic.did from portal and check on submodule bumps
+
+**Context:** The management canister Candid interface (`ic.did`) is the machine-readable type definition for all management canister methods. It lives in the portal repo at `docs/references/_attachments/ic.did` and is embedded in the IC interface spec page. The IC repo (`dfinity/ic`) also has a copy in `packages/ic-management-canister-types/tests/ic.did`, but it may include unreleased changes. The portal version represents the released spec.
+**Decision:** Copy `ic.did` from `.sources/portal/` into `docs/reference/_attachments/ic.did`. Reference it from the management canister page. On portal submodule bumps, diff `ic.did` — if it changed, re-copy and update `management-canister.md` plus any guides referencing affected methods. Added "Synced files from submodules" section to AGENTS.md with a bump checklist.
+**Rationale:** Developers need the Candid interface for binding generation and type checking. Copying rather than symlinking ensures the file is served by the docs site. The portal version is the released source of truth; the IC repo version may be ahead with unreleased changes.
+**Alternatives considered:** Symlink to `.sources/` (not served by Astro build), link to GitHub raw URL (breaks offline, no version control), add IC repo as submodule (too large)
+
 ## 2026-03-18: Move wallet-integration from authentication to DeFi section
 
 **Context:** The wallet-integration page covers ICRC signer standards (ICRC-21/25/27/29/49) for transaction approval, not authentication. The wallet-integration icskill itself distinguishes wallet signers (transaction approval) from Internet Identity (authentication/login). Under `guides/authentication/`, the page was grouped with II and verifiable credentials — a different concern.
