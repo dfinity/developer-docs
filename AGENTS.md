@@ -432,7 +432,7 @@ All upstream source repos are pinned as **git submodules** under `.sources/`. Th
 | `.sources/examples` | `dfinity/examples` | `master` | Code examples (link to for >30 line snippets) |
 | `.sources/icp-js-sdk-docs` | `dfinity/icp-js-sdk-docs` | `main` | JS SDK documentation |
 | `.sources/motoko` | `caffeinelabs/motoko` | `v1.3.0` (latest release) | Motoko compiler — language spec, system function names, syntax verification |
-| `.sources/motoko-core` | `caffeinelabs/motoko-core` | `v2.1.0` (latest release) | Motoko core library (`mo:core`) — API signatures, module docs |
+| `.sources/motoko-core` | `caffeinelabs/motoko-core` | `v2.2.0` (latest release) | Motoko core library (`mo:core`) — API signatures, module docs |
 | `.sources/cdk-rs` | `dfinity/cdk-rs` | `timers-1.0.0` / `executor-2.0.0` | Rust CDK (`ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros`) — API signatures, management canister types |
 | `.sources/candid` | `dfinity/candid` | `2025-12-18` | Candid spec, type system, `didc` tool source |
 | `.sources/response-verification` | `dfinity/response-verification` | `v3.1.0` (latest release) | Response verification, certified variables, certificate trees |
