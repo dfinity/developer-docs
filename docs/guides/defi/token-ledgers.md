@@ -34,7 +34,7 @@ All of these ledgers are ICRC-1 and ICRC-2 compatible. For chain-key token speci
 
 The `icrc1_transfer` function sends tokens from the calling canister's account to a destination account. Every ICRC-1 ledger uses the same `Account` type:
 
-```
+```candid
 { owner: Principal; subaccount: ?Blob }  // 32-byte subaccount, null = default
 ```
 
@@ -175,6 +175,49 @@ icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_fee '()' -e ic
 
 Always set `created_at_time` to enable deduplication. Without it, two identical transfers submitted within 24 hours both execute.
 
+### Checking balances
+
+Query an account's balance with `icrc1_balance_of`. This is a query call — fast and free.
+
+#### Rust
+
+```rust
+use candid::{Nat, Principal};
+use icrc_ledger_types::icrc1::account::Account;
+use ic_cdk::call::Call;
+
+async fn get_balance(ledger: Principal, owner: Principal) -> Result<Nat, String> {
+    let account = Account { owner, subaccount: None };
+
+    let (balance,): (Nat,) =
+        Call::unbounded_wait(ledger, "icrc1_balance_of")
+            .with_arg(account)
+            .await
+            .map_err(|e| format!("Call failed: {:?}", e))?
+            .candid_tuple()
+            .map_err(|e| format!("Decode failed: {:?}", e))?;
+
+    Ok(balance)
+}
+```
+
+#### Motoko
+
+```motoko
+persistent actor {
+
+  type Account = { owner : Principal; subaccount : ?Blob };
+
+  transient let icpLedger = actor ("ryjl3-tyaaa-aaaaa-aaaba-cai") : actor {
+    icrc1_balance_of : shared query (Account) -> async Nat;
+  };
+
+  public func getBalance(owner : Principal) : async Nat {
+    await icpLedger.icrc1_balance_of({ owner = owner; subaccount = null })
+  };
+}
+```
+
 ## Approve and transfer-from (ICRC-2)
 
 ICRC-2 adds an approve/transferFrom pattern, similar to ERC-20 on Ethereum. The token owner first approves a spender for a certain amount, then the spender calls `icrc2_transfer_from` to move tokens. This is a two-step flow — calling `transfer_from` without a prior approval fails with `InsufficientAllowance`.
@@ -312,7 +355,7 @@ persistent actor {
     icrc2_transfer_from : shared (TransferFromArg) -> async { #Ok : Nat; #Err : TransferFromError };
   };
 
-  public shared ({ caller }) func approveSpender(spender : Principal, amount : Nat) : async Nat {
+  public func approveSpender(spender : Principal, amount : Nat) : async Nat {
     let now = Nat64.fromNat(Int.abs(Time.now()));
     let result = await icpLedger.icrc2_approve({
       from_subaccount = null;
@@ -384,6 +427,8 @@ fn deposit_account(canister: Principal, user: Principal) -> Account {
 ```motoko
 import Principal "mo:core/Principal";
 import Blob "mo:core/Blob";
+import Array "mo:core/Array";
+import Nat8 "mo:core/Nat8";
 
 type Account = { owner : Principal; subaccount : ?Blob };
 
@@ -429,14 +474,13 @@ To test token operations locally, deploy an ICRC-1 ledger on your local replica.
 
 ```yaml
 canisters:
-  icrc1_ledger:
-    name: icrc1_ledger
-    recipe:
-      type: custom
-      candid: "https://github.com/dfinity/ic/releases/download/<RELEASE_TAG>/ledger.did"
-      wasm: "https://github.com/dfinity/ic/releases/download/<RELEASE_TAG>/ic-icrc1-ledger.wasm.gz"
-    config:
-      init_arg_file: "icrc1_ledger_init.args"
+  - name: icrc1_ledger
+    build:
+      steps:
+        - type: pre-built
+          url: "https://github.com/dfinity/ic/releases/download/<RELEASE_TAG>/ic-icrc1-ledger.wasm.gz"
+    init_args:
+      path: icrc1_ledger_init.args
 ```
 
 Create `icrc1_ledger_init.args` with your principal. Replace `YOUR_PRINCIPAL` with the output of `icp identity principal`:
