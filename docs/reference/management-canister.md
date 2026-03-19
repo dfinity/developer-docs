@@ -595,6 +595,12 @@ Cycle costs for management canister calls vary depending on subnet replication f
 
 Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`) will fail if insufficient cycles are provided.
 
+## Candid interface
+
+The complete Candid interface definition for the management canister is available at [`ic.did`](_attachments/ic.did). This file defines all types and method signatures in machine-readable Candid format and can be used for binding generation and type checking.
+
+<!-- sync from .sources/portal/docs/references/_attachments/ic.did -->
+
 ## Next steps
 
 - [Canister lifecycle guide](../guides/canister-management/lifecycle.md) — practical workflows for creating, upgrading, and managing canisters
@@ -603,4 +609,4 @@ Methods that require explicit cycle attachment (`create_canister`, `sign_with_ec
 - [Bitcoin integration](../guides/chain-fusion/bitcoin.md) — building Bitcoin-native applications with chain-key signing
 - [IC interface specification](ic-interface-spec.md) — the complete formal specification
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md; dfinity/icskills — skills/cycles-management/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md, docs/references/_attachments/ic.did; dfinity/icskills — skills/cycles-management/SKILL.md -->

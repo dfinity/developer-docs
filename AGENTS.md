@@ -487,6 +487,21 @@ Only the project maintainer bumps submodule refs. When bumped:
 2. Review if any existing docs pages are affected by the upstream changes
 3. Update affected pages and note the bump in the PR description
 
+### Synced files from submodules
+
+Some files are copied from `.sources/` into the docs repo because they need to be served or referenced directly. When bumping the source submodule, these files must be diffed and re-copied if changed.
+
+| Local file | Source | Affects |
+|-----------|--------|---------|
+| `docs/reference/_attachments/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/reference/management-canister.md` and any guides that reference affected methods |
+
+**Portal bump checklist for `ic.did`:**
+1. Diff: `diff docs/reference/_attachments/ic.did .sources/portal/docs/references/_attachments/ic.did`
+2. If changed, copy: `cp .sources/portal/docs/references/_attachments/ic.did docs/reference/_attachments/ic.did`
+3. Review the diff for new methods, changed signatures, or removed methods
+4. Update `docs/reference/management-canister.md` to reflect any interface changes
+5. Check guides that reference affected methods (chain-fusion, canister-management, backends)
+
 ## Planning artifacts (`.docs-plan/`)
 
 Check these every session:
