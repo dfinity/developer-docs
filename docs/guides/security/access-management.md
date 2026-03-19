@@ -6,17 +6,334 @@ sidebar:
 icskills: [canister-security]
 ---
 
-TODO: Write content for this page.
+Every canister method is callable by anyone on the internet. Without explicit access checks, any user or canister can invoke any of your public functions. This guide covers the patterns you need to restrict access.
 
-<!-- Content Brief -->
-Control who can call your canister functions. Cover controller-only functions, caller principal checking, anonymous principal rejection, Rust guards pattern, role-based access control, and the who_am_i pattern for debugging identity. Include inline code examples (~10 lines) for basic caller checking in both Rust and Motoko. Written as a checklist, not an essay.
+## Checklist
 
-<!-- Source Material -->
-- Portal: building-apps/best-practices/general.mdx (access control sections)
-- icskills: canister-security
-- Examples: guards (Rust), who_am_i (both, inline ~10 lines)
+Use this as a quick reference when securing your canister:
 
-<!-- Cross-Links -->
-- concepts/security -- security model background
-- guides/canister-management/settings -- controller configuration
-- guides/security/dos-prevention -- rate limiting as access control
+- [ ] Reject the anonymous principal (`2vxsx-fae`) in every authenticated endpoint
+- [ ] Check the caller inside each update method — not just in `canister_inspect_message`
+- [ ] Use the `guard` attribute (Rust) or guard functions (Motoko) to enforce access rules
+- [ ] Add a backup controller so you never lose canister access
+- [ ] Use `canister_inspect_message` only as a cycle-saving optimization, never as a security boundary
+
+## How caller identity works
+
+When a canister receives a message, the network includes the caller's principal. This identity is provided by the system — it cannot be forged or spoofed. You access it with:
+
+- **Motoko:** `shared({ caller })` pattern on public functions
+- **Rust:** `ic_cdk::api::msg_caller()`
+
+Every principal is one of these types:
+
+| Type | Example | Meaning |
+|------|---------|---------|
+| User | `wo5qg-...` | Human with an identity (Internet Identity, seed phrase, etc.) |
+| Canister | `rrkah-fqaaa-...` | Another canister making an inter-canister call |
+| Anonymous | `2vxsx-fae` | Unauthenticated caller — no identity attached |
+| Management | `aaaaa-aa` | The IC management canister (system calls, heartbeats, timers) |
+
+## Reject anonymous callers
+
+Any endpoint that requires authentication must reject the anonymous principal. Without this check, unauthenticated callers can invoke protected methods. If your canister uses the caller principal as an identity key (for balances, ownership, etc.), the anonymous principal becomes a shared identity anyone can use.
+
+**Motoko:**
+
+```motoko
+import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
+
+// Inside persistent actor { ... }
+
+  func requireAuthenticated(caller : Principal) {
+    if (Principal.isAnonymous(caller)) {
+      Runtime.trap("anonymous caller not allowed");
+    };
+  };
+
+  public shared ({ caller }) func protectedAction() : async Text {
+    requireAuthenticated(caller);
+    "ok";
+  };
+```
+
+**Rust:**
+
+```rust
+use ic_cdk::update;
+use ic_cdk::api::msg_caller;
+use candid::Principal;
+
+fn require_authenticated() -> Result<(), String> {
+    if msg_caller() == Principal::anonymous() {
+        return Err("anonymous caller not allowed".to_string());
+    }
+    Ok(())
+}
+
+#[update(guard = "require_authenticated")]
+fn protected_action() -> String {
+    "ok".to_string()
+}
+```
+
+The Rust `guard` attribute runs the check before the method body executes. If the guard returns `Err`, the call is rejected. This is more robust than calling guard functions inside the method — you cannot forget to add it. Multiple guards can be chained:
+
+```rust
+#[update(guard = "require_authenticated", guard = "require_admin")]
+fn admin_action() {
+    // both guards passed
+}
+```
+
+## Owner and role-based access control
+
+There is no built-in role system on ICP. You implement it yourself by tracking principals in your canister state.
+
+### Motoko
+
+The `shared(msg)` pattern on an actor class captures the deployer's principal atomically — no separate init call, no front-running risk. Use `transient` for the owner since it gets recomputed from `msg.caller` on each install/upgrade.
+
+```motoko
+import Principal "mo:core/Principal";
+import Set "mo:core/pure/Set";
+import Runtime "mo:core/Runtime";
+
+shared(msg) persistent actor class MyCanister() {
+
+  transient let owner = msg.caller;
+  var admins : Set.Set<Principal> = Set.empty();
+
+  func requireOwner(caller : Principal) {
+    if (Principal.isAnonymous(caller)) {
+      Runtime.trap("anonymous caller not allowed");
+    };
+    if (caller != owner) {
+      Runtime.trap("caller is not the owner");
+    };
+  };
+
+  func requireAdmin(caller : Principal) {
+    if (Principal.isAnonymous(caller)) {
+      Runtime.trap("anonymous caller not allowed");
+    };
+    if (caller != owner and not Set.contains(admins, Principal.compare, caller)) {
+      Runtime.trap("caller is not an admin");
+    };
+  };
+
+  public shared ({ caller }) func addAdmin(newAdmin : Principal) : async () {
+    requireOwner(caller);
+    admins := Set.add(admins, Principal.compare, newAdmin);
+  };
+
+  public shared ({ caller }) func removeAdmin(admin : Principal) : async () {
+    requireOwner(caller);
+    admins := Set.remove(admins, Principal.compare, admin);
+  };
+
+  public shared ({ caller }) func adminAction() : async () {
+    requireAdmin(caller);
+    // ... protected logic
+  };
+};
+```
+
+### Rust
+
+```rust
+use ic_cdk::{init, update};
+use ic_cdk::api::msg_caller;
+use candid::Principal;
+use std::cell::RefCell;
+
+thread_local! {
+    static OWNER: RefCell<Principal> = RefCell::new(Principal::anonymous());
+    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![]);
+}
+
+fn require_authenticated() -> Result<(), String> {
+    if msg_caller() == Principal::anonymous() {
+        return Err("anonymous caller not allowed".to_string());
+    }
+    Ok(())
+}
+
+fn require_owner() -> Result<(), String> {
+    require_authenticated()?;
+    OWNER.with(|o| {
+        if msg_caller() != *o.borrow() {
+            return Err("caller is not the owner".to_string());
+        }
+        Ok(())
+    })
+}
+
+fn require_admin() -> Result<(), String> {
+    require_authenticated()?;
+    let caller = msg_caller();
+    let is_authorized = OWNER.with(|o| caller == *o.borrow())
+        || ADMINS.with(|a| a.borrow().contains(&caller));
+    if !is_authorized {
+        return Err("caller is not an admin".to_string());
+    }
+    Ok(())
+}
+
+#[init]
+fn init(owner: Principal) {
+    OWNER.with(|o| *o.borrow_mut() = owner);
+}
+
+#[update(guard = "require_owner")]
+fn add_admin(new_admin: Principal) {
+    ADMINS.with(|a| a.borrow_mut().push(new_admin));
+}
+
+#[update(guard = "require_owner")]
+fn remove_admin(admin: Principal) {
+    ADMINS.with(|a| a.borrow_mut().retain(|p| p != &admin));
+}
+
+#[update(guard = "require_admin")]
+fn admin_action() {
+    // ... protected logic — guard already validated caller
+}
+```
+
+Always include admin revocation (`removeAdmin`). Missing revocation is a common source of bugs — once granted, admin access should be removable.
+
+## Controller checks
+
+Controllers are the principals authorized to manage a canister (install code, change settings, stop/delete). The controller list is managed at the IC level, not inside your canister code.
+
+**Motoko** provides `Principal.isController` to check if a principal is a controller of the current canister:
+
+```motoko
+import Principal "mo:core/Principal";
+
+// Inside persistent actor { ... }
+
+  public shared ({ caller }) func controllerOnly() : async () {
+    if (not Principal.isController(caller)) {
+      Runtime.trap("caller is not a controller");
+    };
+    // ...
+  };
+```
+
+**Managing controllers with icp-cli:**
+
+```bash
+# View current canister settings including controllers
+icp canister settings show backend -e ic
+
+# Add a backup controller
+icp canister settings update backend --add-controller <backup-principal> -e ic
+
+# Remove a controller (warning: removing yourself locks you out)
+icp canister settings update backend --remove-controller <principal> -e ic
+```
+
+Always add a backup controller. If you lose the private key of the only controller, the canister becomes permanently unupgradeable — there is no recovery mechanism.
+
+## `canister_inspect_message` — cycle optimization only
+
+`canister_inspect_message` is a hook that runs on a single replica before consensus. It can reject ingress messages early to save cycles on Candid decoding and execution. However, it is **not a security boundary**:
+
+- It runs on one node without consensus — a malicious boundary node can bypass it
+- It is never called for inter-canister calls, query calls, or management canister calls
+
+Always duplicate real access checks inside each method. Use `inspect_message` only to reduce cycle waste from spam.
+
+**Motoko:**
+
+```motoko
+import Principal "mo:core/Principal";
+
+// Inside persistent actor { ... }
+// Method variants must match your public methods
+
+  system func inspect(
+    {
+      caller : Principal;
+      msg : {
+        #adminAction : () -> ();
+        #addAdmin : () -> Principal;
+        #removeAdmin : () -> Principal;
+        #protectedAction : () -> ();
+      }
+    }
+  ) : Bool {
+    switch (msg) {
+      case (#adminAction _) { not Principal.isAnonymous(caller) };
+      case (#addAdmin _) { not Principal.isAnonymous(caller) };
+      case (#removeAdmin _) { not Principal.isAnonymous(caller) };
+      case (#protectedAction _) { not Principal.isAnonymous(caller) };
+      case (_) { true };
+    };
+  };
+```
+
+**Rust:**
+
+```rust
+use ic_cdk::api::{accept_message, msg_caller, msg_method_name};
+use candid::Principal;
+
+#[ic_cdk::inspect_message]
+fn inspect_message() {
+    let method = msg_method_name();
+    match method.as_str() {
+        "admin_action" | "add_admin" | "remove_admin" | "protected_action" => {
+            if msg_caller() != Principal::anonymous() {
+                accept_message();
+            }
+            // Silently reject anonymous — saves cycles
+        }
+        _ => accept_message(),
+    }
+}
+```
+
+## Debugging identity
+
+When troubleshooting access control issues, it helps to know which principal your canister sees. A simple `whoami` endpoint returns the caller's identity:
+
+**Motoko:**
+
+```motoko
+// Inside persistent actor { ... }
+
+  public shared ({ caller }) func whoami() : async Principal {
+    caller;
+  };
+```
+
+**Rust:**
+
+```rust
+use ic_cdk::query;
+use ic_cdk::api::msg_caller;
+use candid::Principal;
+
+#[query]
+fn whoami() -> Principal {
+    msg_caller()
+}
+```
+
+Call it to verify which identity is being used:
+
+```bash
+icp canister call backend whoami
+```
+
+## Next steps
+
+- [Security concepts](../../concepts/security.md) — understand the IC security model
+- [Canister settings](../canister-management/settings.md) — configure controllers and freezing thresholds
+- [DoS prevention](dos-prevention.md) — rate limiting as an access control mechanism
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/general.mdx -->
