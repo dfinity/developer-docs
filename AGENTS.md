@@ -425,7 +425,7 @@ All upstream source repos are pinned as **git submodules** under `.sources/`. Th
 | Submodule | Repo | Pinned to | What it provides |
 |-----------|------|-----------|-----------------|
 | `.sources/portal` | `dfinity/portal` | `master` | Old docs content referenced in stub `<!-- Source Material -->` comments |
-| `.sources/icp-cli` | `dfinity/icp-cli` | `v0.2.0` (latest release) | CLI reference, command syntax verification |
+| `.sources/icp-cli` | `dfinity/icp-cli` | `v0.2.1` (latest release) | CLI reference, command syntax verification |
 | `.sources/icp-cli-recipes` | `dfinity/icp-cli-recipes` | `main` | Recipe examples for CLI guides |
 | `.sources/icp-cli-templates` | `dfinity/icp-cli-templates` | `main` | Project templates for getting-started |
 | `.sources/icskills` | `dfinity/icskills` | `main` | Skill files with canister IDs and code patterns |
