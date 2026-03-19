@@ -105,13 +105,13 @@ type TransferError = variant {
 
 The following are DFINITY-maintained ledgers. Many other ICRC-1 tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a comprehensive registry. Anyone can deploy an ICRC-1 compliant ledger.
 
-| Token | Ledger canister ID | Default fee | Decimals |
-|-------|-------------------|-------------|----------|
-| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 10,000 e8s (0.0001 ICP) | 8 |
-| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 10 satoshis | 8 |
-| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 2,000,000,000,000 wei (0.000002 ETH) | 18 |
+| Token | Ledger canister ID | Decimals |
+|-------|-------------------|----------|
+| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | 8 |
+| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` | 8 |
+| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` | 18 |
 
-> Fees can change through governance proposals. Always call `icrc1_fee` to get the current fee rather than hardcoding these values.
+> Fees can change at any time. Always call `icrc1_fee` to get the current fee rather than hardcoding values.
 
 Index canisters (for transaction history):
 
