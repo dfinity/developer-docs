@@ -342,4 +342,4 @@ For implementation details and code examples, see the [wallet integration guide]
 - [ICRC-1 standard specification](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1) — full specification on GitHub
 - [ICRC-7 standard specification](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md) — full NFT specification on GitHub
 
-<!-- Upstream: informed by dfinity/portal — docs/defi/token-standards/index.mdx, icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx -->
+<!-- Upstream: informed by dfinity/portal — docs/defi/token-standards/index.mdx, icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/icskills — skills/icrc-ledger/SKILL.md, skills/wallet-integration/SKILL.md -->
