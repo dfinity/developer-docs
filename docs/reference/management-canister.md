@@ -3,7 +3,7 @@ title: "Management Canister"
 description: "API reference for the IC management canister (aaaaa-aa): canister lifecycle, signing, randomness, and more"
 sidebar:
   order: 1
-icskills: []
+icskills: [cycles-management]
 ---
 
 The management canister provides access to system features on the Internet Computer: creating and managing canisters, chain-key signing, HTTPS outcalls, randomness, and Bitcoin integration. It is not a real canister with its own state or Wasm module. It is a virtual canister implemented as part of the IC protocol itself.
@@ -45,7 +45,7 @@ Registers a new canister on the IC and returns its canister ID. The canister sta
 - **Returns:** `record { canister_id : principal }`
 - **Cycles:** Must be explicitly attached to the call (not deducted automatically)
 
-The caller is **not** automatically a controller unless included in the `controllers` list.
+If you provide a `controllers` list, the caller is only a controller if included in that list. If you omit `controllers`, it defaults to a list containing only the caller.
 
 For the lifecycle workflow, see the [canister lifecycle guide](../guides/canister-management/lifecycle.md).
 
@@ -123,6 +123,8 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
   - `status` — `running`, `stopping`, or `stopped`
+  - `ready_for_migration` (`bool`) — whether a stopped canister is ready for subnet migration (always `false` unless `stopped`)
+  - `canister_version` (`nat64`) — the canister's current version number
   - `settings` — the definite canister settings currently in effect
   - `module_hash` (`opt blob`) — SHA-256 of installed module (`null` if empty)
   - `memory_size` (`nat`) — total memory consumed
@@ -147,6 +149,19 @@ Returns the history, current module hash, and controllers of any canister. Unlik
   - `controllers` (`vec principal`)
 
 The system keeps at least the 20 most recent changes.
+
+### `canister_metadata`
+
+Reads custom-section metadata from a canister. Custom sections with names of the form `icp:public <name>` are readable by any canister. Custom sections with names of the form `icp:private <name>` are only readable by controllers.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `canister_id` (`principal`) — the canister to read metadata from
+  - `name` (`text`) — identifies the custom section (`icp:public <name>` or `icp:private <name>`)
+- **Returns:**
+  - `value` (`blob`) — the content of the custom section
+
+Common uses include reading `candid:service` for Candid interface discovery.
 
 ### `start_canister`
 
@@ -253,6 +268,49 @@ Deletes a specific snapshot.
 - **Parameters:**
   - `canister_id` (`principal`)
   - `snapshot_id` (`snapshot_id`)
+- **Returns:** Nothing
+
+### `read_canister_snapshot_metadata`
+
+Returns all metadata of a snapshot: source (taken or uploaded), creation timestamp, Wasm size, Wasm globals, heap and stable memory sizes, chunk store hashes, canister version, certified data, and optionally the global timer and low-memory hook state.
+
+- **Caller:** Controllers (canisters or external users)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `snapshot_id` (`snapshot_id`)
+- **Returns:** Snapshot metadata record
+
+### `read_canister_snapshot_data`
+
+Returns a requested chunk of binary data from a snapshot: Wasm binary, heap memory, stable memory, or a chunk store entry.
+
+- **Caller:** Controllers (canisters or external users)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `snapshot_id` (`snapshot_id`)
+  - `kind` — which data to read (`wasm`, `wasm_memory`, `stable_memory`, or `chunk_store`), with `offset` and `size` (or `hash` for chunk store)
+- **Returns:** `blob` — the requested data chunk
+
+### `upload_canister_snapshot_metadata`
+
+Creates a new snapshot by uploading metadata (Wasm size, globals, memory sizes, certified data, and optionally timer/hook state). Data is uploaded separately via `upload_canister_snapshot_data`.
+
+- **Caller:** Controllers (canisters or external users)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `replace_snapshot` (`opt snapshot_id`) — delete this snapshot after creating the new one
+  - Snapshot metadata fields (Wasm size, globals, memory sizes, certified data, timer state, hook state)
+- **Returns:** Snapshot metadata including `snapshot_id`
+
+### `upload_canister_snapshot_data`
+
+Uploads a chunk of binary data to a snapshot created via `upload_canister_snapshot_metadata`. Supports Wasm binary, heap memory, stable memory, and chunk store entries (max 1 MiB per chunk store entry).
+
+- **Caller:** Controllers (canisters or external users)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `snapshot_id` (`snapshot_id`)
+  - `kind` — which data to upload, with `offset` and chunk content
 - **Returns:** Nothing
 
 For practical usage, see the [canister snapshots guide](../guides/canister-management/snapshots.md).
@@ -372,7 +430,7 @@ Makes an HTTP request to an external URL and returns the response. This enables 
 - **Parameters:**
   - `url` (`text`) — must start with `https://`; max 8192 characters
   - `max_response_bytes` (`opt nat64`) — max response size (up to 2 MB; defaults to 2 MB if not set)
-  - `method` — `GET`, `HEAD`, or `POST` (also `PUT` and `DELETE` in non-replicated mode)
+  - `method` — `GET`, `HEAD`, or `POST` (replicated); additionally `PUT` and `DELETE` (non-replicated mode only)
   - `headers` (`vec record { name : text; value : text }`) — request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
   - `body` (`opt blob`) — request body
   - `transform` (`opt record { function : func; context : blob }`) — response transformation function exported by the calling canister
@@ -470,6 +528,34 @@ Log visibility is controlled by the `log_visibility` canister setting.
 
 For practical usage, see the [canister logs guide](../guides/canister-management/logs.md).
 
+## Subnet and node information
+
+### `node_metrics_history`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns a time series of node metrics for a given subnet. Returns up to 60 timestamps (no two from the same UTC day), starting from `start_at_timestamp_nanos`. A sample only includes metrics for nodes whose values changed since the previous sample — consumers must handle resets when a node disappears and reappears.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`)
+  - `start_at_timestamp_nanos` (`nat64`)
+- **Returns:** A list of timestamped records, each containing a list of node metrics:
+  - `node_id` (`principal`)
+  - `num_blocks_proposed_total` (`nat64`)
+  - `num_block_failures_total` (`nat64`)
+
+### `subnet_info`
+
+Returns metadata about a subnet.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`)
+- **Returns:**
+  - `replica_version` (`text`) — the replica version running on the subnet
+  - `registry_version` (`nat64`) — the registry version of the subnet
+
 ## Provisional methods (local testing only)
 
 These methods are only available on local development instances. They do not exist on mainnet.
@@ -517,4 +603,4 @@ Methods that require explicit cycle attachment (`create_canister`, `sign_with_ec
 - [Bitcoin integration](../guides/chain-fusion/bitcoin.md) — building Bitcoin-native applications with chain-key signing
 - [IC interface specification](ic-interface-spec.md) — the complete formal specification
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md -->
+<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md; dfinity/icskills — skills/cycles-management/SKILL.md -->
