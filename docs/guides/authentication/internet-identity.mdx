@@ -307,7 +307,7 @@ For full details, see the [Internet Identity specification](../../reference/inte
 
 ## Common mistakes
 
-- **Using the wrong II URL per environment** — local development must point to `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8000`, mainnet to `https://id.ai`. Use environment detection (shown above) to switch automatically.
+- **Using the wrong II URL per environment** — local development must point to `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
 - **`fetch` "Illegal invocation" in bundled builds** — always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
 - **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
 - **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
