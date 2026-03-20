@@ -1,0 +1,688 @@
+---
+title: "Ethereum Integration"
+description: "Interact with Ethereum and EVM chains from ICP canisters via the EVM RPC canister"
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them onchain — all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
+
+For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion.md).
+
+## How it works
+
+The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system canister deployed on ICP's 34-node fiduciary subnet. When your canister calls it:
+
+1. Your canister sends a request to the EVM RPC canister with cycles attached.
+2. The EVM RPC canister fans the request out to multiple RPC providers via [HTTPS outcalls](../backends/https-outcalls.md).
+3. Each provider's response goes through ICP subnet consensus (at least 2/3 of nodes must agree).
+4. The EVM RPC canister compares the provider responses and returns either a `Consistent` result (providers agree) or an `Inconsistent` result (providers disagree).
+5. Unused cycles are refunded to your canister.
+
+No API keys are required for the built-in providers. The EVM RPC canister manages authentication on your behalf.
+
+## Supported chains and providers
+
+The EVM RPC canister supports Ethereum and several L2 networks out of the box. You can also connect to any EVM chain using a custom RPC endpoint.
+
+| Chain | Variant (Motoko / Rust) | Chain ID |
+|---|---|---|
+| Ethereum Mainnet | `#EthMainnet` / `EthMainnet` | 1 |
+| Ethereum Sepolia | `#EthSepolia` / `EthSepolia` | 11155111 |
+| Arbitrum One | `#ArbitrumOne` / `ArbitrumOne` | 42161 |
+| Base Mainnet | `#BaseMainnet` / `BaseMainnet` | 8453 |
+| Optimism Mainnet | `#OptimismMainnet` / `OptimismMainnet` | 10 |
+| Custom | `#Custom` / `Custom` | any |
+
+**Built-in providers** (no API key needed):
+
+| Provider | Ethereum | Sepolia | Arbitrum | Base | Optimism |
+|---|---|---|---|---|---|
+| Alchemy | yes | yes | yes | yes | yes |
+| Ankr | yes | — | yes | yes | yes |
+| BlockPi | yes | yes | yes | yes | yes |
+| Cloudflare | yes | — | — | — | — |
+| LlamaNodes | yes | — | yes | yes | yes |
+| PublicNode | yes | yes | yes | yes | yes |
+
+Pass `null` (Motoko) or `None` (Rust) for the provider list to use all available defaults. To use a specific provider, pass it explicitly (e.g., `#EthMainnet(#PublicNode)` in Motoko, `RpcService::EthMainnet(EthMainnetService::PublicNode)` in Rust).
+
+## Reading data
+
+The EVM RPC canister offers two styles of API:
+
+- **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt` — these query multiple providers by default and return a `MultiResult` with built-in consensus.
+- **Raw JSON-RPC** via the `request` method — sends a single JSON-RPC request to one provider. More flexible, but you handle parsing and consensus yourself.
+
+### Get the latest block (typed API)
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import EvmRpc "canister:evm_rpc";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+
+  public func getLatestBlock() : async ?EvmRpc.Block {
+    let result = await (with cycles = 10_000_000_000)
+      EvmRpc.eth_getBlockByNumber(
+        #EthMainnet(null), // all default providers
+        null,              // default config
+        #Latest
+      );
+
+    switch (result) {
+      case (#Consistent(#Ok(block))) { ?block };
+      case (#Consistent(#Err(error))) {
+        Runtime.trap("RPC error: " # debug_show error);
+      };
+      case (#Inconsistent(_results)) {
+        Runtime.trap("Providers returned inconsistent results");
+      };
+    };
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::call::Call;
+use ic_cdk::update;
+
+// Type definitions omitted for brevity — see full example below
+
+#[update]
+async fn get_latest_block() -> Block {
+    let cycles: u128 = 10_000_000_000;
+
+    let (result,): (MultiResult<Block>,) =
+        Call::unbounded_wait(evm_rpc_id(), "eth_getBlockByNumber")
+            .with_args(&(
+                RpcServices::EthMainnet(None),
+                None::<()>,
+                BlockTag::Latest,
+            ))
+            .with_cycles(cycles)
+            .await
+            .expect("Failed to call EVM RPC canister")
+            .candid_tuple()
+            .expect("Failed to decode response");
+
+    match result {
+        MultiResult::Consistent(RpcResult::Ok(block)) => block,
+        MultiResult::Consistent(RpcResult::Err(err)) => {
+            ic_cdk::trap(&format!("RPC error: {:?}", err))
+        }
+        MultiResult::Inconsistent(_) => {
+            ic_cdk::trap("Providers returned inconsistent results")
+        }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Always handle all three result variants: `Consistent(Ok(...))`, `Consistent(Err(...))`, and `Inconsistent(...)`. Ignoring `Inconsistent` will cause your canister to trap when providers disagree.
+
+### Get ETH balance (raw JSON-RPC)
+
+The `request` method sends a raw JSON-RPC payload to a single provider. This is useful for methods not covered by the typed API, or when you want direct control over the request.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import EvmRpc "canister:evm_rpc";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+
+  public func getEthBalance(address : Text) : async Text {
+    let json = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\""
+      # address # "\",\"latest\"],\"id\":1}";
+    let maxResponseBytes : Nat64 = 1000;
+
+    // Get exact cost first
+    let costResult = await EvmRpc.requestCost(
+      #EthMainnet(#PublicNode), json, maxResponseBytes
+    );
+    let cost = switch (costResult) {
+      case (#Ok(c)) { c };
+      case (#Err(err)) {
+        Runtime.trap("requestCost failed: " # debug_show err);
+      };
+    };
+
+    let result = await (with cycles = cost) EvmRpc.request(
+      #EthMainnet(#PublicNode),
+      json,
+      maxResponseBytes
+    );
+
+    switch (result) {
+      case (#Ok(response)) { response };
+      case (#Err(err)) {
+        Runtime.trap("RPC error: " # debug_show err);
+      };
+    };
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::call::Call;
+use ic_cdk::update;
+
+const EVM_RPC_CANISTER: &str = "7hfb6-caaaa-aaaar-qadga-cai";
+
+fn evm_rpc_id() -> Principal {
+    Principal::from_text(EVM_RPC_CANISTER).unwrap()
+}
+
+#[update]
+async fn get_eth_balance(address: String) -> String {
+    let json = format!(
+        r#"{{"jsonrpc":"2.0","method":"eth_getBalance","params":["{}","latest"],"id":1}}"#,
+        address
+    );
+    let max_response_bytes: u64 = 1000;
+    let cycles: u128 = 10_000_000_000;
+
+    let (result,): (Result<String, RpcError>,) =
+        Call::unbounded_wait(evm_rpc_id(), "request")
+            .with_args(&(
+                RpcService::EthMainnet(EthMainnetService::PublicNode),
+                json,
+                max_response_bytes,
+            ))
+            .with_cycles(cycles)
+            .await
+            .expect("Failed to call EVM RPC canister")
+            .candid_tuple()
+            .expect("Failed to decode response");
+
+    match result {
+        Ok(response) => response,
+        Err(err) => ic_cdk::trap(&format!("RPC error: {:?}", err)),
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Read an ERC-20 token balance
+
+To read an ERC-20 balance, use `eth_call` with the `balanceOf(address)` function selector (`0x70a08231`).
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import EvmRpc "canister:evm_rpc";
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+
+persistent actor {
+
+  public func getErc20Balance(
+    tokenContract : Text,
+    walletAddress : Text
+  ) : async ?Text {
+    // balanceOf(address) = 0x70a08231 + address padded to 32 bytes
+    let calldata = "0x70a08231000000000000000000000000"
+      # stripHexPrefix(walletAddress);
+
+    let result = await (with cycles = 10_000_000_000)
+      EvmRpc.eth_call(
+        #EthMainnet(null),
+        null,
+        {
+          block = null;
+          transaction = {
+            to = ?tokenContract;
+            input = ?calldata;
+            accessList = null;
+            blobVersionedHashes = null;
+            blobs = null;
+            chainId = null;
+            from = null;
+            gas = null;
+            gasPrice = null;
+            maxFeePerBlobGas = null;
+            maxFeePerGas = null;
+            maxPriorityFeePerGas = null;
+            nonce = null;
+            type_ = null;
+            value = null;
+          };
+        }
+      );
+
+    switch (result) {
+      case (#Consistent(#Ok(response))) { ?response };
+      case (#Consistent(#Err(error))) {
+        Runtime.trap("eth_call error: " # debug_show error);
+      };
+      case (#Inconsistent(_)) {
+        Runtime.trap("Inconsistent results from providers");
+      };
+    };
+  };
+
+  func stripHexPrefix(hex : Text) : Text {
+    let chars = hex.chars();
+    switch (chars.next(), chars.next()) {
+      case (?"0", ?"x") {
+        var rest = "";
+        for (c in chars) { rest #= Text.fromChar(c) };
+        rest;
+      };
+      case _ { hex };
+    };
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+#[update]
+async fn get_erc20_balance(
+    token_contract: String,
+    wallet_address: String,
+) -> String {
+    // balanceOf(address) selector: 0x70a08231
+    let addr = wallet_address.trim_start_matches("0x");
+    let calldata = format!("0x70a08231{:0>64}", addr);
+
+    let json = format!(
+        r#"{{"jsonrpc":"2.0","method":"eth_call","params":[{{"to":"{}","data":"{}"}},"latest"],"id":1}}"#,
+        token_contract, calldata
+    );
+    let cycles: u128 = 10_000_000_000;
+
+    let (result,): (Result<String, RpcError>,) =
+        Call::unbounded_wait(evm_rpc_id(), "request")
+            .with_args(&(
+                RpcService::EthMainnet(EthMainnetService::PublicNode),
+                json,
+                2048_u64,
+            ))
+            .with_cycles(cycles)
+            .await
+            .expect("Failed to call EVM RPC canister")
+            .candid_tuple()
+            .expect("Failed to decode response");
+
+    match result {
+        Ok(response) => response,
+        Err(err) => ic_cdk::trap(&format!("RPC error: {:?}", err)),
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+The response is a hex-encoded `uint256` value. For USDC (6 decimals), divide by 10^6 to get the human-readable balance.
+
+## Signing and sending transactions
+
+The EVM RPC canister does **not** sign transactions. To send a transaction to Ethereum, you must:
+
+1. **Generate an Ethereum address** by requesting a threshold ECDSA public key from the IC management canister and deriving the address from it.
+2. **Build and sign the transaction** using `sign_with_ecdsa` (threshold ECDSA).
+3. **Submit the signed transaction** via `eth_sendRawTransaction` on the EVM RPC canister.
+
+### Generate an Ethereum address
+
+Call the management canister's `ecdsa_public_key` method to get a public key, then derive the Ethereum address from it (Keccak-256 hash of the uncompressed public key, take last 20 bytes).
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Principal "mo:core/Principal";
+import Blob "mo:core/Blob";
+
+persistent actor {
+
+  type IC = actor {
+    ecdsa_public_key : ({
+      canister_id : ?Principal;
+      derivation_path : [Blob];
+      key_id : { curve : { #secp256k1 }; name : Text };
+    }) -> async ({ public_key : Blob; chain_code : Blob });
+  };
+
+  transient let ic : IC = actor ("aaaaa-aa");
+
+  public shared (msg) func getPublicKey() : async Blob {
+    let caller = Principal.toBlob(msg.caller);
+    let { public_key } = await ic.ecdsa_public_key({
+      canister_id = null;
+      derivation_path = [caller];
+      key_id = {
+        curve = #secp256k1;
+        name = "key_1"; // Use "dfx_test_key" locally, "key_1" on mainnet
+      };
+    });
+    public_key;
+  };
+};
+```
+
+{/* Needs human verification: Keccak-256 address derivation is not shown because mo:core does not include a Keccak library. Developers need a third-party Keccak implementation (e.g., from mops) to convert the public key to an Ethereum address. */}
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::api::management_canister::ecdsa::{
+    ecdsa_public_key, EcdsaCurve, EcdsaKeyId,
+    EcdsaPublicKeyArgument,
+};
+use ic_cdk::update;
+
+#[update]
+async fn get_public_key() -> Vec<u8> {
+    let request = EcdsaPublicKeyArgument {
+        canister_id: None,
+        derivation_path: vec![],
+        key_id: EcdsaKeyId {
+            curve: EcdsaCurve::Secp256k1,
+            name: "key_1".to_string(), // Use "dfx_test_key" locally
+        },
+    };
+
+    let (response,) = ecdsa_public_key(request)
+        .await
+        .expect("ecdsa_public_key failed");
+
+    response.public_key
+}
+```
+
+To derive the Ethereum address from the public key, hash the uncompressed key with Keccak-256 and take the last 20 bytes. See the [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum) for a complete implementation including address derivation and transaction signing.
+
+</TabItem>
+</Tabs>
+
+### Submit a signed transaction
+
+Once you have a signed raw transaction (as a hex string), submit it to Ethereum via `eth_sendRawTransaction`:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import EvmRpc "canister:evm_rpc";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+
+  public func sendRawTransaction(signedTxHex : Text)
+    : async ?EvmRpc.SendRawTransactionStatus
+  {
+    let result = await (with cycles = 10_000_000_000)
+      EvmRpc.eth_sendRawTransaction(
+        #EthMainnet(null),
+        null,
+        signedTxHex
+      );
+
+    switch (result) {
+      case (#Consistent(#Ok(status))) { ?status };
+      case (#Consistent(#Err(error))) {
+        Runtime.trap("sendRawTransaction error: "
+          # debug_show error);
+      };
+      case (#Inconsistent(_)) {
+        Runtime.trap("Inconsistent results");
+      };
+    };
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+#[update]
+async fn send_raw_transaction(
+    signed_tx_hex: String,
+) -> SendRawTransactionStatus {
+    let cycles: u128 = 10_000_000_000;
+
+    let (result,): (MultiResult<SendRawTransactionStatus>,) =
+        Call::unbounded_wait(evm_rpc_id(), "eth_sendRawTransaction")
+            .with_args(&(
+                RpcServices::EthMainnet(None),
+                None::<()>,
+                signed_tx_hex,
+            ))
+            .with_cycles(cycles)
+            .await
+            .expect("Failed to call eth_sendRawTransaction")
+            .candid_tuple()
+            .expect("Failed to decode response");
+
+    match result {
+        MultiResult::Consistent(RpcResult::Ok(status)) => status,
+        MultiResult::Consistent(RpcResult::Err(err)) => {
+            ic_cdk::trap(&format!("RPC error: {:?}", err))
+        }
+        MultiResult::Inconsistent(_) => {
+            ic_cdk::trap("Providers returned inconsistent results")
+        }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+For a complete end-to-end example including transaction building, signing, and submission, see the [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum).
+
+## Querying other EVM chains
+
+Switch chains by changing the service variant. Everything else stays the same:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+// Arbitrum
+let result = await (with cycles = 10_000_000_000)
+  EvmRpc.eth_getBlockByNumber(#ArbitrumOne(null), null, #Latest);
+
+// Base
+let result = await (with cycles = 10_000_000_000)
+  EvmRpc.eth_getBlockByNumber(#BaseMainnet(null), null, #Latest);
+
+// Custom RPC endpoint
+let result = await (with cycles = 10_000_000_000)
+  EvmRpc.request(
+    #Custom({ url = "https://rpc.ankr.com/polygon"; headers = null }),
+    "{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}",
+    1000
+  );
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+// Arbitrum
+let (result,): (MultiResult<Block>,) =
+    Call::unbounded_wait(evm_rpc_id(), "eth_getBlockByNumber")
+        .with_args(&(
+            RpcServices::ArbitrumOne(None),
+            None::<()>,
+            BlockTag::Latest,
+        ))
+        .with_cycles(10_000_000_000_u128)
+        .await
+        .expect("call failed")
+        .candid_tuple()
+        .expect("decode failed");
+
+// Custom RPC endpoint
+let (result,): (Result<String, RpcError>,) =
+    Call::unbounded_wait(evm_rpc_id(), "request")
+        .with_args(&(
+            RpcService::Custom(CustomRpcService {
+                url: "https://rpc.ankr.com/polygon".to_string(),
+                headers: None,
+            }),
+            r#"{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}"#.to_string(),
+            1000_u64,
+        ))
+        .with_cycles(10_000_000_000_u128)
+        .await
+        .expect("call failed")
+        .candid_tuple()
+        .expect("decode failed");
+```
+
+</TabItem>
+</Tabs>
+
+## Cycle costs
+
+Every EVM RPC call requires cycles. The cost depends on the request size, response size, subnet size, and number of providers queried.
+
+**Formula:**
+
+```text
+(5_912_000 + 60_000 * nodes + 2400 * request_bytes + 800 * max_response_bytes) * nodes * rpc_count
+```
+
+Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers queried.
+
+**Practical guidance:**
+
+- Send 10,000,000,000 cycles (10B) as a starting budget. Unused cycles are refunded.
+- Typical calls cost 100M--1B cycles (approximately $0.0001--$0.001 USD).
+- Use `requestCost` to get an exact estimate before making a raw JSON-RPC call.
+- The Candid-RPC methods (like `eth_getBlockByNumber`) automatically retry with larger response sizes if needed, consuming more cycles from your budget.
+
+### Collateral cycles
+
+Callers must include at least 0.00028 TC of additional "collateral cycles" to account for possible future API price increases. These are currently fully refunded, but this may change.
+
+## Development setup
+
+### Project configuration
+
+Add the EVM RPC canister to your `icp.yaml` as a pre-built canister for local development. On mainnet, it is already deployed at `7hfb6-caaaa-aaaar-qadga-cai` and your canister calls it by principal directly.
+
+```yaml
+canisters:
+  - name: backend
+    recipe:
+      type: "@dfinity/motoko@v4.1.0"
+      configuration:
+        main: src/backend/main.mo
+  - name: evm_rpc
+    build:
+      steps:
+        - type: pre-built
+          url: https://github.com/dfinity/evm-rpc-canister/releases/download/v2.2.0/evm_rpc.wasm.gz
+    init_args: "(record {})"
+```
+
+{/* Needs human verification: The pre-built URL version (v2.2.0) should be verified against the latest EVM RPC canister release. */}
+
+### Local deployment
+
+```bash
+# Start local replica
+icp network start -d
+
+# Pull and deploy the EVM RPC canister
+icp deps pull
+icp deps init evm_rpc --argument '(record {})'
+icp deps deploy
+
+# Deploy your backend
+icp deploy backend
+```
+
+### Testing via icp-cli
+
+```bash
+# Get the latest block (typed API, multi-provider consensus)
+icp canister call evm_rpc eth_getBlockByNumber '(
+  variant { EthMainnet = null },
+  null,
+  variant { Latest }
+)' --with-cycles=10000000000
+
+# Get ETH balance (raw JSON-RPC, single provider)
+icp canister call evm_rpc request '(
+  variant { EthMainnet = variant { PublicNode } },
+  "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\",\"latest\"],\"id\":1}",
+  1000
+)' --with-cycles=10000000000
+
+# Estimate cost before calling
+icp canister call evm_rpc requestCost '(
+  variant { EthMainnet = variant { PublicNode } },
+  "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\",\"latest\"],\"id\":1}",
+  1000
+)'
+
+# List available providers
+icp canister call evm_rpc getProviders
+```
+
+### Mainnet deployment
+
+On mainnet, skip deploying the EVM RPC canister. Your backend calls it directly by principal:
+
+```bash
+icp deploy backend -e ic
+```
+
+### Rust type definitions
+
+The Rust examples above reference several types (`RpcServices`, `MultiResult`, `Block`, etc.) that must match the EVM RPC canister's Candid interface. See the [EVM RPC canister Candid interface](https://github.com/dfinity/evm-rpc-canister) for the complete type definitions, or use the skill reference at [skills.internetcomputer.org](https://skills.internetcomputer.org) for copy-pasteable Rust type stubs.
+
+## Common mistakes
+
+| Mistake | What happens | Fix |
+|---|---|---|
+| Not sending enough cycles | Call fails silently or traps | Start with 10B cycles, adjust down after verifying |
+| Ignoring `Inconsistent` variant | Canister traps when providers disagree | Always match all three result arms |
+| Wrong chain variant | Queries the wrong chain | Use `#EthMainnet` for Ethereum L1, `#ArbitrumOne` for Arbitrum, etc. |
+| Omitting `null` for optional config | Candid type mismatch | Always pass `null` / `None` for the config parameter |
+| Calling `eth_sendRawTransaction` without signing | Transaction rejected | Sign with threshold ECDSA first, then submit the raw signed bytes |
+| Using `Cycles.add` in mo:core | Compilation error | Use `await (with cycles = AMOUNT) canister.method(args)` |
+| Response size too small | Call fails on large responses | Increase `max_response_bytes` or use Candid-RPC methods (auto-retry) |
+
+## Next steps
+
+- [Bitcoin integration](bitcoin.md) — similar patterns for BTC using the Bitcoin API
+- [Chain-key tokens](../defi/chain-key-tokens.md) — learn about ckETH and other chain-key tokens backed 1:1 by native assets
+- [Chain Fusion concepts](../../concepts/chain-fusion.md) — understand how ICP connects to external blockchains
+- [HTTPS outcalls](../backends/https-outcalls.md) — the underlying mechanism the EVM RPC canister uses
+- [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum) — complete end-to-end Rust example with address generation, signing, and transaction submission
+- [EVM RPC canister source](https://github.com/dfinity/evm-rpc-canister) — canister source code and Candid interface
+
+{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/ethereum/*; dfinity/icskills — skills/evm-rpc/SKILL.md */}
