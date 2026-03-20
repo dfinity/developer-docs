@@ -50,12 +50,15 @@ The `AuthClient` from `@icp-sdk/auth` handles the full login flow: opening the I
 
 ### Environment detection
 
-Internet Identity runs at different URLs in local development versus mainnet. Detect the environment and resolve the correct URL at runtime:
+Internet Identity runs at different URLs in local development versus mainnet. Since II has a well-known canister ID (`rdmx6-jaaaa-aaaaa-aaadq-cai`) that is the same on mainnet and local replicas, you only need to detect the host:
 
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
-import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
+
+// Internet Identity has a well-known canister ID that is the same on mainnet
+// and local replicas (icp-cli pulls the mainnet II wasm).
+const II_CANISTER_ID = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 
 function getIdentityProviderUrl() {
   const host = window.location.hostname;
@@ -65,14 +68,7 @@ function getIdentityProviderUrl() {
     host.endsWith(".localhost");
 
   if (isLocal) {
-    // icp-cli injects canister IDs via the ic_env cookie (set by the asset canister).
-    const canisterEnv = safeGetCanisterEnv();
-    const iiCanisterId =
-      canisterEnv?.["PUBLIC_CANISTER_ID:internet_identity"];
-    if (!iiCanisterId) {
-      throw new Error("Could not find local II canister ID. Is Internet Identity deployed?");
-    }
-    return `http://${iiCanisterId}.localhost:8000`;
+    return `http://${II_CANISTER_ID}.localhost:8000`;
   }
   return "https://id.ai";
 }
@@ -133,6 +129,7 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
   const agent = await HttpAgent.create({
     identity,
     host: isLocal ? "http://localhost:8000" : "https://icp-api.io",
+    fetch: window.fetch.bind(window), // prevents "Illegal invocation" in bundled builds
     ...(isLocal && { shouldFetchRootKey: true, verifyQuerySignatures: false }),
   });
 
@@ -238,7 +235,7 @@ icp network start
 icp deploy
 ```
 
-The local II canister gets a dynamically assigned canister ID. The asset canister makes this ID available to your frontend via the `ic_env` cookie, which you can read using `safeGetCanisterEnv` from `@icp-sdk/core/agent/canister-env` (shown in the environment detection section above).
+Internet Identity has a well-known canister ID (`rdmx6-jaaaa-aaaaa-aaadq-cai`) that is the same on mainnet and local replicas — icp-cli pulls the mainnet II Wasm when deploying locally. You can hardcode this ID in your frontend (shown in the environment detection section above).
 
 To test authentication from the command line:
 
@@ -310,7 +307,8 @@ For full details, see the [Internet Identity specification](../../reference/inte
 
 ## Common mistakes
 
-- **Hardcoding the II URL** — use environment detection (shown above) to switch between `localhost` and `https://id.ai`. Hardcoding one breaks the other environment.
+- **Using the wrong II URL per environment** — local development must point to `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8000`, mainnet to `https://id.ai`. Use environment detection (shown above) to switch automatically.
+- **`fetch` "Illegal invocation" in bundled builds** — always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
 - **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
 - **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
 - **Passing principal as a string argument** — the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
