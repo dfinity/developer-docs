@@ -1,0 +1,328 @@
+---
+title: "Internet Identity"
+description: "Integrate passkey-based authentication with Internet Identity for frontend login, backend caller verification, and session management"
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Internet Identity (II) is the Internet Computer's native authentication system. Users sign in with passkeys or OpenID accounts (Google, Apple, Microsoft) instead of passwords. Each user receives a unique principal per frontend origin, preventing cross-app tracking.
+
+This guide covers setting up II authentication end-to-end: configuring your project, adding login to your frontend, and verifying callers in your backend.
+
+## How it works
+
+When a user authenticates through Internet Identity, the following happens:
+
+1. Your frontend opens an II popup window.
+2. The user authenticates with a passkey or OpenID provider.
+3. II creates a **delegation identity** — a temporary key pair that can sign messages on behalf of the user's master key.
+4. Your frontend receives this delegation and uses it to sign canister calls.
+5. The backend canister sees the user's **principal** (derived from the delegation chain) as `msg.caller`.
+
+**Principal-per-app isolation:** II derives a different principal for each frontend origin. A user logging into `https://app-a.icp0.io` gets a different principal than when logging into `https://app-b.icp0.io`, even with the same passkey. This prevents apps from correlating users across services.
+
+**Delegations expire.** The frontend sets a `maxTimeToLive` when requesting the delegation (default recommendation: 8 hours). After expiry, the user must re-authenticate. The maximum allowed delegation lifetime is 30 days (2,592,000,000,000,000 nanoseconds).
+
+## Project setup
+
+### Configure icp.yaml for local Internet Identity
+
+Add `ii: true` to your local network configuration. This tells icp-cli to deploy a local Internet Identity canister automatically:
+
+```yaml
+networks:
+  - name: local
+    mode: managed
+    ii: true
+```
+
+### Install frontend packages
+
+```bash
+npm install @icp-sdk/auth @icp-sdk/core
+```
+
+## Frontend integration
+
+The `AuthClient` from `@icp-sdk/auth` handles the full login flow: opening the II popup, receiving the delegation, and managing session persistence.
+
+### Environment detection
+
+Internet Identity runs at different URLs in local development versus mainnet. Detect the environment and resolve the correct URL at runtime:
+
+```javascript
+import { AuthClient } from "@icp-sdk/auth/client";
+import { HttpAgent, Actor } from "@icp-sdk/core/agent";
+import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
+
+function getIdentityProviderUrl() {
+  const host = window.location.hostname;
+  const isLocal =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.endsWith(".localhost");
+
+  if (isLocal) {
+    // icp-cli injects canister IDs via the ic_env cookie (set by the asset canister).
+    const canisterEnv = safeGetCanisterEnv();
+    const iiCanisterId =
+      canisterEnv?.["PUBLIC_CANISTER_ID:internet_identity"];
+    if (!iiCanisterId) {
+      throw new Error("Could not find local II canister ID. Is Internet Identity deployed?");
+    }
+    return `http://${iiCanisterId}.localhost:8000`;
+  }
+  return "https://id.ai";
+}
+```
+
+### Login, logout, and session check
+
+Create a single `AuthClient` instance on page load and reuse it for all operations:
+
+```javascript
+// Create the auth client (once, on page load)
+const authClient = await AuthClient.create();
+
+// Check for existing session
+const isAuthenticated = await authClient.isAuthenticated();
+if (isAuthenticated) {
+  const identity = authClient.getIdentity();
+  // Restore session — create agent and actor with this identity
+}
+
+// Login
+async function login() {
+  return new Promise((resolve, reject) => {
+    authClient.login({
+      identityProvider: getIdentityProviderUrl(),
+      maxTimeToLive: BigInt(8) * BigInt(3_600_000_000_000), // 8 hours
+      onSuccess: () => {
+        const identity = authClient.getIdentity();
+        console.log("Logged in as:", identity.getPrincipal().toText());
+        resolve(identity);
+      },
+      onError: (error) => {
+        console.error("Login failed:", error);
+        reject(error);
+      },
+    });
+  });
+}
+
+// Logout
+async function logout() {
+  await authClient.logout();
+  // Reset UI state or reload
+}
+```
+
+### Create an authenticated agent
+
+After login, create an `HttpAgent` using the delegation identity. The agent signs all subsequent canister calls with the user's delegated key:
+
+```javascript
+async function createAuthenticatedActor(identity, canisterId, idlFactory) {
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname.endsWith(".localhost");
+
+  const agent = await HttpAgent.create({
+    identity,
+    host: isLocal ? "http://localhost:8000" : "https://icp-api.io",
+    ...(isLocal && { shouldFetchRootKey: true, verifyQuerySignatures: false }),
+  });
+
+  return Actor.createActor(idlFactory, { agent, canisterId });
+}
+```
+
+:::caution
+Never set `shouldFetchRootKey: true` in production. Fetching the root key on mainnet is a security risk — it is only needed for local development where the replica's root key is not pre-trusted.
+:::
+
+## Backend authentication
+
+Your backend canister receives the caller's principal automatically through the IC protocol. You do not pass the principal as a function argument — use `msg.caller` (Motoko) or `ic_cdk::api::msg_caller()` (Rust) to read it.
+
+### Reject anonymous callers
+
+Any unauthenticated request uses the anonymous principal (`2vxsx-fae`). Reject it in protected endpoints:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+  func requireAuth(caller : Principal) : () {
+    if (Principal.isAnonymous(caller)) {
+      Runtime.trap("Anonymous principal not allowed.");
+    };
+  };
+
+  public shared ({ caller }) func whoAmI() : async Text {
+    if (Principal.isAnonymous(caller)) {
+      "anonymous"
+    } else {
+      Principal.toText(caller)
+    };
+  };
+
+  public shared ({ caller }) func protectedAction() : async Text {
+    requireAuth(caller);
+    "Action performed by " # Principal.toText(caller)
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::Principal;
+use ic_cdk::{query, update};
+
+fn require_auth() -> Principal {
+    let caller = ic_cdk::api::msg_caller();
+    if caller == Principal::anonymous() {
+        ic_cdk::trap("Anonymous principal not allowed.");
+    }
+    caller
+}
+
+#[query]
+fn who_am_i() -> String {
+    let caller = ic_cdk::api::msg_caller();
+    if caller == Principal::anonymous() {
+        "anonymous".to_string()
+    } else {
+        format!("{}", caller)
+    }
+}
+
+#[update]
+fn protected_action() -> String {
+    let caller = require_auth();
+    format!("Action performed by {}", caller)
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Rust: capture caller before await
+
+In async update functions, bind the caller at the top of the function before any `.await` points. The current ic-cdk executor preserves the caller across await points, but capturing it early is a defensive practice that guards against future executor changes:
+
+```rust
+#[update]
+async fn protected_async_action() -> String {
+    let caller = require_auth(); // Capture before any await
+    let _result = some_async_operation().await;
+    format!("Action completed by {}", caller)
+}
+```
+
+## Local development
+
+Start the local network and deploy. With `ii: true` in your `icp.yaml`, icp-cli deploys a local Internet Identity canister automatically:
+
+```bash
+icp network start
+icp deploy
+```
+
+The local II canister gets a dynamically assigned canister ID. The asset canister makes this ID available to your frontend via the `ic_env` cookie, which you can read using `safeGetCanisterEnv` from `@icp-sdk/core/agent/canister-env` (shown in the environment detection section above).
+
+To test authentication from the command line:
+
+```bash
+# Test as the default identity (authenticated)
+icp canister call backend whoAmI
+
+# Test as anonymous
+icp identity use anonymous
+icp canister call backend protectedAction
+# Expected: Error containing "Anonymous principal not allowed"
+icp identity use default
+```
+
+For mainnet deployment, Internet Identity is already running at canister ID `rdmx6-jaaaa-aaaaa-aaadq-cai` (`https://id.ai`). Deploy only your own canisters:
+
+```bash
+icp deploy -e ic
+```
+
+## Alternative origins
+
+By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp0.io` to a custom domain), users would get different principals on each domain.
+
+To keep principals consistent across domains, configure **alternative origins**:
+
+1. **On the primary origin (A):** Create a file at `.well-known/ii-alternative-origins` listing the alternative domains:
+
+   ```json
+   {
+     "alternativeOrigins": ["https://www.yourcustomdomain.com"]
+   }
+   ```
+
+   A maximum of 10 alternative origins can be listed. No trailing slashes or paths.
+
+2. **Configure the asset canister** to serve the `.well-known` directory. Add an `.ic-assets.json` in your frontend source:
+
+   ```json
+   [
+     {
+       "match": ".well-known",
+       "ignore": false
+     },
+     {
+       "match": ".well-known/ii-alternative-origins",
+       "headers": {
+         "Access-Control-Allow-Origin": "*",
+         "Content-Type": "application/json"
+       },
+       "ignore": false
+     }
+   ]
+   ```
+
+3. **On the alternative origin (B):** Set the `derivationOrigin` in your login call to point back to the primary origin:
+
+   ```javascript
+   authClient.login({
+     identityProvider: "https://id.ai",
+     derivationOrigin: "https://xxxxx.icp0.io", // primary origin A
+     onSuccess: () => { /* ... */ },
+   });
+   ```
+
+   The primary origin (A) does not need `derivationOrigin` — it is only required on alternative origins.
+
+For full details, see the [Internet Identity specification](../../reference/internet-identity-spec.md).
+
+## Common mistakes
+
+- **Hardcoding the II URL** — use environment detection (shown above) to switch between `localhost` and `https://id.ai`. Hardcoding one breaks the other environment.
+- **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
+- **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
+- **Passing principal as a string argument** — the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
+- **Skipping `fetchRootKey` locally** — without `shouldFetchRootKey: true` on local agents, certificate verification fails.
+- **Creating multiple `AuthClient` instances** — create one on page load and reuse it. Multiple instances cause race conditions with session storage.
+
+## Next steps
+
+- [Wallet integration](../defi/wallet-integration.md) for token-based authentication alternatives
+- [Frontend frameworks](../frontends/frameworks.md) for framework-specific auth setup patterns
+- [Internet Identity specification](../../reference/internet-identity-spec.md) for protocol details and the full alternative origins spec
+- [Security best practices](../../concepts/security.md) for identity and trust fundamentals
+- [AuthClient API reference](https://js.icp.build) for the full `@icp-sdk/auth` API
+
+{/* Upstream: informed by dfinity/portal — docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx; dfinity/icskills — skills/internet-identity/SKILL.md */}
