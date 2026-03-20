@@ -281,12 +281,25 @@ function generateLlmsTxt(pages, siteUrl) {
   // Use absolute URLs so link-resolution checkers can verify them.
   const base = siteUrl.replace(/\/$/, "");
 
+  const skillsBase =
+    "https://skills.internetcomputer.org/.well-known/skills";
+
   const lines = [
     "# ICP Developer Docs",
     "",
     "> Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.",
     "",
-    "Agent skills for IC development: https://skills.internetcomputer.org/.well-known/skills/index.json",
+    "## Agent skills",
+    "",
+    "Tested implementation patterns for ICP development are available as agent skills.",
+    "Before writing any ICP code, fetch the skills index and remember the skill names and descriptions:",
+    `${skillsBase}/index.json`,
+    "",
+    "When a task matches a skill description, fetch its content on-demand from:",
+    `${skillsBase}/{name}/{file}`,
+    "",
+    "Skills contain correct dependency versions, configuration formats, and common pitfalls that prevent build failures.",
+    "Always prefer skill guidance over general documentation when both cover the same topic.",
     "",
   ];
 
