@@ -38,13 +38,13 @@ A list of principals that can manage the canister. Controllers can install code,
 Controllers are managed through the CLI rather than `icp.yaml`:
 
 ```bash
-{/* Add a controller */}
+# Add a controller
 icp canister settings update backend --add-controller PRINCIPAL
 
-{/* Remove a controller */}
+# Remove a controller
 icp canister settings update backend --remove-controller PRINCIPAL
 
-{/* Replace the entire controller list */}
+# Replace the entire controller list
 icp canister settings update backend --set-controller PRINCIPAL_1 --set-controller PRINCIPAL_2
 ```
 
@@ -179,15 +179,15 @@ Controls who can fetch canister logs through the `fetch_canister_logs` managemen
 | icp.yaml key | `log_visibility` |
 
 ```yaml
-{/* Only controllers */}
+# Only controllers
 settings:
   log_visibility: controllers
 
-{/* Anyone */}
+# Anyone
 settings:
   log_visibility: public
 
-{/* Specific principals */}
+# Specific principals
 settings:
   log_visibility:
     allowed_viewers:
@@ -284,19 +284,19 @@ Environment-level settings merge with and override canister-level settings. In t
 Update individual settings directly without editing `icp.yaml`:
 
 ```bash
-{/* Compute allocation */}
+# Compute allocation
 icp canister settings update backend --compute-allocation 10
 
-{/* Freezing threshold */}
+# Freezing threshold
 icp canister settings update backend --freezing-threshold 90d
 
-{/* Wasm memory limit */}
+# Wasm memory limit
 icp canister settings update backend --wasm-memory-limit 3gib
 
-{/* Log visibility */}
+# Log visibility
 icp canister settings update backend --log-visibility public
 
-{/* Multiple settings at once */}
+# Multiple settings at once
 icp canister settings update backend \
   --compute-allocation 10 \
   --freezing-threshold 90d \
@@ -408,7 +408,7 @@ How you configure controllers depends on the trust model for your canister:
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.mdx) -- Create, deploy, upgrade, stop, and delete canisters.
+- [Canister lifecycle](lifecycle.md) -- Create, deploy, upgrade, stop, and delete canisters.
 - [Cycles management](cycles-management.md) -- Monitor and top up cycle balances.
 - [Cycles costs reference](../../reference/cycles-costs.md) -- Pricing for compute and memory allocation.
 - [Management canister reference](../../reference/management-canister.md) -- Full interface specification.
