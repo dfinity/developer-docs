@@ -1,0 +1,79 @@
+---
+title: Build on the Internet Computer
+description: "Build tamperproof full-stack applications on the Internet Computer -- no cloud, no bridges, no external dependencies"
+template: splash
+hero:
+  title: "The Network is The Cloud.<br/>Agents Build."
+  tagline: "Build full-stack apps on a secure public network that processes digital assets natively and runs entirely without cloud dependencies. Tamperproof. Unstoppable. Sovereign."
+  actions:
+    - text: Get started
+      link: /getting-started/quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: Explore guides
+      link: /guides/
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<div class="skills-banner">
+
+## ICP skills for agents that write code
+
+Teach your AI agent canister patterns, token standards, CLI commands, and deployment workflows — so it ships working code instead of guessing.
+
+<div class="skills-actions">
+<button class="skills-command" data-copy="npx skills add dfinity/icskills"><span>npx skills add dfinity/icskills</span><svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+<a class="skills-cta" href="https://skills.internetcomputer.org"><span>Explore ICP Skills</span><svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>
+</div>
+
+</div>
+
+## What makes ICP different
+
+<CardGrid>
+  <Card title="Chain-key cryptography" icon="setting">
+    Canisters sign transactions for Bitcoin, Ethereum, and other chains using threshold signatures — no bridges or oracles required.
+    [Learn more](concepts/chain-key-cryptography.md)
+  </Card>
+  <Card title="Orthogonal persistence" icon="document">
+    Canister memory survives across executions and upgrades. No databases, no serialization — just use variables.
+    [Learn more](concepts/orthogonal-persistence.md)
+  </Card>
+  <Card title="Reverse gas model" icon="star">
+    Users never pay gas. Canisters pay for their own compute, storage, and bandwidth using **cycles**.
+    [Learn more](concepts/reverse-gas-model.md)
+  </Card>
+  <Card title="Web-native smart contracts" icon="laptop">
+    Canisters serve HTTP responses directly. Host full web applications — frontend and backend — entirely onchain.
+    [Learn more](concepts/app-architecture.md)
+  </Card>
+  <Card title="Autonomous execution" icon="rocket">
+    Canisters schedule their own execution with timers — no external cron jobs, keepers, or off-chain bots.
+    [Learn more](concepts/timers.md)
+  </Card>
+  <Card title="Chain Fusion" icon="puzzle">
+    Natively interact with Bitcoin, Ethereum, Solana, and other blockchains from ICP canisters.
+    [Learn more](concepts/chain-fusion.md)
+  </Card>
+</CardGrid>
+
+## Documentation
+
+<CardGrid>
+  <LinkCard title="Getting Started" description="Install tools, create your first project, and deploy a canister." href="/getting-started/quickstart/" />
+  <LinkCard title="Guides" description="How-to guides for backends, frontends, auth, testing, deployment, chain fusion, DeFi, and more." href="/guides/" />
+  <LinkCard title="Concepts" description="Developer-focused explanations of ICP architecture and design decisions." href="/concepts/" />
+  <LinkCard title="Languages" description="Language-specific guides for Rust and Motoko." href="/languages/" />
+  <LinkCard title="Reference" description="Specifications, canister IDs, token standards, cycle costs, and glossary." href="/reference/" />
+</CardGrid>
+
+## External resources
+
+<CardGrid>
+  <LinkCard title="ICP CLI" description="Command-line tool for ICP development" href="https://cli.internetcomputer.org/" />
+  <LinkCard title="JS SDK" description="JavaScript/TypeScript libraries for ICP" href="https://js.icp.build" />
+  <LinkCard title="ICP Skills" description="Skills for agents that write code on ICP" href="https://skills.internetcomputer.org" />
+  <LinkCard title="Learn Hub" description="Deep protocol-level explanations" href="https://learn.internetcomputer.org" />
+</CardGrid>

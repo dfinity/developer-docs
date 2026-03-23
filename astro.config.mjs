@@ -32,6 +32,10 @@ export default defineConfig({
             title: "LLM-friendly documentation index",
           },
         },
+        {
+          tag: "script",
+          content: `document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('a[href^="http"]').forEach(a=>{a.setAttribute('target','_blank');a.setAttribute('rel','noopener noreferrer')});document.querySelectorAll('[data-copy]').forEach(b=>{b.addEventListener('click',()=>{navigator.clipboard.writeText(b.dataset.copy);const i=b.querySelector('svg');if(i){const orig=i.innerHTML;i.innerHTML='<polyline points="20 6 9 17 4 12" />';i.style.stroke='#22c55e';i.style.opacity='1';setTimeout(()=>{i.innerHTML=orig;i.style.stroke='';i.style.opacity=''},1500)}})})})`,
+        },
       ],
       customCss: [
         "@fontsource/inter/400.css",

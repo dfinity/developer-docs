@@ -20,6 +20,7 @@
 
 :root {
 	--sl-font: 'Inter', var(--sl-font-system);
+	--sl-content-width: 55rem;
 }
 
 /* ── Dark mode (default) ──────────────────────────────────── */
@@ -53,7 +54,177 @@
 	--sl-hue-purple: 259;
 }
 
-/* ── Light mode ───────────────────────────────────────────── */
+/* Widen content only when screen has room for sidebar + content + TOC */
+@media (min-width: 90rem) {
+	:root {
+		--sl-content-width: 65rem;
+	}
+}
+@media (min-width: 110rem) {
+	:root {
+		--sl-content-width: 75rem;
+	}
+}
+
+/* ── Hero button hover states ────────────────────────────── */
+
+.sl-link-button {
+	transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.sl-link-button.primary:hover {
+	filter: brightness(1.15);
+	box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+.sl-link-button.secondary:hover {
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.4);
+}
+
+:root[data-theme='light'] .sl-link-button.secondary:hover {
+	background: rgba(0, 0, 0, 0.06);
+	border-color: rgba(0, 0, 0, 0.4);
+}
+
+/* ── Landing page hero — tighten spacing ─────────────────── */
+
+/* Reduce hero vertical padding so skills banner is visible without scrolling */
+.hero {
+	padding-block: clamp(2rem, 6vmin, 4rem) !important;
+}
+
+/* Cap the hero title size so it doesn't wrap awkwardly on mid-width screens */
+.hero h1 {
+	font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 4vw), var(--sl-text-5xl)) !important;
+}
+
+/* Tighten the tagline — less gap between "Tamperproof..." and the description */
+.hero .tagline br + br {
+	display: block;
+	content: '';
+	margin-top: 0.5rem;
+}
+
+/* ── Skills banner (landing page) ─────────────────────────── */
+
+.skills-banner {
+	background: #181818;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 1rem;
+	padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+	text-align: center;
+	margin-block: 0 2rem;
+}
+
+.skills-banner h2 {
+	font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+	font-weight: 600;
+	color: #fff;
+	margin: 0 0 0.5rem;
+	border: none;
+}
+
+.skills-banner p {
+	color: rgba(255, 255, 255, 0.64);
+	font-size: clamp(0.85rem, 1.2vw, 1rem);
+	max-width: 42rem;
+	margin: 0 auto 1.25rem;
+	line-height: 1.6;
+}
+
+.skills-banner .skills-actions {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.skills-banner .skills-command {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.75rem;
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 0.5rem;
+	padding: 0.6rem 1rem;
+	font-family: var(--sl-font-mono, monospace);
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.8);
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.skills-banner .skills-command:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+.skills-banner .skills-command .copy-icon {
+	width: 1rem;
+	height: 1rem;
+	opacity: 0.5;
+	flex-shrink: 0;
+}
+
+.skills-banner .skills-cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 0.5rem;
+	padding: 0.6rem 1.25rem;
+	color: #fff;
+	font-size: 0.9rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.skills-banner .skills-cta:hover {
+	background: rgba(255, 255, 255, 0.14);
+	border-color: rgba(255, 255, 255, 0.24);
+}
+
+.skills-banner .skills-cta .arrow-icon {
+	width: 0.85rem;
+	height: 0.85rem;
+}
+
+:root[data-theme='light'] .skills-banner {
+	background: #f0f0f0;
+	border-color: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='light'] .skills-banner h2 {
+	color: #1a1a1a;
+}
+
+:root[data-theme='light'] .skills-banner p {
+	color: rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme='light'] .skills-banner .skills-command {
+	background: rgba(0, 0, 0, 0.04);
+	border-color: rgba(0, 0, 0, 0.12);
+	color: rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme='light'] .skills-banner .skills-command:hover {
+	background: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='light'] .skills-banner .skills-cta {
+	background: rgba(0, 0, 0, 0.06);
+	border-color: rgba(0, 0, 0, 0.16);
+	color: #1a1a1a;
+}
+
+:root[data-theme='light'] .skills-banner .skills-cta:hover {
+	background: rgba(0, 0, 0, 0.1);
+}
 
 /* ── Agent signaling ──────────────────────────────────────── */
 
