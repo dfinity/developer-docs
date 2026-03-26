@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CodeExample from '../../../src/components/CodeExample.astro';
 
 Canisters can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications — all from onchain code.
 
@@ -18,100 +19,57 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 Because a canister runs on a subnet of multiple replica nodes, every node independently makes the same HTTP request. All nodes must agree on the response before execution continues. To make responses deterministic across nodes:
 
 1. Every HTTPS outcall **must include a transform function** — a query method exported by your canister that strips non-deterministic fields (timestamps, request IDs, dynamic headers) from the response.
-2. Cycles to cover the request cost **must be attached** at call time. If you use the CDK wrappers shown below, this is handled automatically.
-3. The **maximum response body is 2MB** (2,097,152 bytes). Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound — omitting it defaults to 2MB and charges cycles accordingly (~21.5 billion cycles on a 13-node subnet).
+2. Cycles to cover the request cost **must be attached** at call time. In Rust, `ic_cdk::management_canister::http_request` auto-calculates and attaches cycles. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
+3. The **maximum response body is 2MB** (2,097,152 bytes). Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound — omitting it defaults to 2MB and charges cycles accordingly.
 
 ## GET request
 
-A minimal example that fetches a JSON price feed:
+A minimal example that sends a GET request to an echo service. The response body is deterministic, so this uses replicated mode for strong integrity guarantees:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-```motoko
-import Blob "mo:core/Blob";
-import Text "mo:core/Text";
-import IC "ic:aaaaa-aa";
-import Call "mo:ic/Call";
+<CodeExample example="send_http_get" lang="motoko">
 
-persistent actor {
-
-  // Transform: strip headers so all replicas see the same response
-  public query func transform({
-    context : Blob;
-    response : IC.http_request_result;
-  }) : async IC.http_request_result {
-    { response with headers = [] };
-  };
-
-  public func getIcpPrice() : async Text {
-    let request : IC.http_request_args = {
-      url = "https://api.coingecko.com/api/v3/simple/price?ids=internet-computer&vs_currencies=usd";
-      max_response_bytes = ?(10_000 : Nat64);
-      headers = [{ name = "User-Agent"; value = "ic-canister" }];
-      body = null;
-      method = #get;
-      transform = ?{ function = transform; context = Blob.fromArray([]) };
-    };
-    // Call.httpRequest auto-computes and attaches the required cycles
-    let response = await Call.httpRequest(request);
-    switch (Text.decodeUtf8(response.body)) {
-      case (?text) text;
-      case null "Response is not valid UTF-8";
-    };
-  };
-};
+```motoko snippet="send_http_get/src/send_http_get_backend/main.mo#get_request"
 ```
 
-For a complete working project, see the [Motoko send_http_get example](https://github.com/dfinity/examples/tree/master/motoko/send_http_get).
+</CodeExample>
 
 </TabItem>
 <TabItem label="Rust">
 
-```rust
-use ic_cdk::api::canister_self;
-use ic_cdk::management_canister::{
-    http_request, HttpHeader, HttpMethod, HttpRequestArgs, HttpRequestResult,
-    TransformArgs, TransformContext, TransformFunc,
-};
-use ic_cdk::{query, update};
+<CodeExample example="send_http_get" lang="rust">
 
-// Transform: strip headers so all replicas agree
-#[query(hidden = true)]
-fn transform(args: TransformArgs) -> HttpRequestResult {
-    HttpRequestResult { headers: vec![], ..args.response }
-}
-
-#[update]
-async fn get_icp_price() -> String {
-    let request = HttpRequestArgs {
-        url: "https://api.coingecko.com/api/v3/simple/price?ids=internet-computer&vs_currencies=usd".to_string(),
-        max_response_bytes: Some(10_000),
-        method: HttpMethod::GET,
-        headers: vec![HttpHeader { name: "User-Agent".to_string(), value: "ic-canister".to_string() }],
-        body: None,
-        transform: Some(TransformContext {
-            function: TransformFunc::new(canister_self(), "transform".to_string()),
-            context: vec![],
-        }),
-    };
-    // http_request auto-attaches the required cycles
-    match http_request(&request).await {
-        Ok(response) => String::from_utf8(response.body).unwrap_or_default(),
-        Err(err) => format!("Outcall failed: {:?}", err),
-    }
-}
+```rust snippet="send_http_get/src/send_http_get_backend/src/lib.rs#get_request"
 ```
 
-Add the following dependencies to `Cargo.toml`:
+</CodeExample>
 
-```toml
-[dependencies]
-ic-cdk = "0.19"
-candid = "0.10"
+</TabItem>
+</Tabs>
+
+Both examples require a **transform function** to strip non-deterministic HTTP response headers before consensus:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+<CodeExample example="send_http_get" lang="motoko">
+
+```motoko snippet="send_http_get/src/send_http_get_backend/main.mo#transform"
 ```
 
-For a complete working project, see the [Rust send_http_get example](https://github.com/dfinity/examples/tree/master/rust/send_http_get).
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
+
+<CodeExample example="send_http_get" lang="rust">
+
+```rust snippet="send_http_get/src/send_http_get_backend/src/lib.rs#transform"
+```
+
+</CodeExample>
 
 </TabItem>
 </Tabs>
@@ -120,64 +78,55 @@ For a complete working project, see the [Rust send_http_get example](https://git
 
 POST requests work the same way, with two additional considerations:
 
-- **Idempotency:** Because all replicas independently send the same request, a non-idempotent endpoint (e.g., "create order") will be called once per replica — typically 13 times on a 13-node subnet. Use an idempotency key header so the server can deduplicate.
-- **Transform:** The POST transform often needs to strip the response body too, since some servers include per-request fields (like the caller's IP) in the response body.
+- **Idempotency:** In replicated mode, all replicas independently send the same request — typically 13 times on a 13-node subnet. Add an `Idempotency-Key` header so the server can deduplicate. Alternatively, use non-replicated mode (`is_replicated = false`) where only one replica sends the request.
+- **Non-replicated mode:** For POST requests where you don't need consensus on the response, non-replicated mode avoids duplicate requests entirely.
 
-Add these methods inside the actor from the GET example above:
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
 
-```motoko
-  // POST transform: also discard the body because httpbin.org includes the
-  // sender's IP in the "origin" field, which differs across replicas.
-  public query func transformPost({
-    context : Blob;
-    response : IC.http_request_result;
-  }) : async IC.http_request_result {
-    { response with headers = []; body = Blob.fromArray([]) };
-  };
+<CodeExample example="send_http_post" lang="motoko">
 
-  public func postData(payload : Text) : async Text {
-    let request : IC.http_request_args = {
-      url = "https://httpbin.org/post";
-      max_response_bytes = ?(50_000 : Nat64);
-      headers = [
-        { name = "Content-Type"; value = "application/json" },
-        { name = "Idempotency-Key"; value = "unique-request-id-12345" },
-      ];
-      body = ?Text.encodeUtf8(payload);
-      method = #post;
-      transform = ?{ function = transformPost; context = Blob.fromArray([]) };
-    };
-    let response = await Call.httpRequest(request);
-
-    if (response.status == 200) "POST successful" else "POST failed";
-  };
+```motoko snippet="send_http_post/src/send_http_post_backend/main.mo#post_request"
 ```
 
-For complete working projects, see [send_http_post](https://github.com/dfinity/examples/tree/master/rust/send_http_post) (Rust) or [Motoko version](https://github.com/dfinity/examples/tree/master/motoko/send_http_post).
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
+
+<CodeExample example="send_http_post" lang="rust">
+
+```rust snippet="send_http_post/src/send_http_post_backend/src/lib.rs#post_request"
+```
+
+</CodeExample>
+
+</TabItem>
+</Tabs>
 
 ## Transform functions
 
-The transform function is mandatory for any outcall where the external server may return non-deterministic data. It runs on each replica before consensus and must be a `query` method. At minimum, strip all headers:
+The transform function is required for any outcall. It runs on each replica before consensus and must be a `query` method. At minimum, strip all HTTP response headers — they contain non-deterministic fields like `Date`, `Set-Cookie`, and tracking IDs:
 
 - In Motoko: `{ response with headers = [] }`
-- In Rust: `HttpRequestResult { headers: vec![], ..args.response }`
+- In Rust: `HttpRequestResult { headers: vec![], ..raw.response }`
 
-If the response body also contains dynamic fields (timestamps, per-request IDs), parse and re-serialize the body to extract only the deterministic fields you need.
+If the response body also contains dynamic fields (timestamps, per-request IDs, the caller's IP), parse and re-serialize the body to extract only the deterministic fields you need.
 
 **Debugging "no consensus" errors:** If you see `"No consensus could be reached"`, the transform is not making responses identical. Common culprits: response headers differ, JSON fields arrive in a different order, or the response body contains timestamps. Strip all headers first; if that doesn't resolve it, also normalize or strip the body.
 
 ## Cycle costs
 
-HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **21.5 billion cycles** — even for a 1KB response. Always set a tight upper bound.
+HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **21.5 billion cycles** — even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
 
-The CDK wrappers (`Call.httpRequest` in Motoko, `ic_cdk::management_canister::http_request` in Rust) compute and attach the exact cost automatically using the `ic0.cost_http_request` system API. You do not need to hard-code cycle amounts.
+In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
 
 For reference, on a 13-node subnet:
 - Base cost: ~49 million cycles
 - Per request byte: 5,200 cycles
 - Per `max_response_bytes` byte: 10,400 cycles
 
-Unused cycles are refunded. See [Cycles Costs](../../reference/cycles-costs.md) for the full pricing table.
+See [Cycles Costs](../../reference/cycles-costs.md) for the full pricing table.
 
 ## Limitations and pitfalls
 
@@ -185,19 +134,13 @@ Unused cycles are refunded. See [Cycles Costs](../../reference/cycles-costs.md) 
 - **`Host` header may be required.** Some API endpoints require the `Host` header to be explicitly set. The IC does not automatically set it from the URL — add it to your headers if the server requires it.
 - **~30-second timeout.** If the external server does not respond within the timeout, the call traps. Design for failure and handle errors gracefully.
 
-> **Non-replicated outcalls** are available as an experimental feature. Setting `is_replicated` to `false` in the request causes only a single replica to make the HTTP call. This avoids idempotency concerns but currently uses the same pricing as replicated outcalls. **Flexible outcalls** — with dedicated pricing and additional capabilities — are under development. {/* See dfinity/portal#5890 for the upstream tracking PR. */}
+> **Non-replicated outcalls:** Setting `is_replicated` to `false` causes only a single replica to make the HTTP call. This works for any method — the POST example above uses it, but it can also be used for GET when strong response integrity is not required. The tradeoff: a single replica makes the request, so there is no consensus guarantee that the response was not tampered with. Non-replicated outcalls currently use the same pricing as replicated outcalls.
 
 ## Testing locally
 
-```bash
-icp network start -d
-icp deploy backend
-icp canister call backend getIcpPrice  # Rust: get_icp_price
-```
+Use the "Full example in ICP Ninja" links above to deploy and test directly in the browser. To test locally with icp-cli, clone the example and run `icp network start -d && icp deploy`.
 
-HTTPS outcalls work on the local replica — icp-cli proxies requests through the local HTTP gateway.
-
-> **Note:** The local replica runs a single node, so all responses reach consensus automatically — even without a transform function. Make sure to verify your transform produces identical output for varying inputs (different headers, timestamps) before deploying to a multi-node subnet, where mismatches cause "no consensus" errors.
+> **Note:** The local replica runs a single node, so all responses reach consensus automatically — even without a transform function. Verify your transform produces identical output for varying inputs (different headers, timestamps) before deploying to a multi-node subnet, where mismatches cause "no consensus" errors.
 
 ## Next steps
 
@@ -206,4 +149,4 @@ HTTPS outcalls work on the local replica — icp-cli proxies requests through th
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md) — the EVM RPC canister uses HTTPS outcalls under the hood
 - [Cycles Costs](../../reference/cycles-costs.md) — outcall pricing details
 
-{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/ */}
+{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/; dfinity/examples send_http_get, send_http_post */}

@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 import matter from "gray-matter";
 import { sidebar } from "../sidebar.mjs";
+import { extractSnippet } from "./remark-snippet.mjs";
 
 /**
  * Derives llms.txt section mappings from the shared sidebar definition.
@@ -108,11 +109,40 @@ function stripMdx(body) {
   const lines = body.split("\n");
   const out = [];
   let inCodeFence = false;
+  let skipNextClosingFence = false;
   let tabHeadingLevel = 0; // heading level for TabItem labels within current <Tabs>
 
   for (const line of lines) {
-    // Track code fences so we never touch content inside them
+    // After resolving a snippet, skip the next closing ``` from the original
+    // empty fence in the source.
+    if (skipNextClosingFence) {
+      if (/^```/.test(line.trimStart())) {
+        skipNextClosingFence = false;
+      }
+      continue;
+    }
+
+    // Track code fences so we never touch content inside them.
+    // Also resolve snippet= attributes by extracting code from .sources/examples/.
     if (/^```/.test(line.trimStart())) {
+      if (!inCodeFence) {
+        // Opening fence — check for snippet= attribute
+        const snippetMatch = line.match(
+          /^(\s*```\w+)\s+snippet="([^"]+)"\s*$/
+        );
+        if (snippetMatch) {
+          const lang = snippetMatch[1].replace(/^\s*```/, "");
+          const code = extractSnippet(lang, snippetMatch[2]);
+          if (code) {
+            out.push(snippetMatch[1]); // opening fence without snippet attr
+            out.push(code);
+            out.push("```");
+            // Skip the next ``` which is the closing fence of the empty source block
+            skipNextClosingFence = true;
+            continue;
+          }
+        }
+      }
       inCodeFence = !inCodeFence;
       out.push(line);
       continue;
@@ -120,6 +150,11 @@ function stripMdx(body) {
 
     if (inCodeFence) {
       out.push(line);
+      continue;
+    }
+
+    // Strip <CodeExample> wrapper tags (Ninja button component)
+    if (/^\s*<\/?CodeExample\b[^>]*>\s*$/.test(line)) {
       continue;
     }
 

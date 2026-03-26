@@ -1,0 +1,97 @@
+---
+/**
+ * CodeExample — language tabs with an "Open in ICP Ninja" button.
+ *
+ * This component renders the Starlight Tabs/TabItem wrapper with a Ninja
+ * link that opens the full example project in icp.ninja. The actual code
+ * snippets are written as regular code fences with snippet= attributes
+ * inside the <CodeExample> slot — the remark-snippet plugin extracts the
+ * code at build time.
+ *
+ * Usage in MDX:
+ *
+ *   <CodeExample example="send_http_get" lang="motoko">
+ *
+ *   ```motoko snippet="send_http_get/src/send_http_get_backend/main.mo#get_request"
+ *   ```
+ *
+ *   </CodeExample>
+ *
+ *   <CodeExample example="send_http_get" lang="rust">
+ *
+ *   ```rust snippet="send_http_get/src/send_http_get_backend/src/lib.rs#get_request"
+ *   ```
+ *
+ *   </CodeExample>
+ *
+ * Props:
+ *   example  — example folder name (e.g. "send_http_get")
+ *   lang     — language key: "motoko", "rust", or "js" (determines the
+ *              subdirectory for the Ninja URL: motoko/, rust/, or hosting/)
+ */
+import { examplesCommit } from "../utils/examples-commit.mjs";
+
+const LANG_TO_DIR: Record<string, string> = {
+  motoko: "motoko",
+  rust: "rust",
+  js: "hosting",
+};
+
+interface Props {
+  example: string;
+  lang: string;
+}
+
+const { example, lang } = Astro.props;
+const langDir = LANG_TO_DIR[lang] || lang;
+const ninjaUrl = `https://icp.ninja/i?g=https://github.com/dfinity/examples/tree/${examplesCommit}/${langDir}/${example}`;
+---
+
+<div class="code-example">
+  <slot />
+  <div class="code-example-footer">
+    <a href={ninjaUrl} target="_blank" rel="noopener noreferrer" class="ninja-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 3h6v6" />
+        <path d="M10 14 21 3" />
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      </svg>
+      Full example in ICP Ninja
+    </a>
+  </div>
+</div>
+
+<style>
+  .code-example {
+    position: relative;
+  }
+
+  .code-example-footer {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+
+  .ninja-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--sl-color-gray-5);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .ninja-link:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-3);
+  }
+
+  .ninja-link svg {
+    flex-shrink: 0;
+  }
+</style>
