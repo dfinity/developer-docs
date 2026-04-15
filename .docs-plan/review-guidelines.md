@@ -7,7 +7,7 @@ When asked to review a PR, load the `technical-documentation` skill and the rele
 ## Initial review (first time reviewing a page)
 
 *Mechanical checks:*
-1. **Internal links** — `ls` every `[text](path.md)` target. Flag any that don't resolve to an existing file.
+1. **Internal links** — `ls` every `[text](path.md)` target. If the `.md` file doesn't exist, also check for `.mdx` — Astro resolves `.md` links to `.mdx` files. Flag as broken only if neither exists.
 2. **External URLs** — verify against the linking rules table in `content-authoring.md`. Flag any guessed or wrong URLs (especially `docs.rs` crate links).
 3. **CLI commands** — verify all `icp` commands and flags against `.sources/icp-cli/docs/reference/cli.md`.
 4. **Frontmatter** — complete and consistent with the body (no contradictions in descriptions, time estimates, scope).
