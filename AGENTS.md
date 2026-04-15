@@ -32,29 +32,13 @@ All tasks (content pages, infrastructure, tooling) are coordinated through [Bead
 
 ### First-time setup (once per clone)
 
-**Prerequisites** (install before running setup):
+**Prerequisites:** Node.js ≥ 20, Dolt, Beads (`bd`). See README.md for install instructions.
 
-| Tool | Install | Purpose |
-|------|---------|---------|
-| Node.js ≥ 20 | https://nodejs.org or `nvm install 20` | Astro build, npm packages |
-| Dolt | `brew install dolt` (macOS) or https://github.com/dolthub/dolt/releases | Version-controlled SQL database for task state |
-| Beads (`bd`) | `npm install -g @beads/bd` | Task tracking CLI that uses Dolt |
+**SSH access required:** Beads syncs via `refs/dolt/data` — requires SSH access to the git remote. If `git fetch origin refs/dolt/data` fails, add an SSH key or run `gh auth setup-git`.
 
-**SSH access required:** Beads syncs task state via `refs/dolt/data` using the git remote. This requires SSH access to `github.com:dfinity/developer-docs.git`. If you cloned via HTTPS, ensure `git fetch origin refs/dolt/data` works — if not, add an SSH key or configure `gh auth setup-git`.
-
-Then run:
 ```bash
 ./scripts/setup.sh    # submodules, npm deps, Beads task DB, Dolt server, build check
 ```
-
-The script will:
-1. Initialize git submodules (`.sources/` — upstream reference repos)
-2. Install npm dependencies
-3. Bootstrap the Beads/Dolt database from the git remote (or sync if already present)
-4. Start the Dolt server and verify the database is accessible
-5. Run a build check
-
-After setup, verify: `bd ready` should list ~47 open tasks.
 
 Without `bd`/`dolt` you can still write docs — check `.docs-plan/migration-plan.md` for tasks manually.
 
@@ -78,11 +62,11 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
    git branch -D $(git branch | grep worktree-agent)  # delete backing branches
    ```
 
-**Submodule initialization in worktrees:** Git worktrees do NOT automatically initialize submodules. A freshly created worktree has empty `.sources/` directories, which means all skill symlinks (`.claude/skills/` → `.agents/skills/` → `.sources/`) are broken and source material is inaccessible. **Every worktree agent must run this as its very first command before any other work:**
+**Submodule initialization in worktrees:** Worktrees do NOT automatically initialize submodules — `.sources/` will be empty and skills inaccessible. **Every worktree agent must run this first:**
 ```bash
 git submodule update --init --depth 1
 ```
-This takes ~30 seconds and uses ~336MB of disk per worktree (shallow clones). The disk space is reclaimed when the worktree is removed. Without this step, the agent cannot load skills, read source material from `.sources/`, or verify code snippets — it will produce lower quality content or fail entirely. The parent agent must include this instruction in every worktree agent's prompt.
+The parent agent must include this as the mandatory first step in every worktree agent's prompt.
 
 **If agents fail with permission errors:** Check that `.claude/settings.json` exists and includes all required tools. The shared settings file is the authoritative source — per-user `~/.claude/projects/` settings don't apply to worktree agents (different path). **Important:** Permission patterns use prefix matching, so chained commands like `git stash && git rebase` won't match a `git stash*` pattern — the `&&` makes it a single shell string. Worktree agents should run git commands as **separate sequential tool calls**, not chained with `&&`.
 
@@ -342,22 +326,13 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - Read `.docs-plan/decisions.md` before proposing structural changes
 - **Ensure all required skills are accessible** before starting any work (see "Skills (required)" section). Skills are pre-installed as symlinks — if they appear broken, run `git submodule update --init --depth 1`. Do not start content or review work if skills are inaccessible.
 - Use icp-cli commands in all CLI examples — never `dfx`
-- Write `.md` by default. Use `.mdx` only when a page needs interactive components (e.g., `<Tabs syncKey="lang">` for multi-language sections). Always use `syncKey="lang"` for language tabs. **Tab order:** For implementation/code tabs, list Motoko first, then Rust, then other languages (JavaScript). For type-mapping tabs where Candid is the canonical definition (e.g., Records, Variants), list Candid first, then Motoko, then Rust. Use `{/* */}` for comments in `.mdx` files (not `<!-- -->`). See `.docs-plan/decisions.md` for the full policy.
-- **When converting a stub to `.mdx`:** all stubs are `.md` files. If the page needs tabs, rename the stub from `.md` to `.mdx`, delete the old `.md`, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after frontmatter, and convert `<!-- -->` comments to `{/* */}`. Internal links to `<page>.md` still work — Astro resolves both extensions.
+- Use `.md` by default; `.mdx` only for interactive components (e.g. `<Tabs syncKey="lang">`). Tab order: Motoko → Rust → others; Candid first for type-mapping tabs. See `.docs-plan/decisions.md` and `content-authoring.md` for conversion steps.
 - Include complete frontmatter (see CONTRIBUTING.md for schema)
-- Make code examples self-contained and copy-pasteable
-- Flag uncertainty with `<!-- Needs human verification: [reason] -->` rather than guessing — it is always better to flag than to be silently wrong
-- Link to external docs instead of duplicating content (see linking rules below)
-- Read the stub page's `<!-- Source Material -->` and `<!-- Content Brief -->` comments before writing content
+- Link to external docs instead of duplicating content (see `content-authoring.md` linking rules)
 - Sync Beads before and after work: `bd dolt pull` at session start, `bd dolt push` after every status change
 - Update task status in Beads immediately — claim before working, set `draft` after PR creation, set `closed` after merge
 - Record structural decisions in `.docs-plan/decisions.md` immediately when making them — don't wait to be asked. This includes: new files/symlinks, path changes, config changes, cleanup of stale references, and any choice that a future agent would need to understand.
-- **Every non-stub content page must end with an `<!-- Upstream: -->` comment** — this is enforced by CI (`check-upstream-notes` workflow). Use exactly one of these formats:
-  - `<!-- Upstream: hand-written -->` — original content, not derived from another repo
-  - `<!-- Upstream: sync from <repo> <path> -->` — auto-synced, do not edit directly
-  - `<!-- Upstream: informed by <repo> — <files> -->` — rewritten from upstream sources
-  List **every** `.sources/` repo used — including icskills when they informed the content. Example: `<!-- Upstream: informed by dfinity/portal — ...; dfinity/icskills — skills/icrc-ledger/SKILL.md -->`.
-  Do NOT use `<!-- Sync recommendation: -->` or any other format — only `<!-- Upstream: -->` passes CI.
+- **Every non-stub content page must end with an `<!-- Upstream: -->` comment** (CI-enforced). List every `.sources/` repo used. Format and examples in `content-authoring.md`.
 - **Every PR description must include a `## Sync recommendation` section** — this mirrors the in-page `<!-- Upstream: -->` comment in human-readable form and becomes the squash-merge commit message. See the PR template in "Submitting".
 
 ## Ask first (confirm with the user before doing these)
@@ -385,7 +360,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - Modify the rationale or context of existing decisions in `.docs-plan/decisions.md` — you may remove entries that are fully reflected in the current codebase (renames, file moves, cleanup) but never alter the reasoning behind active decisions
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
 - Link to `internetcomputer.org/docs/` or `docs.internetcomputer.org` — the old docs site is being replaced by this project and those URLs will break. Link to pages in this site (relative paths, even stubs), Learn Hub, or explain inline. If a needed topic has no page, create a page proposal issue.
-- Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Agents have repeatedly linked to plausible-sounding paths (e.g., `reference/certified-variables.md`, `guides/backends/stable-memory.md`) that don't exist. Always `ls` the target before linking. If the page doesn't exist, find the correct existing page or file a page proposal issue.
+- Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Always `ls` the target before linking. If the page doesn't exist, find the correct existing page or file a page proposal issue.
 - Link externally when an internal page exists — before using an external URL (Learn Hub, GitHub, docs.rs), check if the topic has a page in `docs/`. Prefer internal relative links over external URLs. For example, link to `reference/ic-interface-spec.md` instead of the Learn Hub or `internetcomputer.org/spec/`.
 - Close a Beads task unless its PR is verified as merged (`gh pr view <PR#> --json state --jq .state` must print `MERGED`). A closed task means "done and shipped" — never close for any other reason.
 - Delete or force-push `refs/dolt/data` — this ref is the sole remote copy of all Beads task state. Never run `git push origin --delete refs/dolt/data` or any git command that modifies this ref directly.
@@ -585,7 +560,7 @@ Skills are a **hard prerequisite** — do not start any content work, review, or
 - `.agents/skills/` — agent-agnostic location (canonical)
 - `.claude/skills/` — symlinks to `.agents/skills/` for Claude Code
 
-**Prerequisite:** All skills are symlinks into `.sources/` submodules (icskills → `.sources/icskills/skills/`, technical-documentation → `.sources/dotskills/skills/technical-documentation`). Run `git submodule update --init --depth 1` if skills appear as broken symlinks.
+**Prerequisite:** Skills are symlinks into `.sources/` submodules. Run `git submodule update --init --depth 1` if they appear as broken symlinks.
 
 At session start, verify skills are accessible:
 ```bash
@@ -633,7 +608,7 @@ The site implements the [Agent-Friendly Documentation Spec](https://agentdocsspe
 - `/llms.txt` — discovery index listing all pages with links to `.md` endpoints, plus the IC skills registry URL
 - `/<path>.md` — clean markdown for every page (frontmatter, HTML comments, and MDX artifacts stripped)
 
-**MDX stripping:** `.mdx` sources are automatically converted to clean `.md` for agent consumption. The `stripMdx()` function in the plugin removes ESM imports, converts `<TabItem label="X">` to headings, strips wrapper tags (`<Tabs>`, `</Tabs>`, etc.), and removes JSX comments. A build-time validation pass (`validateAgentMarkdown()`) checks for leftover JSX, broken heading hierarchy, and other issues.
+`.mdx` pages are served as clean `.md` for agent consumption (MDX syntax stripped automatically at build time).
 
 ### SECTIONS array (keep in sync)
 

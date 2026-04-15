@@ -7,7 +7,7 @@ When drafting a new docs page:
 1. Read the stub page — it contains content brief, source material, and cross-links
 2. Read source material from `.sources/`. Stub references use shorthand — resolve them per the mapping in "Source material repos" above (e.g., `Portal: building-apps/foo.mdx` → `.sources/portal/docs/building-apps/foo.mdx`).
    > **If source material is unavailable at the expected path:** (1) search `.sources/portal/` for the content under a different path, (2) if truly unavailable, write from the content brief + icskills + your training knowledge, and add `<!-- Source unavailable: [path] — written from content brief -->` so future contributors know to verify.
-3. Read any related icskills skill file from `.sources/icskills/` for accurate canister IDs and code patterns. If delegating writing to a sub-agent, include key details from the skill file in the sub-agent's prompt (sub-agents cannot load skills themselves).
+3. Read any related icskills skill file from `.sources/icskills/` for accurate canister IDs and code patterns.
 4. Write the content:
    - Follow the content brief in the stub
    - Use icp-cli commands (never dfx)
@@ -47,49 +47,29 @@ When drafting a new docs page:
 
 ## Content rules
 
-- **NEVER reference `dfx`** — it is deprecated. Use icp-cli instead.
-- **Spelling rules:** "onchain" and "offchain" (no hyphens, ever). Use "icp-cli" in prose (not "the `icp` CLI"); use `icp` only in code blocks for the literal command.
-- All docs must have complete frontmatter (see CONTRIBUTING.md for schema)
-- Synced content must not be edited directly — edits must go to the source repo
-- All code examples must be self-contained and copy-pasteable
-- Code examples: <30 lines inline, >30 lines link to `dfinity/examples`
-- Default to `.md`. Use `.mdx` only for pages with interactive components (e.g., language-synced tabs). See `.docs-plan/decisions.md` for when `.mdx` is appropriate.
-- **Always use `.md` extension in internal links**, even when linking to a `.mdx` file (e.g., `[Canister lifecycle](lifecycle.md)` not `lifecycle.mdx`). Astro resolves links by slug, so `.md` works regardless of the target's actual extension. Use relative paths (e.g., `[Quickstart](../getting-started/quickstart.md)`). Never use absolute paths like `/getting-started/quickstart/` — they break on GitHub.
-- Max sidebar nesting: 3 levels
-- Images go in `src/assets/images/` organized by section (see CONTRIBUTING.md for details)
-- When writing a page, decide case-by-case whether portal images are worth carrying over. Keep the existing hand-drawn visual style.
-- **No headings inside `<TabItem>` blocks** — Starlight generates the "On this page" TOC at build time from all headings, regardless of which tab is active. A heading inside a `<TabItem>` always appears in the TOC even when its tab is hidden. Use **bold text** (`**Title**`) instead of markdown headings (`###`) for sub-labels inside tabs.
-- **Motoko standard library:** Always use `core` (`mops.one/core`), never `base`. The `core` library supersedes `base`. Link to the synced base→core migration guide for developers still on `base`.
+- **Spelling:** "onchain" and "offchain" (no hyphens). Use "icp-cli" in prose; use `icp` only in code blocks for the literal command.
+- **Always use `.md` extension in internal links**, even when linking to a `.mdx` file (e.g., `[Canister lifecycle](lifecycle.md)`). Use relative paths. Never absolute paths like `/getting-started/quickstart/` — they break on GitHub.
+- Images go in `src/assets/images/` organized by section (see CONTRIBUTING.md). Carry over portal images case-by-case; keep the hand-drawn visual style.
+- **No headings inside `<TabItem>` blocks** — they always appear in the TOC regardless of which tab is active. Use **bold text** instead of `###` for sub-labels inside tabs.
+- **Motoko standard library:** Always use `core` (`mops.one/core`), never `base`. Link to the synced base→core migration guide for developers still on `base`.
 - **Diataxis content types** — match content to its section:
-  - `concepts/` — Explanations only. Describe *what* and *why*. No CLI commands, no step-by-step procedures. Link to the relevant guide for practical steps.
+  - `concepts/` — Explanations only. Describe *what* and *why*. No CLI commands, no step-by-step procedures.
   - `getting-started/` — Tutorials. Step-by-step with CLI commands. Linear, opinionated, complete.
-  - `guides/` — How-to guides. Task-oriented with CLI commands where relevant. May reference concepts for background.
+  - `guides/` — How-to guides. Task-oriented with CLI commands where relevant.
   - `reference/` — Specifications and lookups. Precise, complete, no tutorials.
-- **End-of-page navigation:** End every page with a `## Next steps` section linking to related pages. Always use the heading "Next steps" — never "What's next" or other variants.
+- **End-of-page navigation:** End every page with a `## Next steps` section. Always use "Next steps" — never "What's next" or other variants.
 
-## Linking rules
+## Linking rules (do not duplicate — link instead)
 
-| Content type | Link to |
-|-------------|---------|
-| CLI commands | https://cli.internetcomputer.org/ |
-| Motoko standard library | https://mops.one/core/docs (core supersedes base) |
-| Rust CDK API (`ic-cdk`) | https://docs.rs/ic-cdk/latest/ic_cdk/ |
-| Rust stable structures (`ic-stable-structures`) | https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ |
-| Rust Candid (`candid`) | https://docs.rs/candid/latest/candid/ |
-| JS SDK | https://js.icp.build |
-| Protocol internals | https://learn.internetcomputer.org |
-| Agent skill files | https://skills.internetcomputer.org |
+| Resource | URL | Notes |
+|----------|-----|-------|
+| CLI commands | https://cli.internetcomputer.org/ | |
+| Motoko core library | https://mops.one/core/docs | supersedes `base`; migration guide synced from Motoko repo |
+| Rust CDK (`ic-cdk`) | https://docs.rs/ic-cdk/latest/ic_cdk/ | |
+| Rust stable structures | https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ | |
+| Rust Candid | https://docs.rs/candid/latest/candid/ | |
+| JS SDK | https://js.icp.build | |
+| Protocol internals / Learn Hub | https://learn.internetcomputer.org | |
+| Agent skill files | https://skills.internetcomputer.org | |
 
-> **Important:** Each Rust crate has its own `docs.rs` URL. Do NOT substitute one crate URL for another — `docs.rs/ic-cdk` is NOT the same as `docs.rs/ic-stable-structures`. If you need to link a crate not in this table, construct the URL as `https://docs.rs/<crate-name>/latest/<crate_name>/` (note: hyphens in crate name become underscores in the path).
-
-## External docs (don't duplicate these)
-
-| Resource | URL |
-|----------|-----|
-| icp-cli | https://cli.internetcomputer.org/ |
-| JS SDK | https://js.icp.build |
-| icskills | https://skills.internetcomputer.org |
-| Learn Hub | https://learn.internetcomputer.org |
-| Motoko core library | https://mops.one/core/docs (supersedes base; migration guide is synced from Motoko repo) |
-| Rust CDK API (`ic-cdk`) | https://docs.rs/ic-cdk/latest/ic_cdk/ |
-| Rust stable structures (`ic-stable-structures`) | https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ |
+> **Rust crate URLs:** Each crate has its own URL — do not substitute. For crates not in this table, use `https://docs.rs/<crate-name>/latest/<crate_name>/` (hyphens → underscores in the path).

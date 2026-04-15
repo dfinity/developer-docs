@@ -2,15 +2,13 @@
 
 **Only review PRs when explicitly asked by a human.** Agents must never offer, suggest, or perform PR reviews on their own initiative. Reviews are a developer decision. The agent's focus is: (1) manage tasks, (2) create content PRs, (3) fix content based on existing reviews/comments.
 
-When asked to review a PR, load the `technical-documentation` skill and the relevant icskill for the page topic first.
-
-**When delegating to sub-agents:** Worktree agents have full access to skills and `.sources/` after running `git submodule update --init --depth 1` (see "Submodule initialization in worktrees" in CLAUDE.md). The parent agent must include this command as a mandatory first step in every worktree agent's prompt. Once submodules are initialized, agents can load skills and verify code against `.sources/` directly.
+When asked to review a PR, load the `technical-documentation` skill and the relevant icskill for the page topic first. For parallel reviews using worktrees, see "Submodule initialization in worktrees" in AGENTS.md.
 
 ## Initial review (first time reviewing a page)
 
 *Mechanical checks:*
 1. **Internal links** — `ls` every `[text](path.md)` target. Flag any that don't resolve to an existing file.
-2. **External URLs** — verify against the linking rules table in AGENTS.md. Flag any guessed or wrong URLs (especially `docs.rs` crate links).
+2. **External URLs** — verify against the linking rules table in `content-authoring.md`. Flag any guessed or wrong URLs (especially `docs.rs` crate links).
 3. **CLI commands** — verify all `icp` commands and flags against `.sources/icp-cli/docs/reference/cli.md`.
 4. **Frontmatter** — complete and consistent with the body (no contradictions in descriptions, time estimates, scope).
 5. **Content rules compliance** — no `dfx` references, no `.mdx`/JSX, code examples <30 lines inline, relative links with `.md` extension, `core` not `base` for Motoko, Diataxis content type respected.
