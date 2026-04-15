@@ -343,7 +343,7 @@ async fn withdraw(btc_address: String, amount: u64) -> RetrieveBtcResult {
     let approve_args = ApproveArgs {
         from_subaccount: Some(from_subaccount),
         spender: Account { owner: minter_id(), subaccount: None },
-        amount: Nat::from(amount) + Nat::from(10u64),
+        amount: Nat::from(amount) + Nat::from(10u64), // +10 covers the ICRC-2 transfer fee the minter charges when moving your ckBTC
         expected_allowance: None,
         expires_at: None,
         fee: Some(Nat::from(10u64)),
@@ -429,7 +429,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
 - **Minimum withdrawal is 50,000 satoshis.** Amounts below this return `AmountTooLow`.
 - **Omitting `owner` in `get_btc_address`.** Without `owner`, the minter returns the deposit address of the calling canister instead of the intended user.
 
-For a complete working example with all type definitions and error handling, see the [ckBTC skill](https://skills.internetcomputer.org) or the full code in the [basic_bitcoin Motoko example](https://github.com/dfinity/examples/tree/master/motoko/basic_bitcoin) and [basic_bitcoin Rust example](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin).
+For a complete working example with all type definitions and error handling, see the [ckBTC skill](https://skills.internetcomputer.org/skills/ckbtc/) or the full code in the [basic_bitcoin Motoko example](https://github.com/dfinity/examples/tree/master/motoko/basic_bitcoin) and [basic_bitcoin Rust example](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin).
 
 ## Direct Bitcoin API
 
@@ -453,11 +453,23 @@ The Bitcoin canister exposes these methods:
 - `bitcoin_get_block_headers` — returns raw block headers for a height range
 - `bitcoin_send_transaction` — submits a signed transaction to the Bitcoin network
 
-The Rust CDK's `ic_cdk::bitcoin_canister` module also provides `get_blockchain_info()` for querying blockchain state (current height, chain tip hash, etc.):
+The `ic-cdk-bitcoin-canister` crate provides `get_blockchain_info()` for querying blockchain state (current height, chain tip hash, timestamp, etc.):
 
 ```rust
-// Query blockchain state (height, chain tip, etc.)
-// let info = ic_cdk::bitcoin_canister::get_blockchain_info().await;
+use ic_cdk_bitcoin_canister::get_blockchain_info;
+
+let info = get_blockchain_info(get_network())
+    .await
+    .expect("Failed to get blockchain info");
+// info.height     — current chain height
+// info.block_hash — chain tip block hash (hex)
+// info.timestamp  — tip block timestamp
+```
+
+Add to `Cargo.toml` alongside `ic-cdk`:
+
+```toml
+ic-cdk-bitcoin-canister = "0.2"
 ```
 
 The threshold signature system provides:
@@ -465,7 +477,7 @@ The threshold signature system provides:
 - `ecdsa_public_key` / `sign_with_ecdsa` — for standard Bitcoin (P2PKH, P2SH) addresses
 - `schnorr_public_key` / `sign_with_schnorr` — for Taproot (P2TR) addresses
 
-All Bitcoin API calls require cycles. The Rust CDK's `ic_cdk::bitcoin_canister` module handles cycle calculation and attachment automatically.
+All Bitcoin API calls require cycles. The `ic-cdk-bitcoin-canister` crate handles cycle calculation and attachment automatically.
 
 ### Read Bitcoin balance
 
@@ -534,7 +546,7 @@ persistent actor Backend {
 <TabItem label="Rust">
 
 ```rust
-use ic_cdk::bitcoin_canister::{
+use ic_cdk_bitcoin_canister::{
     bitcoin_get_balance, GetBalanceRequest, Network, Satoshi,
 };
 
@@ -585,13 +597,14 @@ The complete implementation for all steps (address generation, transaction const
 
 ### Cycle costs
 
-All Bitcoin API calls require cycles attached to the call. The Rust CDK handles this automatically through the `ic_cdk::bitcoin_canister` module. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
+All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
 
 | API call | Testnet / Regtest | Mainnet |
 |---|---|---|
 | `bitcoin_get_balance` | 40,000,000 | 100,000,000 |
 | `bitcoin_get_utxos` | 4,000,000,000 | 10,000,000,000 |
-| `bitcoin_send_transaction` | 2,000,000,000 | 5,000,000,000 |
+| `bitcoin_send_transaction` (base) | 2,000,000,000 | 5,000,000,000 |
+| `bitcoin_send_transaction` (per byte) | 8,000,000 | 20,000,000 |
 | `bitcoin_get_current_fee_percentiles` | 40,000,000 | 100,000,000 |
 | `bitcoin_get_block_headers` | 4,000,000,000 | 10,000,000,000 |
 
@@ -722,4 +735,4 @@ docker stop bitcoind && docker rm bitcoind
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md) — detailed API documentation
 - [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084) — protocol-level details of how ICP connects to Bitcoin
 
-{/* Upstream: informed by dfinity/portal — docs/build-on-btc/*; dfinity/icskills — skills/ckbtc/SKILL.md; dfinity/icp-cli-templates — bitcoin-starter/ */}
+{/* Upstream: informed by dfinity/portal — docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx; dfinity/icskills — skills/ckbtc/SKILL.md; dfinity/icp-cli-templates — bitcoin-starter/; dfinity/cdk-rs — ic-cdk-bitcoin-canister 0.2 */}
