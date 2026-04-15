@@ -56,6 +56,8 @@ The EVM RPC canister offers two styles of API:
 - **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt` — these query multiple providers by default and return a `MultiResult` with built-in consensus.
 - **Raw JSON-RPC** via the `request` method — sends a single JSON-RPC request to one provider. More flexible, but you handle parsing and consensus yourself.
 
+{/* Needs human verification: `canister:name` import syntax (e.g., `import EvmRpc "canister:evm_rpc"`) may not work with icp-cli; the Motoko team is redesigning canister discovery. The Motoko examples below use this syntax — verify the correct import approach with icp-cli before shipping. */}
+
 ### Get the latest block (typed API)
 
 <Tabs syncKey="lang">
@@ -131,6 +133,8 @@ async fn get_latest_block() -> Block {
 </Tabs>
 
 Always handle all three result variants: `Consistent(Ok(...))`, `Consistent(Err(...))`, and `Inconsistent(...)`. Ignoring `Inconsistent` will cause your canister to trap when providers disagree.
+
+> **Tip:** For queries like `eth_getBlockByNumber(Latest)`, use `ConsensusStrategy::Threshold { total: Some(3), min: 2 }` (2-of-3 agreement) instead of the default `Equality` strategy, since providers may be 1-2 blocks apart. Pass this as the consensus config parameter (third argument in Motoko, via the client builder in Rust with `evm_rpc_client`).
 
 ### Get ETH balance (raw JSON-RPC)
 
@@ -378,7 +382,7 @@ persistent actor {
       derivation_path = [caller];
       key_id = {
         curve = #secp256k1;
-        name = "key_1"; // Use "dfx_test_key" locally, "key_1" on mainnet
+        name = "key_1"; // Use the test key "dfx_test_key" for local testing (this is a protocol-level key name)
       };
     });
     public_key;
@@ -405,7 +409,7 @@ async fn get_public_key() -> Vec<u8> {
         derivation_path: vec![],
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
-            name: "key_1".to_string(), // Use "dfx_test_key" locally
+            name: "key_1".to_string(), // Use the test key "dfx_test_key" for local testing (this is a protocol-level key name)
         },
     };
 
@@ -611,44 +615,49 @@ canisters:
 
 ### Local deployment
 
+{/* Needs human verification: how to deploy EVM RPC canister locally with icp-cli — `icp deps` subcommand does not exist. The recommended approach (from the evm-rpc skill) is to use `icp deploy -e local` with environments defined in `icp.yaml` to deploy both the backend and the EVM RPC canister pre-built WASM together. On mainnet, the EVM RPC canister is already deployed at `7hfb6-caaaa-aaaar-qadga-cai` and only the backend needs to be deployed. */}
+
+The `icp.yaml` above uses environments to separate local and mainnet deployment. Add an `environments` block to control which canisters are deployed where:
+
+```yaml
+environments:
+  - name: local
+    network: local
+    canisters: [backend, evm_rpc]
+  - name: ic
+    network: ic
+    canisters: [backend]
+    settings:
+      backend:
+        environment_variables:
+          PUBLIC_CANISTER_ID:evm_rpc: "7hfb6-caaaa-aaaar-qadga-cai"
+```
+
+Then deploy locally with:
+
 ```bash
 # Start local replica
 icp network start -d
 
-# Pull and deploy the EVM RPC canister
-icp deps pull
-icp deps init evm_rpc --argument '(record {})'
-icp deps deploy
-
-# Deploy your backend
-icp deploy backend
+# Deploy both backend and evm_rpc for local development
+icp deploy -e local
 ```
+
+On mainnet, only the backend is deployed — the EVM RPC canister is already available at `7hfb6-caaaa-aaaar-qadga-cai`.
 
 ### Testing via icp-cli
 
+{/* Needs human verification: cycle attachment for EVM RPC canister calls via icp-cli. The `--with-cycles` flag does not exist in icp-cli; `--cycles` only works with `--proxy` to forward cycles through a proxy canister. There is no direct way to attach cycles to an `icp canister call` without a proxy. The examples below call the canister directly without cycle attachment — this works for query methods like `requestCost` and `getProviders` but update calls like `request` and `eth_getBlockByNumber` require cycles. For testing update calls, consider calling from another canister (which can attach cycles) rather than directly from the CLI. */}
+
 ```bash
-# Get the latest block (typed API, multi-provider consensus)
-icp canister call evm_rpc eth_getBlockByNumber '(
-  variant { EthMainnet = null },
-  null,
-  variant { Latest }
-)' --with-cycles=10000000000
-
-# Get ETH balance (raw JSON-RPC, single provider)
-icp canister call evm_rpc request '(
-  variant { EthMainnet = variant { PublicNode } },
-  "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\",\"latest\"],\"id\":1}",
-  1000
-)' --with-cycles=10000000000
-
-# Estimate cost before calling
+# Estimate cost before calling (no cycles needed for this query)
 icp canister call evm_rpc requestCost '(
   variant { EthMainnet = variant { PublicNode } },
   "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\",\"latest\"],\"id\":1}",
   1000
 )'
 
-# List available providers
+# List available providers (no cycles needed)
 icp canister call evm_rpc getProviders
 ```
 
@@ -662,7 +671,18 @@ icp deploy backend -e ic
 
 ### Rust type definitions
 
-The Rust examples above reference several types (`RpcServices`, `MultiResult`, `Block`, etc.) that must match the EVM RPC canister's Candid interface. See the [EVM RPC canister Candid interface](https://github.com/dfinity/evm-rpc-canister) for the complete type definitions, or use the skill reference at [skills.internetcomputer.org](https://skills.internetcomputer.org) for copy-pasteable Rust type stubs.
+> **Note:** The `evm_rpc_client` crate (from the `ic-evm-rpc` package) provides a typed client API for the EVM RPC canister and is the recommended approach for Rust canisters. It handles cycle attachment, argument encoding, response decoding, and re-exports all Candid types from `evm_rpc_types`. The examples in this guide use the lower-level `ic-cdk` `Call` API for illustration purposes — for production use, prefer `evm_rpc_client`. See the [evm-rpc skill](https://skills.internetcomputer.org) for a complete `evm_rpc_client`-based implementation.
+>
+> Add it to your `Cargo.toml`:
+> ```toml
+> [dependencies]
+> evm_rpc_client = "0.4"
+> evm_rpc_types = "3"
+> ic-canister-runtime = "0.2"
+> ic-cdk = "0.20"
+> ```
+
+The lower-level examples above reference several types (`RpcServices`, `MultiResult`, `Block`, etc.) that must match the EVM RPC canister's Candid interface. See the [EVM RPC canister Candid interface](https://github.com/dfinity/evm-rpc-canister) for the complete type definitions.
 
 ## Common mistakes
 
