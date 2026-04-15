@@ -27,6 +27,7 @@ ckBTC is the recommended path for most developers. The ckBTC minter canister hol
 | ckBTC Ledger | `mxzaz-hqaaa-aaaar-qaada-cai` | `mc6ru-gyaaa-aaaar-qaaaq-cai` |
 | ckBTC Minter | `mqygn-kiaaa-aaaar-qaadq-cai` | `ml52i-qqaaa-aaaar-qaaba-cai` |
 | ckBTC Index | `n5wcd-faaaa-aaaar-qaaea-cai` | `mm444-5iaaa-aaaar-qaabq-cai` |
+| ckBTC Checker | `oltsj-fqaaa-aaaar-qal5q-cai` | — |
 
 ### Deposit flow (BTC to ckBTC)
 
@@ -395,17 +396,17 @@ You can call the ckBTC canisters directly from the command line:
 # Get a BTC deposit address
 icp canister call mqygn-kiaaa-aaaar-qaadq-cai get_btc_address \
   '(record { owner = opt principal "YOUR-PRINCIPAL"; subaccount = null })' \
-  -e ic
+  -n ic
 
 # Check for new deposits and mint ckBTC
 icp canister call mqygn-kiaaa-aaaar-qaadq-cai update_balance \
   '(record { owner = opt principal "YOUR-PRINCIPAL"; subaccount = null })' \
-  -e ic
+  -n ic
 
 # Check ckBTC balance (amount in satoshis)
 icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_balance_of \
   '(record { owner = principal "YOUR-PRINCIPAL"; subaccount = null })' \
-  -e ic
+  -n ic
 
 # Transfer ckBTC (10 satoshi fee)
 icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
@@ -416,7 +417,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
     memo = null;
     from_subaccount = null;
     created_at_time = null;
-  })' -e ic
+  })' -n ic
 ```
 
 ### Common mistakes
@@ -452,6 +453,13 @@ The Bitcoin canister exposes these methods:
 - `bitcoin_get_block_headers` — returns raw block headers for a height range
 - `bitcoin_send_transaction` — submits a signed transaction to the Bitcoin network
 
+The Rust CDK's `ic_cdk::bitcoin_canister` module also provides `get_blockchain_info()` for querying blockchain state (current height, chain tip hash, etc.):
+
+```rust
+// Query blockchain state (height, chain tip, etc.)
+// let info = ic_cdk::bitcoin_canister::get_blockchain_info().await;
+```
+
 The threshold signature system provides:
 
 - `ecdsa_public_key` / `sign_with_ecdsa` — for standard Bitcoin (P2PKH, P2SH) addresses
@@ -481,6 +489,7 @@ persistent actor Backend {
     } -> async Satoshi;
   };
 
+  // <system> capability is required to access Runtime.envVar (reads environment variables at runtime)
   private func getNetwork<system>() : Network {
     switch (Runtime.envVar("BITCOIN_NETWORK")) {
       case (?value) {
@@ -593,7 +602,7 @@ All Bitcoin API calls require cycles attached to the call. The Rust CDK handles 
 The fastest way to get started is with the bitcoin-starter template:
 
 ```bash
-icp new my-bitcoin-app --template bitcoin-starter
+icp new my-bitcoin-app --subfolder bitcoin-starter
 cd my-bitcoin-app
 ```
 
@@ -685,13 +694,13 @@ Coinbase rewards require 100 confirmations before they can be spent. If you exte
 Deploy to testnet (Bitcoin testnet4 via the IC mainnet):
 
 ```bash
-icp deploy --env staging
+icp deploy -e staging
 ```
 
 Deploy to production (Bitcoin mainnet via the IC mainnet):
 
 ```bash
-icp deploy --env production
+icp deploy -e production
 ```
 
 The `BITCOIN_NETWORK` environment variable controls which Bitcoin network and Bitcoin API canister your code targets, without requiring any code changes.
