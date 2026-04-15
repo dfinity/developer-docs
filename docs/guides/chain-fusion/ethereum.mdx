@@ -53,7 +53,7 @@ Pass `null` (Motoko) or `None` (Rust) for the provider list to use all available
 
 The EVM RPC canister offers two styles of API:
 
-- **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt` — these query multiple providers by default and return a `MultiResult` with built-in consensus.
+- **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt` — these query multiple providers by default and return a `MultiRpcResult` with built-in consensus.
 - **Raw JSON-RPC** via the `request` method — sends a single JSON-RPC request to one provider. More flexible, but you handle parsing and consensus yourself.
 
 {/* Needs human verification: `canister:name` import syntax (e.g., `import EvmRpc "canister:evm_rpc"`) may not work with icp-cli; the Motoko team is redesigning canister discovery. The Motoko examples below use this syntax — verify the correct import approach with icp-cli before shipping. */}
@@ -94,17 +94,15 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
-use candid::{CandidType, Deserialize, Principal};
+use evm_rpc_types::{Block, BlockTag, MultiRpcResult, RpcServices};
 use ic_cdk::call::Call;
 use ic_cdk::update;
-
-// Type definitions omitted for brevity — see full example below
 
 #[update]
 async fn get_latest_block() -> Block {
     let cycles: u128 = 10_000_000_000;
 
-    let (result,): (MultiResult<Block>,) =
+    let (result,): (MultiRpcResult<Block>,) =
         Call::unbounded_wait(evm_rpc_id(), "eth_getBlockByNumber")
             .with_args(&(
                 RpcServices::EthMainnet(None),
@@ -118,11 +116,11 @@ async fn get_latest_block() -> Block {
             .expect("Failed to decode response");
 
     match result {
-        MultiResult::Consistent(RpcResult::Ok(block)) => block,
-        MultiResult::Consistent(RpcResult::Err(err)) => {
+        MultiRpcResult::Consistent(Ok(block)) => block,
+        MultiRpcResult::Consistent(Err(err)) => {
             ic_cdk::trap(&format!("RPC error: {:?}", err))
         }
-        MultiResult::Inconsistent(_) => {
+        MultiRpcResult::Inconsistent(_) => {
             ic_cdk::trap("Providers returned inconsistent results")
         }
     }
@@ -382,7 +380,7 @@ persistent actor {
       derivation_path = [caller];
       key_id = {
         curve = #secp256k1;
-        name = "key_1"; // Use the test key "dfx_test_key" for local testing (this is a protocol-level key name)
+        name = "test_key_1"; // Use "key_1" for production
       };
     });
     public_key;
@@ -396,20 +394,17 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
-use ic_cdk::api::management_canister::ecdsa::{
-    ecdsa_public_key, EcdsaCurve, EcdsaKeyId,
-    EcdsaPublicKeyArgument,
-};
+use ic_cdk::management_canister::{ecdsa_public_key, EcdsaCurve, EcdsaKeyId, EcdsaPublicKeyArgs};
 use ic_cdk::update;
 
 #[update]
 async fn get_public_key() -> Vec<u8> {
-    let request = EcdsaPublicKeyArgument {
+    let request = EcdsaPublicKeyArgs {
         canister_id: None,
         derivation_path: vec![],
         key_id: EcdsaKeyId {
             curve: EcdsaCurve::Secp256k1,
-            name: "key_1".to_string(), // Use the test key "dfx_test_key" for local testing (this is a protocol-level key name)
+            name: "test_key_1".to_string(), // Use "key_1" for production
         },
     };
 
@@ -473,7 +468,7 @@ async fn send_raw_transaction(
 ) -> SendRawTransactionStatus {
     let cycles: u128 = 10_000_000_000;
 
-    let (result,): (MultiResult<SendRawTransactionStatus>,) =
+    let (result,): (MultiRpcResult<SendRawTransactionStatus>,) =
         Call::unbounded_wait(evm_rpc_id(), "eth_sendRawTransaction")
             .with_args(&(
                 RpcServices::EthMainnet(None),
@@ -487,11 +482,11 @@ async fn send_raw_transaction(
             .expect("Failed to decode response");
 
     match result {
-        MultiResult::Consistent(RpcResult::Ok(status)) => status,
-        MultiResult::Consistent(RpcResult::Err(err)) => {
+        MultiRpcResult::Consistent(Ok(status)) => status,
+        MultiRpcResult::Consistent(Err(err)) => {
             ic_cdk::trap(&format!("RPC error: {:?}", err))
         }
-        MultiResult::Inconsistent(_) => {
+        MultiRpcResult::Inconsistent(_) => {
             ic_cdk::trap("Providers returned inconsistent results")
         }
     }
@@ -533,7 +528,7 @@ let result = await (with cycles = 10_000_000_000)
 
 ```rust
 // Arbitrum
-let (result,): (MultiResult<Block>,) =
+let (result,): (MultiRpcResult<Block>,) =
     Call::unbounded_wait(evm_rpc_id(), "eth_getBlockByNumber")
         .with_args(&(
             RpcServices::ArbitrumOne(None),
@@ -615,8 +610,6 @@ canisters:
 
 ### Local deployment
 
-{/* Needs human verification: how to deploy EVM RPC canister locally with icp-cli — `icp deps` subcommand does not exist. The recommended approach (from the evm-rpc skill) is to use `icp deploy -e local` with environments defined in `icp.yaml` to deploy both the backend and the EVM RPC canister pre-built WASM together. On mainnet, the EVM RPC canister is already deployed at `7hfb6-caaaa-aaaar-qadga-cai` and only the backend needs to be deployed. */}
-
 The `icp.yaml` above uses environments to separate local and mainnet deployment. Add an `environments` block to control which canisters are deployed where:
 
 ```yaml
@@ -647,18 +640,21 @@ On mainnet, only the backend is deployed — the EVM RPC canister is already ava
 
 ### Testing via icp-cli
 
-{/* Needs human verification: cycle attachment for EVM RPC canister calls via icp-cli. The `--with-cycles` flag does not exist in icp-cli; `--cycles` only works with `--proxy` to forward cycles through a proxy canister. There is no direct way to attach cycles to an `icp canister call` without a proxy. The examples below call the canister directly without cycle attachment — this works for query methods like `requestCost` and `getProviders` but update calls like `request` and `eth_getBlockByNumber` require cycles. For testing update calls, consider calling from another canister (which can attach cycles) rather than directly from the CLI. */}
+Query methods (`requestCost`, `getProviders`) work directly from the CLI. Update calls require cycles — the CLI cannot attach cycles to a direct canister call. Test those through your backend canister's wrapper functions instead, since the backend attaches cycles to the inter-canister call internally:
 
 ```bash
-# Estimate cost before calling (no cycles needed for this query)
+# Query: estimate cost (no cycles needed)
 icp canister call evm_rpc requestCost '(
   variant { EthMainnet = variant { PublicNode } },
   "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\",\"latest\"],\"id\":1}",
   1000
 )'
 
-# List available providers (no cycles needed)
+# Query: list available providers (no cycles needed)
 icp canister call evm_rpc getProviders
+
+# Update call: test via your backend wrapper (attaches cycles internally)
+icp canister call backend getLatestBlock
 ```
 
 ### Mainnet deployment
@@ -671,18 +667,15 @@ icp deploy backend -e ic
 
 ### Rust type definitions
 
-> **Note:** The `evm_rpc_client` crate (from the `ic-evm-rpc` package) provides a typed client API for the EVM RPC canister and is the recommended approach for Rust canisters. It handles cycle attachment, argument encoding, response decoding, and re-exports all Candid types from `evm_rpc_types`. The examples in this guide use the lower-level `ic-cdk` `Call` API for illustration purposes — for production use, prefer `evm_rpc_client`. See the [evm-rpc skill](https://skills.internetcomputer.org) for a complete `evm_rpc_client`-based implementation.
->
-> Add it to your `Cargo.toml`:
-> ```toml
-> [dependencies]
-> evm_rpc_client = "0.4"
-> evm_rpc_types = "3"
-> ic-canister-runtime = "0.2"
-> ic-cdk = "0.20"
-> ```
+The examples above use types from `evm_rpc_types` (`MultiRpcResult`, `RpcServices`, `Block`, etc.) and the lower-level `ic-cdk` `Call` API. Add to your `Cargo.toml`:
 
-The lower-level examples above reference several types (`RpcServices`, `MultiResult`, `Block`, etc.) that must match the EVM RPC canister's Candid interface. See the [EVM RPC canister Candid interface](https://github.com/dfinity/evm-rpc-canister) for the complete type definitions.
+```toml
+[dependencies]
+evm_rpc_types = "3"
+ic-cdk = "0.20"
+```
+
+> **Note:** For production Rust canisters, the `evm_rpc_client` crate provides a higher-level typed client that handles cycle attachment, retries, and response decoding automatically. The examples above show the lower-level `ic-cdk` `Call` API for clarity. See the [evm-rpc skill](https://skills.internetcomputer.org) for a complete `evm_rpc_client`-based implementation.
 
 ## Common mistakes
 
