@@ -94,7 +94,7 @@ Like compute allocation, memory allocation incurs a rental fee based on time and
 
 ### Freezing threshold
 
-The minimum time (in seconds) the canister should be able to survive on its current cycle balance. If the balance drops below what is needed to sustain this duration, the canister freezes.
+The minimum time the canister should be able to survive on its current cycle balance. Survival is estimated based on the canister's memory usage and the subnet's current storage cost — a canister with large stable memory freezes sooner than execution rate alone would suggest. If the balance drops below what is needed to sustain this duration, the canister freezes.
 
 | Property | Value |
 |----------|-------|
@@ -134,12 +134,10 @@ Cycles suffixes: `k` (thousand), `m` (million), `b` (billion), `t` (trillion). S
 
 A soft limit on the canister's 32-bit Wasm heap size. Protects against reaching the 4 GiB hard limit, which would make the canister unrecoverable.
 
-{/* Needs human verification: wasm_memory_limit default may now be 3 GiB (3,221,225,472 bytes) per CDK docs rather than 0 */}
-
 | Property | Value |
 |----------|-------|
 | Type | Integer or string with suffix |
-| Default | `0` (no limit) |
+| Default | `3_221_225_472` (3 GiB) |
 | icp.yaml key | `wasm_memory_limit` |
 
 ```yaml
@@ -219,23 +217,20 @@ settings:
 
 Controls who can list and read canister snapshots through the management canister.
 
-{/* Needs human verification: icp canister settings update flag for snapshot_visibility may not be implemented yet — use icp.yaml configuration for now */}
-
 | Property | Value |
 |----------|-------|
-| Type | `controllers` or `public` |
+| Type | `controllers`, `public`, or `allowed_viewers` object |
 | Default | `controllers` |
-| icp.yaml key | `snapshot_visibility` |
 
 | Variant | Meaning |
 |---------|---------|
 | `controllers` (default) | Only controllers can list and read snapshots |
 | `public` | Anyone can list and read snapshots |
+| `allowed_viewers` | Specific principals can list and read snapshots |
 
-```yaml
-settings:
-  snapshot_visibility: controllers  # or "public"
-```
+:::note
+Configuring `snapshot_visibility` via `icp.yaml` or CLI flags is not yet supported in icp-cli. Set it programmatically via the management canister — see [Updating settings programmatically](#updating-settings-programmatically).
+:::
 
 ### Environment variables
 
@@ -366,10 +361,11 @@ persistent actor Self {
     snapshot_visibility : ?{
       #controllers;
       #public;
+      #allowed_viewers : [Principal];
     };  // controls who can list/read canister snapshots
     wasm_memory_limit : ?Nat;
     wasm_memory_threshold : ?Nat;
-    environment_variables : ?[(Text, Text)];
+    environment_variables : ?[{name : Text; value : Text}];
   };
 
   let ic = actor ("aaaaa-aa") : actor {
@@ -421,7 +417,6 @@ async fn set_freezing_threshold(canister_id: Principal, seconds: u64) {
         freezing_threshold: Some(Nat::from(seconds)),
         reserved_cycles_limit: None,
         log_visibility: None,
-        snapshot_visibility: None,
         wasm_memory_limit: None,
         wasm_memory_threshold: None,
         environment_variables: None,
