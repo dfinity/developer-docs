@@ -22,8 +22,23 @@ When drafting a new docs page:
    - Use `.md` by default. Use `.mdx` only when the page needs interactive components like `<Tabs syncKey="lang">` (see `.docs-plan/decisions.md`). In `.mdx` files, use `{/* */}` for comments instead of `<!-- -->`.
    - **Stub → `.mdx` rename:** All stubs are `.md` files. If your page needs tabs (e.g., Motoko/Rust examples in the same section), rename the stub from `.md` to `.mdx`, delete the old `.md` file, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after the frontmatter, and convert any `<!-- -->` comments to `{/* */}`. Internal links pointing to `<page>.md` do not need updating — Astro resolves both extensions.
    - Ensure complete frontmatter (see CONTRIBUTING.md)
-   - Code examples: <30 lines inline, >30 lines link to `dfinity/examples`
-   - Link to external docs per linking rules in AGENTS.md
+   - **Code examples — check for snippet pipeline first:** Before writing inline code, check whether the example exists in `.sources/examples` with `#region` markers:
+     ```bash
+     grep -r "#region" .sources/examples/<lang>/<example>/
+     ```
+     - **Region markers found** → use `<CodeExample>` (requires `.mdx`):
+       ```mdx
+       import CodeExample from '../../../src/components/CodeExample.astro';
+
+       <CodeExample example="my_example" lang="rust">
+       ```rust snippet="my_example/src/my_example_backend/src/lib.rs#my_region"
+       ```
+       </CodeExample>
+       ```
+       Paths in `snippet=` are relative to `.sources/examples/<lang>/`. A missing region is a build error — verify it exists before using it.
+     - **No markers found** → inline if <30 lines; link to `dfinity/examples` on GitHub if longer. Note in the PR description: "used inline code for X — no `#region` markers in `.sources/examples` yet."
+     - **Example exists but lacks markers for the function you need** → use inline/link as fallback, and comment on [#44](https://github.com/dfinity/developer-docs/issues/44) with the specific file and region name needed. This is the one case worth flagging on #44 — it's a concrete, actionable gap.
+   - Link to external docs per linking rules in `content-authoring.md`
 5. **Sync recommendation:** After reading source material, decide whether this page should be:
    - **Hand-written** — original content, no upstream equivalent
    - **Synced** — upstream repo has authoritative content that should be auto-synced (like Motoko docs)
