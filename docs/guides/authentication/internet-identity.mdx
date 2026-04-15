@@ -50,15 +50,15 @@ The `AuthClient` from `@icp-sdk/auth` handles the full login flow: opening the I
 
 ### Environment detection
 
-Internet Identity runs at different URLs in local development versus mainnet. Since II has a well-known canister ID (`rdmx6-jaaaa-aaaaa-aaadq-cai`) that is the same on mainnet and local replicas, you only need to detect the host:
+Internet Identity runs at different URLs in local development versus mainnet. II uses a well-known frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`) that you authenticate against. Detect the host to return the right URL:
 
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
 
-// Internet Identity has a well-known canister ID that is the same on mainnet
-// and local replicas (icp-cli pulls the mainnet II wasm).
-const II_CANISTER_ID = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+// Internet Identity authenticates users through its frontend canister.
+// The frontend canister ID is well-known and the same on mainnet and local replicas.
+const II_FRONTEND_CANISTER_ID = "uqzsh-gqaaa-aaaaq-qaada-cai";
 
 function getIdentityProviderUrl() {
   const host = window.location.hostname;
@@ -68,7 +68,8 @@ function getIdentityProviderUrl() {
     host.endsWith(".localhost");
 
   if (isLocal) {
-    return `http://${II_CANISTER_ID}.localhost:8000`;
+    // icp-cli sets up a local alias: http://id.ai.localhost:8000
+    return "http://id.ai.localhost:8000";
   }
   return "https://id.ai";
 }
@@ -129,7 +130,7 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
   const agent = await HttpAgent.create({
     identity,
     host: isLocal ? "http://localhost:8000" : "https://icp-api.io",
-    fetch: window.fetch.bind(window), // prevents "Illegal invocation" in bundled builds
+    fetch: window.fetch.bind(window),
     ...(isLocal && { shouldFetchRootKey: true, verifyQuerySignatures: false }),
   });
 
@@ -140,6 +141,8 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
 :::caution
 Never set `shouldFetchRootKey: true` in production. Fetching the root key on mainnet is a security risk — it is only needed for local development where the replica's root key is not pre-trusted.
 :::
+
+> **Note:** The current recommended approach is to pass the root key via the `IC_ROOT_KEY` environment variable rather than using `shouldFetchRootKey: true`. icp-cli environments can inject this automatically, avoiding the need to fetch it at runtime. See the [icp-cli documentation](https://cli.internetcomputer.org/) for how to configure this with icp-cli environments.
 
 ## Backend authentication
 
@@ -163,7 +166,7 @@ persistent actor {
     };
   };
 
-  public shared ({ caller }) func whoAmI() : async Text {
+  public shared query ({ caller }) func whoAmI() : async Text {
     if (Principal.isAnonymous(caller)) {
       "anonymous"
     } else {
@@ -221,7 +224,8 @@ In async update functions, bind the caller at the top of the function before any
 #[update]
 async fn protected_async_action() -> String {
     let caller = require_auth(); // Capture before any await
-    let _result = some_async_operation().await;
+    // Replace with your actual async canister call, e.g.:
+    // ic_cdk::call::<_, (String,)>(some_canister_id, "some_method", ()).await
     format!("Action completed by {}", caller)
 }
 ```
@@ -235,7 +239,7 @@ icp network start
 icp deploy
 ```
 
-Internet Identity has a well-known canister ID (`rdmx6-jaaaa-aaaaa-aaadq-cai`) that is the same on mainnet and local replicas — icp-cli pulls the mainnet II Wasm when deploying locally. You can hardcode this ID in your frontend (shown in the environment detection section above).
+icp-cli pulls the mainnet II Wasm when deploying locally and registers a local alias so the II frontend is reachable at `http://id.ai.localhost:8000`. Use the `getIdentityProviderUrl` helper (shown in the environment detection section above) to point to this URL in local development.
 
 To test authentication from the command line:
 
@@ -244,10 +248,10 @@ To test authentication from the command line:
 icp canister call backend whoAmI
 
 # Test as anonymous
-icp identity use anonymous
+icp identity default anonymous
 icp canister call backend protectedAction
 # Expected: Error containing "Anonymous principal not allowed"
-icp identity use default
+icp identity default default
 ```
 
 For mainnet deployment, Internet Identity is already running at canister ID `rdmx6-jaaaa-aaaaa-aaadq-cai` (`https://id.ai`). Deploy only your own canisters:
@@ -260,7 +264,11 @@ icp deploy -e ic
 
 By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp0.io` to a custom domain), users would get different principals on each domain.
 
-To keep principals consistent across domains, configure **alternative origins**:
+:::note
+II now automatically handles the `icp0.io` vs `ic0.app` domain difference — you do **not** need to use `derivationOrigin` or `ii-alternative-origins` for that case. Use alternative origins only when you have two genuinely distinct custom domains that should share the same user principal.
+:::
+
+To keep principals consistent across your own custom domains, configure **alternative origins**:
 
 1. **On the primary origin (A):** Create a file at `.well-known/ii-alternative-origins` listing the alternative domains:
 
@@ -307,7 +315,7 @@ For full details, see the [Internet Identity specification](../../reference/inte
 
 ## Common mistakes
 
-- **Using the wrong II URL per environment** — local development must point to `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
+- **Using the wrong II URL per environment** — local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
 - **`fetch` "Illegal invocation" in bundled builds** — always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
 - **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
 - **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
@@ -322,5 +330,7 @@ For full details, see the [Internet Identity specification](../../reference/inte
 - [Internet Identity specification](../../reference/internet-identity-spec.md) for protocol details and the full alternative origins spec
 - [Security best practices](../../concepts/security.md) for identity and trust fundamentals
 - [AuthClient API reference](https://js.icp.build) for the full `@icp-sdk/auth` API
+
+{/* TODO: Add Unity native app integration via deep links — see portal native-apps/unity_ii_* */}
 
 {/* Upstream: informed by dfinity/portal — docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx; dfinity/icskills — skills/internet-identity/SKILL.md */}
