@@ -66,7 +66,10 @@ if $has_bd && $has_dolt; then
   # .bd-dolt-ok is written by Beads after a successful bootstrap and is absent on a bare clone.
   if [ -f ".beads/dolt/.bd-dolt-ok" ]; then
     echo "Syncing task state from remote..."
-    bd dolt start 2>/dev/null || true
+    DOLT_OUT=$(bd dolt start 2>&1) || true
+    echo "$DOLT_OUT"
+    DOLT_PORT=$(echo "$DOLT_OUT" | grep -oE 'port [0-9]+' | grep -oE '[0-9]+$')
+    [ -n "$DOLT_PORT" ] && printf '%s\n' "$DOLT_PORT" > .beads/dolt-server.port
     bd dolt pull
     ok "Task state synced"
   else
@@ -83,10 +86,10 @@ if $has_bd && $has_dolt; then
 
   # Start Dolt server and verify it works
   if $has_bd; then
-    if ! bd dolt start 2>/dev/null; then
-      # Server may already be running — that's fine
-      true
-    fi
+    DOLT_OUT=$(bd dolt start 2>&1) || true
+    echo "$DOLT_OUT"
+    DOLT_PORT=$(echo "$DOLT_OUT" | grep -oE 'port [0-9]+' | grep -oE '[0-9]+$')
+    [ -n "$DOLT_PORT" ] && printf '%s\n' "$DOLT_PORT" > .beads/dolt-server.port
     # Verify the database is actually accessible
     if bd list --limit 1 --json >/dev/null 2>&1; then
       ok "Dolt server running and database accessible"

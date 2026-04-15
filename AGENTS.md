@@ -40,7 +40,7 @@ All tasks (content pages, infrastructure, tooling) are coordinated through [Bead
 ./scripts/setup.sh    # submodules, npm deps, Beads task DB, Dolt server, build check
 ```
 
-> **Running from Claude Code:** `setup.sh` starts the Dolt server (requires binding a TCP port). Run it with `dangerouslyDisableSandbox: true` — you will be prompted once for approval. `bd dolt start`, `bd dolt pull`, `bd dolt push`, and `gh *` are all pre-approved (no permission prompts), but `bd dolt start` and `gh` still require `dangerouslyDisableSandbox: true` every session (`bd dolt start` binds a TCP port; `gh` needs macOS keychain). Claude Code remembers the sandbox bypass for the rest of the session after the first use.
+> **Running from Claude Code:** `setup.sh` starts the Dolt server (requires binding a TCP port). Run it with `dangerouslyDisableSandbox: true` — you will be prompted once for approval. All `bd` commands and `./scripts/setup.sh` are pre-approved (no permission prompts), but `bd dolt start` and `gh` still require `dangerouslyDisableSandbox: true` every session (`bd dolt start` binds a TCP port; `gh` needs macOS keychain). Claude Code remembers the sandbox bypass for the rest of the session after the first use.
 
 Without `bd`/`dolt` you can still write docs — check `.docs-plan/migration-plan.md` for tasks manually.
 
@@ -144,23 +144,28 @@ This keeps review content off the parent's context entirely (no context bloat), 
 
 ### Session start
 
-> **Sandbox note:** `bd dolt start`, `bd dolt pull`, `bd dolt push`, and `gh *` are all pre-approved (no permission prompts). However, `bd dolt start` and `gh` still require `dangerouslyDisableSandbox: true` every session — `bd dolt start` binds a TCP port; `gh` needs macOS keychain. Claude Code remembers the bypass for the rest of the session after the first use. All other `bd` commands connect to the already-running Dolt server on localhost and run within the sandbox without bypass.
+> **Sandbox note:** All `bd` commands and `./scripts/setup.sh` are pre-approved (no permission prompts). `bd dolt start` and `gh` still require `dangerouslyDisableSandbox: true` every session — `bd dolt start` binds a TCP port; `gh` needs macOS keychain. Claude Code remembers the bypass for the rest of the session after the first use. All other `bd` commands connect to the already-running Dolt server on localhost and run within the sandbox without bypass.
 
 **Step 1 — Fresh clone check:**
 
 ```bash
 ls .beads/dolt/.bd-dolt-ok 2>/dev/null || echo "FRESH CLONE"
 ```
-If **FRESH CLONE**: run `./scripts/setup.sh` (`dangerouslyDisableSandbox: true`) and wait for it to complete before proceeding.
+If **FRESH CLONE**: run `./scripts/setup.sh` (`dangerouslyDisableSandbox: true`) and wait for it to complete before proceeding. `setup.sh` starts Dolt and writes the port file — when Step 2 runs `bd dolt start`, the server is already running, so the output will say "already running" (no port number). That is expected; the port file is already correct.
 
 **Step 2 — Start Dolt and sync:**
 
 ```bash
-bd dolt start   # dangerouslyDisableSandbox — port binding; pre-approved, no permission prompt
-bd dolt pull    # no sandbox bypass needed
+# dangerouslyDisableSandbox — port binding; pre-approved, no permission prompt
+DOLT_OUT=$(bd dolt start 2>&1); echo "$DOLT_OUT"
+DOLT_PORT=$(echo "$DOLT_OUT" | grep -oE 'port [0-9]+' | grep -oE '[0-9]+$')
+[ -n "$DOLT_PORT" ] && printf '%s\n' "$DOLT_PORT" > .beads/dolt-server.port
+bd dolt pull
 ```
 
-> **Orphaned Dolt process:** If `bd dolt status` shows "Expected port: 0" after start, a stale process holds the lock. Fix: `pkill -9 -f dolt && bd dolt start` (both need `dangerouslyDisableSandbox`).
+> **Why capture the port?** `bd` 0.63.3 has a bug where `bd dolt start` does not write `.beads/dolt-server.port` automatically. Without the port file, `bd dolt status` shows "Expected port: 0" and all subsequent `bd` commands fail. The three lines above extract the port from stdout and write it manually.
+
+> **Orphaned Dolt process:** If `bd dolt start` fails with "database is locked by another dolt process", a stale dolt process holds the lock. Fix: `pkill -9 -f dolt && bd dolt start` (both need `dangerouslyDisableSandbox`). Re-run the port-capture lines after the restart.
 
 **Step 3 — Verify skills:**
 
@@ -188,11 +193,15 @@ If open PRs exist but no corresponding `draft` tasks appear, the local DB is sta
 ```bash
 pkill -9 -f dolt                           # dangerouslyDisableSandbox — kills background processes
 rm -rf .beads/dolt
-bd dolt start                              # dangerouslyDisableSandbox — port binding
+DOLT_OUT=$(bd dolt start 2>&1); echo "$DOLT_OUT"   # dangerouslyDisableSandbox — port binding
+DOLT_PORT=$(echo "$DOLT_OUT" | grep -oE 'port [0-9]+' | grep -oE '[0-9]+$')
+[ -n "$DOLT_PORT" ] && printf '%s\n' "$DOLT_PORT" > .beads/dolt-server.port
 bd init --force --prefix developer-docs   # dangerouslyDisableSandbox — may emit "embedded Dolt requires CGO" error; ignore it, the bootstrap still succeeds
 # restart server after init (init may not reconnect automatically)
 pkill -9 -f dolt                           # dangerouslyDisableSandbox
-bd dolt start                              # dangerouslyDisableSandbox
+DOLT_OUT=$(bd dolt start 2>&1); echo "$DOLT_OUT"   # dangerouslyDisableSandbox
+DOLT_PORT=$(echo "$DOLT_OUT" | grep -oE 'port [0-9]+' | grep -oE '[0-9]+$')
+[ -n "$DOLT_PORT" ] && printf '%s\n' "$DOLT_PORT" > .beads/dolt-server.port
 bd dolt pull
 bd list --limit 5                          # verify data is correct
 ```
@@ -822,6 +831,11 @@ The "Submitting" section above handles the normal flow (build → push → PR �
 4. **File issues** for discovered work with `bd create`
 5. **Beads is synced** — every status change was followed by `bd dolt push` and verified
 6. **On `main`** — you should already be on `main` from the submit step. If not: `git checkout main`
+7. **Stop the Dolt server** — run this if you are intentionally wrapping up and the human may delete or re-clone the repo before the next session:
+   ```bash
+   bd dolt stop
+   ```
+   This is a clean signal (no `dangerouslyDisableSandbox` needed). If the session ends abruptly (terminal closed, process killed), this step will not run — that is expected. The next session handles it via `pkill -9 -f dolt` in the orphaned-process recovery path.
 
 Work is NOT complete until all changes are pushed and Beads is synced. Never stop before pushing — that leaves work stranded locally.
 <!-- END BEADS INTEGRATION -->

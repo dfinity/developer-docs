@@ -10,9 +10,8 @@
   "permissions": {
     "allow": [
       "Bash(git submodule update*)",
-      "Bash(bd dolt start*)",
-      "Bash(bd dolt pull*)",
-      "Bash(bd dolt push*)",
+      "Bash(./scripts/setup.sh*)",
+      "Bash(bd *)",
       "Bash(gh *)",
       "Bash(pkill*dolt*)",
       "Edit(**)",
@@ -27,7 +26,8 @@
       "Edit(.claude/settings.json)",
       "Edit(.claude/settings.local.json)",
       "Write(.claude/settings.json)",
-      "Write(.claude/settings.local.json)"
+      "Write(.claude/settings.local.json)",
+      "Bash(bd init --force*)"
     ],
     "deny": [
       "Bash(gh pr merge*)",
