@@ -26,15 +26,15 @@
       "Edit(.claude/settings.json)",
       "Edit(.claude/settings.local.json)",
       "Write(.claude/settings.json)",
-      "Write(.claude/settings.local.json)"
+      "Write(.claude/settings.local.json)",
+      "Bash(bd init --force*)"
     ],
     "deny": [
       "Bash(gh pr merge*)",
       "Bash(git push --force *)",
       "Bash(git push * refs/dolt*)",
       "Bash(git push * --delete refs/dolt*)",
-      "Bash(git push * :refs/dolt*)",
-      "Bash(bd init --force*)"
+      "Bash(git push * :refs/dolt*)"
     ]
   }
 }

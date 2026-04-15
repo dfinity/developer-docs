@@ -151,7 +151,7 @@ This keeps review content off the parent's context entirely (no context bloat), 
 ```bash
 ls .beads/dolt/.bd-dolt-ok 2>/dev/null || echo "FRESH CLONE"
 ```
-If **FRESH CLONE**: run `./scripts/setup.sh` (`dangerouslyDisableSandbox: true`) and wait for it to complete before proceeding.
+If **FRESH CLONE**: run `./scripts/setup.sh` (`dangerouslyDisableSandbox: true`) and wait for it to complete before proceeding. `setup.sh` starts Dolt and writes the port file — when Step 2 runs `bd dolt start`, the server is already running, so the output will say "already running" (no port number). That is expected; the port file is already correct.
 
 **Step 2 — Start Dolt and sync:**
 
