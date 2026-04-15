@@ -370,6 +370,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - Modifying the sidebar configuration in `astro.config.mjs`
 - Changing decisions recorded in `.docs-plan/decisions.md`
 - Adding new external doc sources to the linking rules
+- Adding a new entry to `.sources/` (new submodule) — flag the need and the source repo, don't add it autonomously
 
 ## Never (do not do these under any circumstances)
 
@@ -457,7 +458,9 @@ Some submodules (`portal`, `examples`) contain **nested submodules** of their ow
   ```
   This fetches only the top-level `.sources/` submodules. Fast and lightweight.
 
-- **Do NOT use `--recursive`** unless you specifically need a nested submodule's content. Recursive init pulls many GB of unnecessary data (portal alone has 6 nested submodules).
+- **Do NOT use `--recursive`** — ever. Recursive init pulls many GB of unnecessary data (portal alone has 6 nested submodules). There is no valid reason to use it for docs work.
+
+- **If content from a nested submodule is needed and no top-level `.sources/` entry covers it, stop and flag it.** Propose adding the repo as a direct submodule to the user — do not reach into nested submodules or use `--recursive`. Adding a submodule is a structural change that affects every clone and CI run; it requires a human decision. The general pattern: if `some-submodule` has a nested `foo/bar` whose content you need, propose `git submodule add git@github.com:foo/bar.git .sources/bar` and wait for confirmation.
 
 - **Portal `file=` references:** Some portal `.mdx` files contain `file=../../../../submodules/samples/...` paths that inline code from portal's nested submodules. You do not need to init these — the same code is available in our top-level submodules (e.g., `submodules/samples` → `.sources/examples`). When you see a `file=` path in portal source, resolve it to the corresponding top-level submodule instead.
 
