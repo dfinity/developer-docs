@@ -55,10 +55,12 @@ Internet Identity runs at different URLs in local development versus mainnet. II
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
+import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Internet Identity authenticates users through its frontend canister.
-// The frontend canister ID is well-known and the same on mainnet and local replicas.
-const II_FRONTEND_CANISTER_ID = "uqzsh-gqaaa-aaaaq-qaada-cai";
+// Read the ic_env cookie set by the asset canister or Vite dev server.
+// Contains IC_ROOT_KEY and canister IDs — works in both local and production without
+// environment branching. Available in browser contexts only; see note below for Node.js.
+const canisterEnv = safeGetCanisterEnv();
 
 function getIdentityProviderUrl() {
   const host = window.location.hostname;
@@ -122,27 +124,19 @@ After login, create an `HttpAgent` using the delegation identity. The agent sign
 
 ```javascript
 async function createAuthenticatedActor(identity, canisterId, idlFactory) {
-  const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1" ||
-    window.location.hostname.endsWith(".localhost");
-
   const agent = await HttpAgent.create({
     identity,
-    host: isLocal ? "http://localhost:8000" : "https://icp-api.io",
-    fetch: window.fetch.bind(window),
-    ...(isLocal && { shouldFetchRootKey: true, verifyQuerySignatures: false }),
+    host: window.location.origin,
+    rootKey: canisterEnv?.IC_ROOT_KEY,
   });
 
   return Actor.createActor(idlFactory, { agent, canisterId });
 }
 ```
 
-:::caution
-Never set `shouldFetchRootKey: true` in production. Fetching the root key on mainnet is a security risk — it is only needed for local development where the replica's root key is not pre-trusted.
+:::note[Node.js environments]
+`safeGetCanisterEnv()` reads the `ic_env` cookie set by the asset canister or Vite dev server — it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint — on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
 :::
-
-> **Note:** The current recommended approach is to pass the root key via the `IC_ROOT_KEY` environment variable rather than using `shouldFetchRootKey: true`. icp-cli environments can inject this automatically, avoiding the need to fetch it at runtime. See the [icp-cli documentation](https://cli.internetcomputer.org/) for how to configure this with icp-cli environments.
 
 ## Backend authentication
 
@@ -247,14 +241,12 @@ To test authentication from the command line:
 # Test as the default identity (authenticated)
 icp canister call backend whoAmI
 
-# Test as anonymous
-icp identity default anonymous
-icp canister call backend protectedAction
+# Test as anonymous using --identity to avoid changing your global default
+icp canister call backend protectedAction --identity anonymous
 # Expected: Error containing "Anonymous principal not allowed"
-icp identity default default
 ```
 
-For mainnet deployment, Internet Identity is already running at canister ID `rdmx6-jaaaa-aaaaa-aaadq-cai` (`https://id.ai`). Deploy only your own canisters:
+For mainnet deployment, Internet Identity is already running — backend canister `rdmx6-jaaaa-aaaaa-aaadq-cai` and frontend canister `uqzsh-gqaaa-aaaaq-qaada-cai` (served at `https://id.ai`). Both IDs are identical on local replicas when `ii: true` is configured. Deploy only your own canisters:
 
 ```bash
 icp deploy -e ic
@@ -280,7 +272,7 @@ To keep principals consistent across your own custom domains, configure **altern
 
    A maximum of 10 alternative origins can be listed. No trailing slashes or paths.
 
-2. **Configure the asset canister** to serve the `.well-known` directory. Add an `.ic-assets.json` in your frontend source:
+2. **Configure the asset canister** to serve the `.well-known` directory. Add an `.ic-assets.json5` in your frontend source:
 
    ```json
    [
@@ -320,7 +312,7 @@ For full details, see the [Internet Identity specification](../../reference/inte
 - **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
 - **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
 - **Passing principal as a string argument** — the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
-- **Skipping `fetchRootKey` locally** — without `shouldFetchRootKey: true` on local agents, certificate verification fails.
+- **Using `shouldFetchRootKey: true` in browser code** — pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable — but never on mainnet.
 - **Creating multiple `AuthClient` instances** — create one on page load and reuse it. Multiple instances cause race conditions with session storage.
 
 ## Next steps
