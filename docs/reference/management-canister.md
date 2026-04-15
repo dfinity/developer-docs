@@ -27,6 +27,7 @@ Several methods accept or return a `canister_settings` record. The fields are:
 | `wasm_memory_limit` | `nat` | `0` | Upper limit on Wasm heap memory in bytes (0 = no limit) |
 | `wasm_memory_threshold` | `nat` | `0` | Remaining Wasm memory threshold that triggers the low-memory hook |
 | `log_visibility` | `log_visibility` | `controllers` | Who can read canister logs: `controllers`, `public`, or `allowed_viewers(vec principal)` |
+| `snapshot_visibility` | `snapshot_visibility` | `controllers` | Who can list and read canister snapshots: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `environment_variables` | `opt record` | `null` | Key-value pairs accessible during canister execution |
 
 For practical guidance on configuring these, see the [canister settings guide](../guides/canister-management/settings.md).
@@ -37,7 +38,7 @@ For practical guidance on configuring these, see the [canister settings guide](.
 
 Registers a new canister on the IC and returns its canister ID. The canister starts empty (no installed code).
 
-- **Caller:** Canisters only (not available via ingress messages)
+- **Caller:** Canisters, or subnet admins via ingress messages
 - **Parameters:**
   - `settings` (`opt canister_settings`) — initial canister settings
   - `sender_canister_version` (`opt nat64`) — caller's canister version (must match `ic0.canister_version` if provided)
@@ -107,7 +108,7 @@ For uploading large Wasm modules, see the [large Wasm guide](../guides/canister-
 
 Removes a canister's code and state, making it empty. Outstanding calls are rejected. The canister retains its cycle balance, controllers, history, and settings.
 
-- **Caller:** Controllers (canisters or external users)
+- **Caller:** Controllers or subnet admins (canisters or external users)
 - **Parameters:**
   - `canister_id` (`principal`)
   - `sender_canister_version` (`opt nat64`)
@@ -117,7 +118,7 @@ Removes a canister's code and state, making it empty. Outstanding calls are reje
 
 Returns detailed information about a canister: status, settings, module hash, cycle balance, memory usage, and query statistics.
 
-- **Caller:** Controllers or the canister itself (canisters or external users; also available as a query call)
+- **Caller:** Controllers, the canister itself, or subnet admins (canisters or external users; also available as a query call)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -166,7 +167,7 @@ Common uses include reading `candid:service` for Candid interface discovery.
 
 Sets a stopped or stopping canister to `running`.
 
-- **Caller:** Controllers (canisters or external users)
+- **Caller:** Controllers or subnet admins (canisters or external users)
 - **Parameters:** `canister_id` (`principal`)
 - **Returns:** Nothing
 
@@ -174,7 +175,7 @@ Sets a stopped or stopping canister to `running`.
 
 Transitions a canister to `stopping`, then `stopped` once all outstanding responses are processed. While stopping, all incoming calls are rejected.
 
-- **Caller:** Controllers (canisters or external users)
+- **Caller:** Controllers or subnet admins (canisters or external users)
 - **Parameters:** `canister_id` (`principal`)
 - **Returns:** Nothing (returns when the canister reaches `stopped` status, or an error if it times out)
 
@@ -182,7 +183,7 @@ Transitions a canister to `stopping`, then `stopped` once all outstanding respon
 
 Permanently deletes a canister. The canister must be stopped first. All state and cycles are discarded. The canister ID cannot be reused.
 
-- **Caller:** Controllers (canisters or external users)
+- **Caller:** Controllers or subnet admins (canisters or external users)
 - **Parameters:** `canister_id` (`principal`)
 - **Returns:** Nothing
 
