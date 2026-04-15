@@ -1,0 +1,460 @@
+---
+title: "Canister Settings"
+description: "Configure controllers, memory limits, freezing threshold, compute allocation, and other canister settings using icp-cli and icp.yaml"
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every canister has settings that control its resource allocation, access control, and runtime behavior. Only a [controller](#controllers) of the canister can read or modify these settings.
+
+This guide covers how to view, configure, and update canister settings using icp-cli, `icp.yaml`, and programmatic calls to the management canister.
+
+## Viewing settings
+
+Use `icp canister settings show` to display a canister's current settings:
+
+```bash
+icp canister settings show backend
+```
+
+For a broader view that includes settings alongside status, cycle balance, and module hash:
+
+```bash
+icp canister status backend
+```
+
+## Settings reference
+
+### Controllers
+
+A list of principals that can manage the canister. Controllers can install code, upgrade the canister, change settings, stop/start the canister, and delete it.
+
+- **Default:** The identity that created the canister.
+- **Maximum:** 10 controllers.
+- A canister with no controllers is immutable (sometimes called "blackholed").
+
+Controllers are managed through the CLI rather than `icp.yaml`:
+
+```bash
+# Add a controller
+icp canister settings update backend --add-controller PRINCIPAL
+
+# Remove a controller
+icp canister settings update backend --remove-controller PRINCIPAL
+
+# Replace the entire controller list
+icp canister settings update backend --set-controller PRINCIPAL_1 --set-controller PRINCIPAL_2
+```
+
+:::caution
+Removing yourself from the controller list or using `--set-controller` without including yourself will cause you to permanently lose control of the canister.
+:::
+
+### Compute allocation
+
+Guarantees a percentage of an execution core for the canister.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer (0--100) |
+| Default | `0` (best effort) |
+| icp.yaml key | `compute_allocation` |
+
+```yaml
+settings:
+  compute_allocation: 10
+```
+
+A value of `50` means the canister gets 50% of an execution core and is scheduled at least every other round. A value of `100` means the canister runs every round.
+
+Compute allocation incurs a rental fee based on time and allocation percentage, regardless of whether the canister actually executes. This increases idle cycle consumption. See [cycles costs](../../reference/cycles-costs.md) for pricing details.
+
+### Memory allocation
+
+Pre-allocates a fixed amount of memory for the canister.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with suffix |
+| Default | `0` (dynamic allocation) |
+| icp.yaml key | `memory_allocation` |
+
+```yaml
+settings:
+  memory_allocation: 4gib
+```
+
+Supported suffixes: `kb` (1,000), `kib` (1,024), `mb` (1,000,000), `mib` (1,048,576), `gb` (1,000,000,000), `gib` (1,073,741,824). Decimals are supported (e.g., `2.5gib`).
+
+When set, the canister draws new Wasm and stable memory from the pre-allocated pool. If usage exceeds the allocation, additional memory is allocated on demand and may fail if the subnet is at capacity.
+
+Like compute allocation, memory allocation incurs a rental fee based on time and allocated amount, regardless of actual usage. See [cycles costs](../../reference/cycles-costs.md) for pricing.
+
+### Freezing threshold
+
+The minimum time the canister should be able to survive on its current cycle balance. Survival is estimated based on the canister's memory usage and the subnet's current storage cost — a canister with large stable memory freezes sooner than execution rate alone would suggest. If the balance drops below what is needed to sustain this duration, the canister freezes.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with duration suffix |
+| Default | `2_592_000` (30 days) |
+| icp.yaml key | `freezing_threshold` |
+
+```yaml
+settings:
+  freezing_threshold: 90d
+```
+
+Duration suffixes: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks). A bare number is treated as seconds.
+
+A frozen canister does not execute messages. It only pays for rented resources (compute allocation, memory allocation, and memory usage). If cycles are fully exhausted and the threshold expires, the canister is uninstalled: its code and data are deleted, and only metadata (canister ID, controllers, settings) is retained.
+
+For more on cycle management, see [cycles management](cycles-management.md).
+
+### Reserved cycles limit
+
+Caps the secondary "reserved cycles" balance used for future resource payments. When a canister allocates storage on a subnet above 750 GiB usage, cycles are moved from the main balance into a reserved balance. This setting limits that reserved balance.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with suffix |
+| Default | `5_000_000_000_000` (5T) |
+| icp.yaml key | `reserved_cycles_limit` |
+
+```yaml
+settings:
+  reserved_cycles_limit: 5t
+```
+
+Cycles suffixes: `k` (thousand), `m` (million), `b` (billion), `t` (trillion). Set to `0` to disable resource reservation entirely (prevents memory allocation on subnets above 750 GiB).
+
+### Wasm memory limit
+
+A soft limit on the canister's 32-bit Wasm heap size. Protects against reaching the 4 GiB hard limit, which would make the canister unrecoverable.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with suffix |
+| Default | `3_221_225_472` (3 GiB) |
+| icp.yaml key | `wasm_memory_limit` |
+
+```yaml
+settings:
+  wasm_memory_limit: 3gib
+```
+
+Enforcement varies by message type:
+
+- **Update messages:** Enforced up to the first `await` point. After the first `await`, execution continues in a response callback where the limit is not enforced.
+- **Canister init and post-upgrade:** Enforced. Installation or upgrade fails if Wasm memory exceeds the limit.
+- **Queries:** Not enforced (state changes are not preserved).
+- **Response callbacks and pre-upgrade:** Not enforced.
+- **Heartbeats and timers:** Currently not enforced.
+
+### Wasm memory threshold
+
+When the canister's remaining Wasm memory falls below this value, the system triggers the `on_low_wasm_memory` hook. Use this to take corrective action before memory runs out.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with suffix |
+| Default | None |
+| icp.yaml key | `wasm_memory_threshold` |
+
+```yaml
+settings:
+  wasm_memory_threshold: 512mib
+```
+
+### Log visibility
+
+Controls who can fetch canister logs through the `fetch_canister_logs` management canister endpoint.
+
+| Property | Value |
+|----------|-------|
+| Type | `controllers`, `public`, or `allowed_viewers` object |
+| Default | `controllers` |
+| icp.yaml key | `log_visibility` |
+
+```yaml
+# Only controllers
+settings:
+  log_visibility: controllers
+
+# Anyone
+settings:
+  log_visibility: public
+
+# Specific principals (e.g. a monitoring service or auditor identity)
+settings:
+  log_visibility:
+    allowed_viewers:
+      - "<principal-of-monitoring-service>"
+      - "<principal-of-auditor>"
+```
+
+### Log memory limit
+
+{/* Needs human verification: log_memory_limit is exposed by icp-cli but is absent from the canonical ic.did — verify whether this is a management canister setting or an icp-cli layer setting */}
+
+Maximum memory for storing canister logs. Oldest logs are purged when usage exceeds this value.
+
+| Property | Value |
+|----------|-------|
+| Type | Integer or string with suffix |
+| Max | 2 MiB |
+| Default | 4096 bytes |
+| icp.yaml key | `log_memory_limit` |
+
+```yaml
+settings:
+  log_memory_limit: 2mib
+```
+
+### Snapshot visibility
+
+Controls who can list and read canister snapshots through the management canister.
+
+| Property | Value |
+|----------|-------|
+| Type | `controllers`, `public`, or `allowed_viewers` object |
+| Default | `controllers` |
+
+| Variant | Meaning |
+|---------|---------|
+| `controllers` (default) | Only controllers can list and read snapshots |
+| `public` | Anyone can list and read snapshots |
+| `allowed_viewers` | Specific principals can list and read snapshots |
+
+:::note
+Configuring `snapshot_visibility` via `icp.yaml` or CLI flags is not yet supported in icp-cli. Set it programmatically via the management canister — see [Updating settings programmatically](#updating-settings-programmatically).
+:::
+
+### Environment variables
+
+Key-value pairs accessible at runtime. Allow the same Wasm module to run with different configurations across environments.
+
+| Property | Value |
+|----------|-------|
+| Type | Object (string keys, string values) |
+| Default | None |
+| icp.yaml key | `environment_variables` |
+
+```yaml
+settings:
+  environment_variables:
+    API_URL: "https://api.example.com"
+    DEBUG: "false"
+```
+
+## Configuring settings in icp.yaml
+
+Define default settings at the canister level in `icp.yaml`:
+
+```yaml
+canisters:
+  - name: backend
+    settings:
+      compute_allocation: 5
+      memory_allocation: 2gib
+      freezing_threshold: 30d
+      reserved_cycles_limit: 5t
+      wasm_memory_limit: 3gib
+      wasm_memory_threshold: 512mib
+      log_visibility: controllers
+      log_memory_limit: 2mib
+      environment_variables:
+        ENV: "development"
+```
+
+After editing `icp.yaml`, apply the settings to a deployed canister:
+
+```bash
+icp canister settings sync backend
+```
+
+### Environment-specific overrides
+
+Use the `environments` section to override settings per deployment target:
+
+```yaml
+canisters:
+  - name: backend
+    settings:
+      compute_allocation: 1
+      freezing_threshold: 7d
+
+environments:
+  - name: production
+    network: mainnet
+    canisters: [backend]
+    settings:
+      backend:
+        compute_allocation: 20
+        freezing_threshold: 90d
+        environment_variables:
+          ENV: "production"
+```
+
+Environment-level settings merge with and override canister-level settings. In the example above, the `production` environment uses `compute_allocation: 20` and `freezing_threshold: 90d` instead of the defaults, while all other settings remain unchanged.
+
+## Updating settings via CLI
+
+Update individual settings directly without editing `icp.yaml`:
+
+```bash
+# Compute allocation
+icp canister settings update backend --compute-allocation 10
+
+# Freezing threshold
+icp canister settings update backend --freezing-threshold 90d
+
+# Wasm memory limit
+icp canister settings update backend --wasm-memory-limit 3gib
+
+# Log visibility
+icp canister settings update backend --log-visibility public
+
+# Multiple settings at once
+icp canister settings update backend \
+  --compute-allocation 10 \
+  --freezing-threshold 90d \
+  --wasm-memory-limit 3gib
+```
+
+For mainnet canisters, add `-e <env>` where `<env>` is the name of your mainnet environment in `icp.yaml` (commonly `ic` or `production`):
+
+```bash
+icp canister settings update backend -e ic --freezing-threshold 90d
+```
+
+Additional flags: `--reserved-cycles-limit`, `--wasm-memory-threshold`, `--log-memory-limit`, `--add-environment-variable`. Run `icp canister settings update --help` for the full list.
+
+For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/).
+
+## Updating settings programmatically
+
+Canisters can update their own settings or the settings of canisters they control by calling the management canister's `update_settings` endpoint.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Principal "mo:core/Principal";
+
+persistent actor Self {
+
+  // All fields are optional — only include those you want to change
+  type CanisterSettings = {
+    controllers : ?[Principal];
+    compute_allocation : ?Nat;
+    memory_allocation : ?Nat;
+    freezing_threshold : ?Nat;
+    reserved_cycles_limit : ?Nat;
+    log_visibility : ?{
+      #controllers;
+      #public;
+      #allowed_viewers : [Principal];
+    };
+    snapshot_visibility : ?{
+      #controllers;
+      #public;
+      #allowed_viewers : [Principal];
+    };  // controls who can list/read canister snapshots
+    wasm_memory_limit : ?Nat;
+    wasm_memory_threshold : ?Nat;
+    environment_variables : ?[{name : Text; value : Text}];
+  };
+
+  let ic = actor ("aaaaa-aa") : actor {
+    update_settings : shared {
+      canister_id : Principal;
+      settings : CanisterSettings;
+    } -> async ();
+  };
+
+  public func setFreezingThreshold(
+    canisterId : Principal,
+    seconds : Nat,
+  ) : async () {
+    await ic.update_settings({
+      canister_id = canisterId;
+      settings = {
+        controllers = null;
+        compute_allocation = null;
+        memory_allocation = null;
+        freezing_threshold = ?seconds;
+        reserved_cycles_limit = null;
+        log_visibility = null;
+        snapshot_visibility = null;
+        wasm_memory_limit = null;
+        wasm_memory_threshold = null;
+        environment_variables = null;
+      };
+    });
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::{Nat, Principal};
+use ic_cdk::update;
+use ic_cdk::management_canister::{
+    update_settings, UpdateSettingsArgs, CanisterSettings,
+};
+
+#[update]
+async fn set_freezing_threshold(canister_id: Principal, seconds: u64) {
+    let settings = CanisterSettings {
+        controllers: None,
+        compute_allocation: None,
+        memory_allocation: None,
+        freezing_threshold: Some(Nat::from(seconds)),
+        reserved_cycles_limit: None,
+        log_visibility: None,
+        wasm_memory_limit: None,
+        wasm_memory_threshold: None,
+        environment_variables: None,
+    };
+
+    update_settings(&UpdateSettingsArgs {
+        canister_id,
+        settings,
+    })
+    .await
+    .expect("Failed to update settings");
+}
+```
+
+</TabItem>
+</Tabs>
+
+Only a controller of the target canister can call `update_settings`. Set fields to `null`/`None` to leave them unchanged.
+
+For the full management canister interface, see the [management canister reference](../../reference/management-canister.md).
+
+## Common control models
+
+How you configure controllers depends on the trust model for your canister:
+
+**Developer or team** -- One or more developer identities as controllers. Suitable for development and early-stage projects. Add a backup controller to prevent lockout if a key is lost.
+
+**Multi-signature** -- A multi-sig canister (such as the [Threshold canister](https://github.com/dfinity/threshold)) controls the application canister. Administrative actions require multiple signers, preventing any single developer from making unilateral changes.
+
+**DAO-governed** -- The canister is controlled by a decentralized autonomous organization. On ICP, the most common pattern is handing control to a [Service Nervous System (SNS)](../governance/launching.md), where upgrades and settings changes are decided by token-holder vote.
+
+**Immutable (blackholed)** -- The canister has no controllers. No one can upgrade, change settings, or delete it. This is the strongest trust guarantee but makes bug fixes impossible.
+
+## Next steps
+
+- [Canister lifecycle](lifecycle.md) -- Create, deploy, upgrade, stop, and delete canisters.
+- [Cycles management](cycles-management.md) -- Monitor and top up cycle balances.
+- [Cycles costs reference](../../reference/cycles-costs.md) -- Pricing for compute and memory allocation.
+- [Management canister reference](../../reference/management-canister.md) -- Full interface specification.
+
+{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli — docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
