@@ -831,6 +831,11 @@ The "Submitting" section above handles the normal flow (build → push → PR �
 4. **File issues** for discovered work with `bd create`
 5. **Beads is synced** — every status change was followed by `bd dolt push` and verified
 6. **On `main`** — you should already be on `main` from the submit step. If not: `git checkout main`
+7. **Stop the Dolt server** — prevents a stale dolt process from locking the database in the next session:
+   ```bash
+   bd dolt stop
+   ```
+   This is a clean signal (no `dangerouslyDisableSandbox` needed). If the next session is in a fresh clone, skipping this leaves a process holding a lock on the deleted `.beads/dolt/` directory — the new clone's `bd dolt start` will fail with "database is locked by another dolt process".
 
 Work is NOT complete until all changes are pushed and Beads is synced. Never stop before pushing — that leaves work stranded locally.
 <!-- END BEADS INTEGRATION -->
