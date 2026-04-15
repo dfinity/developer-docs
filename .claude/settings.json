@@ -4,12 +4,15 @@
     "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": true,
     "filesystem": {
-      "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws", "~/.config/gh"]
+      "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws"]
     }
   },
   "permissions": {
     "allow": [
-      "Bash",
+      "Bash(git submodule update*)",
+      "Bash(bd dolt start*)",
+      "Bash(bd dolt pull*)",
+      "Bash(bd dolt push*)",
       "Edit(**)",
       "Write(**)",
       "Read(**)",
@@ -25,7 +28,10 @@
       "Write(.claude/settings.local.json)"
     ],
     "deny": [
-      "Bash(git push --force *)"
+      "Bash(git push --force *)",
+      "Bash(git push * refs/dolt*)",
+      "Bash(git push * --delete refs/dolt*)",
+      "Bash(git push * :refs/dolt*)"
     ]
   }
 }
