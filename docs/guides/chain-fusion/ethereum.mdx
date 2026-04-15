@@ -183,7 +183,8 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
-use candid::{CandidType, Deserialize, Principal};
+use candid::Principal;
+use evm_rpc_types::{EthMainnetService, RpcError, RpcService};
 use ic_cdk::call::Call;
 use ic_cdk::update;
 
@@ -302,6 +303,10 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
+use evm_rpc_types::{EthMainnetService, RpcError, RpcService};
+use ic_cdk::call::Call;
+use ic_cdk::update;
+
 #[update]
 async fn get_erc20_balance(
     token_contract: String,
@@ -408,7 +413,7 @@ async fn get_public_key() -> Vec<u8> {
         },
     };
 
-    let (response,) = ecdsa_public_key(request)
+    let response = ecdsa_public_key(&request)
         .await
         .expect("ecdsa_public_key failed");
 
@@ -527,6 +532,9 @@ let result = await (with cycles = 10_000_000_000)
 <TabItem label="Rust">
 
 ```rust
+use evm_rpc_types::{Block, BlockTag, CustomRpcService, MultiRpcResult, RpcError, RpcService, RpcServices};
+use ic_cdk::call::Call;
+
 // Arbitrum
 let (result,): (MultiRpcResult<Block>,) =
     Call::unbounded_wait(evm_rpc_id(), "eth_getBlockByNumber")
@@ -698,4 +706,4 @@ ic-cdk = "0.20"
 - [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum) — complete end-to-end Rust example with address generation, signing, and transaction submission
 - [EVM RPC canister source](https://github.com/dfinity/evm-rpc-canister) — canister source code and Candid interface
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/ethereum/*; dfinity/icskills — skills/evm-rpc/SKILL.md */}
+{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/ethereum/*; dfinity/icskills — skills/evm-rpc/SKILL.md; dfinity/cdk-rs — ic-cdk/src/management_canister.rs */}
