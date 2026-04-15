@@ -485,11 +485,44 @@ Some submodules (`portal`, `examples`) contain **nested submodules** of their ow
 
 ### Bumping submodules
 
-Only the project maintainer bumps submodule refs. When bumped:
+Only the project maintainer bumps submodule refs. When bumped, follow this checklist:
 
-1. Check what changed: `git -C .sources/<repo> log --oneline <old-ref>..<new-ref>`
-2. Review if any existing docs pages are affected by the upstream changes
-3. Update affected pages and note the bump in the PR description
+**General (all submodules):**
+1. Identify what changed: `git -C .sources/<repo> log --oneline <old-ref>..<new-ref>`
+2. Grep docs pages for content derived from that submodule (code examples, API references, CLI flags, canister IDs, etc.) and update any affected pages
+3. Check open PRs — for each open `docs/*` or `infra/*` PR, check if the pages it touches use content from the bumped submodule. If yes, post a targeted comment flagging what's potentially outdated (see comment format below)
+4. Note the bump in the PR description
+
+**PR comment format** (targeted, not generic):
+```
+gh pr comment <PR#> --body "$(cat <<'EOF'
+<!-- submodule-bump-notice -->
+`<repo>` was bumped to `<new-ref>`. The following content on this PR may be outdated:
+- [specific item and why]
+
+Please review before merging.
+EOF
+)"
+```
+
+**Per-submodule additional checks** (run after the general checklist):
+
+> **Keep this table in sync:** when a new submodule is added to `.sources/`, add a row here describing what to check on bump.
+
+| Submodule | Extra checks on bump |
+|---|---|
+| `portal` | Follow the `ic.did` checklist in "Synced files from submodules" below |
+| `motoko` / `motoko-core` | Check for changed/removed API signatures, system function names, and keywords — grep all Motoko code blocks in docs |
+| `cdk-rs` | Check `ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros` API changes — grep all Rust code blocks in docs |
+| `icp-cli` | Check for changed/removed commands or flags — grep all CLI examples in docs |
+| `icskills` | Check for changed canister IDs or code patterns — grep skill-derived content |
+| `examples` | Verify that any files linked from docs still exist at the same path in the new ref |
+| `icp-cli-recipes` | Check for renamed or removed recipes referenced in docs |
+| `icp-cli-templates` | Check for renamed or restructured templates referenced in getting-started pages |
+| `icp-js-sdk-docs` | Check for changed JS SDK APIs — grep all JavaScript code blocks in docs |
+| `candid` | Check for spec changes that affect the Candid reference page or type-mapping examples |
+| `response-verification` | Check for API changes affecting certified variables patterns in docs |
+| `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria or authoring rules |
 
 ### Synced files from submodules
 
