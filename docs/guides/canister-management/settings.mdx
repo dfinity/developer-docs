@@ -134,6 +134,8 @@ Cycles suffixes: `k` (thousand), `m` (million), `b` (billion), `t` (trillion). S
 
 A soft limit on the canister's 32-bit Wasm heap size. Protects against reaching the 4 GiB hard limit, which would make the canister unrecoverable.
 
+{/* Needs human verification: wasm_memory_limit default may now be 3 GiB (3,221,225,472 bytes) per CDK docs rather than 0 */}
+
 | Property | Value |
 |----------|-------|
 | Type | Integer or string with suffix |
@@ -197,6 +199,8 @@ settings:
 
 ### Log memory limit
 
+{/* Needs human verification: log_memory_limit is exposed by icp-cli but is absent from the canonical ic.did — verify whether this is a management canister setting or an icp-cli layer setting */}
+
 Maximum memory for storing canister logs. Oldest logs are purged when usage exceeds this value.
 
 | Property | Value |
@@ -209,6 +213,28 @@ Maximum memory for storing canister logs. Oldest logs are purged when usage exce
 ```yaml
 settings:
   log_memory_limit: 2mib
+```
+
+### Snapshot visibility
+
+Controls who can list and read canister snapshots through the management canister.
+
+{/* Needs human verification: icp canister settings update flag for snapshot_visibility may not be implemented yet — use icp.yaml configuration for now */}
+
+| Property | Value |
+|----------|-------|
+| Type | `controllers` or `public` |
+| Default | `controllers` |
+| icp.yaml key | `snapshot_visibility` |
+
+| Variant | Meaning |
+|---------|---------|
+| `controllers` (default) | Only controllers can list and read snapshots |
+| `public` | Anyone can list and read snapshots |
+
+```yaml
+settings:
+  snapshot_visibility: controllers  # or "public"
 ```
 
 ### Environment variables
@@ -303,11 +329,13 @@ icp canister settings update backend \
   --wasm-memory-limit 3gib
 ```
 
-For mainnet canisters, add `-e production` (or whatever your mainnet environment is named):
+For mainnet canisters, add `-e <env>` where `<env>` is the name of your mainnet environment in `icp.yaml` (commonly `ic` or `production`):
 
 ```bash
-icp canister settings update backend -e production --freezing-threshold 90d
+icp canister settings update backend -e ic --freezing-threshold 90d
 ```
+
+Additional flags: `--reserved-cycles-limit`, `--wasm-memory-threshold`, `--log-memory-limit`, `--add-environment-variable`. Run `icp canister settings update --help` for the full list.
 
 For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/).
 
@@ -323,11 +351,25 @@ import Principal "mo:core/Principal";
 
 persistent actor Self {
 
+  // All fields are optional — only include those you want to change
   type CanisterSettings = {
     controllers : ?[Principal];
     compute_allocation : ?Nat;
     memory_allocation : ?Nat;
     freezing_threshold : ?Nat;
+    reserved_cycles_limit : ?Nat;
+    log_visibility : ?{
+      #controllers;
+      #public;
+      #allowed_viewers : [Principal];
+    };
+    snapshot_visibility : ?{
+      #controllers;
+      #public;
+    };  // controls who can list/read canister snapshots
+    wasm_memory_limit : ?Nat;
+    wasm_memory_threshold : ?Nat;
+    environment_variables : ?[(Text, Text)];
   };
 
   let ic = actor ("aaaaa-aa") : actor {
@@ -348,6 +390,12 @@ persistent actor Self {
         compute_allocation = null;
         memory_allocation = null;
         freezing_threshold = ?seconds;
+        reserved_cycles_limit = null;
+        log_visibility = null;
+        snapshot_visibility = null;
+        wasm_memory_limit = null;
+        wasm_memory_threshold = null;
+        environment_variables = null;
       };
     });
   };
@@ -373,6 +421,7 @@ async fn set_freezing_threshold(canister_id: Principal, seconds: u64) {
         freezing_threshold: Some(Nat::from(seconds)),
         reserved_cycles_limit: None,
         log_visibility: None,
+        snapshot_visibility: None,
         wasm_memory_limit: None,
         wasm_memory_threshold: None,
         environment_variables: None,
@@ -413,4 +462,4 @@ How you configure controllers depends on the trust model for your canister:
 - [Cycles costs reference](../../reference/cycles-costs.md) -- Pricing for compute and memory allocation.
 - [Management canister reference](../../reference/management-canister.md) -- Full interface specification.
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx; dfinity/icp-cli — docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
+{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli — docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
