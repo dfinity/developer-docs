@@ -187,12 +187,12 @@ settings:
 settings:
   log_visibility: public
 
-# Specific principals
+# Specific principals (e.g. a monitoring service or auditor identity)
 settings:
   log_visibility:
     allowed_viewers:
-      - "aaaaa-aa"
-      - "2vxsx-fae"
+      - "<principal-of-monitoring-service>"
+      - "<principal-of-auditor>"
 ```
 
 ### Log memory limit
