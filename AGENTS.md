@@ -437,20 +437,22 @@ All upstream source repos are pinned as **git submodules** under `.sources/`. Th
 - **Track latest release** — repos that publish versioned releases users install. Pin to the latest release tag so docs describe what users actually have, not unreleased development.
 - **Track main/master** — content repos and tools where the default branch *is* the canonical source (no user-installed release artifact).
 
+For current release hashes, see `.sources/VERSIONS`.
+
 | Submodule | Repo | Pinned to | What it provides |
 |-----------|------|-----------|-----------------|
 | `.sources/portal` | `dfinity/portal` | `master` | Old docs content referenced in stub `<!-- Source Material -->` comments |
-| `.sources/icp-cli` | `dfinity/icp-cli` | `v0.2.3` | CLI reference, command syntax verification |
+| `.sources/icp-cli` | `dfinity/icp-cli` | latest release | CLI reference, command syntax verification |
 | `.sources/icp-cli-recipes` | `dfinity/icp-cli-recipes` | `main` | Recipe examples for CLI guides |
 | `.sources/icp-cli-templates` | `dfinity/icp-cli-templates` | `main` | Project templates for getting-started |
 | `.sources/icskills` | `dfinity/icskills` | `main` | Skill files with canister IDs and code patterns (skills site serves main directly) |
 | `.sources/examples` | `dfinity/examples` | `master` | Code examples (link to for >30 line snippets) |
 | `.sources/icp-js-sdk-docs` | `dfinity/icp-js-sdk-docs` | `main` | JS SDK documentation |
-| `.sources/motoko` | `caffeinelabs/motoko` | `v1.5.1` | Motoko compiler — language spec, system function names, syntax verification |
-| `.sources/motoko-core` | `caffeinelabs/motoko-core` | `v2.4.0` | Motoko core library (`mo:core`) — API signatures, module docs |
-| `.sources/cdk-rs` | `dfinity/cdk-rs` | `ic-cdk v0.19.0` | Rust CDK (`ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros`) — API signatures, management canister types |
-| `.sources/candid` | `dfinity/candid` | `2025-12-18` | Candid spec, type system, `didc` tool source |
-| `.sources/response-verification` | `dfinity/response-verification` | `v3.1.0` | Response verification, certified variables, certificate trees |
+| `.sources/motoko` | `caffeinelabs/motoko` | latest release | Motoko compiler — language spec, system function names, syntax verification |
+| `.sources/motoko-core` | `caffeinelabs/motoko-core` | latest release | Motoko core library (`mo:core`) — API signatures, module docs |
+| `.sources/cdk-rs` | `dfinity/cdk-rs` | latest release | Rust CDK (`ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros`) — API signatures, management canister types |
+| `.sources/candid` | `dfinity/candid` | latest release | Candid spec, type system, `didc` tool source |
+| `.sources/response-verification` | `dfinity/response-verification` | latest release | Response verification, certified variables, certificate trees |
 | `.sources/dotskills` | `vincentkoc/dotskills` | `main` | Technical documentation skill (AGPL-3.0 — kept as submodule to avoid license mixing) |
 
 ### Submodule initialization
