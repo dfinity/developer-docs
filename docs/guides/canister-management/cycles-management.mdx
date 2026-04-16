@@ -140,7 +140,7 @@ Anyone can top up any canister — you do not need to be its controller.
 icp canister top-up backend --amount 1T -e ic
 
 # Top up by canister ID (no project context required)
-icp canister top-up ryjl3-tyaaa-aaaaa-aaaba-cai --amount 1T -n ic
+icp canister top-up --amount 1T ryjl3-tyaaa-aaaaa-aaaba-cai -n ic
 ```
 
 Amounts use human-readable suffixes: `T` = trillion, `b` = billion, `m` = million, `k` = thousand.
@@ -220,7 +220,7 @@ environments:
         freezing_threshold: 90d
 ```
 
-See [Canister settings](settings.mdx) for all available settings and their syntax.
+See [Canister settings](settings.md) for all available settings and their syntax.
 
 **When a canister is frozen:**
 - Update calls return an error immediately
@@ -231,7 +231,7 @@ See [Canister settings](settings.mdx) for all available settings and their synta
 - The canister is deleted along with all its state
 - This is irreversible
 
-## Setting a freezing threshold programmatically
+## Creating and funding canisters programmatically
 
 You can also read and configure the freezing threshold from canister code:
 
@@ -377,7 +377,7 @@ Before deploying to mainnet, verify each of the following:
   icp canister status backend -e ic
   ```
 - **Enable reproducible builds** — See [Reproducible builds](reproducible-builds.md) to ensure your WASM is verifiable
-- **Review canister settings** — See [Canister settings](settings.mdx) for memory allocation, compute allocation, and access controls
+- **Review canister settings** — See [Canister settings](settings.md) for memory allocation, compute allocation, and access controls
 - **Review security** — See [Canister upgrades security](../security/canister-upgrades.md) for safe upgrade patterns
 
 ## Monitoring cycle balances
@@ -421,8 +421,8 @@ icp canister top-up backend --amount 1T -n ic
 
 ## Next steps
 
-- [Canister settings](settings.mdx) — Freezing threshold, memory allocation, compute allocation
-- [Canister lifecycle](lifecycle.mdx) — Create, install, upgrade, and delete canisters
+- [Canister settings](settings.md) — Freezing threshold, memory allocation, compute allocation
+- [Canister lifecycle](lifecycle.md) — Create, install, upgrade, and delete canisters
 - [Cycles costs reference](../../reference/cycles-costs.md) — Exact cost tables per operation
 - [Reverse gas model](../../concepts/reverse-gas-model.md) — Why canisters pay for execution
 - [Reproducible builds](reproducible-builds.md) — Verify your WASM is trustworthy before deploying
