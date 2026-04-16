@@ -188,33 +188,38 @@ Add the NNS root canister (`r7inp-6aaaa-aaaaa-aaabq-cai`) as a co-controller of 
 ```bash
 icp canister settings update BACKEND_CANISTER_ID \
   --add-controller r7inp-6aaaa-aaaaa-aaabq-cai \
-  --network ic
+  -e ic
 
 icp canister settings update FRONTEND_CANISTER_ID \
   --add-controller r7inp-6aaaa-aaaaa-aaabq-cai \
-  --network ic
+  -e ic
 ```
 
 Also revoke any special permissions your team held. For example, if developers had direct commit access to asset canisters, revoke that now — after launch, asset updates must go through SNS proposals:
 
-<!-- Needs human verification: exact dfx canister call syntax for revoking asset canister permission; the icp-cli equivalent was not found in .sources/icp-cli -->
 ```bash
 # If using the asset canister, revoke direct commit permission from developer principals
 icp canister call FRONTEND_CANISTER_ID revoke_permission \
-  '(record {of_principal = principal "<developer-principal>"; permission = variant { Commit; };})'  \
-  --network ic
+  '(record {of_principal = principal "<developer-principal>"; permission = variant { Commit;};})'  \
+  -e ic
 ```
 
 ### Stage 3: Submit NNS proposal (manual)
 
 Anyone with an eligible NNS neuron can submit the proposal, but you should submit it with your own neuron.
 
+:::note[Requires dfx sns extension]
+The `dfx sns propose` command requires the `dfx sns` extension. No `icp-cli` equivalent exists yet. Install the extension with: `dfx extension install sns`. See the [dfx SNS documentation](https://github.com/dfinity/dfx-extensions) for details.
+:::
+
+<!-- TODO: update when icp-cli sns equivalent lands -->
 ```bash
-# Requires dfx sns extension: dfx extension install sns
 dfx sns propose --network ic --neuron $NEURON_ID sns_init.yaml
 ```
 
 There can only be one SNS creation proposal active in the NNS at a time. If another project's proposal is currently being voted on, you must wait for it to resolve before submitting yours.
+
+After submitting, monitor your proposal's status on the [NNS dapp](https://nns.ic0.app) or by querying NNS governance directly.
 
 ### Stages 4–11: Automatic
 
@@ -284,6 +289,7 @@ use std::cell::RefCell;
 thread_local! {
     // ⚠ STATE LOSS: thread_local! RefCell is heap storage — it is wiped on upgrade.
     // Use ic-stable-structures in production to persist across upgrades.
+    // See: https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ for StableCell.
     static SNS_GOVERNANCE: RefCell<Option<Principal>> = RefCell::new(None);
 }
 
@@ -323,6 +329,11 @@ fn update_config(new_fee: u64) {
 
 Run the SNS configuration validator locally before submitting the NNS proposal:
 
+:::note[Requires dfx sns extension]
+The `dfx sns init-config-file validate` command requires the `dfx sns` extension. No `icp-cli` equivalent exists yet. Install with: `dfx extension install sns`.
+:::
+
+<!-- TODO: update when icp-cli sns equivalent lands -->
 ```bash
 # Validate the configuration file for parameter consistency
 dfx sns init-config-file validate
@@ -345,7 +356,7 @@ After mainnet launch, monitor the swap progress:
 
 ```bash
 # Check swap status, participation count, and ICP raised
-icp canister call SNS_SWAP_CANISTER_ID get_state '()' --network ic
+icp canister call SNS_SWAP_CANISTER_ID get_state '()' -e ic
 ```
 
 ## Common mistakes
@@ -356,7 +367,7 @@ icp canister call SNS_SWAP_CANISTER_ID get_state '()' --network ic
 
 **Not doing a testflight first.** The SNS testflight deploys a mock SNS on mainnet without doing a real swap — it lets you test governance flows and canister upgrade proposals before committing to the real launch.
 
-**Developer neurons with no vesting.** Developer neurons with zero dissolve delay allow the team to immediately sell tokens post-launch. Set dissolve delays and vesting periods (12–48 months is standard) to demonstrate long-term commitment to the NNS community.
+**Developer neurons with no vesting or short dissolve delays.** These are separate but related concerns: a *vesting period* prevents a neuron from being dissolved during the vesting window; a *dissolve delay* sets the cooldown before a stopped neuron becomes liquid. Developer neurons with no vesting period and zero dissolve delay allow the team to immediately sell tokens post-launch. Set both a vesting period and a dissolve delay (12–48 months is standard for each) to demonstrate long-term commitment to the NNS community.
 
 **Unreasonable tokenomics.** The NNS community votes on your proposal. Excessive developer allocation, zero vesting, or swap parameters outside reasonable bounds will lead to rejection. Review past successful SNS launches (OpenChat, Hot or Not, Kinic) for parameter ranges the community accepts.
 
