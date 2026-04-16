@@ -27,8 +27,20 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": true,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "internetcomputer.org",
+        "learn.internetcomputer.org",
+        "skills.internetcomputer.org",
+        "cli.internetcomputer.org",
+        "docs.internetcomputer.org",
+        "js.icp.build"
+      ]
+    },
     "filesystem": {
       "allowWrite": ["."],
+      "allowRead": ["~/.ssh/known_hosts"],
       "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws"]
     }
   },
