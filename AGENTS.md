@@ -227,6 +227,13 @@ bd update <id> --status closed && bd dolt push
 bd show <id> --json | jq -r .status                  # MUST print "closed"
 ```
 
+*Undefer infra tasks when content is complete:* All infra tasks are deferred until content sprints 3–10 are done. Check once per session:
+```bash
+OPEN_CONTENT=$(bd list --status open --json 2>/dev/null | jq '[.[] | select(.issue_type == "epic" and (.title | test("Sprint [3-9]|Sprint 10")))] | length')
+[ "$OPEN_CONTENT" -eq 0 ] && bd list --status deferred --limit 0 --json | jq -r '.[] | .id + " " + .title'
+```
+If the query prints deferred tasks, all content sprints are closed — re-open each one with `bd update <id> --status open && bd dolt push` and proceed to work on them.
+
 *Reclaim stale tasks:* If a task has been `in_progress` for >1 hour, the previous agent likely crashed. Reclaim it:
 ```bash
 bd list --status in_progress --json | jq '.[] | {id, title, notes, updated_at}'
