@@ -157,7 +157,7 @@ Key method:
 
 | Method | Description |
 |---|---|
-| `get_account_identifier_transactions` | Fetch transactions for an account identifier, paginated |
+| `get_account_transactions` | Fetch transactions for an account, paginated |
 
 ## Internet Identity
 
@@ -167,7 +167,7 @@ Key method:
 
 Internet Identity (II) is ICP's built-in authentication system. It allows users to authenticate to dapps using device credentials (passkeys, security keys, biometrics) without exposing a persistent identity across applications. Each dapp receives a distinct principal for the same user, preventing cross-site tracking.
 
-Internet Identity is the most commonly integrated system canister in dapp development. It is typically pulled into local development environments using the `icp-cli` deps feature.
+Internet Identity is the most commonly integrated system canister in dapp development. It is available in local development environments by setting `ii: true` in your network configuration (see [Using system canisters in local development](#using-system-canisters-in-local-development)).
 
 For the full specification, see [Internet Identity Specification](internet-identity-spec.md).
 
@@ -210,37 +210,56 @@ The cycles ledger index canister indexes cycles ledger transactions by account, 
 
 ### Calling from a canister (Rust)
 
-Calls to system canisters are inter-canister calls. The Rust CDK provides direct bindings for some system canisters (such as the management canister). For others, use `ic_cdk::call` with the canister's principal:
+Calls to system canisters are inter-canister calls. The Rust CDK provides direct bindings for some system canisters (such as the management canister). For others, use `ic_cdk::call::Call` with the canister's principal:
 
 ```rust
 use candid::Principal;
+use ic_cdk::call::Call;
 
 let icp_ledger = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
 let args = /* ICRC-1 transfer args */;
-let result: (TransferResult,) = ic_cdk::call(icp_ledger, "icrc1_transfer", (args,)).await?;
+let result: TransferResult = Call::bounded_wait(icp_ledger, "icrc1_transfer")
+    .with_arg(args)
+    .await?
+    .candid()?;
 ```
 
 ### Calling from a canister (Motoko)
 
-```motoko
-import Ledger "canister:ryjl3-tyaaa-aaaaa-aaaba-cai";
+In Motoko, `canister:` imports use the canister **name** as declared in `icp.yaml`, not the raw canister ID. For the ICP ledger declared as `icp_ledger_canister` in your project config:
 
-// Or import via actor syntax:
+```motoko
+import Ledger "canister:icp_ledger_canister";
+```
+
+To call a canister by hardcoded ID without a project config entry, use actor syntax:
+
+```motoko
 let ledger : actor {
   icrc1_balance_of : (Account) -> async Nat;
 } = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
 ```
 
-### Pulling system canisters for local development
+### Using system canisters in local development
 
-Use `icp-cli deps pull` to download and run a local replica of a system canister for testing:
+The icp-cli local network automatically includes Internet Identity and NNS canisters. Enable them in your `icp.yaml` network configuration:
 
-```bash
-icp deps pull
-icp deps deploy
+```yaml
+# icp.yaml
+networks:
+  - name: local
+    mode: managed
+    ii: true    # enables Internet Identity at id.ai.localhost:<port>
+    nns: true   # enables NNS and SNS canisters (implies ii)
 ```
 
-Configure the dependency in your `icp.json` by listing the canister ID. Internet Identity and the ICP ledger are the most commonly pulled system canisters for local testing.
+Then start the local network:
+
+```bash
+icp network start -d
+```
+
+System canisters run at their mainnet canister IDs on the local network, so calls to `rdmx6-jaaaa-aaaaa-aaadq-cai` (Internet Identity) or `ryjl3-tyaaa-aaaaa-aaaba-cai` (ICP ledger) work without any additional configuration.
 
 ### Querying canister metadata via the Dashboard API
 
