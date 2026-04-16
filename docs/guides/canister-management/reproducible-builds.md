@@ -21,7 +21,7 @@ This is most important for canisters that hold other users' funds or execute cri
 
 If the hashes match and the canister's controllers cannot change the code (see [immutable canisters](#immutable-canisters)), the user can have high confidence in what the canister runs.
 
-See [Canister security concepts](../../concepts/security.md) for the broader trust model.
+See [Security Model](../../concepts/security.md) for the broader trust model.
 
 ## Obtaining the deployed Wasm hash
 
@@ -31,7 +31,7 @@ Use `icp canister status` with the canister ID to retrieve the current module ha
 icp canister status rdmx6-jaaaa-aaaaa-aaadq-cai -n ic
 ```
 
-The output includes the module hash alongside cycle balance, controller list, and other status fields. Anyone can query this hash — no controller access is required when using the `-p` / `--public` flag, which reads public information from the state tree:
+The output includes the module hash alongside cycle balance, controller list, and other status fields. Anyone can query this hash — no controller access is required. Use `-p` / `--public` to explicitly read only public information from the state tree:
 
 ```bash
 icp canister status rdmx6-jaaaa-aaaaa-aaadq-cai -n ic --public
@@ -119,7 +119,7 @@ ENV NODE_VERSION=18.1.0
 
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
-ENV RUST_VERSION=1.62.0
+ENV RUST_VERSION=1.82.0
 
 # Install system dependencies
 RUN apt -yq update && \
@@ -231,7 +231,7 @@ Then, inside the running container:
 mkdir artifacts
 reprotest -vv --store-dir=artifacts --variations '+all,-time' \
   'icp build' \
-  '.icp/cache/build/*/*.wasm'
+  '.icp/cache/artifacts/*/*.wasm'
 ```
 
 :::note
@@ -241,7 +241,7 @@ The `--variations '+all,-time'` flag excludes the time variation. The Rust compi
 If the two builds produce identical output, `reprotest` reports `Reproduction successful`. You can then compare the hash of the local artifact against the deployed canister:
 
 ```bash
-sha256sum .icp/cache/build/my-canister/my-canister.wasm
+sha256sum .icp/cache/artifacts/my-canister/my-canister.wasm
 # compare against: icp canister status <canister-id> -n ic
 ```
 
@@ -261,8 +261,8 @@ Maintaining a reproducible build over years requires more than getting it workin
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.mdx) — deploy and upgrade workflow
-- [Canister settings](settings.mdx) — configure controllers and make canisters immutable
+- [Canister lifecycle](lifecycle.md) — deploy and upgrade workflow
+- [Canister settings](settings.md) — configure controllers and make canisters immutable
 - [Cycles management](cycles-management.md) — top up canisters before long-term deployment
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/best-practices/reproducible-builds.mdx; dfinity/icp-cli-recipes — recipes/prebuilt/README.md, recipe.hbs; dfinity/icp-cli — docs/guides/using-recipes.md -->
