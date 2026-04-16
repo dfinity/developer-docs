@@ -359,6 +359,18 @@ This is atomic — claim + push happens immediately. The race window for duplica
 
 **Claiming multiple tasks (for parallel agents):** When claiming several tasks before launching worktree agents, claim them **sequentially** — wait for each `bd update && bd dolt push` to finish before starting the next. Never run `bd` calls in parallel; this can corrupt the Dolt journal.
 
+**Batch status updates at wave end:** When updating many tasks to the same terminal state (e.g. all tasks in a wave going from `in_progress` → `draft` after all PRs are created), batch all `bd update` calls and do a **single `bd dolt push` at the end**. This is safe because no other agents are racing for these tasks at this point. Example:
+```bash
+bd update <id1> --status draft --notes "PR #<N1>"
+bd update <id2> --status draft --notes "PR #<N2>"
+# ... remaining updates ...
+bd dolt push   # single push covers all updates
+# Then verify each task
+bd show <id1> --json | jq -r .status
+bd show <id2> --json | jq -r .status
+```
+The push-per-update rule still applies for **claiming** (race condition risk) and **one-off state changes** (closing, marking open/blocked). Only batch at wave-end bulk completions.
+
 ### Pre-flight check
 
 ```bash
@@ -400,7 +412,7 @@ Three outcomes:
     ]
   }
   ```
-  Status meanings: `launched` = worktree started; `pushed` = branch on remote, worktree done; `pr_created` = PR exists, `bd update` pending; `done` = PR created and Beads updated.
+  Status meanings: `launched` = worktree started; `pushed` = branch on remote, worktree done; `pr_created` = PR exists, `bd update` pending; `done` = PR created and Beads updated. When the whole wave completes, do all `bd update` calls then a single `bd dolt push` rather than pushing after each one.
 
   Recovery logic after compaction: `done` → skip; `pr_created` → just `bd update`; `pushed` → `gh pr create` + `bd update`; `launched` → check `git ls-remote origin <branch>`: if branch exists, treat as `pushed`; if not, re-launch the worktree.
 
@@ -428,12 +440,24 @@ Three outcomes:
   5. **Collect fix summaries** — the parent reads each `.fix-output/pr-<PR#>.md` returned by the worktrees. Do not act on the summaries beyond posting them as PR comments.
   6. **Push each branch** via `git -C <worktree-path> push -u origin <branch>` (requires `dangerouslyDisableSandbox: true`).
   7. **Update the PR description** — use `gh pr edit <PR#> --body "..."` to update the Summary and Sync recommendation to reflect the current state of the page.
-  8. **Submit** — done by the parent only (requires `gh` and `bd`). Use the fix summary written by the worktree:
+  8. **Submit** — done by the parent only (requires `gh` and `bd`). Use the fix summary written by the worktree. For multiple PRs, post all comments first, then batch the Beads updates with a single push:
      ```bash
-     gh pr comment <PR#> --body-file <absolute-path-to-fix-summary>
-     rm <absolute-path-to-fix-summary>   # clean up after posting
-     bd update <id> --status draft && bd dolt push
-     bd show <id> --json | jq -r .status   # MUST print "draft"
+     # Post all fix comments first (gh calls, one per PR)
+     gh pr comment <PR1#> --body-file <absolute-path-to-fix-summary-1>
+     rm <absolute-path-to-fix-summary-1>
+     gh pr comment <PR2#> --body-file <absolute-path-to-fix-summary-2>
+     rm <absolute-path-to-fix-summary-2>
+     # ... remaining PRs ...
+
+     # Batch all bd updates, then single push
+     bd update <id1> --status draft
+     bd update <id2> --status draft
+     # ... remaining updates ...
+     bd dolt push   # single push covers all updates
+
+     # Verify each task
+     bd show <id1> --json | jq -r .status   # MUST print "draft"
+     bd show <id2> --json | jq -r .status   # MUST print "draft"
      ```
      The fix summary must begin with `<!-- feedback-addressed -->` so the "how to tell if feedback needs attention" logic in Priority A can detect it. The worktree writes this header; verify it is present before posting.
 
@@ -507,8 +531,8 @@ git push --force-with-lease
 git checkout main
 ```
 
-> **CRITICAL — verify status after every `bd update`:**
-> Agents have repeatedly failed to update Beads status despite clear instructions. After every `bd update` + `bd dolt push`, you **must** run `bd show <id> --json | jq -r .status` and confirm it prints the expected value (e.g. `draft`). If the status is wrong, fix it immediately. Do NOT move on until verification passes.
+> **CRITICAL — verify status after every push:**
+> Agents have repeatedly failed to update Beads status despite clear instructions. After `bd dolt push` (whether individual or batch), you **must** run `bd show <id> --json | jq -r .status` for each updated task and confirm it prints the expected value (e.g. `draft`). If the status is wrong, fix it immediately. Do NOT move on until all verifications pass.
 
 ### Merge conflict policy
 
@@ -545,7 +569,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 - Use `.md` by default; `.mdx` only for interactive components (e.g. `<Tabs syncKey="lang">`). Tab order: Motoko → Rust → others; Candid first for type-mapping tabs. See `.docs-plan/decisions.md` and `content-authoring.md` for conversion steps.
 - Include complete frontmatter (see CONTRIBUTING.md for schema)
 - Link to external docs instead of duplicating content (see `content-authoring.md` linking rules)
-- Sync Beads before and after work: `bd dolt pull` at session start, `bd dolt push` after every status change
+- Sync Beads before and after work: `bd dolt pull` at session start, `bd dolt push` after every status change. Exception: at end-of-wave bulk completions, batch all `bd update` calls and do a single `bd dolt push` (see "Batch status updates at wave end" in "Claiming a task")
 - Update task status in Beads immediately — claim before working, set `draft` after PR creation, set `closed` after merge
 - Record structural decisions in `.docs-plan/decisions.md` immediately when making them — don't wait to be asked. This includes: new files/symlinks, path changes, config changes, cleanup of stale references, and any choice that a future agent would need to understand.
 - **Every non-stub content page must end with an `<!-- Upstream: -->` comment** (CI-enforced). List every `.sources/` repo used. Format and examples in `content-authoring.md`.
