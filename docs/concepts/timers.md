@@ -1,6 +1,6 @@
 ---
 title: "Timers"
-description: "How the IC schedules periodic and one-shot tasks via the global timer mechanism"
+description: "How canisters schedule automatic work: the global timer, CDK timer libraries, scheduling guarantees, upgrade behavior, and security considerations."
 sidebar:
   order: 8
 ---
@@ -37,7 +37,14 @@ There are two timer variants:
 
 **One-shot timers** fire once after a specified delay. The timer is deactivated after it fires. To repeat the work, you register another one-shot timer, or use a recurring timer instead.
 
-**Recurring timers** fire repeatedly at a fixed interval. The library reschedules them automatically at the end of each execution. A recurring timer keeps running until you explicitly cancel it or the canister is upgraded.
+**Recurring timers** fire repeatedly at a fixed interval. The library reschedules them when the self-call is dispatched — the next interval is measured from the originally-scheduled fire time, not from when the callback finishes. This means a 5-second recurring timer with a 2-second callback fires at 5s, 10s, 15s rather than 5s, 12s, 19s. A recurring timer keeps running until you explicitly cancel it or the canister is upgraded.
+
+The Rust CDK offers two recurring timer variants:
+
+- **`set_timer_interval`** — allows up to 5 concurrent invocations. If a new invocation is due while previous ones are still running (up to that limit), the new one runs alongside them.
+- **`set_timer_interval_serial`** — enforces strict serial execution. If the previous invocation is still running when the next one is due, the new invocation is **silently skipped** (not delayed or queued). The next interval is measured from the originally-scheduled fire time, preserving the cadence.
+
+Use `set_timer_interval_serial` when your callback must not run concurrently with itself, and design it to be idempotent in case occasional invocations are skipped.
 
 Both variants return a `TimerId` that you can pass to the cancel function to stop the timer before it fires.
 
@@ -49,6 +56,7 @@ Timers are **best-effort**, not real-time. The requested delay is a minimum, not
 - The timer callback executes as an update call and is subject to the same instruction limits as any other message. Long-running callbacks can be interrupted.
 - Under heavy network load, timer self-calls may time out and be rescheduled for the next global timer tick, which can slow execution significantly.
 - The canister output queue is bounded (500 messages), which limits how many timers can fire in a single consensus round.
+- If the canister has insufficient liquid cycles when a timer is due to fire, the library will skip that invocation and log `"unable to schedule timer: not enough liquid cycles"`. Canisters running at low cycle balances can experience silent timer misses.
 
 For recurring interval tasks, treat the interval as an approximate target, not an exact cadence. Make interval timer callbacks idempotent with respect to canister state to handle occasional duplicate or delayed executions safely.
 
@@ -71,9 +79,7 @@ Before timers, canisters could use **heartbeats** for periodic execution. A cani
 | Cost when idle | Zero — timers only fire when needed | Always burns cycles, even if no work is done |
 | Disabling | Cancel the timer ID | Must upgrade the canister to remove the export |
 
-**Use timers for all new canisters.** Heartbeats are only appropriate in rare cases where you need to respond to every single consensus round unconditionally, or where you need sub-second granularity beyond what timer resolution allows.
-
-Timer resolution is similar to the block rate (~1 second), so intervals well above 1 second work most reliably. For sub-second precision, heartbeats provide finer granularity at the cost of the limitations above.
+**Use timers for all new canisters.** Heartbeats are only appropriate in the rare case where you need to respond to every single consensus round unconditionally — for example, sampling some state on every block regardless of whether there is work to do. Both timers and heartbeats operate at approximately the block rate (~1 second), so heartbeats do not provide finer time resolution than timers.
 
 ## Security considerations
 
@@ -81,7 +87,7 @@ Timers introduce two security-relevant properties developers should understand:
 
 **Vanishing on upgrades.** Any access control or security invariant implemented using timers will disappear silently during an upgrade. Do not rely on a timer to enforce time-bounded access, revoke permissions, or expire secrets. Use stable storage for security-critical state.
 
-**Reentrancy.** Because each timer task executes as an inter-canister call, the canister can be re-entered at any await point — a new message, another timer callback, or a heartbeat can begin before the current timer handler finishes. If a timer handler awaits an inter-canister call and then reads or writes shared state, that state may have changed by the time execution resumes. Use `set_timer_interval_serial` (Rust) to prevent concurrent invocations of the same recurring timer, and audit any state mutations that straddle await points.
+**Reentrancy.** Because each timer task executes as an inter-canister call, the canister can be re-entered at any await point — a new message, another timer callback, or a heartbeat can begin before the current timer handler finishes. If a timer handler awaits an inter-canister call and then reads or writes shared state, that state may have changed by the time execution resumes. Use `set_timer_interval_serial` (Rust) to enforce serial execution of recurring timers (at the cost of silently skipping invocations when the previous one is still running), and audit any state mutations that straddle await points.
 
 ## Next steps
 
