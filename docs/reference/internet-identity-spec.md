@@ -5,7 +5,7 @@ sidebar:
   order: 12
 ---
 
-Internet Identity (II) is the Internet Computer's native authentication system. This page describes the protocol that II uses to authenticate users: how delegation chains are structured, how passkeys and OpenID providers are managed, how canister signatures work, and how the alternative origins mechanism lets multiple domains share the same user principal.
+Internet Identity (II) is the Internet Computer's native authentication system. This page describes the protocol that II uses to authenticate users: how delegation chains are structured, how passkeys and OpenID Connect (OIDC) providers are managed, how canister signatures work, and how the alternative origins mechanism lets multiple domains share the same user principal.
 
 For a practical integration guide with working code, see [Internet Identity](../guides/authentication/internet-identity.md).
 
@@ -57,11 +57,11 @@ II supports the key types used by common platform and roaming authenticators:
 | ECDSA P-256 | secp256r1 | ES256 (SHA-256) |
 | Ed25519 | Curve25519 | EdDSA |
 
-Platform authenticators (Touch ID, Face ID, Windows Hello) typically use ECDSA P-256. Hardware security keys may use either depending on their firmware.
+Platform authenticators (Touch ID, Face ID, Windows Hello) typically use ECDSA P-256. Some hardware security keys support Ed25519; ECDSA P-256 is more universally supported.
 
-### OpenID login
+### OpenID Connect (OIDC) login
 
-In addition to passkeys, II supports OpenID Connect providers (Google, Apple, Microsoft). An OpenID login produces the same principal as a passkey login for the same anchor — the key type differs, but the principal derivation uses the same anchor number and frontend origin.
+In addition to passkeys, II supports OpenID Connect (OIDC) providers (Google, Apple, Microsoft). An OpenID Connect login produces the same principal as a passkey login for the same anchor — the key type differs, but the principal derivation uses the same anchor number and frontend origin.
 
 ## Client authentication protocol
 
@@ -76,7 +76,7 @@ The client authentication protocol is how a dapp frontend requests authenticatio
 5. II returns the delegation to the dapp via `postMessage`.
 6. The dapp attaches the session key and delegation to canister calls.
 
-The II frontend authenticates the requesting origin using the hostname in the `postMessage` call. This is what derives the origin-specific principal — II uses the origin hostname as the seed input when computing the delegation.
+The II frontend authenticates the requesting origin using the frontend origin in the `postMessage` call. This is what derives the origin-specific principal — II uses the frontend origin (scheme + host + port) as the seed input when computing the delegation.
 
 ### Delegation structure
 
@@ -131,13 +131,13 @@ The II canister uses **canister signatures** to sign delegations. A canister sig
 
 ### How it works
 
-1. The II canister computes `SHA-256(delegation_payload)` and stores it in its certified variable tree at a path encoding the seed.
-2. A certification is produced: a certificate containing the state tree path with the hash.
+1. The II canister stores an empty blob at path `["sig", SHA-256(seed), SHA-256(payload)]` in its certified variable tree. This causes the certified data root hash to commit to both the seed and the payload.
+2. A certification is produced: a certificate containing the certified data root hash derived from this tree.
 3. The signature returned to the dapp consists of the certificate plus a witness tree that proves the path existed.
 
 The verifier checks:
 - The certificate's root hash matches the IC's certified state root.
-- The witness tree demonstrates the expected path value exists.
+- The witness tree has a hash that matches the certified data value in the certificate, and contains the path `["sig", SHA-256(seed), SHA-256(payload)]`.
 - The delegation payload hash matches.
 
 ### Public key encoding
@@ -188,6 +188,7 @@ The protocol follows a discovered configuration model. The dapp designates a **p
 
 2. The alternative origin (B) sets `derivationOrigin` in its login call:
    ```javascript
+   // assumes authClient is initialized — see the Internet Identity guide
    authClient.login({
      identityProvider: "https://id.ai",
      derivationOrigin: "https://<origin-A>",
