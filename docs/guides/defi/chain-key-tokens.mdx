@@ -17,7 +17,7 @@ For plain ICRC-1/ICRC-2 transfers without the minting/withdrawal flows, see [Tok
 
 ## How chain-key tokens maintain their peg
 
-The ckBTC and ckETH minter canisters are ICP smart contracts that hold real BTC and ETH in addresses they control through [chain-key cryptography](https://learn.internetcomputer.org/hc/en-us/articles/34211397080980). The minters use threshold signatures to sign Bitcoin and Ethereum transactions — no private key exists anywhere; signing requires cooperation from the subnet's nodes.
+The ckBTC and ckETH minter canisters are ICP smart contracts that hold real BTC and ETH in addresses they control through [chain-key cryptography](../../concepts/chain-key-cryptography.md). The minters use threshold signatures to sign Bitcoin and Ethereum transactions — no private key exists anywhere; signing requires cooperation from the subnet's nodes.
 
 When a user deposits BTC, the minter mints exactly the same amount of ckBTC. When a user withdraws ckBTC, the minter burns the tokens and sends BTC on-chain. The peg holds by design: every ckBTC in circulation corresponds to exactly one satoshi of BTC held by the minter. The ckBTC checker canister publishes a public audit of reserves.
 
@@ -32,6 +32,7 @@ This means ckBTC and ckETH are not wrapped tokens in the traditional sense. They
 | ckBTC Ledger | `mxzaz-hqaaa-aaaar-qaada-cai` |
 | ckBTC Minter | `mqygn-kiaaa-aaaar-qaadq-cai` |
 | ckBTC Index | `n5wcd-faaaa-aaaar-qaaea-cai` |
+| ckBTC Checker | `oltsj-fqaaa-aaaar-qal5q-cai` |
 
 **Bitcoin Testnet4** (for testing):
 
@@ -221,6 +222,8 @@ import Blob "mo:core/Blob";
 import Nat "mo:core/Nat";
 import Nat8 "mo:core/Nat8";
 import Nat64 "mo:core/Nat64";
+import Int "mo:core/Int";
+import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 
@@ -292,6 +295,9 @@ persistent actor Self {
     if (Principal.isAnonymous(caller)) { Runtime.trap("Authentication required") };
     let fromSubaccount = principalToSubaccount(caller);
     let minterPrincipal = Principal.fromText("mqygn-kiaaa-aaaar-qaadq-cai");
+    // Set created_at_time for deduplication: two identical approvals within 24h
+    // would both execute without this. Omit if you intentionally allow retries.
+    let now = ?Nat64.fromNat(Int.abs(Time.now()));
 
     // Step 1: approve the minter to spend ckBTC (amount + fee)
     let approveResult = await ckbtcLedger.icrc2_approve({
@@ -302,7 +308,7 @@ persistent actor Self {
       expires_at = null;
       fee = ?10;
       memo = null;
-      created_at_time = null;
+      created_at_time = now;
     });
 
     switch (approveResult) {
@@ -375,6 +381,9 @@ async fn withdraw_to_btc(btc_address: String, amount: u64) -> RetrieveBtcResult 
     let from_subaccount = principal_to_subaccount(&caller);
     let ledger = Principal::from_text(CKBTC_LEDGER).unwrap();
     let minter = Principal::from_text(CKBTC_MINTER).unwrap();
+    // Set created_at_time for deduplication: two identical approvals within 24h
+    // would both execute without this. Omit if you intentionally allow retries.
+    let now = Some(ic_cdk::api::time());
 
     // Step 1: approve the minter to spend ckBTC (amount + fee)
     let approve_args = ApproveArgs {
@@ -385,7 +394,7 @@ async fn withdraw_to_btc(btc_address: String, amount: u64) -> RetrieveBtcResult 
         expires_at: None,
         fee: Some(Nat::from(10u64)),
         memo: None,
-        created_at_time: None,
+        created_at_time: now,
     };
 
     let (approve_result,): (Result<Nat, ApproveError>,) = Call::unbounded_wait(ledger, "icrc2_approve")
@@ -429,9 +438,8 @@ The ckETH minter works similarly to ckBTC but targets Ethereum. Deposits are det
 
 ### Depositing ETH to get ckETH
 
-1. Call `minter_address` on the ckETH minter to get the Ethereum address of the ckETH helper contract. This address is unique per ICP principal.
-2. Transfer ETH from your Ethereum wallet to the helper contract address, using your ICP principal as the call data so the minter can associate the deposit with your account.
-3. The minter detects the deposit via HTTPS outcalls and mints ckETH to your ICRC-1 account.
+1. Call the `deposit` function on the shared ckETH helper smart contract on Ethereum (mainnet address: `0x6abDA0438307733FC299e9C229FD3cc074bD8cC0`), passing some ETH and your ICP principal as the call data. The helper contract emits a `ReceivedEth` event with the sender, value, and receiver (your principal) as payload.
+2. The ckETH minter monitors `ReceivedEth` events by periodically fetching logs from Ethereum RPC providers. When it detects the event, it mints the corresponding amount of ckETH to your ICRC-1 account.
 
 > The ckETH deposit flow requires interacting with an Ethereum wallet or library. For sending Ethereum transactions from an ICP canister, see [Ethereum integration](../chain-fusion/ethereum.md).
 
@@ -618,4 +626,4 @@ If you need direct control over Bitcoin UTXOs or want to construct custom Bitcoi
 - [Wallet integration](wallet-integration.md) — connecting wallets for token flows
 - [Token standards](../../reference/token-standards.md) — ICRC-1 and ICRC-2 formal specifications
 
-{/* Upstream: informed by dfinity/icskills skills/ckbtc/SKILL.md; dfinity/icskills skills/icrc-ledger/SKILL.md; learn.internetcomputer.org/hc/en-us/articles/34211397080980 */}
+{/* Upstream: informed by dfinity/icskills skills/ckbtc/SKILL.md; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/portal docs/defi/chain-key-tokens/cketh/overview.mdx */}
