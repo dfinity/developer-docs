@@ -102,15 +102,20 @@ type HttpResponse = record {
 Notes:
 
 - Not all HTTP Gateway implementations can pass all header types. Service Workers, for example, cannot pass [forbidden headers](https://fetch.spec.whatwg.org/#forbidden-header-name).
-- HTTP Gateways may add headers such as `access-control-allow-origin: *` and `x-cache-status: MISS`.
+- HTTP Gateways may add additional headers. In particular, the following headers may be set:
+  - `access-control-allow-origin: *`
+  - `access-control-allow-methods: GET, POST, HEAD, OPTIONS`
+  - `access-control-allow-headers: DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Cookie`
+  - `access-control-expose-headers: Content-Length,Content-Range`
+  - `x-cache-status: MISS`
 
 ## Response verification
 
-Query calls are fast but do not carry consensus-level security. Response verification closes this gap: it is a versioned subprotocol that allows an HTTP Gateway to verify a certified response returned by a query call.
+Query calls are fast but do not carry consensus-level security (responses come from a single node without consensus verification). Response verification closes this gap: it is a versioned subprotocol that allows an HTTP Gateway to verify a certified response returned by a query call.
 
 Two versions are supported:
 
-- **Version 2 (current)**: covers request URL query params, request method, request headers, response status code, and response headers.
+- **Version 2 (current)**: can optionally cover request URL query params, request method, request headers, response status code, and response headers.
 - **Version 1 (legacy)**: covers only a mapping from the request URL to the response body. See [Legacy response verification](#legacy-response-verification).
 
 ### Response verification outline
@@ -200,7 +205,7 @@ Properties supplied to this function:
 | `certified_response_headers` | List of response header names to include (must not include `IC-Certificate` or `IC-CertificateExpression`). Mutually exclusive with `response_header_exclusions`. |
 | `response_header_exclusions` | List of response header names to exclude (all others included). Must not include `IC-Certificate` or `IC-CertificateExpression`. Mutually exclusive with `certified_response_headers`. |
 | `no_request_certification` | Disables certification of the request. **Security note:** if used on a path that serves dynamic content with the upgrade feature, a malicious node can always return the certified response instead of setting the upgrade flag. |
-| `no_certification` | Disables certification entirely for this request/response pair. **Security note:** use only for dynamic content where update-call latency is too high and a malicious response has a benign impact. |
+| `no_certification` | Disables certification entirely for this request/response pair. **Security note:** use only for dynamic content where update-call latency is too high and a malicious response has a benign impact. Dynamic content can be returned securely by using the [upgrade to update calls](#upgrade-to-update-calls) feature instead. |
 
 The `ValidationArgs` [Protocol Buffer 3](https://protobuf.dev/reference/protobuf/proto3-spec/) definition:
 
