@@ -146,18 +146,17 @@ This keeps review content off the parent's context entirely (no context bloat), 
 
 > **Sandbox note:** All `bd` commands and `./scripts/setup.sh` are pre-approved (no permission prompts). All `bd` commands and `gh` require `dangerouslyDisableSandbox: true` — `bd` connects to Dolt via TCP on localhost (the OS sandbox blocks this); `gh` needs the macOS keychain. One approval per session covers everything: Claude Code remembers the bypass for the rest of the session after the first use. **`git` commands (fetch, push, ls-remote, checkout, rebase, etc.) work within the sandbox and do NOT need `dangerouslyDisableSandbox: true`.**
 
-**Step 0 — Establish sandbox approvals (do this first, every session):**
+**Step 0 — Establish sandbox approval (do this first, every session):**
 
-Before any other work, warm up the two sandbox approvals so the rest of the session runs without prompts. Run these two commands and tell the user explicitly that these are the only approvals needed:
+Before any other work, warm up the sandbox approval so the rest of the session runs without prompts. Run **both commands in a single Bash call** — one `dangerouslyDisableSandbox` flag means one prompt total:
 
 ```bash
-# dangerouslyDisableSandbox — triggers the one-time bd approval for this session
-bd list --limit 1 2>/dev/null
-# dangerouslyDisableSandbox — triggers the one-time gh approval for this session
-gh auth status 2>/dev/null
+bd list --limit 1 2>/dev/null; gh auth status 2>/dev/null
 ```
 
-After the user approves each once, Claude Code remembers them for the entire session. Communicate this clearly — e.g.: *"I need one-time approval for `bd` (Dolt TCP) and `gh` (macOS keychain). After you approve these two, everything else runs autonomously."* Do not bury this inside a larger operation where the prompt appears with no context.
+Tell the user explicitly this is the only approval needed for the session — e.g.: *"I need a one-time sandbox approval to access Dolt (TCP) and GitHub (macOS keychain). After you approve this, everything else runs autonomously."* Do not bury this inside a larger operation where the prompt appears with no context.
+
+> **Why one call?** Each Bash tool call with `dangerouslyDisableSandbox: true` is a separate permission event. Running `bd` and `gh` as two separate calls would trigger two simultaneous prompts. Combining them into one call means one prompt that covers the entire session.
 
 **Step 1 — Fresh clone check:**
 
