@@ -5,16 +5,144 @@ sidebar:
   order: 7
 ---
 
-TODO: Write content for this page.
+The Internet Computer is composed of independent **subnets** — each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, cycle costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
 
-<!-- Content Brief -->
-Reference table of all IC subnet types. List application subnets, system subnets, European subnets, fiduciary subnet, Bitcoin subnet, Internet Identity subnet, and any special-purpose subnets. For each: node count, replication factor, cycle cost multiplier, geographic distribution, and use cases.
+For guidance on choosing a subnet for deployment, see [Subnet selection](../guides/canister-management/subnet-selection.md). For per-operation cycle costs, see [Cycles costs](cycles-costs.md).
 
-<!-- Source Material -->
-- Portal: building-apps/developing-canisters/deploy-specific-subnet.mdx
-- icp-cli: guides/deploying-to-specific-subnets.md
-- Learn Hub: [Subnet Creation](https://learn.internetcomputer.org/hc/en-us/articles/34209955782420)
+## Subnet properties explained
 
-<!-- Cross-Links -->
-- guides/canister-management/subnet-selection -- how-to choose a subnet
-- reference/cycles-costs -- base costs before multipliers
+| Property | What it means |
+|----------|---------------|
+| **Node count** | The number of replica nodes in the subnet. Higher node counts mean greater fault tolerance and Byzantine resistance. |
+| **Cycle cost multiplier** | Costs scale linearly with node count relative to a 13-node baseline. A 34-node subnet costs `34/13 ≈ 2.6×` more per operation. |
+| **Geographic distribution** | Where the nodes are located. Relevant for data sovereignty requirements. |
+| **Canister creation** | Whether arbitrary user canisters can be created on the subnet. System subnets do not allow this. |
+
+## Application subnets
+
+Application subnets are the standard destination for user canisters. ICP has many application subnets running in parallel.
+
+| Property | Value |
+|----------|-------|
+| Node count | 13 |
+| Cycle cost multiplier | 1× (baseline) |
+| Geographic distribution | Global (mixed node locations) |
+| Canister creation | Open to all |
+
+Each application subnet operates independently. Canisters on different application subnets can communicate via cross-subnet (Xnet) calls. By default, `icp deploy` places canisters on an application subnet automatically.
+
+You may want to deploy to a specific application subnet for:
+
+- **Colocation** — Keep related canisters on the same subnet to minimize Xnet call overhead
+- **Resource availability** — Prefer subnets with lower utilization if storage is a concern (subnets share a 2 TiB storage budget)
+- **Specific features** — Some application subnets have features enabled or disabled by NNS governance
+
+Browse available application subnets on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). Filter by type to find "Application" subnets and view their current load and node locations.
+
+## System subnets
+
+System subnets host ICP's core infrastructure canisters. They have special configurations — including no cycle charges for their canisters — to ensure continuous availability. **User canisters cannot be created on system subnets.**
+
+System subnets also have more generous execution limits: a higher per-call instruction limit and a larger maximum Wasm module size.
+
+There are currently three system subnets:
+
+| Subnet | Principal prefix | Contents |
+|--------|-----------------|----------|
+| NNS | `tdb26` | 14 NNS canisters (governance, registry, ledger, CMC, etc.) |
+| Application services | `uzr34` | Internet Identity, cycles ledger, exchange rate canister, ICP dashboard; backup threshold signing keys |
+| Bitcoin integration | `w4rem` | Bitcoin integration canisters |
+
+Full principals for these subnets are available on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets).
+
+For a complete list of the canisters running on these subnets, see [System canisters](system-canisters.md).
+
+## Fiduciary subnet
+
+The fiduciary subnet is a single large application subnet with 34 nodes instead of the standard 13. The larger committee size provides a higher security threshold — useful for DeFi applications that require stronger guarantees.
+
+| Property | Value |
+|----------|-------|
+| Node count | 34 |
+| Cycle cost multiplier | ~2.6× (34/13) |
+| Geographic distribution | Global |
+| Canister creation | Open to all |
+| Principal prefix | `pzp6e` |
+| Notable tenants | EVM RPC canister; threshold ECDSA and Schnorr signing keys |
+
+The fiduciary subnet hosts the active threshold signature keys used by all chain-key signing operations (tECDSA, tSchnorr). It also hosts the EVM RPC canister.
+
+**Cost example:** An update call that costs 5 million cycles on a 13-node subnet costs approximately 13 million cycles on the fiduciary subnet (`5M × 34/13 ≈ 13M`). See [Cycles costs](cycles-costs.md) for complete tables.
+
+To deploy to the fiduciary subnet:
+
+```bash
+icp deploy -e ic --subnet pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae
+```
+
+## European subnet
+
+The European subnet is an application subnet whose nodes are located exclusively in the European geographic region. It is designed for applications with data residency or GDPR-alignment requirements.
+
+| Property | Value |
+|----------|-------|
+| Node count | 13 |
+| Cycle cost multiplier | 1× (same as standard application subnets) |
+| Geographic distribution | Europe only |
+| Canister creation | Open to all |
+| Principal prefix | `bkfrj` |
+
+> **Note:** The European subnet enables GDPR-aligned infrastructure, but developers and enterprises must take additional measures to ensure their applications meet all applicable GDPR requirements.
+
+To deploy to the European subnet:
+
+```bash
+icp deploy -e ic --subnet bkfrj-6k62g-dycql-7h53p-atvkj-zg4to-gaogh-netha-ptybj-ntsgw-rqe
+```
+
+## Summary table
+
+| Subnet type | Node count | Cost multiplier | Open to users | Geographic constraint |
+|-------------|-----------|----------------|--------------|----------------------|
+| Application | 13 | 1× | Yes | None (global) |
+| System | Varies | N/A (no charges) | No | None |
+| Fiduciary | 34 | ~2.6× | Yes | None (global) |
+| European | 13 | 1× | Yes | Europe only |
+
+## Cycle costs by subnet type
+
+Cycle costs scale linearly with node count. The baseline is a 13-node application subnet. For all operations:
+
+```
+cost_on_n_node_subnet = base_cost × n / 13
+```
+
+For a 34-node fiduciary subnet, the multiplier is `34 / 13 ≈ 2.615`.
+
+**Example: canister creation cost**
+
+| Subnet | Node count | Cycles | ~USD (May 2025) |
+|--------|-----------|--------|-----------------|
+| Application | 13 | 500,000,000,000 | ~$0.68 |
+| European | 13 | 500,000,000,000 | ~$0.68 |
+| Fiduciary | 34 | 1,307,692,307,692 | ~$1.77 |
+
+For the full cost table including storage, execution, Xnet calls, and HTTPS outcalls, see [Cycles costs](cycles-costs.md).
+
+## Finding subnet IDs
+
+Use the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) to:
+
+- Browse all subnets by type, node location, or current load
+- Get the full principal ID for a subnet
+- See which canisters are running on a subnet
+- Check subnet utilization (relevant for storage-heavy deployments)
+
+To find which subnet an existing canister is on, search for the canister ID on the dashboard — the canister detail page shows its subnet.
+
+## Next steps
+
+- [Subnet selection](../guides/canister-management/subnet-selection.md) — How to choose a subnet for your deployment
+- [Cycles costs](cycles-costs.md) — Full cost tables and per-operation pricing
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/deploy-specific-subnet.mdx; dfinity/icp-cli docs/guides/deploying-to-specific-subnets.md -->
