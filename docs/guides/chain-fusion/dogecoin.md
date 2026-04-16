@@ -148,4 +148,4 @@ The Dogecoin canister is controlled by the [Network Nervous System](https://lear
 - [Chain-key tokens](../defi/chain-key-tokens.md) — ckBTC, ckETH, and upcoming ckDOGE
 - [Build on Dogecoin book](https://dfinity.github.io/dogecoin-canister) — full tutorial for building Dogecoin smart contracts on ICP
 
-<\!-- Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/dogecoin/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; dfinity/examples — rust/basic_dogecoin/README.md -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/dogecoin/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; dfinity/examples — rust/basic_dogecoin/README.md -->
