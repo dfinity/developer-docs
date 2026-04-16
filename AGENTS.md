@@ -643,7 +643,7 @@ For current release hashes, see `.sources/VERSIONS`.
 | `.sources/icp-cli-templates` | `dfinity/icp-cli-templates` | `main` | Project templates for getting-started |
 | `.sources/icskills` | `dfinity/icskills` | `main` | Skill files with canister IDs and code patterns (skills site serves main directly) |
 | `.sources/examples` | `dfinity/examples` | `master` | Code examples (link to for >30 line snippets) |
-| `.sources/icp-js-sdk-docs` | `dfinity/icp-js-sdk-docs` | `main` | JS SDK documentation |
+| `.sources/icp-js-sdk-docs` | `dfinity/icp-js-sdk-docs` | `main` | JS SDK documentation — **content is stored as zip archives** in `public/<library>/latest.zip`; extract with `unzip -p .sources/icp-js-sdk-docs/public/<library>/latest.zip <file>` or `unzip -d /tmp/<lib> .sources/icp-js-sdk-docs/public/<library>/latest.zip` to read. Libraries: `@icp-sdk/core` (`core/`), `@icp-sdk/auth` (`auth/`), `@icp-sdk/canisters` (`canisters/`), `@icp-sdk/signer` (`signer/`), `@icp-sdk/bindgen` (`bindgen/`), `@dfinity/pic` (`pic-js/`) |
 | `.sources/motoko` | `caffeinelabs/motoko` | latest release | Motoko compiler — language spec, system function names, syntax verification |
 | `.sources/motoko-core` | `caffeinelabs/motoko-core` | latest release | Motoko core library (`mo:core`) — API signatures, module docs |
 | `.sources/cdk-rs` | `dfinity/cdk-rs` | latest release | Rust CDK (`ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros`) — API signatures, management canister types |
@@ -683,6 +683,7 @@ Some submodules (`portal`, `examples`) contain **nested submodules** of their ow
   - **Candid** → `candid` (spec, type system, `didc` behavior)
   - **Certified data / query verification** → `response-verification` (certificate trees, verification patterns)
   - **CLI commands** → `icp-cli` (command reference — do not guess flags or syntax)
+  - **JavaScript / TypeScript code** → `icp-js-sdk-docs` (content is in zip archives — extract with `unzip -p .sources/icp-js-sdk-docs/public/<lib>/latest.zip <file>` before reading; never guess JS SDK API from training data)
   - **Code examples** → `examples` (link to for snippets >30 lines)
 - **Do not modify `.sources/`** — these are read-only references. Edits go to the upstream repos.
 
@@ -728,7 +729,7 @@ EOF
 | `examples` | Verify that any files linked from docs still exist at the same path in the new ref |
 | `icp-cli-recipes` | Check for renamed or removed recipes referenced in docs |
 | `icp-cli-templates` | Check for renamed or restructured templates referenced in getting-started pages |
-| `icp-js-sdk-docs` | Check for changed JS SDK APIs — grep all JavaScript code blocks in docs |
+| `icp-js-sdk-docs` | Check for changed JS SDK APIs — unzip `public/<lib>/latest.zip` and compare API signatures against JavaScript code blocks in docs; check `versions.json` for new releases |
 | `candid` | Check for spec changes that affect the Candid reference page or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns in docs |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria or authoring rules |
