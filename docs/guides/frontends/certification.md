@@ -107,7 +107,8 @@ Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
-ic-asset-certification = "2"
+ic-asset-certification = "3"
+ic-http-certification = "3"
 ic-cdk = "0.19"
 ```
 
@@ -116,6 +117,7 @@ Certify assets in your `init` and `post_upgrade` hooks:
 ```rust
 use ic_asset_certification::{Asset, AssetConfig, AssetRouter};
 use ic_cdk::{init, post_upgrade, query};
+use ic_http_certification::{HttpRequest, HttpResponse};
 use std::cell::RefCell;
 
 thread_local! {
@@ -170,9 +172,7 @@ fn post_upgrade() {
 }
 
 #[query]
-fn http_request(request: ic_cdk::api::management_canister::http_request::HttpRequest)
-    -> ic_cdk::api::management_canister::http_request::HttpResponse
-{
+fn http_request(request: HttpRequest) -> HttpResponse {
     ROUTER.with(|router| {
         let router = router.borrow();
 
@@ -183,12 +183,10 @@ fn http_request(request: ic_cdk::api::management_canister::http_request::HttpReq
             &request,
         ) {
             Ok(response) => response,
-            Err(_) => ic_cdk::api::management_canister::http_request::HttpResponse {
-                status_code: 404,
-                headers: vec![],
-                body: b"Not found".to_vec(),
-                upgrade: Some(false),
-            },
+            Err(_) => HttpResponse::builder()
+                .with_status_code(404)
+                .with_body(b"Not found".to_vec())
+                .build(),
         }
     })
 }
@@ -287,7 +285,7 @@ import { HttpAgent } from "@icp-sdk/core/agent";
 const IS_LOCAL = process.env.NODE_ENV !== "production";
 
 const agent = await HttpAgent.create({
-  host: IS_LOCAL ? "http://localhost:8000" : "https://ic0.app",
+  host: IS_LOCAL ? "http://localhost:8000" : "https://icp-api.io",
   // Only fetch root key on local networks.
   // On mainnet, the root key is hardcoded in the JS SDK.
   // Fetching it on mainnet is a security risk — never do this in production.
