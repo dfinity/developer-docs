@@ -265,15 +265,23 @@ mod tests {
     fn test_counter_endpoints() {
         let api = create_test_api();
 
-        assert_eq!(api.get_count(), 0);
-        assert_eq!(api.increment_count(), 1);
-        assert_eq!(api.increment_count(), 2);
-        assert_eq!(api.decrement_count(), 1);
+        let response = api.get_count();
+        assert_eq!(response.count, Some(0));
+
+        let response = api.increment_count();
+        assert_eq!(response.new_count, Some(1));
+
+        let response = api.increment_count();
+        assert_eq!(response.new_count, Some(2));
+
+        let response = api.decrement_count();
+        assert_eq!(response.new_count, Some(1));
 
         // Underflow is saturating
         api.decrement_count();
         api.decrement_count();
-        assert_eq!(api.decrement_count(), 0);
+        let response = api.decrement_count();
+        assert_eq!(response.new_count, Some(0));
     }
 }
 ```
@@ -427,6 +435,9 @@ use pocket_ic::{PocketIc, PocketIcBuilder};
 use candid::{encode_one, decode_one, Principal};
 
 fn get_wasm() -> Vec<u8> {
+    // The relative path assumes a standard cargo workspace layout. Adjust if your
+    // project structure differs. See the unit_testable_rust_canister example for a
+    // timestamp-based rebuild helper that avoids manual build steps.
     let path = "../../target/wasm32-unknown-unknown/release/my_canister.wasm";
     std::fs::read(path)
         .expect("build first: cargo build --target wasm32-unknown-unknown --release")
@@ -590,7 +601,6 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 ic-cdk = "0.19"
-ic-cdk-macros = "0.19"
 candid = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 ic-stable-structures = "0.6"
@@ -615,6 +625,79 @@ file for integration tests and deployment.
 
 The goal is to maximize coverage in unit tests so only a small number of integration tests are needed. A ratio of
 90% unit tests to 10% integration tests is a reasonable target for most canisters.
+
+## CI setup
+
+Running canister tests in CI requires two extra steps compared to ordinary Rust projects: downloading the PocketIC
+server binary before integration tests run, and building the canister WASM before the test binary loads it.
+
+### GitHub Actions example
+
+```yaml title=".github/workflows/ci.yml"
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Build canister WASM
+        run: cargo build --target wasm32-unknown-unknown --release
+
+      - name: Run unit tests (fast, no WASM needed)
+        run: cargo test --lib
+
+      - name: Run integration tests
+        run: cargo test --test integration_tests
+```
+
+Key points:
+- **Cache the `target/` directory** — Rust compilation is the dominant cost. Caching on `Cargo.lock` gives a
+  deterministic cache key.
+- **Build the WASM before running integration tests** — the test binary reads the WASM from `target/` at runtime.
+  Unit tests (`--lib`) do not need the WASM, so you can run them in parallel with the WASM build if your CI
+  system supports it.
+- **PocketIC server binary** — the `pocket-ic` Rust crate downloads the server binary automatically on first use.
+  To cache it across runs, set `POCKET_IC_BIN` to a path in your cache and check whether the binary already exists
+  before running tests. Alternatively, pin the download script from your CDK version (see
+  [`scripts/download_pocket_ic_server.sh`](https://github.com/dfinity/cdk-rs/blob/main/scripts/download_pocket_ic_server.sh)
+  in `dfinity/cdk-rs` for a reference implementation).
+
+### Separating slow integration tests
+
+If integration tests with NNS setup are too slow for every PR, run them in a separate job triggered only on
+merge or on a schedule:
+
+```yaml
+  integration-tests:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'   # only on main branch
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build canister WASM
+        run: cargo build --target wasm32-unknown-unknown --release
+      - name: Run all tests
+        run: cargo test
+```
+
+This keeps fast unit tests in every PR while reserving the heavier NNS integration tests for post-merge runs.
 
 ## Next steps
 
