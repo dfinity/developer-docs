@@ -146,6 +146,19 @@ This keeps review content off the parent's context entirely (no context bloat), 
 
 > **Sandbox note:** All `bd` commands and `./scripts/setup.sh` are pre-approved (no permission prompts). All `bd` commands and `gh` require `dangerouslyDisableSandbox: true` — `bd` connects to Dolt via TCP on localhost (the OS sandbox blocks this); `gh` needs the macOS keychain. One approval per session covers everything: Claude Code remembers the bypass for the rest of the session after the first use. **`git` commands (fetch, push, ls-remote, checkout, rebase, etc.) work within the sandbox and do NOT need `dangerouslyDisableSandbox: true`.**
 
+**Step 0 — Establish sandbox approvals (do this first, every session):**
+
+Before any other work, warm up the two sandbox approvals so the rest of the session runs without prompts. Run these two commands and tell the user explicitly that these are the only approvals needed:
+
+```bash
+# dangerouslyDisableSandbox — triggers the one-time bd approval for this session
+bd list --limit 1 2>/dev/null
+# dangerouslyDisableSandbox — triggers the one-time gh approval for this session
+gh auth status 2>/dev/null
+```
+
+After the user approves each once, Claude Code remembers them for the entire session. Communicate this clearly — e.g.: *"I need one-time approval for `bd` (Dolt TCP) and `gh` (macOS keychain). After you approve these two, everything else runs autonomously."* Do not bury this inside a larger operation where the prompt appears with no context.
+
 **Step 1 — Fresh clone check:**
 
 ```bash
