@@ -65,7 +65,7 @@ opt-level = 3        # Maximum optimization (default is 3 for release)
 codegen-units = 1    # Single codegen unit enables more aggressive cross-function optimization
 ```
 
-These settings are used by the SIMD example in `dfinity/examples` (`rust/simd/Cargo.toml`) and represent good defaults for production canisters. Trade-off: `lto = true` and `codegen-units = 1` significantly increase compile time.
+`lto = true` and `opt-level = 3` are used by the SIMD example in `dfinity/examples` (`rust/simd/Cargo.toml`). Adding `codegen-units = 1` further enables cross-function optimization and is a good default for production canisters. Trade-off: `lto = true` and `codegen-units = 1` significantly increase compile time.
 
 For binary size over speed, use `opt-level = "z"` (optimize for size, disabling some loop unrolling) or `opt-level = "s"` (balanced size/speed). These are equivalent to the `Oz` and `Os` levels in `wasm-opt`.
 
@@ -84,6 +84,8 @@ canisters:
         main: src/main.mo
         args: --incremental-gc
 ```
+
+> **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed — the incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.
 
 The incremental GC is designed to scale for large heap sizes and is more efficient on average than the older copying or compacting collectors. It is the recommended choice for most workloads.
 
@@ -127,7 +129,7 @@ The `dfinity/examples` repository contains a complete SIMD benchmarking example 
 
 Before optimizing, measure where cycles are actually spent. ICP exposes two performance counters via `ic_cdk::api`:
 
-**`instruction_counter()`** — instructions executed since the start of the current message execution. Resets at each `await` point.
+**`instruction_counter()`** — instructions executed since the last entry point. Resets at each `await` point (each `await` creates a new entry point).
 
 **`call_context_instruction_counter()`** — cumulative instructions across the entire call context, including across `await` points. Use this to measure the total cost of an async flow.
 
@@ -177,14 +179,14 @@ icp canister settings update backend \
   --wasm-memory-threshold 512mib
 ```
 
-When memory usage exceeds `wasm_memory_limit - wasm_memory_threshold`, the hook fires.
+When Wasm heap memory in use exceeds `wasm_memory_limit - wasm_memory_threshold`, the hook fires.
 
 ### Implementing the hook in Rust
 
-Use the `#[ic_cdk_macros::on_low_wasm_memory]` attribute:
+Use the `#[on_low_wasm_memory]` attribute (re-exported from `ic_cdk`):
 
 ```rust
-use ic_cdk_macros::on_low_wasm_memory;
+use ic_cdk::on_low_wasm_memory;
 
 #[on_low_wasm_memory]
 fn handle_low_memory() {
@@ -215,7 +217,7 @@ persistent actor {
 
 The `lowmemory` hook is an `async*` function, so it can perform async operations.
 
-Complete examples are available in `dfinity/examples`: `rust/low_wasm_memory` and `motoko/low_wasm_memory`. Both examples demonstrate the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire.
+A complete Rust example is available at `rust/low_wasm_memory` in `dfinity/examples`. It demonstrates the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire. A `motoko/low_wasm_memory` example also exists, but note that it currently uses the legacy `mo:base` library — use the inline snippet above as the reference for `mo:core`-compatible code.
 
 ## Combining techniques
 
