@@ -1,21 +1,365 @@
 ---
 title: "Frontend Frameworks"
-description: "Integrate React, Svelte, Vue, Unity, and other frameworks with ICP canisters"
+description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using the asset canister and icp-cli"
 sidebar:
   order: 4
 ---
 
-TODO: Write content for this page.
+ICP hosts frontend applications as asset canisters — static files (HTML, CSS, JavaScript) deployed onchain and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
 
-<!-- Content Brief -->
-Integrate popular frontend frameworks with ICP. Cover Vite plugin setup for React/Svelte/Vue, agent configuration with @icp-sdk/core, auth setup with @icp-sdk/auth, and hosting configuration. Also cover game engines (Unity WebGL, Godot HTML5) for onchain games. Show framework-specific starter templates.
+This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy to an asset canister.
 
-<!-- Source Material -->
-- Portal: building-apps/frontends/existing-frontend.mdx
-- JS SDK: @icp-sdk/core (https://js.icp.build/core), @icp-sdk/auth (https://js.icp.build/auth)
-- Examples: hosting/react, svelte/svelte-motoko-starter, svelte/sveltekit-starter, hosting/godot-html5-template, hosting/unity-webgl-template
+## Prerequisites
 
-<!-- Cross-Links -->
-- guides/frontends/asset-canister -- deployment target
-- guides/authentication/internet-identity -- auth setup per framework
-- getting-started/project-structure -- Vite plugin in hello-world template
+- [icp-cli](https://cli.internetcomputer.org/) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
+- A backend canister deployed (or a static-only site with no backend)
+- Familiarity with [asset canisters](asset-canister.md)
+
+## The deployment model
+
+Every frontend framework integration follows the same pattern:
+
+1. Configure `icp.yaml` to point at your framework's build output directory
+2. Optionally add a Vite plugin (`@icp-sdk/bindgen`) to generate typed canister bindings at build time
+3. Use `@icp-sdk/core` in your app to read canister IDs and the root key at runtime from the `ic_env` cookie served by the asset canister
+4. Deploy with `icp deploy`
+
+The asset canister injects an `ic_env` cookie into every HTML response. This cookie carries the root key and any `PUBLIC_CANISTER_ID:<name>` environment variables you set — so your frontend never needs canister IDs baked into the build artifact.
+
+## React with Vite
+
+The [hello-world template](../../../getting-started/project-structure.md) uses React with Vite. It demonstrates the full stack: backend canister, auto-generated TypeScript bindings, and a React frontend that reads canister IDs at runtime.
+
+### icp.yaml
+
+```yaml
+canisters:
+  - name: frontend
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        build:
+          - npm install
+          - npm run generate --prefix app
+          - npm run build
+        dir: app/dist
+```
+
+The `build` array runs before the asset canister uploads files. `npm run generate` regenerates TypeScript bindings from the backend `.did` file; `npm run build` runs Vite.
+
+### vite.config.ts
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { icpBindgen } from "@icp-sdk/bindgen/plugins/vite";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    icpBindgen({
+      didFile: "../../backend/backend.did",
+      outDir: "./src/backend/api",
+    }),
+  ],
+  server: {
+    headers: {
+      // Simulate the ic_env cookie that the asset canister injects in production.
+      // Replace IC_ROOT_KEY_HEX and BACKEND_CANISTER_ID with values from your
+      // local replica after running `icp network start -d` and `icp deploy`.
+      "Set-Cookie": `ic_env=${encodeURIComponent(
+        "ic_root_key=<IC_ROOT_KEY_HEX>&PUBLIC_CANISTER_ID:backend=<BACKEND_CANISTER_ID>"
+      )}; SameSite=Lax;`,
+    },
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
+The `icpBindgen` Vite plugin regenerates TypeScript bindings whenever the `.did` file changes during development.
+
+The `server.headers` block simulates the `ic_env` cookie during `vite dev`. In production, the asset canister injects this cookie automatically — your code reads it without any build-time environment variables.
+
+Install the required packages:
+
+```bash
+npm install @icp-sdk/core
+npm install -D @icp-sdk/bindgen @vitejs/plugin-react
+```
+
+### Reading canister IDs and the root key
+
+```typescript
+import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
+import { createActor } from "./backend/api/backend";
+
+interface CanisterEnv {
+  readonly "PUBLIC_CANISTER_ID:backend": string;
+}
+
+// Reads from the ic_env cookie injected by the asset canister (production)
+// or the Set-Cookie header set in vite.config.ts (development).
+const canisterEnv = getCanisterEnv<CanisterEnv>();
+const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
+
+const actor = createActor(canisterId, {
+  agentOptions: {
+    // In production, use the root key from the ic_env cookie.
+    // In development (import.meta.env.DEV), fetch it from the local replica.
+    rootKey: !import.meta.env.DEV ? canisterEnv.IC_ROOT_KEY : undefined,
+    shouldFetchRootKey: import.meta.env.DEV,
+  },
+});
+```
+
+The `createActor` function is generated by `@icp-sdk/bindgen` from your `.did` file. It returns a fully typed actor. See the [JS SDK docs](https://js.icp.build) for the full `HttpAgent` and `Actor` API.
+
+### SPA routing
+
+React apps use client-side routing. Without a fallback, refreshing on `/about` returns a 404 from the asset canister. Add a `.ic-assets.json5` file to your `public/` directory so it ends up in `dist/`:
+
+```json5
+[
+  {
+    "match": "**/*",
+    "security_policy": "standard",
+    "allow_raw_access": false
+  },
+  {
+    "match": "**/*",
+    "enable_aliasing": true
+  }
+]
+```
+
+See [asset canister configuration](asset-canister.md) for the full `.ic-assets.json5` reference.
+
+## Vue with Vite
+
+Vue and Vite follow the same pattern as React. The only difference is the Vite plugin:
+
+```bash
+npm install @icp-sdk/core
+npm install -D @icp-sdk/bindgen @vitejs/plugin-vue
+```
+
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { icpBindgen } from "@icp-sdk/bindgen/plugins/vite";
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    icpBindgen({
+      didFile: "../backend/backend.did",
+      outDir: "./src/backend/api",
+    }),
+  ],
+  server: {
+    proxy: {
+      "/api": { target: "http://127.0.0.1:8000", changeOrigin: true },
+    },
+  },
+});
+```
+
+The `icp.yaml` configuration is the same as the React example — point `dir` at `dist`.
+
+## Svelte and SvelteKit
+
+For SvelteKit, you must configure static export mode before deploying — the asset canister serves static files and does not support server-side rendering.
+
+### SvelteKit with static adapter
+
+```bash
+npm install -D @sveltejs/adapter-static
+```
+
+```javascript
+// svelte.config.js
+import adapter from "@sveltejs/adapter-static";
+
+export default {
+  kit: {
+    adapter: adapter({
+      pages: "build",
+      assets: "build",
+      fallback: "index.html", // enables SPA mode
+    }),
+  },
+};
+```
+
+```yaml
+# icp.yaml
+canisters:
+  - name: frontend
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        build:
+          - npm install
+          - npm run build
+        dir: build
+```
+
+For Svelte (without SvelteKit), Vite is the standard build tool. The `vite.config.js` setup is the same as Vue — swap `@vitejs/plugin-vue` for `@sveltejs/vite-plugin-svelte`.
+
+## Next.js
+
+Next.js requires static export mode. Server components, API routes, and `getServerSideProps` are not supported in an asset canister — the canister only serves static files.
+
+Enable static export in your Next.js config:
+
+```javascript
+// next.config.js
+const nextConfig = {
+  output: "export",
+};
+
+module.exports = nextConfig;
+```
+
+This outputs static files to the `out/` directory.
+
+```yaml
+# icp.yaml
+canisters:
+  - name: frontend
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        build:
+          - npm install
+          - npm run build
+        dir: out
+```
+
+:::note
+Only Next.js pages that can be statically generated are compatible with ICP. Any page using dynamic server-side features (server actions, route handlers, middleware) will not work in a static export.
+:::
+
+## Game engines
+
+Game engines that export HTML5 or WebGL builds can be deployed as asset canisters without a backend canister. The build output is pre-generated in the export step of the engine — `icp.yaml` just copies the files into place.
+
+### Unity WebGL
+
+Export your game from Unity Editor: **File → Build Settings → WebGL → Build**. This creates a folder with `index.html`, `Build/`, and `TemplateData/`.
+
+```yaml
+# icp.yaml
+canisters:
+  - name: unity_webgl_template_assets
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        dir: dist
+        build:
+          - mkdir -p dist
+          - cp -r src/unity_webgl_template_assets/assets/* dist/
+          - cp -r src/unity_webgl_template_assets/src/* dist/
+```
+
+The `build` commands copy the Unity WebGL export into `dist/`. Point `dir` at that directory.
+
+See the [Unity WebGL example](https://github.com/dfinity/examples/tree/master/hosting/unity-webgl-template) for the full project structure.
+
+### Godot HTML5
+
+Export your game from Godot Editor: **Project → Export → HTML5 → Export Project**. This creates an `index.html` and supporting files.
+
+```yaml
+# icp.yaml
+canisters:
+  - name: godot_html5_assets
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        dir: dist
+        build:
+          - mkdir -p dist
+          - cp -r src/godot_html5_assets/assets/* dist/
+          - cp -r src/godot_html5_assets/src/* dist/
+```
+
+See the [Godot HTML5 example](https://github.com/dfinity/examples/tree/master/hosting/godot-html5-template) for the full project structure.
+
+### Deploying game builds
+
+Both game engine templates deploy with standard icp-cli commands:
+
+```bash
+# Start local network
+icp network start -d
+
+# Deploy the asset canister
+icp deploy
+
+# Access your game locally
+# http://<canister-id>.localhost:8000
+```
+
+No Vite plugin or JS SDK integration is needed for game builds — the asset canister serves the pre-built HTML and JavaScript files directly.
+
+## Static sites
+
+For sites with no backend canister (portfolios, landing pages, documentation):
+
+```yaml
+# icp.yaml
+canisters:
+  - name: frontend
+    recipe:
+      type: "@dfinity/asset-canister@v2.1.0"
+      configuration:
+        build:
+          - npm install
+          - npm run build
+        dir: dist
+```
+
+No JS SDK integration is needed. The asset canister serves your files, and you can configure headers and caching in `.ic-assets.json5`.
+
+See the [React hosting example](https://github.com/dfinity/examples/tree/master/hosting/react) for a minimal static frontend without a backend canister.
+
+## Deploy
+
+```bash
+# Start local network
+icp network start -d
+
+# Deploy all canisters
+icp deploy
+
+# Deploy to mainnet
+icp deploy -e ic
+```
+
+After deployment, the asset canister URL depends on your canister ID:
+
+| Environment | URL |
+|-------------|-----|
+| Local | `http://<canister-id>.localhost:8000` |
+| Mainnet | `https://<canister-id>.ic0.app` |
+
+Get your canister ID with:
+
+```bash
+icp canister id frontend
+```
+
+## Next steps
+
+- [Asset canister](asset-canister.md) — configure headers, caching, and SPA routing in `.ic-assets.json5`
+- [Internet Identity](../authentication/internet-identity.md) — add authentication to your frontend
+- [Project structure](../../getting-started/project-structure.md) — explore the hello-world template with React, Vite, and a Motoko backend
+
+<!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md; dfinity/icp-cli-templates — hello-world/frontend/; dfinity/examples — hosting/react, hosting/unity-webgl-template, hosting/godot-html5-template, svelte/svelte-motoko-starter; dfinity/icp-js-sdk-docs — core/canister-environment.mdx, bindgen/plugins/vite/index.md, auth/quick-start.md -->
