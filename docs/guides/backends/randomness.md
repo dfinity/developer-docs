@@ -51,7 +51,7 @@ The `ic_cdk` crate provides `ic_cdk::management_canister::raw_rand()` which wrap
 ```rust
 #[ic_cdk::update]
 async fn get_random_bytes() -> Vec<u8> {
-    let (random_bytes,) = ic_cdk::management_canister::raw_rand()
+    let random_bytes = ic_cdk::management_canister::raw_rand()
         .await
         .expect("raw_rand failed");
     random_bytes
@@ -83,22 +83,22 @@ public shared func rollDie(sides : Nat) : async Nat {
 For multiple random values in a single call, use the `Finite` class to consume bytes incrementally from the same 32-byte blob rather than making multiple `raw_rand` calls:
 
 ```motoko
-import Buffer "mo:core/Buffer";
+import List "mo:core/List";
 import Random "mo:core/Random";
 import Nat8 "mo:core/Nat8";
 
 public shared func rollMultipleDice(count : Nat, sides : Nat) : async [Nat] {
     let entropy : Blob = await Random.blob();
     let f = Random.Finite(entropy);
-    let buf = Buffer.Buffer<Nat>(count);
+    let results = List.empty<Nat>();
     label loop_ loop {
-        if (buf.size() >= count) break loop_;
+        if (List.size(results) >= count) break loop_;
         switch (f.byte()) {
-            case (?b) { buf.add(Nat8.toNat(b) % sides) };
+            case (?b) { List.add(results, Nat8.toNat(b) % sides) };
             case null  { break loop_ };
         }
     };
-    Buffer.toArray(buf)
+    List.toArray(results)
 };
 ```
 
@@ -107,7 +107,7 @@ public shared func rollMultipleDice(count : Nat, sides : Nat) : async [Nat] {
 ```rust
 #[ic_cdk::update]
 async fn roll_die(sides: u64) -> u64 {
-    let (random_bytes,) = ic_cdk::management_canister::raw_rand()
+    let random_bytes = ic_cdk::management_canister::raw_rand()
         .await
         .expect("raw_rand failed");
     // take the first 8 bytes as a u64
@@ -121,7 +121,7 @@ For multiple random values from a single `raw_rand` call, slice the 32-byte resu
 ```rust
 #[ic_cdk::update]
 async fn roll_multiple_dice(count: usize, sides: u64) -> Vec<u64> {
-    let (random_bytes,) = ic_cdk::management_canister::raw_rand()
+    let random_bytes = ic_cdk::management_canister::raw_rand()
         .await
         .expect("raw_rand failed");
     // yields up to 4 independent u64 values from 32 bytes
@@ -168,7 +168,7 @@ async fn pick_winner(participants: Vec<String>) -> Option<String> {
     if participants.is_empty() {
         return None;
     }
-    let (random_bytes,) = ic_cdk::management_canister::raw_rand()
+    let random_bytes = ic_cdk::management_canister::raw_rand()
         .await
         .expect("raw_rand failed");
     let idx = (random_bytes[0] as usize) % participants.len();
@@ -176,7 +176,7 @@ async fn pick_winner(participants: Vec<String>) -> Option<String> {
 }
 ```
 
-## Using `getrandom` in Rust
+## Seeding a PRNG from `raw_rand` (Rust)
 
 Some Rust crates (for example, `rand`) depend on `getrandom` as a randomness source. Because `getrandom` uses OS-level entropy that does not exist in the Wasm environment, you must register a custom handler.
 
@@ -189,7 +189,7 @@ use rand::Rng;
 
 #[ic_cdk::update]
 async fn generate_with_prng(count: usize) -> Vec<u64> {
-    let (seed_bytes,) = ic_cdk::management_canister::raw_rand()
+    let seed_bytes = ic_cdk::management_canister::raw_rand()
         .await
         .expect("raw_rand failed");
     let seed: [u8; 32] = seed_bytes.try_into().unwrap();
@@ -232,4 +232,3 @@ The `random_maze` example in the ICP examples repository generates a maze using 
 - [Inter-canister calls](../canister-calls/onchain-calls.md) — async patterns and reentrancy
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/integrations/randomness.mdx; dfinity/icskills — skills/canister-security/SKILL.md; dfinity/examples — motoko/random_maze -->
-<!-- Source unavailable: .sources/portal/docs/building-apps/integrations/randomness.mdx — written from content brief; submodules not initialized in this worktree -->
