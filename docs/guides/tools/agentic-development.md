@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-AI agents can build, deploy, and interact with Internet Computer applications using the same tools as human developers: `icp` for project management, `icp-cli` skill files for implementation patterns, and the `llms.txt` discovery endpoint for navigating these docs programmatically. This page explains how to configure agents for ICP development and what resources are available.
+AI agents can build, deploy, and interact with Internet Computer applications using the same tools as human developers: `icp` for project management, icskills for implementation patterns, and the `llms.txt` discovery endpoint for navigating these docs programmatically. This page explains how to configure agents for ICP development and what resources are available.
 
 ## What icskills are
 
@@ -23,7 +23,7 @@ The skills registry is hosted at [skills.internetcomputer.org](https://skills.in
 
 ## Available skills
 
-The following skills are published in the `dfinity/icskills` registry:
+The following integration skills are published in the `dfinity/icskills` registry:
 
 | Skill | What it covers |
 |-------|----------------|
@@ -33,6 +33,7 @@ The following skills are published in the `dfinity/icskills` registry:
 | `certified-variables` | Certified data API, Merkle trees, witness generation, frontend certificate validation |
 | `ckbtc` | BTC deposit via minter, ckBTC transfers, withdrawal to BTC, subaccount derivation |
 | `cycles-management` | Cycle balance checks, top-ups, freezing thresholds, ICP-to-cycles conversion |
+| `custom-domains` | DNS configuration, `ic-domains` file, domain registration and validation via the HTTP gateway |
 | `evm-rpc` | Ethereum/EVM calls from canisters via the EVM RPC canister |
 | `https-outcalls` | HTTPS requests from canisters to external APIs, transform functions |
 | `ic-dashboard` | Query the dashboard REST API for canister info, ledger data, network metrics |
@@ -44,6 +45,8 @@ The following skills are published in the `dfinity/icskills` registry:
 | `stable-memory` | StableBTreeMap, MemoryManager, persistent actors, upgrade hook patterns |
 | `vetkd` | On-chain encryption with vetKeys, IBE encryption/decryption, transport keys |
 | `wallet-integration` | ICRC signer standards (ICRC-21/25/27/29/49), wallet popup flows, consent messages |
+
+The registry also includes tool skills like `canhelp`, which displays a human-readable summary of any mainnet canister's Candid interface. Browse the full list at [skills.internetcomputer.org](https://skills.internetcomputer.org).
 
 Each skill is a self-contained markdown file. Skills can be loaded individually â€” you only need the skills relevant to your project.
 
@@ -99,11 +102,11 @@ For batch projects with multiple skill areas, load each relevant skill at sessio
 
 ### Cursor and Windsurf
 
-Skills installed via `npx skills add dfinity/icskills` are placed in your agent's rules directory (`.cursor/rules/` for Cursor, `.windsurf/rules/` for Windsurf). Rules are automatically included in the agent's context for files in the project.
+Skills installed via `npx skills add dfinity/icskills` are placed in your agent's rules directory (`.cursor/rules/` for Cursor) or into Windsurf's Cascade context. The CLI handles placement automatically when you select your agent during installation.
 
 ### GitHub Copilot
 
-Place skill files in `.github/copilot-instructions.md` or reference them in your Copilot workspace configuration. The `npx skills add` CLI handles this automatically when you select GitHub Copilot during installation.
+The `npx skills add` CLI installs skills into the correct location for GitHub Copilot custom instructions automatically when you select Copilot during installation. The exact path depends on your Copilot version and workspace configuration.
 
 ## Agent-friendly documentation
 
@@ -119,10 +122,10 @@ To use these endpoints when querying ICP docs:
 
 ```bash
 # Discover all available pages
-curl -sL https://developer.internetcomputer.org/llms.txt
+curl -sL https://beta-docs.internetcomputer.org/llms.txt
 
 # Fetch any page as clean markdown
-curl -sL https://developer.internetcomputer.org/guides/tools/agentic-development.md
+curl -sL https://beta-docs.internetcomputer.org/guides/tools/agentic-development.md
 ```
 
 Skills take priority over docs for implementation-level questions. Use skills for "how do I implement X" and use the docs for "what is X and how does it fit in the architecture."
@@ -135,6 +138,7 @@ Load skills based on what your project integrates. You do not need every skill â
 |------------------------|-------------------|
 | Any IC project | `icp-cli` |
 | Frontend dApp | `icp-cli`, `asset-canister`, `internet-identity` |
+| Frontend dApp with custom domain | `icp-cli`, `asset-canister`, `custom-domains` |
 | Token integration | `icp-cli`, `icrc-ledger` |
 | Bitcoin integration | `icp-cli`, `ckbtc` |
 | Cross-chain with Ethereum | `icp-cli`, `evm-rpc` |
