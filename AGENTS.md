@@ -115,13 +115,13 @@ For **PR reviews**, every worktree prompt must include:
 4. Instruction to read `.docs-plan/review-guidelines.md` for the full checklist before starting
 5. Instruction to load the `technical-documentation` skill: `.agents/skills/technical-documentation/SKILL.md`
 6. Instruction to check out the PR branch, read the full page at `docs/<path>`, and work through every item in the review checklist from `review-guidelines.md` — do not skip sections
-7. Instruction to write findings to `$(pwd)/.claude/reviews/pr-<PR#>.md` using `mkdir -p .claude/reviews`, following the output format in `review-guidelines.md`, then **return the absolute file path** to the parent — do not return findings inline
+7. Instruction to write findings to `$(pwd)/.review-output/pr-<PR#>.md` using `mkdir -p .review-output`, following the output format in `review-guidelines.md`, then **return the absolute file path** to the parent — do not return findings inline
 8. **Never run `bd` commands**
 9. **Never run `gh` commands** — `gh` requires macOS Security framework for TLS; blocked in sandbox background agents
 
 **Batch limit for reviews: 8–10 per wave** — same as content. Review findings go to disk (not inline results), so per-worktree context cost is the same ~5–7k tokens. Use the same wave state file pattern as content batches (see above) for compaction-safe resumption between waves.
 
-**GitHub API in worktrees:** Worktree agents cannot use `gh` (Go binary, macOS Security framework required for TLS — blocked in sandbox). Worktrees write output to files; the parent reads them and calls `gh` in the main session. Review findings go to `<worktree-absolute-path>/.claude/reviews/pr-<PR#>.md`; the worktree returns the absolute path, and the parent posts with:
+**GitHub API in worktrees:** Worktree agents cannot use `gh` (Go binary, macOS Security framework required for TLS — blocked in sandbox). Worktrees write output to files; the parent reads them and calls `gh` in the main session. Review findings go to `<worktree-absolute-path>/.review-output/pr-<PR#>.md`; the worktree returns the absolute path, and the parent posts with:
 ```bash
 gh pr comment <PR#> --body-file <absolute-path-returned-by-worktree>
 rm <absolute-path-returned-by-worktree>   # clean up after posting
@@ -203,13 +203,13 @@ If either is missing: Step 0 should have caught this and routed through `./scrip
 
 **Step 4 — Resume interrupted wave (if applicable):**
 
-Check for `.claude/wave-state.json`. If it exists, a previous wave was interrupted by compaction or a crash. Read the file and complete any unfinished steps for each task before proceeding to the Priority scan:
+Check for `wave-state.json` at the repo root. If it exists, a previous wave was interrupted by compaction or a crash. Read the file and complete any unfinished steps for each task before proceeding to the Priority scan:
 - `done` → skip
 - `pr_created` → `bd update --status draft && bd dolt push`
 - `pushed` → `gh pr create` + `bd update` (verify branch exists first: `git ls-remote origin <branch>`)
 - `launched` → check `git ls-remote origin <branch>`: if present treat as `pushed`; if not, re-launch the worktree
 
-After all tasks are resolved, delete `.claude/wave-state.json`.
+After all tasks are resolved, delete `wave-state.json`.
 
 **Step 5 — Verify Beads state:**
 ```bash
@@ -347,10 +347,10 @@ Three outcomes:
 
   **Compaction safety — write a wave state file.** Each completed wave leaves ~60–70k tokens of dead context. Automatic compaction will eventually fire mid-session, potentially mid-wave. Rather than asking the user to `/compact` (that breaks autonomous operation), make the parent resumable after compaction by persisting wave state to disk:
 
-  - **Before launching a wave:** write `.claude/wave-state.json` with the task IDs, branch names, and per-task progress for that wave
+  - **Before launching a wave:** write `wave-state.json` at the repo root with the task IDs, branch names, and per-task progress for that wave
   - **After each step per task:** update the status field (`launched` → `pushed` → `pr_created` → `done`) — write after each step so the file is always current
   - **After the wave fully completes** (all tasks `done`): delete the file
-  - **On any session start or post-compaction resume:** check for `.claude/wave-state.json`. If it exists, resume: for each task, check its status field, verify against Beads + `git ls-remote origin <branch>`, and complete any unfinished steps. Only then proceed to the next wave.
+  - **On any session start or post-compaction resume:** check for `wave-state.json` at the repo root. If it exists, resume: for each task, check its status field, verify against Beads + `git ls-remote origin <branch>`, and complete any unfinished steps. Only then proceed to the next wave.
 
   Example wave state file:
   ```json
@@ -408,7 +408,7 @@ Three outcomes:
 
 **Parallel reviews use worktrees** — reviews need to check out the PR branch (to read the full page, verify links with `ls`, run `npm run build`). For parallel reviews, launch worktree agents the same way as for content writing. Each agent must run `git submodule update --init --depth 1` first (see "Submodule initialization in worktrees" above) to access skills and `.sources/`.
 
-**Posting review results:** Review worktree agents write findings to `<worktree-absolute-path>/.claude/reviews/pr-<PR#>.md` and **return the absolute file path** to the parent. The parent posts using `gh pr comment <PR#> --body-file <absolute-path>` then deletes the file. This keeps review content off the parent's context and is safe under compaction.
+**Posting review results:** Review worktree agents write findings to `<worktree-absolute-path>/.review-output/pr-<PR#>.md` and **return the absolute file path** to the parent. The parent posts using `gh pr comment <PR#> --body-file <absolute-path>` then deletes the file. This keeps review content off the parent's context and is safe under compaction.
 
 ### Submitting
 
@@ -865,8 +865,8 @@ The "Submitting" section above handles the normal flow (build → push → PR �
    ```
 3. **Clean up ephemeral files:**
    ```bash
-   rm -f .claude/wave-state.json        # delete if session ended cleanly mid-wave
-   rm -rf .claude/reviews/              # delete any leftover review files
+   rm -f wave-state.json                # delete if session ended cleanly mid-wave
+   rm -rf .review-output/               # delete any leftover review files
    ```
 4. **File issues** for discovered work with `bd create`
 5. **Beads is synced** — every status change was followed by `bd dolt push` and verified

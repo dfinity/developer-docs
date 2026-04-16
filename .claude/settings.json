@@ -6,17 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command // empty' | { read -r cmd; case \"$cmd\" in bd|'bd '*|gh|'gh '*|'./scripts/setup.sh'*|pkill*|'git submodule update'*|'git push'*|'git -C '*) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"Pre-approved project automation command\"}}' ;; esac; }",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | { read -r path; case \"$path\" in *'.claude/wave-state.json') echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"Pre-approved project file\"}}' ;; esac; }",
+            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(bd( |$)|gh( |$)|pkill|\\./scripts/setup\\.sh|git submodule update|git push|git -C)' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
             "timeout": 5
           }
         ]

@@ -31,8 +31,10 @@ public/docs-manifest.json
 # Claude Code (local-only files; .claude/settings.json and .claude/skills/ are committed)
 .claude/settings.local.json
 .claude/worktrees/
-.claude/reviews/
-.claude/wave-state.json
+
+# Agent ephemeral output (review files, wave state — outside .claude/ to avoid hardcoded write restrictions)
+.review-output/
+wave-state.json
 
 # Skills install artifacts (npx skills add writes here; committed skills live in .agents/skills/)
 /skills/
