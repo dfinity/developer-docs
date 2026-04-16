@@ -37,9 +37,6 @@ is dependency injection: abstract all non-deterministic IC operations behind tra
 Define a trait for each external dependency:
 
 ```rust
-use async_trait::async_trait;
-
-#[async_trait]
 pub trait StorageApi: Send + Sync {
     fn get_count(&self) -> u64;
     fn increment(&self) -> u64;
@@ -264,7 +261,7 @@ canbench
 
 Sample output:
 
-```
+```text
 ---------------------------------------------------
 Benchmark: fibonacci_20 (new)
   total:
@@ -278,13 +275,14 @@ Executed 1 of 1 benchmarks.
 Run `canbench` a second time after saving results — it compares against the baseline and reports regressions. Commit
 the `canbench_results.yml` file to your repository so CI can catch regressions automatically.
 
-For full crate documentation, see [canbench-rs on docs.rs](https://docs.rs/canbench-rs).
+For full crate documentation, see [canbench-rs on docs.rs](https://docs.rs/canbench-rs/latest/canbench_rs/).
 
 ## Containerized test networks
 
-For integration tests that run against a full local network (rather than an in-process PocketIC replica), icp-cli
-supports Docker-based test networks. This is useful when you need to test deployment configuration, CLI workflows,
-asset canister behavior, or anything that requires real network I/O.
+This section covers the "Deployed testing" tier of the testing pyramid: running tests against a full local network
+rather than an in-process PocketIC replica. icp-cli supports Docker-based test networks for this purpose, which is
+useful when you need to test deployment configuration, CLI workflows, asset canister behavior, or anything that
+requires real network I/O.
 
 ### Configure a containerized network
 
