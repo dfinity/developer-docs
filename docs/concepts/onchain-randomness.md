@@ -27,15 +27,15 @@ The process runs once per execution round:
 
 1. **Round input.** The VRF is seeded with the current round number. Each round has a globally agreed-upon number, so the input is the same on every replica.
 2. **Threshold evaluation.** The subnet's nodes collaborate using [chain-key cryptography](chain-key-cryptography.md) to evaluate the VRF. Computing the output requires a threshold of nodes to participate — the same threshold used in the consensus protocol. A minority of malicious nodes cannot bias or predict the result.
-3. **Random tape.** The VRF output seeds a per-round pseudorandom number generator called the **random tape**. The random tape is then used to produce individual random values for each canister that requested randomness in that round.
-4. **Delivery.** The `raw_rand` result is determined during the round in which the management canister processes the call, not when the canister submits it. The 32-byte blob delivered to the caller is the same on every replica, satisfying consensus.
+3. **Random tape.** The VRF output seeds a per-round pseudorandom number generator called the **random tape**. The random tape is then used to produce individual random values for each canister that requested randomness in the previous round.
+4. **Delivery.** The `raw_rand` result is determined in the round after the call arrives (see one-round delay below), not when the canister submits it. The 32-byte blob delivered to the caller is the same on every replica, satisfying consensus.
 
 ### Security properties
 
 The threshold VRF provides three guarantees that address the blockchain randomness problem:
 
 - **Unpredictability.** The output cannot be known before the threshold of nodes collaborates to compute it. Because the computation spans a round boundary, no party — including subnet nodes — can predict the result in advance.
-- **Unbiasability.** No individual node can influence the output. A malicious node that refuses to contribute forces a fallback, but cannot steer the result toward a preferred value. This is in contrast to leader-based schemes where the block producer has exclusive influence.
+- **Unbiasability.** No individual node can influence the output. A malicious node cannot single-handedly prevent the subnet from producing randomness — a threshold of honest nodes is sufficient — but it cannot steer the result toward a preferred value. This is in contrast to leader-based schemes where the block producer has exclusive influence.
 - **Verifiability.** The VRF output includes a proof that any party can verify using the subnet's public key. This means the randomness is not just unpredictable — it is provably correct. External observers can confirm that the subnet followed the protocol.
 
 ## The random tape and `raw_rand`
@@ -59,7 +59,7 @@ The threshold VRF is appropriate for a wide range of use cases where unpredictab
 
 The subnet's threshold VRF ensures the subnet itself did not bias the output. It does not prevent a canister from learning the randomness and reacting to it before revealing the outcome to users. For applications where users need to independently verify fairness, combine `raw_rand` with a commit-reveal scheme: commit to the parameters before requesting randomness, then reveal both together. This way, even if a canister were somehow compromised, users can audit whether the randomness was used as committed.
 
-For applications that need verifiable randomness tied to a specific user or event identifier — rather than per-round subnet randomness — see the vetKD VRF functionality described in [vetKeys](vetkeys.md).
+For applications that need verifiable randomness tied to a specific user or event identifier — rather than per-round subnet randomness — see the vetKeys VRF functionality described in [vetKeys](vetkeys.md).
 
 ## Next steps
 
