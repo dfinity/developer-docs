@@ -45,7 +45,7 @@ Some registrars omit the main domain suffix when entering records. For `app.exam
 
 **Apex domains:** Many registrars do not allow a `CNAME` on the apex (e.g., `example.com` without a subdomain). Use your provider's `ANAME` or `ALIAS` record type if available — these work like CNAME flattening and point to `CUSTOM_DOMAIN.icp1.io`. For GoDaddy apex domains, use Cloudflare or another provider that supports apex CNAME flattening.
 
-**Cloudflare users:** Disable Universal SSL under SSL/TLS > Edge Certificates before registering. Cloudflare's Universal SSL interferes with the ACME certificate challenge used by ICP. Also set DNS mode to "DNS only" (not proxied).
+**Cloudflare users (if you already use Cloudflare as your DNS provider):** Disable Universal SSL under SSL/TLS > Edge Certificates before registering. Cloudflare's Universal SSL interferes with the ACME certificate challenge used by ICP. Also set DNS mode to "DNS only" (not proxied). If you are on Namecheap, GoDaddy, or Route 53 without Cloudflare, this note does not apply to you.
 
 ## Step 2: Create the `ic-domains` file
 
@@ -60,7 +60,7 @@ www.example.com
 
 **Placement for asset canisters:** Hidden directories (starting with `.`) are excluded by the asset canister by default. To include `.well-known/`:
 
-1. Place the file in your `public/` directory (Vite projects) so the build tool copies it to `dist/`:
+1. Place the file in your `public/` directory (Vite, SvelteKit, Nuxt) or `static/` directory (older SvelteKit versions) so the build tool copies it to the output directory. For Next.js, place it in `public/`. Most frameworks have a dedicated directory for static files that are copied as-is to the build output:
 
    ```
    public/
@@ -89,6 +89,8 @@ Deploy to mainnet so the ownership file is live:
 ```bash
 icp deploy -e ic frontend
 ```
+
+Replace `frontend` with your canister's name as defined in `icp.yaml`.
 
 Verify the file is accessible:
 
@@ -170,7 +172,7 @@ The `registration_status` field progresses from `registering` → `registered`:
 |---|---|
 | `registering` | Request accepted, certificate provisioning in progress |
 | `registered` | Certificate issued, domain is live |
-| `expired` | Certificate has expired |
+| `expired` | Certificate has expired — re-register with a `POST` request to trigger a new provisioning cycle |
 | `failed` | Registration failed — check the error message in the response |
 
 Once `registered`, wait a few more minutes for propagation to all HTTP gateways before testing in a browser.
@@ -219,6 +221,8 @@ const agent = await HttpAgent.create({ host });
 ```
 
 Without this, `HttpAgent` falls back to using the page origin as the API host — which will fail on custom domains since they do not proxy IC API traffic.
+
+For local development, you also need to pass `shouldFetchRootKey: true` so the agent can fetch the replica's root key. See [Asset canister](asset-canister.md) for a complete local + mainnet agent setup example.
 
 ## Updating a custom domain
 
@@ -285,7 +289,7 @@ GoDaddy does not support `CNAME` or `ALIAS` records on the apex. For apex domain
 1. Create a Cloudflare account and add your domain.
 2. Note the two Cloudflare nameservers provided.
 3. In GoDaddy DNS Management, remove all existing DNS entries.
-4. Under **Nameservers**, click **Change** and enter the Cloudflare nameservers.
+4. Under **Nameservers**, click **Change** and enter the Cloudflare nameservers. Nameserver propagation can take several hours; Cloudflare will notify you by email when it completes. Only proceed after the nameservers are active.
 5. In Cloudflare, add the CNAME and TXT records as described above.
 6. Disable Universal SSL and proxy in Cloudflare (DNS only mode).
 
@@ -297,7 +301,7 @@ For **subdomains** on GoDaddy (works without Cloudflare):
 
 ### Amazon Route 53
 
-Route 53 does not support apex CNAME records. For apex domains, follow the Cloudflare alternative DNS approach described in the GoDaddy section above.
+Route 53 does not support apex CNAME records. For apex domains, follow the Cloudflare alternative DNS approach described in the **GoDaddy** section above (the steps under "use Cloudflare as your DNS provider").
 
 For **subdomains** on Route 53, navigate to **Hosted zones**, click your domain, then click **Create record**:
 
