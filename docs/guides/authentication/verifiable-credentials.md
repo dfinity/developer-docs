@@ -7,6 +7,8 @@ A verifiable credential (VC) is a cryptographically signed digital attestation a
 
 This guide covers the VC architecture on ICP, how the protocol works, and how to implement both sides of the flow — issuer and relying party.
 
+**Choose your path:** If you are building a service that attests claims about users (age verification, KYC, membership), go to [Implementing an issuer](#implementing-an-issuer). If you are building an app that requests credentials from an issuer to gate access, go to [Implementing a relying party](#implementing-a-relying-party).
+
 ## Key concepts
 
 The VC protocol on ICP involves four actors:
@@ -128,7 +130,9 @@ The `credentialType` value is used as the key in `credentialSubject`, and the ar
 
 A compliant issuer for age verification would implement `prepare_credential` to check whether the user has a verified date of birth on record, and `get_credential` to return a signed JWT attesting `VerifiedAdult` with `minAge: 18`.
 
-See the [vc-playground issuer example](https://github.com/dfinity/vc-playground/blob/main/issuer/src/main.rs) for a complete Rust implementation.
+For complete Rust implementations of all four API endpoints, see the [vc-playground issuer example](https://github.com/dfinity/vc-playground/blob/main/issuer/src/main.rs). This is the primary reference implementation — the four endpoints above require careful handling of canister signatures and certified data, and the reference implementation shows the complete pattern including error handling and Candid interface definitions.
+
+<!-- Needs human verification: exact Rust function signatures for all four issuer endpoints — vc-playground is not in .sources/ so code cannot be verified inline -->
 
 ## Implementing a relying party
 
@@ -140,7 +144,7 @@ A relying party requests credentials from issuers through Internet Identity. The
 
 ### Using the JavaScript SDK
 
-The [@dfinity/verifiable-credentials](https://www.npmjs.com/package/@dfinity/verifiable-credentials) package handles the window messaging protocol for you:
+The [@dfinity/verifiable-credentials](https://www.npmjs.com/package/@dfinity/verifiable-credentials) package handles the window messaging protocol for you. This is a dedicated VC package — it is separate from the `@icp-sdk/*` family used for general authentication.
 
 ```javascript
 import { requestVerifiablePresentation } from "@dfinity/verifiable-credentials/request-verifiable-presentation";
@@ -166,7 +170,7 @@ requestVerifiablePresentation({
     },
     credentialSubject: userPrincipal, // the user's principal at the relying party
   },
-  identityProvider: new URL("https://identity.internetcomputer.org"),
+  identityProvider: new URL("https://id.ai"),
   derivationOrigin: undefined, // set if your RP uses alternative derivation origins
 });
 ```
@@ -189,7 +193,7 @@ If you prefer to implement the window message protocol yourself, the three steps
 Open a window to the identity provider's `/vc-flow` path:
 
 ```javascript
-const iiWindow = window.open("https://identity.internetcomputer.org/vc-flow");
+const iiWindow = window.open("https://id.ai/vc-flow");
 ```
 
 Wait for the `vc-flow-ready` postMessage from II before sending a request.
@@ -337,7 +341,7 @@ See the [vc_util library in the Internet Identity repository](https://github.com
 After verifying the signatures, check the following:
 
 From the **id-alias credential**:
-- `iss` is `https://identity.internetcomputer.org/` (the expected II canister).
+- `iss` is `https://identity.internetcomputer.org/` (the expected II canister). <!-- Needs human verification: the portal spec uses this value; verify against the live vc-spec if II now issues credentials with `https://id.ai/` as the issuer instead -->
 - `sub` contains the user's principal at the relying party.
 - Credential type is `InternetIdentityIdAlias`.
 - `derivationOrigin` matches the derivation origin used when logging into the relying party.
@@ -348,7 +352,7 @@ From the **issued credential**:
 - The arguments in `vc.credentialSubject.<credential-type>` match what was requested.
 
 Cross-credential check:
-- The `sub` of the issued credential (`did-id-alias`) matches `vc.credentialSubject.InternetIdentityIdAlias.hasIdAlias` from the id-alias credential.
+- The `sub` of the issued credential matches `vc.credentialSubject.InternetIdentityIdAlias.hasIdAlias` from the id-alias credential. Note that this `sub` value uses the `did:` URI scheme (for example, `did:ic:...`) — it is not a bare principal text. Compare the full DID string, not just the principal portion.
 
 This chain confirms that the issuer attested the claim for the same `id_alias` that II linked to your user's principal.
 
@@ -364,8 +368,7 @@ A demo relying party is deployed on ICP for testing:
 Use the II staging instance to avoid using real user credentials:
 [https://fgte5-ciaaa-aaaad-aaatq-cai.ic0.app/](https://fgte5-ciaaa-aaaad-aaatq-cai.ic0.app/)
 
-A demo issuer is deployed that will issue any requested credential:
-[https://qdiif-2iaaa-aaaap-ahjaq-cai.icp0.io/](https://qdiif-2iaaa-aaaap-ahjaq-cai.icp0.io/)
+A demo issuer is deployed that will issue any requested credential. Explore the issuer canister on the [NNS dashboard](https://dashboard.internetcomputer.org/canister/qdiif-2iaaa-aaaap-ahjaq-cai) or browse its implementation in the [vc-playground repository](https://github.com/dfinity/vc-playground).
 
 ### Local development
 
