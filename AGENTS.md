@@ -511,6 +511,7 @@ Add enough context in the notes so the next agent (or human) understands the blo
 
 ## Never (do not do these under any circumstances)
 
+- Diagnose a Beads dependency as "phantom", "missing", or "stale" based solely on it not appearing in `bd list --limit 0` — that query excludes closed tasks. Always check `bd list --status closed --limit 0 --json` before drawing that conclusion (see "Task structure" in the Beads reference)
 - Offer, suggest, or perform PR reviews unless a human explicitly asks — reviews are a developer decision, not an agent initiative
 - Use `python3` (or any interpreter) for JSON parsing — use `jq` instead, which is pre-approved in `settings.json`; `python3` is not in the allow list and will prompt the user
 - Reference `dfx` — it is deprecated and banned
@@ -793,6 +794,12 @@ Branch `restructuring-attempt-1` preserves the previous attempt with 124 pages, 
 ### Task structure
 
 Tasks are organized as **epics** (sprints + infrastructure) with **child tasks** (individual pages/infra items). `bd list` defaults to 50 items — use `bd list --limit 0` to see all. Use `bd show <epic-id>` to drill into a sprint's children.
+
+> **`bd list` excludes closed tasks by default.** Running `bd list --limit 0` (without `--status`) only returns active statuses (open, in_progress, draft, deferred). Closed tasks are invisible. This means a dependency ID that doesn't appear in a plain `bd list` query is **not** necessarily missing — it may simply be closed. Before concluding a dependency ID is "phantom" or "missing", always verify against the closed task list:
+> ```bash
+> bd list --status closed --limit 0 --json | jq -r '.[] | select(.id == "<suspect-id>") | "\(.id) \(.title)"'
+> ```
+> If the ID appears there, the dependency is satisfied (the page is done). Only if it is absent from **both** the active list and the closed list is the dependency truly missing.
 
 ### Creating issues
 
