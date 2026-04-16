@@ -14,7 +14,7 @@ For guidance on choosing a subnet for deployment, see [Subnet selection](../guid
 | Property | What it means |
 |----------|---------------|
 | **Node count** | The number of replica nodes in the subnet. Higher node counts mean greater fault tolerance and Byzantine resistance. |
-| **Cycle cost multiplier** | Costs scale linearly with node count relative to a 13-node baseline. A 34-node subnet costs `34/13 ≈ 2.6×` more per operation. |
+| **Cycle cost multiplier** | Costs scale linearly with node count relative to a 13-node baseline. A subnet with n nodes costs `n/13` more per operation than a standard 13-node subnet. |
 | **Geographic distribution** | Where the nodes are located. Relevant for data sovereignty requirements. |
 | **Canister creation** | Whether arbitrary user canisters can be created on the subnet. System subnets do not allow this. |
 
@@ -34,7 +34,7 @@ Each application subnet operates independently. Canisters on different applicati
 You may want to deploy to a specific application subnet for:
 
 - **Colocation** — Keep related canisters on the same subnet to minimize Xnet call overhead
-- **Resource availability** — Prefer subnets with lower utilization if storage is a concern (subnets share a 2 TiB storage budget)
+- **Resource availability** — Prefer subnets with lower utilization if storage is a concern (each application subnet has a 2 TiB storage capacity)
 - **Specific features** — Some application subnets have features enabled or disabled by NNS governance
 
 Browse available application subnets on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). Filter by type to find "Application" subnets and view their current load and node locations.
@@ -50,7 +50,7 @@ There are currently three system subnets:
 | Subnet | Principal prefix | Contents |
 |--------|-----------------|----------|
 | NNS | `tdb26` | 14 NNS canisters (governance, registry, ledger, CMC, etc.) |
-| Application services | `uzr34` | Internet Identity, cycles ledger, exchange rate canister, ICP dashboard; backup threshold signing keys |
+| Internet Identity / infrastructure | `uzr34` | Internet Identity, cycles ledger, exchange rate canister, ICP dashboard; backup threshold signing keys |
 | Bitcoin integration | `w4rem` | Bitcoin integration canisters |
 
 Full principals for these subnets are available on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets).
@@ -59,12 +59,12 @@ For a complete list of the canisters running on these subnets, see [System canis
 
 ## Fiduciary subnet
 
-The fiduciary subnet is a single large application subnet with 34 nodes instead of the standard 13. The larger committee size provides a higher security threshold — useful for DeFi applications that require stronger guarantees.
+The fiduciary subnet is a single large application subnet with more nodes than the standard 13-node application subnet. The larger committee size provides a higher security threshold — useful for DeFi applications that require stronger guarantees. Cycle costs scale linearly with node count.
 
 | Property | Value |
 |----------|-------|
-| Node count | 34 |
-| Cycle cost multiplier | ~2.6× (34/13) |
+| Node count | See [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) for current count |
+| Cycle cost multiplier | Proportional to node count (e.g., 34 nodes → ~2.6×; 31 nodes → ~2.4×) |
 | Geographic distribution | Global |
 | Canister creation | Open to all |
 | Principal prefix | `pzp6e` |
@@ -72,9 +72,11 @@ The fiduciary subnet is a single large application subnet with 34 nodes instead 
 
 The fiduciary subnet hosts the active threshold signature keys used by all chain-key signing operations (tECDSA, tSchnorr). It also hosts the EVM RPC canister.
 
-**Cost example:** An update call that costs 5 million cycles on a 13-node subnet costs approximately 13 million cycles on the fiduciary subnet (`5M × 34/13 ≈ 13M`). See [Cycles costs](cycles-costs.md) for complete tables.
+> **Note:** Check the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) for the authoritative current node count and full principal ID of the fiduciary subnet. The node count determines the exact cycle cost multiplier for operations on this subnet.
 
-To deploy to the fiduciary subnet:
+**Cost example (based on 34 nodes):** An update call that costs 5 million cycles on a 13-node subnet costs approximately 13 million cycles on the fiduciary subnet (`5M × 34/13 ≈ 13M`). See [Cycles costs](cycles-costs.md) for complete tables.
+
+To deploy to the fiduciary subnet (verify the full principal ID on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before deploying):
 
 ```bash
 icp deploy -e ic --subnet pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae
@@ -105,8 +107,8 @@ icp deploy -e ic --subnet bkfrj-6k62g-dycql-7h53p-atvkj-zg4to-gaogh-netha-ptybj-
 | Subnet type | Node count | Cost multiplier | Open to users | Geographic constraint |
 |-------------|-----------|----------------|--------------|----------------------|
 | Application | 13 | 1× | Yes | None (global) |
-| System | Varies | N/A (no charges) | No | None |
-| Fiduciary | 34 | ~2.6× | Yes | None (global) |
+| System | Varies (NNS: varies; `uzr34`: 28; `w4rem`: varies) | N/A (no charges) | No | None |
+| Fiduciary | See ICP Dashboard | Proportional to node count | Yes | None (global) |
 | European | 13 | 1× | Yes | Europe only |
 
 ## Cycle costs by subnet type
@@ -117,7 +119,7 @@ Cycle costs scale linearly with node count. The baseline is a 13-node applicatio
 cost_on_n_node_subnet = base_cost × n / 13
 ```
 
-For a 34-node fiduciary subnet, the multiplier is `34 / 13 ≈ 2.615`.
+For a fiduciary subnet, the multiplier depends on the current node count — verify on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). For example, at 34 nodes: `34 / 13 ≈ 2.615`.
 
 **Example: canister creation cost**
 
@@ -125,9 +127,9 @@ For a 34-node fiduciary subnet, the multiplier is `34 / 13 ≈ 2.615`.
 |--------|-----------|--------|-----------------|
 | Application | 13 | 500,000,000,000 | ~$0.68 |
 | European | 13 | 500,000,000,000 | ~$0.68 |
-| Fiduciary | 34 | 1,307,692,307,692 | ~$1.77 |
+| Fiduciary | verify on dashboard | base × n / 13 | varies with node count |
 
-For the full cost table including storage, execution, Xnet calls, and HTTPS outcalls, see [Cycles costs](cycles-costs.md).
+USD values are approximate and vary with the ICP/XDR exchange rate. See [Cycles costs](cycles-costs.md) for current figures and the full cost table including storage, execution, Xnet calls, and HTTPS outcalls.
 
 ## Finding subnet IDs
 
