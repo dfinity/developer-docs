@@ -11,7 +11,7 @@ Protocol canisters implement platform-level features on the Internet Computer. U
 
 The Bitcoin integration canisters connect ICP to the Bitcoin network. They track the Bitcoin UTXO set and expose an API that other canisters use to read Bitcoin state and submit transactions.
 
-> The management canister Bitcoin API (`bitcoin_get_utxos`, `bitcoin_get_balance`, etc.) is deprecated. Call the Bitcoin canisters directly using the canister IDs below.
+> Call the Bitcoin canisters directly using the canister IDs below for better performance and to avoid potential future changes to the management canister Bitcoin API.
 
 ### Bitcoin mainnet
 
@@ -21,7 +21,7 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 | Subnet | [`w4rem-dv5e3-widiz-wbpea-kbttk-mnzfm-tzrc7-svcj3-kbxyb-zamch-hqe`](https://dashboard.internetcomputer.org/subnet/w4rem-dv5e3-widiz-wbpea-kbttk-mnzfm-tzrc7-svcj3-kbxyb-zamch-hqe) |
 | Specification | [Bitcoin canister interface spec](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md) |
 
-### Bitcoin testnet
+### Bitcoin testnet (v4)
 
 | Field | Value |
 |---|---|
@@ -31,7 +31,7 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 
 ### Key endpoints
 
-The Bitcoin canisters expose endpoints for reading UTXOs, balances, and block headers, and for submitting transactions. These mirror the deprecated management canister Bitcoin API:
+The Bitcoin canisters expose endpoints for reading UTXOs, balances, and block headers, and for submitting transactions. These mirror the management canister Bitcoin API:
 
 - `bitcoin_get_utxos` — returns UTXOs for a Bitcoin address
 - `bitcoin_get_balance` — returns the balance of a Bitcoin address in satoshi
@@ -111,6 +111,7 @@ Chain-key Ethereum (ckETH) is an ICRC-2 token backed 1:1 by ETH. The ckETH minte
 |---|---|
 | ckETH Ledger | [`ss2fx-dyaaa-aaaar-qacoq-cai`](https://dashboard.internetcomputer.org/canister/ss2fx-dyaaa-aaaar-qacoq-cai) |
 | ckETH Minter | [`sv3dd-oaaaa-aaaar-qacoa-cai`](https://dashboard.internetcomputer.org/canister/sv3dd-oaaaa-aaaar-qacoa-cai) |
+| ckETH Index | [`s3zol-vqaaa-aaaar-qacpa-cai`](https://dashboard.internetcomputer.org/canister/s3zol-vqaaa-aaaar-qacpa-cai) |
 
 ### How it works
 
@@ -241,13 +242,16 @@ Unused cycles are refunded. At least 1M cycles are charged even on error, to pre
 
 ### Example call
 
+Calling the XRC requires attaching cycles, which is only possible from canister-to-canister calls. The CLI cannot attach cycles to direct calls. Call the XRC from a canister using the Candid interface — pass the required cycles in the `ic_cdk::api::call::call_with_payment128` call or equivalent.
+
+To query the current rate without attaching cycles (for inspection only, expect a `NotEnoughCycles` error on mainnet):
+
 ```bash
 icp canister call uf6dk-hyaaa-aaaaq-qaaaq-cai get_exchange_rate \
   '(record {
     base_asset  = record { symbol = "BTC"; class = variant { Cryptocurrency } };
     quote_asset = record { symbol = "USD"; class = variant { FiatCurrency } };
   })' \
-  --with-cycles 10000000000 \
   -e ic
 ```
 
@@ -269,12 +273,13 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 | Canister | ID | Purpose |
 |---|---|---|
 | Bitcoin mainnet | `ghsi2-tqaaa-aaaan-aaaca-cai` | Bitcoin mainnet UTXO tracking |
-| Bitcoin testnet | `g4xu7-jiaaa-aaaan-aaaaq-cai` | Bitcoin testnet UTXO tracking |
+| Bitcoin testnet (v4) | `g4xu7-jiaaa-aaaan-aaaaq-cai` | Bitcoin testnet UTXO tracking |
 | ckBTC Ledger | `mxzaz-hqaaa-aaaar-qaada-cai` | ckBTC ICRC-1/ICRC-2 token ledger |
 | ckBTC Minter | `mqygn-kiaaa-aaaar-qaadq-cai` | BTC ↔ ckBTC minting and burning |
 | ckBTC Index | `n5wcd-faaaa-aaaar-qaaea-cai` | ckBTC transaction index |
 | ckETH Ledger | `ss2fx-dyaaa-aaaar-qacoq-cai` | ckETH ICRC-1/ICRC-2 token ledger |
 | ckETH Minter | `sv3dd-oaaaa-aaaar-qacoa-cai` | ETH ↔ ckETH minting and burning |
+| ckETH Index | `s3zol-vqaaa-aaaar-qacpa-cai` | ckETH transaction index |
 | EVM RPC | `7hfb6-caaaa-aaaar-qadga-cai` | Ethereum JSON-RPC proxy |
 | Exchange Rate (XRC) | `uf6dk-hyaaa-aaaaq-qaaaq-cai` | Crypto and forex exchange rates |
 | SNS-W | `qaa6y-5yaaa-aaaaa-aaafa-cai` | SNS deployment and upgrades |
@@ -286,4 +291,4 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 - [System canisters](system-canisters.md) — NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
 - [Management canister](management-canister.md) — the virtual canister for canister lifecycle, signing, and platform APIs
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->
