@@ -262,7 +262,7 @@ The client must verify the certificate before trusting the data. The `@dfinity/c
 
 ```typescript
 import { verifyCertification } from "@dfinity/certificate-verification";
-import { lookup_path, HashTree } from "@icp-sdk/core/agent";
+import { lookup_path, lookupResultToBuffer, HashTree } from "@icp-sdk/core/agent";
 import { Principal } from "@icp-sdk/core/principal";
 
 const MAX_CERT_TIME_OFFSET_MS = 5 * 60 * 1000; // 5 minutes
@@ -288,9 +288,13 @@ async function getVerifiedValue(
   });
 
   // Step 6: look up the key in the verified witness tree.
-  const leafData = lookup_path([new TextEncoder().encode(key)], tree);
+  // lookup_path returns a LookupResult discriminated union; lookupResultToBuffer
+  // extracts the Uint8Array value or returns undefined if the key is absent.
+  const leafData = lookupResultToBuffer(
+    lookup_path([new TextEncoder().encode(key)], tree)
+  );
 
-  if (!leafData) {
+  if (leafData === undefined) {
     // Key is provably absent from the certified tree.
     return null;
   }
