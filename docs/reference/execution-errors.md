@@ -25,7 +25,7 @@ Common root causes:
 - **Heap out of bounds** — the canister accessed heap memory that has not been allocated. Check for places where memory is allocated (creating vectors, buffers) and whether you try to access that memory before it is allocated.
 - **Stable memory out of bounds** — similar to heap out of bounds but for stable memory.
 - **Integer division by zero** — the canister attempted to divide by zero. Inspect the canister code for any division operations.
-- **Unreachable** — typically produced when a Rust canister panics. Use the [panic hook](https://github.com/dfinity/cdk-rs/blob/main/src/ic-cdk/src/printer.rs) so that panics are converted to an explicit call to `ic0.trap`, which appends an error message that is more useful for debugging.
+- **Unreachable** — typically produced when a Rust canister panics. Rust canisters using `ic-cdk` macros automatically convert panics to `ic0.trap` calls with a human-readable message including the file, line, and panic reason.
 
 To fix this error, test the canister to identify unhandled errors. Review the [canister trapping guide](../guides/canister-management/lifecycle.md) for detailed guidance on traps during upgrades and inter-canister calls.
 
@@ -103,7 +103,7 @@ The canister tried to request more memory than the system can provide during exe
 Canister cannot grow its memory usage.
 ```
 
-ICP imposes limits on both the main memory (Wasm heap, up to 4 GiB) and stable memory (up to 500 GiB) per canister, as well as on the total memory per subnet. This error is triggered when any one of those limits is reached.
+ICP imposes limits on both the main memory (Wasm heap, up to 4 GiB for wasm32 or 6 GiB for wasm64) and stable memory (up to 500 GiB) per canister, as well as on the total memory per subnet. This error is triggered when any one of those limits is reached.
 
 To diagnose this error, check the canister's current memory usage using the [`canister_status` API](./ic-interface-spec.md) or the `icp canister status` command. Subnet memory usage is visible on the [ICP dashboard](https://dashboard.internetcomputer.org/subnets).
 
@@ -122,7 +122,7 @@ The canister tried to grow its Wasm heap memory beyond the limit set by its `was
 Canister exceeded its current Wasm memory limit of 2147483648 bytes. The peak Wasm memory usage was 2147485000 bytes. If the canister reaches 4GiB, then it may stop functioning and may become unrecoverable. Please reach out to the canister owner to investigate the reason for the increased memory usage. It might be necessary to move data from the Wasm memory to the stable memory. If such high Wasm memory usage is expected and safe, then the developer can increase the Wasm memory limit in the canister settings.
 ```
 
-Canisters can impose a limit on Wasm heap memory usage to prevent reaching the 4 GiB maximum. A canister that reaches 4 GiB may be unable to upgrade if the `pre_upgrade` hook requires additional heap memory.
+Canisters can impose a limit on Wasm heap memory usage to prevent reaching the maximum (4 GiB for wasm32, 6 GiB for wasm64). A canister that reaches the maximum may be unable to upgrade if the `pre_upgrade` hook requires additional heap memory.
 
 To diagnose this error, check the canister's `wasm_memory_limit` setting. If memory usage is unexpected, use [canbench](https://github.com/dfinity/canbench) to check for a memory leak.
 
@@ -142,7 +142,7 @@ Canister tried to allocate pages reserved for upgrading older versions of Motoko
 
 Newer versions of Motoko do not require these reserved pages. This issue only occurs for Motoko versions `0.6.20` and older.
 
-To fix this error, upgrade to a newer version of icp-cli (which includes a newer Motoko compiler).
+To fix this error, upgrade to a newer version of icp-cli (which includes a newer Motoko compiler). Any icp-cli version shipping Motoko 0.6.21 or later eliminates this error.
 
 ---
 
@@ -157,7 +157,7 @@ The canister does not have enough cycles to grow its memory.
 Canister cannot grow memory by 65536 bytes due to insufficient cycles.
 ```
 
-Canisters pay for their memory each round. Growing memory requires that the canister have enough cycles to pay for the increased usage.
+Canisters pay for their memory each round. Growing memory requires that the canister have enough cycles to pay for the increased usage. For operations like uploading a Wasm chunk, taking a snapshot, or installing code, the error message may include an "At least X additional cycles are required" suffix indicating the shortfall.
 
 To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md).
 
@@ -580,7 +580,7 @@ A canister executed a request to delete itself.
 Canister xxx-xxx cannot delete itself.
 ```
 
-A canister cannot delete itself. To fix this error, delete the canister from one of its other controllers. If the only controller is the canister itself, it cannot be directly deleted — it will eventually be deleted automatically when its cycle balance drops to zero.
+A canister cannot delete itself. To fix this error, delete the canister from one of its other controllers. If the only controller is the canister itself, it cannot be directly deleted — it will first be frozen when its cycle balance falls below the freezing threshold, and eventually deleted when the balance reaches zero.
 
 ### Delete canister queue not empty
 
