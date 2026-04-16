@@ -36,7 +36,7 @@ Using the LLM canister is different from calling an external AI API via [HTTPS o
 | Inference runs | Onchain (ICP nodes) | External provider (OpenAI, Anthropic, etc.) |
 | Response determinism | Yes (random beacon seeded) | No |
 | Model choice | ICP-hosted models only | Any provider's API |
-| Response size | ~200 tokens output limit | Provider-dependent |
+| Response size | 1000 tokens output limit | Provider-dependent |
 
 Use the LLM canister when you want decentralized, key-free inference with deterministic results. Use HTTPS outcalls when you need a specific commercial model, larger context windows, or higher output limits.
 
@@ -242,11 +242,12 @@ During the initial rollout, the LLM canister enforces the following limits:
 |-------|-------|
 | Max messages per chat request | 10 |
 | Max prompt size | 10 KiB |
-| Max output tokens | 200 |
+| Max output tokens | 1000 |
+| Streaming | Not supported |
 
 Requests that exceed these limits return an error. Design your application to stay within these bounds — for example, by trimming old messages from conversation history before each call.
 
-{/* Needs human verification: confirm the exact limits (10 messages, 10 KiB, 200 tokens) and whether streaming is supported in the current release */}
+Streaming is not currently supported — the LLM canister returns the complete response when inference finishes.
 
 ## Deploy and test
 
@@ -294,4 +295,4 @@ Both examples include a browser UI and can be deployed to mainnet in a single co
 - [Data persistence](data-persistence.md) — persist conversation history across canister upgrades using stable memory
 - [App architecture](../../concepts/app-architecture.md) — understand where AI inference fits in a multi-canister application
 
-{/* Upstream: informed by dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot */}
+{/* Upstream: informed by dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot; limits verified against dfinity/llm */}
