@@ -1,6 +1,6 @@
 ---
 title: "Secure Upgrades"
-description: "Upgrade canisters safely: pre/post hooks, stable memory, Candid compatibility, snapshot rollbacks, and testing"
+description: "Upgrade canisters safely: pre/post hooks, stable memory, Candid compatibility, snapshot rollbacks, schema evolution, and testing"
 sidebar:
   order: 2
 ---
@@ -16,7 +16,7 @@ Use this before every production upgrade:
 - [ ] Verify data survives: write → upgrade → read
 - [ ] Check Candid interface compatibility — no removed methods, no breaking type changes
 - [ ] Avoid `pre_upgrade` hooks that serialize large state (use stable structures instead)
-- [ ] In Motoko, use `persistent actor` — avoid manual `pre_upgrade`/`post_upgrade`
+- [ ] In Motoko, use `persistent actor` (which eliminates the need for pre_upgrade hooks) — avoid manual `pre_upgrade`/`post_upgrade`
 - [ ] Confirm you have a backup controller (cannot recover from a trapped `post_upgrade` without one)
 - [ ] Add a rollback plan: snapshot ID recorded, restore procedure tested
 
@@ -56,7 +56,7 @@ persistent actor Counter {
 
   public query func get() : async Nat { count };
 
-  // transient: resets to [] on each upgrade — correct for caches
+  // transient: resets to [] on each upgrade — correct for caches, transient logs, and reset-on-upgrade counters
   transient var recentCallers : [Principal] = [];
 };
 ```
@@ -124,7 +124,7 @@ fn pre_upgrade() {
 }
 ```
 
-When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API) bypasses the hook — but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
+When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API — see [Management canister reference](../../reference/management-canister.md)) bypasses the hook — but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
 
 ## Candid interface compatibility
 
@@ -181,6 +181,7 @@ Always take a snapshot immediately before a risky upgrade. If the upgrade causes
 icp canister stop my-canister -e ic
 icp canister snapshot create my-canister -e ic
 # Note the snapshot ID printed in the output
+icp canister start my-canister -e ic
 
 # 2. Deploy the upgrade
 icp deploy my-canister -e ic
@@ -227,21 +228,19 @@ If you need to make an unsafe change, migrate the data in two upgrades: add the 
 
 Rust stable structures use serialized bytes on disk. Schema evolution safety depends on the serialization format and versioning strategy.
 
-**Adding fields safely with `serde(default)`:**
+**Adding fields safely with Candid encoding:**
 
 ```rust
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::storable::{Bound, Storable};
-use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone)]
 struct UserV2 {
     id: u64,
     name: String,
     created: u64,
-    // New optional field — safe to add with serde default
-    // Old records without this field deserialize to None
-    #[serde(default)]
+    // New optional field — safe to add: old records deserialize with None
     email: Option<String>,
 }
 
@@ -252,20 +251,18 @@ impl Storable for UserV2 {
     const BOUND: Bound = Bound::Unbounded;
 
     fn to_bytes(&self) -> Cow<'_, [u8]> {
-        let mut buf = vec![];
-        ciborium::into_writer(self, &mut buf).expect("encode failed");
-        Cow::Owned(buf)
+        Cow::Owned(Encode!(self).expect("failed to encode UserV2"))
     }
 
     fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
-        ciborium::from_reader(bytes.as_ref()).expect("decode failed")
+        Decode!(&bytes, Self).expect("failed to decode UserV2")
     }
 }
 ```
 
 **Rules:**
 
-- Use `#[serde(default)]` on new optional fields so old records deserialize correctly
+- Use `Option<T>` for new fields — Candid deserializes absent fields as `None`, so old records remain readable after the upgrade
 - Use `Bound::Unbounded` unless you have a strict size requirement
 - Never reorder `MemoryId` allocations across upgrades — same effect as changing a field type
 - For breaking schema changes, use a versioned enum and migrate records lazily on read
@@ -350,4 +347,4 @@ See [Access management](access-management.md) for detailed controller management
 - [Testing strategies](../testing/strategies.md) — test upgrade scenarios before deploying to mainnet
 - [Access management](access-management.md) — manage controllers and prevent lock-out
 
-<!-- Upstream: informed by dfinity/icskills — skills/canister-security/SKILL.md; dfinity/portal — docs/building-apps/canister-management/upgrade.mdx, docs/building-apps/interact-with-canisters/candid/using-candid.mdx; dfinity/icp-cli — docs/guides/canister-snapshots.md; dfinity/cdk-rs — ic-cdk/src/api/management_canister/main/types.rs -->
+<!-- Upstream: informed by dfinity/icskills — skills/canister-security/SKILL.md; dfinity/portal — docs/building-apps/canister-management/upgrade.mdx, docs/building-apps/interact-with-canisters/candid/using-candid.mdx; dfinity/icp-cli — docs/guides/canister-snapshots.md; dfinity/cdk-rs — ic-cdk/src/api/management_canister/main/types.rs; dfinity/examples — rust/tokenmania/backend/types.rs -->
