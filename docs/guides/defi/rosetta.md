@@ -1,11 +1,11 @@
 ---
 title: "Rosetta API"
-description: "Integrate with exchanges and block explorers using the Rosetta API for ICP and ICRC-1 tokens"
+description: "Run a Rosetta node for ICP or ICRC-1 tokens; query balances and blocks; construct and sign transactions offline; manage NNS neurons."
 sidebar:
   order: 3
 ---
 
-The Rosetta API is a standardized blockchain integration specification developed by Coinbase (now Mesh). ICP provides two Rosetta implementations: one for the ICP ledger (with NNS governance support), and one for ICRC-1 compatible tokens such as ckBTC and ckETH.
+The Rosetta API is a standardized blockchain integration specification developed by Coinbase (the open specification is sometimes referred to as the Mesh API in Coinbase's developer platform, but remains called "Rosetta" in the broader ecosystem). ICP provides two Rosetta implementations: one for the ICP ledger (with NNS governance support), and one for ICRC-1 compatible tokens such as ckBTC and ckETH.
 
 This guide covers both implementations, focusing on what exchange operators and block explorer developers need to get started: running a node, querying chain data, and constructing transactions.
 
@@ -28,7 +28,7 @@ Both ICP Rosetta and ICRC Rosetta implement the full Rosetta specification and p
 | **Ledger** | ICP ledger (`ryjl3-tyaaa-aaaaa-aaaba-cai`) | Any ICRC-1 ledger (ckBTC, ckETH, SNS tokens, …) |
 | **Default port** | 8081 | 8082 |
 | **Docker image** | `dfinity/rosetta-api` | `dfinity/ic-icrc-rosetta-api` |
-| **Extra operations** | Neuron staking, voting, NNS governance queries | Multi-token support (v2.1.0+) |
+| **Extra operations** | Neuron staking, voting, NNS governance queries | Multi-token support |
 | **Network identifier** | `00000000000000020101` | Canister ID of the target ledger |
 
 If you need to work with ICP and governance neurons, use ICP Rosetta. For ckBTC, ckETH, or any other ICRC-1 token, use ICRC Rosetta.
@@ -154,11 +154,12 @@ docker run \
     --detach \
     dfinity/ic-icrc-rosetta-api:v1.2.7 \
     --port 8082 \
+    --network-type mainnet \
     --multi-tokens mxzaz-hqaaa-aaaar-qaada-cai \
     --multi-tokens-store-dir /data
 ```
 
-**Multi-token deployment** — track ckBTC and ckETH simultaneously (v2.1.0+):
+**Multi-token deployment** — track ckBTC and ckETH simultaneously:
 
 ```bash
 docker run \
@@ -167,6 +168,7 @@ docker run \
     --detach \
     dfinity/ic-icrc-rosetta-api:v1.2.7 \
     --port 8082 \
+    --network-type mainnet \
     --multi-tokens mxzaz-hqaaa-aaaar-qaada-cai,ss2fx-dyaaa-aaaar-qacoq-cai \
     --multi-tokens-store-dir /data
 ```
@@ -222,7 +224,7 @@ curl -H "Content-Type: application/json" \
 
 ## Data API
 
-The Data API provides read-only access to balances, blocks, and transactions. All examples below use ICP Rosetta (port 8081, network `00000000000000020101`). For ICRC Rosetta, change the port to 8082 and use the ledger's canister ID as the network identifier.
+The Data API provides read-only access to chain data. This section covers: network information, account balances (including neuron balances), block fetching, transaction search, and ICP-specific NNS governance queries. All examples below use ICP Rosetta (port 8081, network `00000000000000020101`). For ICRC Rosetta, change the port to 8082 and use the ledger's canister ID as the network identifier.
 
 ### Fetch network information
 
@@ -415,6 +417,10 @@ The construction flow consists of these endpoints, called in order:
 5. **`construction/combine`** — combine signatures with the unsigned transaction
 6. **`construction/submit`** — broadcast the signed transaction
 
+Two additional optional endpoints are supported and used by some integrators:
+- **`construction/parse`** — parse a signed or unsigned transaction back into operations, useful for verifying intent before broadcast
+- **`construction/hash`** — compute the transaction hash from a signed transaction, useful for tracking before submission
+
 ### Key generation
 
 ICP Rosetta supports **Ed25519** and **secp256k1** key types. Generate keys with OpenSSL:
@@ -437,24 +443,39 @@ openssl ec -in my_secp256k1_key.pem -pubout -conv_form compressed -outform DER |
 
 ### ICP operations
 
-ICP Rosetta supports these operation types for the Construction API:
+ICP Rosetta supports these operation types. The full list is returned by the `network/options` endpoint at runtime:
 
+**Token operations:**
 - `TRANSACTION` — token transfer
+- `MINT` — mint new tokens (minting account only)
+- `BURN` — burn tokens
+- `APPROVE` — approve a spender (ICRC-2)
+- `FEE` — explicit fee debit (used internally and in transaction representation)
+
+**Neuron and governance operations:**
 - `STAKE` — stake ICP to create a neuron
 - `START_DISSOLVING` / `STOP_DISSOLVING` — change neuron dissolve state
 - `SET_DISSOLVE_TIMESTAMP` — set a neuron's dissolve deadline
+- `CHANGE_AUTO_STAKE_MATURITY` — toggle automatic maturity restaking
 - `DISBURSE` — disburse matured neuron funds
 - `ADD_HOTKEY` / `REMOVE_HOTKEY` — manage neuron hotkeys
 - `SPAWN` — spawn a new neuron from maturity
 - `MERGE_MATURITY` / `STAKE_MATURITY` — handle accumulated maturity
 - `REGISTER_VOTE` — vote on NNS proposals
 - `FOLLOW` — configure neuron following
+- `NEURON_INFO` — retrieve neuron metadata
+- `LIST_NEURONS` — list neurons controlled by a principal
 
 For a complete reference of the construction flow with request/response examples for each operation type, see the [ICP Rosetta construction API](https://github.com/dfinity/ic/tree/master/rs/rosetta-api) in the IC repository.
 
 ### ICRC Rosetta operations
 
-ICRC Rosetta supports `TRANSFER` operations for any ICRC-1 token. The construction flow is the same as for ICP, with the difference that the network identifier is the ledger canister ID and the port is 8082.
+ICRC Rosetta supports two categories of construction operations:
+
+- **`TRANSFER`** — direct token transfer between accounts (ICRC-1). Two operations per request: one debit (`TRANSFER` with negative amount) and one credit (`TRANSFER` with positive amount).
+- **`APPROVE` + `SPENDER`** — authorize a spender to transfer tokens on your behalf (ICRC-2). The `APPROVE` operation sets the allowance amount; the `SPENDER` operation identifies the authorized principal.
+
+The construction flow is the same as for ICP. The network identifier is the ledger canister ID and the port is 8082. You do not need to include a `FEE` operation — ICRC Rosetta deducts the fee automatically, though you may include it to make the debit explicit.
 
 ## Requirements and limitations
 
