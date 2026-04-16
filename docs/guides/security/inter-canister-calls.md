@@ -130,7 +130,7 @@ async fn withdraw(amount: u64) -> Result<(), String> {
 
     // Make the inter-canister call while the lock is held.
     Call::bounded_wait(other_canister_id(), "transfer")
-        .with_args((caller, amount))
+        .with_args(&(caller, amount))
         .await
         .map_err(|e| format!("transfer failed: {:?}", e))?;
 
@@ -171,7 +171,7 @@ public shared ({ caller }) func transfer(to : Principal, amount : Nat) : async R
   };
 
   // 2. Deduct BEFORE the await — mutation is committed regardless of callback outcome.
-  Map.put(balances, Principal.compare, caller, balance - amount);
+  Map.add(balances, Principal.compare, caller, balance - amount);
 
   // 3. Perform the inter-canister call.
   try {
@@ -183,7 +183,7 @@ public shared ({ caller }) func transfer(to : Principal, amount : Nat) : async R
       case (?b) b;
       case null 0;
     };
-    Map.put(balances, Principal.compare, caller, currentBalance + amount);
+    Map.add(balances, Principal.compare, caller, currentBalance + amount);
     #err("transfer failed: " # Error.message(e))
   }
 };
@@ -211,7 +211,7 @@ async fn transfer(to: Principal, amount: u64) -> Result<(), String> {
     let caller = msg_caller();
 
     // 1. Validate and deduct BEFORE the await.
-    let deducted = BALANCES.with(|b| {
+    BALANCES.with(|b| {
         let mut balances = b.borrow_mut();
         let balance = balances.get(&caller).copied().unwrap_or(0);
         if balance < amount {
@@ -220,11 +220,10 @@ async fn transfer(to: Principal, amount: u64) -> Result<(), String> {
         balances.insert(caller, balance - amount);
         Ok(())
     })?;
-    let _ = deducted;
 
     // 2. Make the inter-canister call.
     let result = Call::bounded_wait(ledger_canister_id(), "transfer")
-        .with_args((to, amount))
+        .with_args(&(to, amount))
         .await;
 
     if let Err(e) = result {
@@ -367,10 +366,11 @@ When reading large datasets across canisters, use pagination: return chunks of d
 
 ```motoko
 // Paginated query — avoid returning unbounded data
+// Requires: import Array "mo:core/Array"; import Nat "mo:core/Nat";
 public query func getItems(offset : Nat, limit : Nat) : async [Item] {
   // Return at most `limit` items starting from `offset`.
   // Caller makes multiple calls to retrieve all data.
-  Array.subArray(items, offset, Nat.min(limit, items.size() - offset))
+  Array.sliceToArray(items, offset, offset + Nat.min(limit, items.size() - offset))
 };
 ```
 
@@ -414,7 +414,7 @@ fn do_work_for(_caller: Principal) {
 
 This means any access control you implement in `inspect_message` does not protect your canister from being called by another canister. Always duplicate access checks inside the method body itself.
 
-For full details on access control patterns, see [access management](access-management.mdx).
+For full details on access control patterns, see [access management](access-management.md).
 
 ## Handling rejected calls
 
