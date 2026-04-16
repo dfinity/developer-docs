@@ -1,6 +1,6 @@
 ---
 title: "Stable Structures"
-description: "Use StableBTreeMap, StableVec, StableCell, and MemoryManager for upgrade-safe persistent storage in Rust canisters"
+description: "Use StableBTreeMap, StableCell, StableLog, StableVec, and MemoryManager for upgrade-safe persistent storage in Rust canisters"
 sidebar:
   order: 2
 ---
@@ -47,16 +47,16 @@ ciborium = "0.2"
 
 ## Available structures
 
-The crate provides four main persistent data structures:
+The crate provides several persistent data structures. See the [full API reference](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) to look up each type:
 
 | Type | Use case |
 |------|----------|
-| [`StableBTreeMap`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/btreemap/struct.BTreeMap.html) | Key-value store. Keys must implement `Storable + Ord`. |
-| [`StableCell`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/cell/struct.Cell.html) | Single persistent value — counters, configuration, state flags. |
-| [`StableLog`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/log/struct.Log.html) | Append-only log. Efficient for event streams and audit trails. |
-| [`StableVec`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/vec/struct.Vec.html) | Ordered sequence. Efficient indexed access. |
-
-There is also a [`StableMinHeap`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/min_heap/struct.MinHeap.html) for priority queue patterns.
+| `StableBTreeMap` | Key-value store. Keys must implement `Storable + Ord`. |
+| `StableCell` | Single persistent value — counters, configuration, state flags. |
+| `StableLog` | Append-only log. Efficient for event streams and audit trails. |
+| `StableVec` | Ordered sequence. Efficient indexed access. |
+| `StableBTreeSet` | Set of unique keys. Efficient membership tests and range queries. |
+| `StableMinHeap` | Priority queue — smallest element dequeued first. |
 
 ## Implement Storable for custom types
 
@@ -89,6 +89,8 @@ impl Storable for User {
         Cow::Owned(buf)
     }
 
+    // `into_bytes` was added in ic-stable-structures 0.7. If you are upgrading
+    // from 0.6.x, add this method — it is not required in 0.6.
     fn into_bytes(self) -> Vec<u8> {
         let mut buf = vec![];
         ciborium::into_writer(&self, &mut buf).expect("failed to encode User");
@@ -122,20 +124,16 @@ const LOG_DATA_MEM_ID:  MemoryId = MemoryId::new(3);
 
 `StableLog` requires two separate memory regions — one for the index and one for the data.
 
-## Complete canister example
+## Canister wiring example
 
-The following example stores user records in a `StableBTreeMap` and a total count in a `StableCell`. Both survive upgrades with no serialization step.
+The following snippet shows how to wire a `StableBTreeMap` and a `StableCell` into a canister using `thread_local!`. The `User` struct and its `Storable` implementation are defined in the previous section.
 
 ```rust
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    storable::{Bound, Storable},
     DefaultMemoryImpl, StableBTreeMap,
 };
-use ic_cdk::{init, post_upgrade, query, update};
-use candid::CandidType;
-use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
+use ic_cdk::{init, post_upgrade};
 use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -143,44 +141,15 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 const USERS_MEM_ID:   MemoryId = MemoryId::new(0);
 const COUNTER_MEM_ID: MemoryId = MemoryId::new(1);
 
-#[derive(CandidType, Serialize, Deserialize, Clone)]
-struct User {
-    id: u64,
-    name: String,
-    created_at: u64,
-}
-
-impl Storable for User {
-    const BOUND: Bound = Bound::Unbounded;
-
-    fn to_bytes(&self) -> Cow<'_, [u8]> {
-        let mut buf = vec![];
-        ciborium::into_writer(self, &mut buf).expect("failed to encode User");
-        Cow::Owned(buf)
-    }
-
-    fn into_bytes(self) -> Vec<u8> {
-        let mut buf = vec![];
-        ciborium::into_writer(&self, &mut buf).expect("failed to encode User");
-        buf
-    }
-
-    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
-        ciborium::from_reader(bytes.as_ref()).expect("failed to decode User")
-    }
-}
-
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    // StableBTreeMap: key-value store persisted in stable memory
     static USERS: RefCell<StableBTreeMap<u64, User, Memory>> =
         RefCell::new(StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEM_ID))
         ));
 
-    // StableCell: single value persisted in stable memory
     static COUNTER: RefCell<ic_stable_structures::StableCell<u64, Memory>> =
         RefCell::new(ic_stable_structures::StableCell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(COUNTER_MEM_ID)),
@@ -189,104 +158,70 @@ thread_local! {
 }
 
 #[init]
-fn init() {
-    // One-time initialization logic here.
-    // Stable structures are ready to use immediately — no setup needed.
-}
+fn init() {}
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Stable structures auto-restore from stable memory — no deserialization needed.
-    // Re-initialize timers or other transient state here if required.
+    // Stable data auto-restores — re-initialize timers or transient state here.
 }
-
-#[update]
-fn add_user(name: String) -> u64 {
-    let id = COUNTER.with(|c| {
-        let mut cell = c.borrow_mut();
-        let current = *cell.get();
-        cell.set(current + 1).expect("failed to increment counter");
-        current
-    });
-
-    let user = User {
-        id,
-        name,
-        created_at: ic_cdk::api::time(),
-    };
-
-    USERS.with(|users| {
-        users.borrow_mut().insert(id, user);
-    });
-
-    id
-}
-
-#[query]
-fn get_user(id: u64) -> Option<User> {
-    USERS.with(|users| users.borrow().get(&id))
-}
-
-#[query]
-fn get_user_count() -> u64 {
-    USERS.with(|users| users.borrow().len())
-}
-
-ic_cdk::export_candid!();
 ```
 
-Key patterns in this example:
+Key patterns:
 
 - `thread_local! { RefCell<StableBTreeMap<...>> }` is the standard pattern. The `RefCell` allows interior mutability inside `thread_local!`; the stable structure itself lives in stable memory, not the heap.
-- `#[init]` and `#[post_upgrade]` are defined even when they do nothing. The `#[post_upgrade]` entry point ensures the canister has a known restoration path after an upgrade — omitting it can cause unexpected behavior.
+- `#[post_upgrade]` is safe to omit for stable data (the data restores automatically), but defining it explicitly is the right place to re-initialize timers or other transient state after an upgrade.
 - `ic_cdk::api::time()` returns nanoseconds since the Unix epoch as a `u64`.
+
+For a fully runnable canister with canister methods and `ic_cdk::export_candid!()`, see the [unit_testable_rust_canister](https://github.com/dfinity/examples/tree/master/rust/unit_testable_rust_canister) example in dfinity/examples.
 
 ## Multiple data structures
 
-When a canister needs more than one stable structure, allocate a unique `MemoryId` for each:
+When a canister needs more than one stable structure, allocate a unique `MemoryId` for each. `StableLog` requires two IDs — one for its index and one for its data:
 
 ```rust
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    DefaultMemoryImpl, StableBTreeMap, StableLog,
-};
+// Declare all IDs as named constants to prevent accidental reuse.
+const USERS_MEM_ID:     MemoryId = MemoryId::new(0);
+const COUNTER_MEM_ID:   MemoryId = MemoryId::new(1);
+// StableLog requires two separate memory regions.
+const LOG_INDEX_MEM_ID: MemoryId = MemoryId::new(2);
+const LOG_DATA_MEM_ID:  MemoryId = MemoryId::new(3);
+
+// Initialize StableLog in thread_local! the same way as other structures:
+// StableLog::init(index_memory, data_memory).expect("failed to init LOG")
+```
+
+IDs are stable across upgrades — never renumber them. Adding a new structure always gets the next available integer.
+
+## StableVec usage
+
+`StableVec` is an ordered, indexed sequence backed by stable memory. Use it when you need positional access by index rather than key-based lookup:
+
+```rust
+use ic_stable_structures::{StableVec, memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl};
+use ic_cdk::{query, update};
 use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
-
-const USERS_MEM_ID:     MemoryId = MemoryId::new(0);
-const POSTS_MEM_ID:     MemoryId = MemoryId::new(1);
-const COUNTER_MEM_ID:   MemoryId = MemoryId::new(2);
-// StableLog requires two memory regions
-const LOG_INDEX_MEM_ID: MemoryId = MemoryId::new(3);
-const LOG_DATA_MEM_ID:  MemoryId = MemoryId::new(4);
+const VEC_MEM_ID: MemoryId = MemoryId::new(0);
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    static USERS: RefCell<StableBTreeMap<u64, Vec<u8>, Memory>> =
-        RefCell::new(StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEM_ID))
-        ));
+    static ITEMS: RefCell<StableVec<u64, Memory>> =
+        RefCell::new(StableVec::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(VEC_MEM_ID))
+        ).expect("failed to init ITEMS"));
+}
 
-    static POSTS: RefCell<StableBTreeMap<u64, Vec<u8>, Memory>> =
-        RefCell::new(StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(POSTS_MEM_ID))
-        ));
+#[update]
+fn push_item(value: u64) {
+    ITEMS.with(|v| v.borrow_mut().push(&value).expect("failed to push"));
+}
 
-    static COUNTER: RefCell<ic_stable_structures::StableCell<u64, Memory>> =
-        RefCell::new(ic_stable_structures::StableCell::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(COUNTER_MEM_ID)),
-            0u64,
-        ).expect("failed to init COUNTER"));
-
-    // StableLog: append-only log with separate index and data regions
-    static AUDIT_LOG: RefCell<StableLog<Vec<u8>, Memory, Memory>> =
-        RefCell::new(StableLog::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(LOG_INDEX_MEM_ID)),
-            MEMORY_MANAGER.with(|m| m.borrow().get(LOG_DATA_MEM_ID)),
-        ).expect("failed to init AUDIT_LOG"));
+#[query]
+fn get_item(index: u64) -> Option<u64> {
+    ITEMS.with(|v| v.borrow().get(index))
 }
 ```
 
@@ -297,7 +232,7 @@ thread_local! {
 | Data that must survive upgrades (user records, balances, settings) | Stable structures |
 | Large datasets that could grow beyond a few MB | Stable structures — stable memory can grow to hundreds of GB |
 | Temporary computation state within a single call | Heap (`Vec`, `HashMap`) |
-| Caches that can be rebuilt after an upgrade | `transient` patterns or heap with recomputation in `#[post_upgrade]` |
+| Caches that can be rebuilt after an upgrade | Heap (`Vec`, `HashMap`) reconstructed in `#[post_upgrade]` |
 | Small configuration that changes rarely | `StableCell` |
 
 The pre/post upgrade hook pattern (serializing heap state in `pre_upgrade` and deserializing in `post_upgrade`) becomes dangerous as datasets grow. Both hooks run under a fixed instruction limit. Exceeding the limit traps the upgrade, leaving the canister stuck. Stable structures bypass this risk entirely because no serialization step occurs during upgrade.
@@ -346,9 +281,27 @@ If the count drops to 0 after redeployment, the data is not in stable memory. Ch
 
 **Using `Bound::Bounded` with a `max_size` that is too small.** If you add a field to a struct later, existing records that fit the old `max_size` may still encode larger than expected, or the new layout may exceed the bound and break deserialization. Prefer `Bound::Unbounded` unless you have a specific reason to bound the size.
 
-**Omitting `#[post_upgrade]`.** Even when the function body is empty, defining `#[post_upgrade]` documents the upgrade contract and avoids surprising runtime defaults.
+**Omitting `#[post_upgrade]` when you have timers or transient state.** Stable data is safe without a `#[post_upgrade]` hook — the structures read from stable memory automatically on first access. The real reason to define the hook is to re-initialize timers and other transient heap state that is lost on upgrade. If your canister uses timers, omitting `#[post_upgrade]` means timers silently stop firing after an upgrade.
 
 **Serializing heap data in `pre_upgrade` as the sole persistence strategy.** This does not scale. For canisters with user-facing data, use stable structures from the start.
+
+## Schema evolution
+
+Stable memory is persistent — once you deploy a canister, existing serialized bytes must remain readable after you add or change fields. `Bound::Unbounded` is the safe default because it allows the encoded size to grow without constraint, so adding a new field to a CBOR-serialized struct does not break reads of old records.
+
+**Adding a field:** Use `Option<T>` for new fields so old records (which have no bytes for the field) deserialize correctly as `None`. CBOR skips unknown fields on deserialization, so a plain new field also works — but `Option<T>` makes the intent explicit.
+
+```rust
+// Before upgrade:
+struct User { id: u64, name: String }
+
+// After upgrade — old records deserialize with email = None:
+struct User { id: u64, name: String, email: Option<String> }
+```
+
+**Changing a key type:** Changing the key type of a `StableBTreeMap` (for example, from `u32` to `u64`) is a breaking change — all existing keys are stored as the old type and the new type will not read them. To migrate, allocate a new `MemoryId` for a new map, copy data from the old map in `#[post_upgrade]`, then remove the old `MemoryId` in a subsequent upgrade once migration is complete.
+
+**Never change `Bound::Bounded` max_size for live data.** Lowering it truncates existing records. Raising it is safe but may require a separate migration if old records are smaller than the new bound expects.
 
 ## Next steps
 
@@ -357,4 +310,4 @@ If the count drops to 0 after redeployment, the data is not in stable memory. Ch
 - [Orthogonal persistence](../../concepts/orthogonal-persistence.md) — how ICP manages canister state
 - [Canister lifecycle](../../guides/canister-management/lifecycle.md) — upgrades, snapshots, and state management
 
-<!-- Upstream: informed by dfinity/icskills skills/stable-memory/SKILL.md; dfinity/portal docs/building-apps/developer-tools/cdks/rust/stable-structures.mdx; dfinity/cdk-rs ic-cdk/README.md; dfinity/examples rust/unit_testable_rust_canister -->
+<!-- Upstream: informed by dfinity/icskills skills/stable-memory/SKILL.md; dfinity/portal docs/building-apps/developer-tools/cdks/rust/stable-structures.mdx; dfinity/examples rust/unit_testable_rust_canister -->
