@@ -54,6 +54,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { icpBindgen } from "@icp-sdk/bindgen/plugins/vite";
 
+// Change these values to match your local replica.
+// The `icp network start` command prints the root key;
+// the `icp deploy` command prints the backend canister ID.
+const IC_ROOT_KEY_HEX = "<IC_ROOT_KEY_HEX>";
+const BACKEND_CANISTER_ID = "<BACKEND_CANISTER_ID>";
+
 export default defineConfig({
   plugins: [
     react(),
@@ -65,10 +71,8 @@ export default defineConfig({
   server: {
     headers: {
       // Simulate the ic_env cookie that the asset canister injects in production.
-      // Replace IC_ROOT_KEY_HEX and BACKEND_CANISTER_ID with values from your
-      // local replica after running `icp network start -d` and `icp deploy`.
       "Set-Cookie": `ic_env=${encodeURIComponent(
-        "ic_root_key=<IC_ROOT_KEY_HEX>&PUBLIC_CANISTER_ID:backend=<BACKEND_CANISTER_ID>"
+        `ic_root_key=${IC_ROOT_KEY_HEX}&PUBLIC_CANISTER_ID:backend=${BACKEND_CANISTER_ID}`
       )}; SameSite=Lax;`,
     },
     proxy: {
@@ -126,11 +130,15 @@ React apps use client-side routing. Without a fallback, refreshing on `/about` r
 ```json5
 [
   {
+    // Apply security policy to all paths. Two separate rules are needed because
+    // `security_policy` and `enable_aliasing` interact: the aliasing rule must
+    // be evaluated last so it only applies to paths with no matching file.
     "match": "**/*",
     "security_policy": "standard",
     "allow_raw_access": false
   },
   {
+    // SPA fallback: serve index.html for any path that has no matching file.
     "match": "**/*",
     "enable_aliasing": true
   }
@@ -170,7 +178,11 @@ export default defineConfig({
 });
 ```
 
-The `icp.yaml` configuration is the same as the React example — point `dir` at `dist`.
+If your Vue app calls `getCanisterEnv()` to read canister IDs, add the same `server.headers` block from the React section to simulate the `ic_env` cookie during local development — otherwise `getCanisterEnv()` will throw because the cookie is absent. The `icp.yaml` configuration is the same as the React example — point `dir` at `dist`.
+
+## Authentication
+
+Authentication with Internet Identity is framework-agnostic — the `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md) for integration steps.
 
 ## Svelte and SvelteKit
 
@@ -353,7 +365,7 @@ After deployment, the asset canister URL depends on your canister ID:
 Get your canister ID with:
 
 ```bash
-icp canister id frontend
+icp canister settings show frontend -i
 ```
 
 ## Next steps
