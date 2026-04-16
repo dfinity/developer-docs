@@ -73,6 +73,8 @@ See [system canisters](system-canisters.md).
 
 A **composite query** is a query call that can itself make query calls to other canisters on the same subnet. Composite queries allow aggregating data across multiple canisters without an update call, while still not persisting state changes.
 
+See [canisters concept](../concepts/canisters.md).
+
 ### Controller
 
 A **controller** is a principal that has administrative authority over a canister. Controllers can upgrade the canister's Wasm module, change settings, add or remove other controllers, and delete the canister. A canister with no controllers has immutable code.
@@ -86,6 +88,12 @@ A **cycle** is the unit of computation cost on ICP. Canisters pay for CPU, memor
 See [cycles costs reference](cycles-costs.md) and [cycles management guide](../guides/canister-management/cycles-management.md).
 
 ## D
+
+### Dapp
+
+A **dapp** (decentralized application) is a software program that runs on a decentralized network rather than a single computer. On ICP, dapps are composed of one or more canister smart contracts that store both code and state onchain. Because canisters are hosted on ICP's decentralized subnet infrastructure, dapps can serve web content and process user requests without relying on a centralized server.
+
+See [canisters concept](../concepts/canisters.md).
 
 ### Delegation
 
@@ -105,9 +113,15 @@ See [chain-key cryptography concept](../concepts/chain-key-cryptography.md).
 
 ### Heartbeat
 
-A **heartbeat** is a periodic system callback invoked on a canister by the ICP runtime, roughly once per second when a subnet produces a new block. Heartbeats are implemented as a `canister_heartbeat` system function and consume cycles even when idle. Timers are the preferred alternative for most scheduling needs.
+A **heartbeat** is a periodic system callback invoked on a canister by the ICP runtime at approximately every consensus round. Heartbeats are implemented as a `canister_heartbeat` system function and consume cycles even when idle. Timers are the preferred alternative for most scheduling needs.
 
 See [timers concept](../concepts/timers.md).
+
+### HTTPS outcalls
+
+**HTTPS outcalls** are a capability that allows ICP canisters to make HTTP requests to external web servers directly, without oracles or other intermediaries. When a canister makes an HTTPS outcall, all replicas in the subnet independently send the same request to the target server; the results are normalized by a transform function and consensus is reached on a single response to return to the canister. HTTPS outcalls support `GET`, `HEAD`, and `POST` methods.
+
+See [HTTPS outcalls concept](../concepts/https-outcalls.md).
 
 ## I
 
@@ -146,6 +160,12 @@ See [management canister reference](management-canister.md).
 See the [Motoko language documentation](../languages/motoko/index.md).
 
 ## N
+
+### Neuron
+
+A **neuron** is a governance participant created by locking ICP tokens in the NNS governance canister for a configurable dissolve delay. Neurons can submit and vote on NNS proposals. Voting power scales with the amount staked, the dissolve delay (up to 8 years), and the neuron's age. Neurons that vote earn rewards distributed as maturity, which can be converted to ICP or merged back into the stake.
+
+See [governance concept](../concepts/governance.md).
 
 ### NNS (Network Nervous System)
 
@@ -219,7 +239,7 @@ See [SNS launch guide](../guides/governance/launching.md).
 
 ### Stable memory
 
-**Stable memory** is a separate, 64-bit memory region in a canister that persists through upgrades. While heap memory is cleared during an upgrade, stable memory survives, making it suitable for storing long-lived data. Stable memory is accessed via the `ic0.stable_*` system API.
+**Stable memory** is a separate, 64-bit memory region in a canister that persists through upgrades. While heap memory is cleared during an upgrade, stable memory survives, making it suitable for storing long-lived data. In Rust, it is accessed through stable data structures such as `StableBTreeMap` from the `ic-stable-structures` crate; in Motoko, it is managed automatically via the `stable` variable keyword. At the protocol level it is backed by the `ic0.stable_*` system API.
 
 See [orthogonal persistence concept](../concepts/orthogonal-persistence.md).
 
