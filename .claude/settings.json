@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command // empty' | { read -r cmd; case \"$cmd\" in bd|'bd '*|gh|'gh '*|'./scripts/setup.sh'*|pkill*) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"Pre-approved project automation command\"}}' ;; esac; }",
+            "command": "jq -r '.tool_input.command // empty' | { read -r cmd; case \"$cmd\" in bd|'bd '*|gh|'gh '*|'./scripts/setup.sh'*|pkill*|'git submodule update'*) echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"Pre-approved project automation command\"}}' ;; esac; }",
             "timeout": 5
           }
         ]
