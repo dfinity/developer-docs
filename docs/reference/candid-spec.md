@@ -19,7 +19,7 @@ Candid defines three categories of types: primitive, constructed, and reference.
 
 | Type | Description | Motoko | Rust | JavaScript |
 |------|-------------|--------|------|------------|
-| `bool` | Boolean: `true` or `false` | `Bool` | `bool` | `true`/`false` |
+| `bool` | Boolean: `true` or `false` | `Bool` | `bool` | `boolean` |
 | `nat` | Unbounded natural number (LEB128-encoded) | `Nat` | `candid::Nat` or `u128` | `BigInt` |
 | `int` | Unbounded integer (SLEB128-encoded) | `Int` | `candid::Int` or `i128` | `BigInt` |
 | `nat8` / `nat16` / `nat32` / `nat64` | Fixed-width unsigned integers | `NatN` | `u8` / `u16` / `u32` / `u64` | `number` (8/16/32) or `BigInt` (64) |
@@ -92,7 +92,7 @@ In Motoko, `vec t` maps to `[T]`; in Rust, to `Vec<T>` or `&[T]`. Rust also allo
 A heterogeneous collection of named fields. Field names are syntactic sugar for 32-bit numeric IDs derived by hashing the name:
 
 ```
-hash(id) = (Sum_i utf8(id)[i] * 223^(k-i)) mod 2^32
+hash(id) = (Sum_i utf8(id)[i] * 223^(k-i)) mod 2^32  where k = |utf8(id)| - 1
 ```
 
 Field order in the type declaration is immaterial — fields are identified by their numeric ID, not position.
@@ -143,7 +143,7 @@ func (func (int) -> ()) -> ()         // higher-order: takes a callback
 
 **Annotations:**
 - `query` — the function does not modify state; can be called cheaply without consensus.
-- `composite_query` — a `query` that can call other `query` or `composite_query` functions. Cannot be called from `query` or `update` functions, and cannot cross subnets.
+- `composite_query` — a `query` that can call other `query` or `composite_query` functions. Cannot be called from `query` or `update` functions, and cannot cross subnets; but can be called by external users (ingress messages).
 - `oneway` — no response is returned; the result list must be empty.
 
 Parameter and result names are purely documentary and have no semantic effect. Callers match by position, not by name.
@@ -198,7 +198,7 @@ A complete Candid service description:
 <functype>  ::= <tuptype> -> <tuptype> <funcann>*
 <funcann>   ::= oneway | query | composite_query
 <tuptype>   ::= ( <argtype>,* )
-<argtype>   ::= <datatype> | <name> : <datatype>
+<argtype>   ::= <datatype>                       // or <name> : <datatype> (shorthand; name has no semantic effect)
 ```
 
 A service constructor (with `InitArgs`) is used for canisters that require initialization parameters:
@@ -288,6 +288,7 @@ Function types are contravariant in arguments and covariant in results:
 - Results can be *specialized* (replaced with subtypes).
 - Argument list may be shortened; result list may be extended.
 - Optional arguments may be appended.
+- Function annotations (`query`, `composite_query`, `oneway`) must be the same set on both sides — changing a method's annotation (e.g., `query` → update) is never a valid subtype.
 
 ### Service subtyping
 
@@ -301,7 +302,8 @@ Services are subtypes when methods are added or existing method types are specia
 | Add optional field to argument record | Yes | Old callers send `null` for the field |
 | Add new method | Yes | Old clients don't know it exists |
 | Remove optional field from argument record | Yes | Old callers still send it; service ignores it |
-| Remove a variant tag from results | Yes | Must wrap variant in `opt` to handle unknown tags |
+| Remove a variant tag from results | Yes | Fewer tags is a subtype; callers depending on the removed tag will fail to match it |
+| Add a new variant tag to results | Only safe if wrapped in `opt` | Old clients receive `null` for unrecognized tags when the variant is wrapped in `opt` |
 | Change `nat` to `int` in a result | Yes | `nat <: int` |
 | Change `int` to `nat` in a result | No | `int` is not a subtype of `nat` |
 | Remove a non-optional field from results | No | Breaks clients that read the field |
@@ -403,10 +405,13 @@ didc check service.did
 **Generate language bindings from a `.did` file:**
 
 ```bash
-didc bind service.did -t js    # JavaScript
-didc bind service.did -t ts    # TypeScript
-didc bind service.did -t rs    # Rust
-didc bind service.did -t mo    # Motoko
+didc bind service.did -t js        # JavaScript
+didc bind service.did -t ts        # TypeScript
+didc bind service.did -t rs        # Rust
+didc bind service.did -t rs-agent  # Rust agent-style bindings
+didc bind service.did -t rs-stub   # Rust stub bindings
+didc bind service.did -t mo        # Motoko
+didc bind service.did -t did       # Candid (pretty-printed)
 ```
 
 **Encode a Candid value to binary:**
@@ -426,7 +431,7 @@ didc decode '4449444c016d7c027c002a0301027d'
 **Check subtyping between two types:**
 
 ```bash
-didc subtype '(nat)' '(int)'
+didc subtype nat int
 # outputs nothing on success, error on failure
 ```
 
