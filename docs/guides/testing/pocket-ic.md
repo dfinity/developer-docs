@@ -31,7 +31,7 @@ PocketIC has client libraries for several languages:
 | Language | Package | Use case |
 |----------|---------|----------|
 | Rust | [`pocket-ic`](https://crates.io/crates/pocket-ic) | Rust canister tests |
-| JavaScript/TypeScript | [`@hadronous/pic`](https://www.npmjs.com/package/@hadronous/pic) | Frontend and JS canister tests |
+| JavaScript/TypeScript | [`@dfinity/pic`](https://www.npmjs.com/package/@dfinity/pic) | Frontend and JS canister tests |
 | Python | [`pocket-ic`](https://pypi.org/project/pocket-ic/) | Python-based tests |
 
 This guide covers Rust (the most common choice for backend canister tests) and JavaScript with Pic JS.
@@ -274,31 +274,40 @@ Named subnets (NNS, SNS, II) carry the same canister ID ranges as mainnet, which
 
 ## JavaScript/TypeScript: Pic JS
 
-Pic JS (`@hadronous/pic`) is the JavaScript/TypeScript client for PocketIC, designed for testing frontend code, agent-based workflows, or JavaScript canister backends. It exposes the same PocketIC capabilities with a Promise-based API.
+Pic JS (`@dfinity/pic`) is the JavaScript/TypeScript client for PocketIC, designed for testing frontend code, agent-based workflows, or JavaScript canister backends. It exposes the same PocketIC capabilities with a Promise-based API.
 
 ### Install
 
 ```bash
-npm install --save-dev @hadronous/pic
+npm install --save-dev @dfinity/pic
 ```
 
-Pic JS downloads the PocketIC server binary on first use. Set `POCKET_IC_URL` to point to a running PocketIC server if you prefer managing it yourself.
+Pic JS manages the PocketIC server process for you via `PocketIcServer`. Set `POCKET_IC_SERVER_PATH` to point to a pre-installed binary if you prefer not to download it automatically.
 
 ### Write a basic test
 
-This example uses [Jest](https://jestjs.io/), but Pic JS works with any test runner.
+This example uses [Jest](https://jestjs.io/), but Pic JS works with Vitest, Bun, and any other Node-compatible test runner.
 
 ```typescript title=src/__tests__/counter.test.ts
-import { PocketIc, createIdentity } from '@hadronous/pic';
+import { PocketIc, PocketIcServer } from '@dfinity/pic';
 import { resolve } from 'node:path';
 
 const WASM_PATH = resolve(__dirname, '../../target/wasm32-unknown-unknown/release/counter.wasm');
 
 describe('Counter canister', () => {
+  let picServer: PocketIcServer;
   let pic: PocketIc;
 
+  beforeAll(async () => {
+    picServer = await PocketIcServer.start();
+  });
+
+  afterAll(async () => {
+    await picServer.stop();
+  });
+
   beforeEach(async () => {
-    pic = await PocketIc.create();
+    pic = await PocketIc.create(picServer.getUrl());
   });
 
   afterEach(async () => {
@@ -306,14 +315,12 @@ describe('Counter canister', () => {
   });
 
   it('should increment and read the counter', async () => {
-    // Set up a fixture with the canister
     const fixture = await pic.setupCanister({
       wasm: WASM_PATH,
     });
 
     const { actor } = fixture;
 
-    // Call methods on the canister via the generated actor
     await actor.increment();
     const count = await actor.get_count();
     expect(count).toBe(1n);
@@ -326,10 +333,11 @@ Pic JS generates typed actors from Candid declarations automatically when you us
 ### Advance time in JavaScript tests
 
 ```typescript title=src/__tests__/timer.test.ts
-import { PocketIc } from '@hadronous/pic';
+import { PocketIc, PocketIcServer } from '@dfinity/pic';
 
 it('should trigger timer after delay', async () => {
-  const pic = await PocketIc.create();
+  const picServer = await PocketIcServer.start();
+  const pic = await PocketIc.create(picServer.getUrl());
   // ... deploy canister ...
 
   // Advance time by 10 seconds and tick
@@ -340,6 +348,7 @@ it('should trigger timer after delay', async () => {
   // ...
 
   await pic.tearDown();
+  await picServer.stop();
 });
 ```
 
@@ -384,4 +393,4 @@ PocketIC is appropriate when:
 - [Governance testing](../governance/testing.md) — SNS testflight with PocketIC
 - [Rust testing patterns](../../languages/rust/testing.md) — Rust-specific patterns including unit testing with mocks
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/test/pocket-ic.mdx; dfinity/examples rust/unit_testable_rust_canister rust/guards; dfinity/icp-cli docs/guides/containerized-networks.md -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/test/pocket-ic.mdx; dfinity/examples rust/unit_testable_rust_canister rust/guards; dfinity/icp-cli docs/guides/containerized-networks.md; dfinity/icp-js-sdk-docs public/pic-js/latest.zip -->
