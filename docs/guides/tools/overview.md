@@ -18,7 +18,7 @@ Key features:
 - **Environments** — named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
 - **Project scaffolding** — `icp new` bootstraps new projects from official templates
 
-Install via npm (requires Node.js ≥ 22):
+Install via npm (requires Node.js LTS):
 
 ```bash
 npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
@@ -28,6 +28,7 @@ Or via Homebrew:
 
 ```bash
 brew install icp-cli
+brew install ic-wasm
 ```
 
 Verify:
@@ -123,11 +124,21 @@ Limitations:
 - Projects are limited to 5 MB and 2 canisters
 - ICP Ninja is not a replacement for icp-cli for production workflows
 
+## Editor tooling
+
+### Motoko VS Code extension
+
+The [Motoko extension for VS Code](https://github.com/dfinity/vscode-motoko) (`dfinity/vscode-motoko`) adds Motoko language support to VS Code: syntax highlighting, type checking, auto-completion, and inline diagnostics.
+
+Install by searching for "Motoko" in the VS Code extensions panel, or visit the [vscode-motoko repository](https://github.com/dfinity/vscode-motoko) for details.
+
 ## Candid tools
 
 ### didc
 
 `didc` is the Candid command-line tool for working with Candid interfaces: encoding and decoding values, checking `.did` files, generating bindings, and testing Candid compatibility.
+
+Install: download a prebuilt binary from the [releases page](https://github.com/dfinity/candid/releases).
 
 Resources:
 - [Candid GitHub repo](https://github.com/dfinity/candid)
@@ -136,8 +147,8 @@ Resources:
 ## Next steps
 
 - **Start building:** [Quickstart](../../getting-started/quickstart.md) — deploy your first canister with icp-cli
-- **Coming from dfx?** [Migrating from dfx](migrating-from-dfx.md) — command mapping and configuration changes
+- **Migrating from the legacy CLI?** [Migration guide](migrating-from-dfx.md) — command mapping and configuration changes
 - **Rust development:** [Rust language guide](../../languages/rust/index.md)
 - **Motoko development:** [Motoko language guide](../../languages/motoko/index.md)
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md -->
