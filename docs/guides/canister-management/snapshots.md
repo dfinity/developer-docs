@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-Canister snapshots capture the full state of a canister — its compiled Wasm module, Wasm heap memory, stable memory, and chunk store — at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
+Canister snapshots capture the full state of a canister — its compiled Wasm module, Wasm heap memory, stable memory, certified variables, and chunk store — at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
 
 Only controllers of a canister can create or restore snapshots. Up to 10 snapshots per canister can be stored on-chain at a time.
 
@@ -57,7 +57,7 @@ The output shows each snapshot ID, its size, and when it was taken:
 
 ## Restoring from a snapshot
 
-Restoring replaces the canister's current Wasm module, heap memory, and stable memory with the snapshot contents. Any state added after the snapshot was taken is discarded. The canister must be stopped before restoring.
+Restoring replaces the canister's current Wasm module, heap memory, stable memory, certified variables, and chunk store with the snapshot contents. Any state added after the snapshot was taken is discarded. The canister must be stopped before restoring.
 
 ```bash
 icp canister stop my-canister -e ic
@@ -119,12 +119,6 @@ Like downloads, interrupted uploads can be resumed:
 icp canister snapshot upload my-canister -i ./my-snapshot --resume -e ic
 ```
 
-All snapshot commands accept either canister names (with `-e`) or canister IDs (with `-n`). Use `-n ic` when the target canister is not part of your project:
-
-```bash
-icp canister snapshot restore <target-canister-id> <snapshot-id> -n ic
-```
-
 ## Example: pre-upgrade backup and rollback
 
 This workflow captures state before an upgrade so you can roll back if the upgrade fails:
@@ -134,6 +128,7 @@ This workflow captures state before an upgrade so you can roll back if the upgra
 icp canister stop my-canister -e ic
 icp canister snapshot create my-canister -e ic
 # Note the snapshot ID printed by the command
+icp canister start my-canister -e ic
 
 # 2. Deploy the upgrade
 icp deploy my-canister -e ic
@@ -152,7 +147,9 @@ icp canister start my-canister -e ic
 
 ## Example: transferring state between canisters
 
-Download a snapshot from a source canister and upload it to a target canister. This is the core operation in canister migration:
+Download a snapshot from a source canister and upload it to a target canister. This download-then-upload workflow is the foundation of canister migration between subnets — direct restore (`load_canister_snapshot`) only works within the same subnet, so cross-subnet transfer requires downloading the snapshot locally first and uploading it to the target.
+
+All snapshot commands accept either canister names (with `-e`) or canister IDs (with `-n`). Use `-n ic` when the target canister is not part of your project.
 
 ```bash
 # Download state from the source
@@ -161,10 +158,12 @@ icp canister snapshot create source-canister -e ic
 icp canister start source-canister -e ic
 icp canister snapshot download source-canister <snapshot-id> -o ./state-backup -e ic
 
-# Upload state to the target canister
+# Upload state to the target canister (use -n ic for a canister not in your project)
 icp canister snapshot upload <target-canister-id> -i ./state-backup -n ic
-# Note the new snapshot ID, then restore it
+# Note the new snapshot ID, then stop the target and restore
+icp canister stop <target-canister-id> -n ic
 icp canister snapshot restore <target-canister-id> <new-snapshot-id> -n ic
+icp canister start <target-canister-id> -n ic
 ```
 
 ## Snapshot limits and storage costs
