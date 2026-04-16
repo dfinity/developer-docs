@@ -90,8 +90,8 @@ Stages 4 through 10 run automatically after the proposal is adopted:
 | 5 | SNS-W deploys SNS canisters |
 | 6 | SNS root becomes sole controller of your dapp |
 | 7 | SNS canisters are initialized in pre-swap mode |
-| 8 | Swap opens automatically |
-| 9 | Participate in the swap: `./participate_in_sns_swap.sh` |
+| 8 | Swap opens; participate: `./participate_in_sns_swap.sh` |
+| 9 | Swap closes |
 | 10 | Swap finalizes |
 
 **After launch: test upgrade flows**
@@ -109,16 +109,18 @@ For canister-level integration tests that need an SNS subnet, use PocketIC with 
 
 In Rust:
 
+<!-- Needs human verification: with_sns_subnet() existence in pocket-ic crate — not found in .sources/ (cdk-rs, examples). The verified pattern uses with_nns_subnet() + with_application_subnet(); SNS subnet topology may be achieved differently or not yet exposed in the public API at version 9.0.2. -->
 ```rust title=tests/sns_integration.rs
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use candid::Principal;
 
+// pocket-ic = "9"
 #[test]
 fn test_canister_under_sns_governance() {
     // Build an instance with NNS and SNS subnets — matching mainnet topology
     let pic = PocketIcBuilder::new()
         .with_nns_subnet()
-        .with_sns_subnet()
+        .with_sns_subnet()  // requires human verification: check pocket-ic 9.x API
         .with_application_subnet()
         .build();
 
@@ -177,6 +179,7 @@ You also need:
 
 Import the SNS canister definitions into your project and download their WASM binaries:
 
+<!-- TODO: verify current DFX_IC_COMMIT hash — check dfinity/sdk releases or the sns-testing repository for the canonical current value -->
 ```bash
 DFX_IC_COMMIT=94bbea43c7585a1ef970bd569a447c269af9650b dfx sns import
 DFX_IC_COMMIT=94bbea43c7585a1ef970bd569a447c269af9650b dfx sns download
@@ -194,11 +197,14 @@ dfx sns deploy-testflight --init-config-file="/path/to/sns_init.yaml"
 dfx sns deploy-testflight --init-config-file="/path/to/sns_init.yaml" --network ic
 ```
 
-After deployment, save the developer neuron ID printed at the end of the output. This neuron has full control over the testflight SNS and is used to submit proposals:
+After deployment, save the developer neuron ID printed at the end of the output. This neuron has full control over the testflight SNS and is used to submit proposals. The actual output looks like:
 
 ```
 Developer neuron IDs:
+<neuron-id>
 ```
+
+Copy the neuron ID that appears after the colon for use in subsequent steps.
 
 ### Step 3: Add SNS root as co-controller
 
@@ -221,7 +227,10 @@ Register your canisters with the testflight SNS by submitting a proposal via `qu
 
 ```bash
 export DEVELOPER_NEURON_ID="<neuron-id-from-step-2>"
-export PEM_FILE="$HOME/.config/dfx/identity/$(dfx identity whoami)/identity.pem"
+# icp identity default prints the current identity name; the .config/dfx/identity/ path
+# is where dfx stores PEM files. If you created your identity with icp-cli, the path
+# may differ — check ~/.config/icp/identity/ or the path shown by `icp identity export`.
+export PEM_FILE="$HOME/.config/dfx/identity/$(icp identity default)/identity.pem"
 export CID="$(icp canister id test -e ic)"
 ```
 
@@ -266,6 +275,9 @@ icp canister call sns_root list_sns_canisters '(record {})' -e ic
 Build a new version of your canister, then submit an upgrade proposal using `quill`:
 
 ```bash
+# This is a dfx build output path. For icp-cli projects, the WASM is at:
+# target/wasm32-unknown-unknown/release/test.wasm
+# or the path set by $ICP_WASM_OUTPUT_PATH in your icp.yaml build config.
 export WASM_PATH="./.dfx/ic/canisters/test/test.wasm"
 
 quill sns \
@@ -405,6 +417,10 @@ If you are still a controller, you can safely delete the testflight SNS canister
 ## Pre-launch verification checklist
 
 Before submitting the NNS proposal, confirm all of these:
+
+:::note[Requires dfx sns extension]
+The `dfx sns init-config-file validate` command in the checklist below requires the `dfx sns` extension. Install with: `dfx extension install sns`.
+:::
 
 **SNS configuration**
 - [ ] `sns_init.yaml` validates successfully with `dfx sns init-config-file validate`
