@@ -31,7 +31,7 @@ See the [Management Canister reference](../../reference/management-canister.md#r
 
 **Motoko**
 
-Motoko's `mo:core/Random` module wraps `raw_rand` and provides a `Finite` class for consuming entropy from a blob:
+Motoko's `mo:core/Random` module wraps `raw_rand`. `Random.blob()` returns the raw 32-byte blob, which you convert to an array with `Blob.toArray` for byte-level access:
 
 ```motoko
 import Random "mo:core/Random";
@@ -68,35 +68,34 @@ To generate a random integer in the range `[0, n)`, extract bytes from the resul
 
 ```motoko
 import Random "mo:core/Random";
+import Blob "mo:core/Blob";
 import Nat8 "mo:core/Nat8";
 
 public shared func rollDie(sides : Nat) : async Nat {
-    let entropy : Blob = await Random.blob();
-    let f = Random.Finite(entropy);
-    switch (f.byte()) {
-        case (?b) { Nat8.toNat(b) % sides };
-        case null  { 0 }; // entropy exhausted (won't happen with a fresh 32-byte blob)
-    }
+    let entropy = await Random.blob();
+    let bytes = Blob.toArray(entropy);
+    Nat8.toNat(bytes[0]) % sides
 };
 ```
 
-For multiple random values in a single call, use the `Finite` class to consume bytes incrementally from the same 32-byte blob rather than making multiple `raw_rand` calls:
+For multiple random values in a single call, convert the 32-byte blob to an array and index directly — no additional `raw_rand` calls needed:
 
 ```motoko
-import List "mo:core/List";
 import Random "mo:core/Random";
+import List "mo:core/List";
+import Blob "mo:core/Blob";
 import Nat8 "mo:core/Nat8";
 
 public shared func rollMultipleDice(count : Nat, sides : Nat) : async [Nat] {
-    let entropy : Blob = await Random.blob();
-    let f = Random.Finite(entropy);
+    let entropy = await Random.blob();
+    let bytes = Blob.toArray(entropy);
+    // raw_rand returns 32 bytes; each byte gives one independent value
     let results = List.empty<Nat>();
+    var i = 0;
     label loop_ loop {
-        if (List.size(results) >= count) break loop_;
-        switch (f.byte()) {
-            case (?b) { List.add(results, Nat8.toNat(b) % sides) };
-            case null  { break loop_ };
-        }
+        if (i >= count or i >= bytes.size()) break loop_;
+        List.add(results, Nat8.toNat(bytes[i]) % sides);
+        i += 1;
     };
     List.toArray(results)
 };
@@ -144,19 +143,15 @@ A common use case is selecting one or more random elements from a list — for e
 
 ```motoko
 import Random "mo:core/Random";
+import Blob "mo:core/Blob";
 import Nat8 "mo:core/Nat8";
 
 public shared func pickWinner(participants : [Text]) : async ?Text {
     if (participants.size() == 0) { return null };
-    let entropy : Blob = await Random.blob();
-    let f = Random.Finite(entropy);
-    switch (f.byte()) {
-        case (?b) {
-            let idx = Nat8.toNat(b) % participants.size();
-            ?participants[idx]
-        };
-        case null { null };
-    }
+    let entropy = await Random.blob();
+    let bytes = Blob.toArray(entropy);
+    let idx = Nat8.toNat(bytes[0]) % participants.size();
+    ?participants[idx]
 };
 ```
 
@@ -220,7 +215,9 @@ The `std_rng` feature compiles `StdRng` without requiring OS entropy, which is c
 
 ## Example: random maze
 
-The `random_maze` example in the ICP examples repository generates a maze using randomness to decide which walls to remove during a depth-first search. It demonstrates how to seed a Motoko `Finite` generator from a single `raw_rand` call and consume entropy incrementally across many cells:
+The `random_maze` example in the ICP examples repository generates a maze using randomness to decide which walls to remove during a depth-first search. It demonstrates how to consume entropy incrementally across many cells.
+
+Note: this example predates `mo:core` and uses `mo:base/Random.Finite`. The patterns in this guide use `mo:core/Random` instead.
 
 - [random_maze (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/random_maze)
 
@@ -231,4 +228,4 @@ The `random_maze` example in the ICP examples repository generates a maze using 
 - [Data Integrity](../security/data-integrity.md) — using randomness in a secure application design
 - [Inter-canister calls](../canister-calls/onchain-calls.md) — async patterns and reentrancy
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/integrations/randomness.mdx; dfinity/icskills — skills/canister-security/SKILL.md; dfinity/examples — motoko/random_maze -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/integrations/randomness.mdx; dfinity/icskills — skills/canister-security/SKILL.md; dfinity/examples — motoko/random_maze; caffeinelabs/motoko-core — src/Random.mo -->
