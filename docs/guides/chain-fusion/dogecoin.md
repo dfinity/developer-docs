@@ -63,6 +63,7 @@ use ic_cdk::update;
 use ic_cdk::call::Call;
 
 // Replace with the canister ID from https://github.com/dfinity/dogecoin-canister
+// Using this placeholder will panic at runtime — replace before deploying.
 const DOGECOIN_CANISTER: &str = "xxxxxxxxx-xxxxx-xxxxx-xxxxx-xxx";
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -86,7 +87,7 @@ fn dogecoin_canister_id() -> Principal {
 /// Returns the balance of a Dogecoin address in koinus (1 DOGE = 100,000,000 koinus).
 #[update]
 async fn get_dogecoin_balance(address: String, network: DogecoinNetwork) -> u64 {
-    let (balance,): (u64,) = Call::new(dogecoin_canister_id(), "dogecoin_get_balance")
+    let (balance,): (u64,) = Call::unbounded_wait(dogecoin_canister_id(), "dogecoin_get_balance")
         .with_arg(GetBalanceRequest {
             address,
             network,
@@ -102,7 +103,9 @@ async fn get_dogecoin_balance(address: String, network: DogecoinNetwork) -> u64 
 }
 ```
 
-<\!-- Needs human verification: The Dogecoin canister ID and exact cycle costs are not available in the current source material. Verify at https://github.com/dfinity/dogecoin-canister before using in production. -->
+<!-- Needs human verification: The Dogecoin canister ID, exact cycle costs, API method names (`dogecoin_get_utxos`, `dogecoin_get_balance`, `dogecoin_get_current_fee_percentiles`, `dogecoin_send_transaction`), and the "koinu" unit name are not confirmed in available source material. Verify all at https://github.com/dfinity/dogecoin-canister before using in production. -->
+
+Motoko canisters can call the Dogecoin canister using actor-based inter-canister calls with `(with cycles = amount)` syntax — the same pattern used for the Bitcoin integration.
 
 ## Transaction flow
 
@@ -138,7 +141,7 @@ Developers familiar with the Bitcoin integration will find the Dogecoin integrat
 
 ## NNS governance
 
-The Dogecoin canister is controlled by the [Network Nervous System](https://learn.internetcomputer.org/hc/en-us/articles/34209524930964). Any changes to the canister require an NNS proposal that the community must review and approve before taking effect. This means your canister can call the Dogecoin canister without additional trust assumptions beyond the NNS governance process itself.
+The Dogecoin canister is controlled by the [Network Nervous System](../../concepts/governance.md). Any changes to the canister require an NNS proposal that the community must review and approve before taking effect. This means your canister can call the Dogecoin canister without additional trust assumptions beyond the NNS governance process itself.
 
 ## Next steps
 
@@ -148,4 +151,4 @@ The Dogecoin canister is controlled by the [Network Nervous System](https://lear
 - [Chain-key tokens](../defi/chain-key-tokens.md) — ckBTC, ckETH, and upcoming ckDOGE
 - [Build on Dogecoin book](https://dfinity.github.io/dogecoin-canister) — full tutorial for building Dogecoin smart contracts on ICP
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/dogecoin/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; dfinity/examples — rust/basic_dogecoin/README.md -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/dogecoin/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; dfinity/examples — rust/basic_dogecoin/README.md; learn.internetcomputer.org — Dogecoin integration overview (https://learn.internetcomputer.org/hc/en-us/articles/46782835018516) -->
