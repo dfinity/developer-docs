@@ -28,6 +28,7 @@
     "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": true,
     "filesystem": {
+      "allowWrite": ["."],
       "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws"]
     }
   },

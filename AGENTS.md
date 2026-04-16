@@ -53,7 +53,7 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
 - `.claude/settings.local.json` and `.claude/worktrees/` are gitignored (local-only).
 
 **How it works:**
-1. The parent agent claims tasks in Beads, then launches one background agent per PR/task using `isolation: "worktree"`
+1. The parent agent claims tasks in Beads, then launches one background agent per PR/task using `isolation: "worktree"`. **Immediately after launching all worktrees, run `git checkout main` in the parent session** — the worktree setup switches the main repo's HEAD to the backing branch of the last worktree created; returning to `main` prevents parent session commits from landing on the wrong branch.
 2. Each agent gets its own git worktree (isolated copy of the repo), checks out its branch, makes edits, commits, and **pushes its branch** (`git push` uses outbound SSH, which works in the sandbox)
 3. **Each worktree agent must initialize submodules as its first step** (see "Submodule initialization in worktrees" below)
 4. The parent agent collects results and handles all `gh` and `bd` operations: creates PRs (`gh pr create`), posts comments (`gh pr comment`), and updates Beads (`bd update`). Worktrees never run `gh` or `bd`.
