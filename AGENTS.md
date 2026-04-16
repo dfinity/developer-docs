@@ -86,27 +86,27 @@ For **content creation**, every worktree prompt must include:
 11. **Never run `gh` commands** — parent handles `gh pr create` and all GitHub API calls
 12. **Never run `bd` commands** — parent handles all Beads operations
 
-**Mapping tasks to icskills** — the parent must identify the right skill before launching each worktree. Run `ls .agents/skills/` to see all available skills. Quick topic map:
+**Mapping tasks to icskills** — the parent must identify the right skill before launching each worktree. Run `ls .agents/skills/` to see all available skills. **Only load skills that actually exist** — never guess or invent a skill name. Quick topic map:
 
 | Page topic | icskill to load |
 |---|---|
 | Bitcoin / ckBTC | `ckbtc` |
-| Ethereum / ckETH | `cketh` |
-| Chain-key tokens (general) | `chain-key-tokens` |
-| Timers | `timers` |
-| Randomness / VRF | `randomness` |
+| Ethereum / EVM chains | `evm-rpc` |
 | Certified variables / certified data | `certified-variables` |
-| HTTP outcalls | `http-outcalls` |
-| On-chain AI / AI inference | `on-chain-ai` |
-| SNS / governance | `sns` |
+| HTTPS outcalls | `https-outcalls` |
+| SNS / governance | `sns-launch` |
 | Identity / authentication | `internet-identity` |
 | Multi-canister / architecture | `multi-canister` |
-| ICP ledger / tokens | `icp-ledger` |
+| ICRC tokens / ledger | `icrc-ledger` |
 | CLI / tooling | `icp-cli` |
 | Frontend / asset canister | `asset-canister` |
-| Candid | `candid` |
+| Cycles / billing | `cycles-management` |
+| Stable memory / data persistence | `stable-memory` |
+| Security | `canister-security` |
+| Wallet / DeFi integration | `wallet-integration` |
+| vetKD / encryption | `vetkd` |
 
-If no skill exactly matches, load the closest one and `technical-documentation` is always required in addition.
+If no skill matches the page topic, use `technical-documentation` only — do not load a non-existent skill. The following topics have **no dedicated icskill yet**: on-chain AI, randomness/VRF, timers, Candid, chain-key tokens. For these, rely on `technical-documentation` and the relevant `.sources/` submodules directly.
 
 For **PR reviews**, every worktree prompt must include:
 1. `git submodule update --init --depth 1` as the first command
