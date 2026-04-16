@@ -5,16 +5,383 @@ sidebar:
   order: 2
 ---
 
-TODO: Write content for this page.
+PocketIC is a lightweight, deterministic testing library for canister integration tests. Unlike the full local network started by `icp network start`, PocketIC runs entirely inside your test process — no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible.
 
-<!-- Content Brief -->
-Run integration tests using PocketIC, a lightweight IC replica for testing. Cover the Rust PocketIC library for Rust tests, Pic JS for JavaScript/TypeScript tests, multi-subnet testing, time travel (advancing time), and canister lifecycle in tests. Show setup, a basic test, and common patterns (deploy, call, assert).
+The `icp-cli` local development network also uses PocketIC under the hood, so behavior you observe in tests closely matches what you see during development.
 
-<!-- Source Material -->
-- JS SDK: pic-js (https://js.icp.build/pic-js)
-- icp-cli: guides/containerized-networks.md (Docker-based PocketIC)
+**When to use PocketIC:** Use it for integration tests that need to deploy one or more canisters and make calls between them. For unit tests that test individual functions without deploying, use Rust's built-in test framework directly. See [Testing strategies](strategies.md) for guidance on when each approach fits.
 
-<!-- Cross-Links -->
-- guides/testing/strategies -- when to use PocketIC vs unit tests
-- guides/governance/testing -- SNS testflight with PocketIC
-- languages/rust/testing -- Rust-specific testing patterns
+## How PocketIC works
+
+A PocketIC instance is an in-process IC replica. It supports:
+
+- Creating and installing canisters (from compiled `.wasm` files)
+- Making update and query calls
+- Multiple subnets (NNS, application, system)
+- Time control — advance the clock without waiting
+- Deterministic execution — the same test always produces the same result
+- Parallel execution — each test gets its own `PocketIc` instance
+
+PocketIC strips the consensus and networking layers from the IC replica, keeping only the execution environment. This makes it orders of magnitude faster than running a full local network.
+
+## Client libraries
+
+PocketIC has client libraries for several languages:
+
+| Language | Package | Use case |
+|----------|---------|----------|
+| Rust | [`pocket-ic`](https://crates.io/crates/pocket-ic) | Rust canister tests |
+| JavaScript/TypeScript | [`@hadronous/pic`](https://www.npmjs.com/package/@hadronous/pic) | Frontend and JS canister tests |
+| Python | [`pocket-ic`](https://pypi.org/project/pocket-ic/) | Python-based tests |
+
+This guide covers Rust (the most common choice for backend canister tests) and JavaScript with Pic JS.
+
+## Rust: getting started
+
+### Add the dependency
+
+Add `pocket-ic` to your `Cargo.toml` as a dev dependency:
+
+```toml
+[dev-dependencies]
+pocket-ic = "*"
+candid = "*"
+```
+
+### Write a basic test
+
+A typical PocketIC Rust test follows this pattern: create an instance, deploy a canister, make calls, assert results.
+
+```rust title=tests/integration_tests.rs
+use candid::{decode_one, encode_one, Principal};
+use pocket_ic::PocketIc;
+
+// Path to the compiled canister WASM
+pub const CANISTER_WASM: &[u8] =
+    include_bytes!("../target/wasm32-unknown-unknown/release/my_canister.wasm");
+
+#[test]
+fn test_counter() {
+    // Create a new PocketIC instance with one application subnet
+    let pic = PocketIc::new();
+
+    // Create a canister and fund it with 2T cycles
+    let canister_id = pic.create_canister();
+    pic.add_cycles(canister_id, 2_000_000_000_000);
+
+    // Install the canister WASM
+    pic.install_canister(canister_id, CANISTER_WASM.to_vec(), vec![], None);
+
+    // Make a query call
+    let result = pic
+        .query_call(
+            canister_id,
+            Principal::anonymous(),
+            "get_count",
+            encode_one(()).unwrap(),
+        )
+        .expect("query failed");
+
+    let count: u64 = decode_one(&result).unwrap();
+    assert_eq!(count, 0);
+
+    // Make an update call
+    pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "increment",
+        encode_one(()).unwrap(),
+    )
+    .expect("update failed");
+
+    // Verify the counter incremented
+    let result = pic
+        .query_call(
+            canister_id,
+            Principal::anonymous(),
+            "get_count",
+            encode_one(()).unwrap(),
+        )
+        .expect("query failed");
+
+    let count: u64 = decode_one(&result).unwrap();
+    assert_eq!(count, 1);
+}
+```
+
+### Run the tests
+
+Build the canister WASM first, then run the tests:
+
+```bash
+cargo build --target wasm32-unknown-unknown --release
+cargo test
+```
+
+PocketIC automatically downloads the PocketIC server binary on first use and caches it in `~/.cache/pocket-ic/`. The `POCKET_IC_BIN` environment variable overrides the download path if you need a specific version.
+
+### Use a helper struct for cleaner tests
+
+For multiple tests against the same canister, extract setup into a helper struct:
+
+```rust title=tests/integration_tests.rs
+use candid::{Decode, Encode, Principal};
+use pocket_ic::{PocketIc, WasmResult};
+
+pub const CANISTER_WASM: &[u8] =
+    include_bytes!("../target/wasm32-unknown-unknown/release/my_canister.wasm");
+
+pub struct CanisterFixture {
+    pub env: PocketIc,
+    pub canister_id: Principal,
+}
+
+impl CanisterFixture {
+    pub fn new() -> Self {
+        let env = PocketIc::new();
+        let canister_id = env.create_canister();
+        env.add_cycles(canister_id, 2_000_000_000_000);
+        env.install_canister(canister_id, CANISTER_WASM.to_vec(), vec![], None);
+        Self { env, canister_id }
+    }
+
+    pub fn query<T: candid::CandidType + for<'de> serde::Deserialize<'de>>(
+        &self,
+        method: &str,
+        args: Vec<u8>,
+    ) -> T {
+        match self
+            .env
+            .query_call(self.canister_id, Principal::anonymous(), method, args)
+            .expect("query failed")
+        {
+            WasmResult::Reply(bytes) => Decode!(&bytes, T).unwrap(),
+            WasmResult::Reject(e) => panic!("query rejected: {}", e),
+        }
+    }
+
+    pub fn update<T: candid::CandidType + for<'de> serde::Deserialize<'de>>(
+        &self,
+        method: &str,
+        args: Vec<u8>,
+    ) -> T {
+        match self
+            .env
+            .update_call(self.canister_id, Principal::anonymous(), method, args)
+            .expect("update failed")
+        {
+            WasmResult::Reply(bytes) => Decode!(&bytes, T).unwrap(),
+            WasmResult::Reject(e) => panic!("update rejected: {}", e),
+        }
+    }
+}
+
+#[test]
+fn test_with_fixture() {
+    let canister = CanisterFixture::new();
+    let count: u64 = canister.query("get_count", Encode!().unwrap());
+    assert_eq!(count, 0);
+}
+```
+
+### Canister lifecycle in tests
+
+PocketIC exposes the full canister lifecycle:
+
+```rust title=tests/lifecycle.rs
+use pocket_ic::PocketIc;
+
+#[test]
+fn test_upgrade() {
+    let pic = PocketIc::new();
+    let canister_id = pic.create_canister();
+    pic.add_cycles(canister_id, 2_000_000_000_000);
+
+    // Install initial version
+    pic.install_canister(canister_id, WASM_V1.to_vec(), vec![], None);
+
+    // Upgrade to new version
+    pic.upgrade_canister(canister_id, WASM_V2.to_vec(), vec![], None)
+        .expect("upgrade failed");
+
+    // Stop and start
+    pic.stop_canister(canister_id, None).unwrap();
+    pic.start_canister(canister_id, None).unwrap();
+}
+```
+
+### Advance time
+
+Canisters that depend on the current time (for example, timers or time-locked state) can be tested by controlling the clock:
+
+```rust title=tests/timer.rs
+use pocket_ic::PocketIc;
+use std::time::Duration;
+
+#[test]
+fn test_timer_fires() {
+    let pic = PocketIc::new();
+    let canister_id = pic.create_canister();
+    pic.add_cycles(canister_id, 2_000_000_000_000);
+    pic.install_canister(canister_id, CANISTER_WASM.to_vec(), vec![], None);
+
+    // Advance the clock by 10 seconds and process any pending timers
+    pic.advance_time(Duration::from_secs(10));
+    pic.tick(); // process one round of messages
+
+    // Verify timer-triggered state change
+    // ...
+}
+```
+
+`pic.tick()` processes one round of messages without advancing time. Call it after `advance_time` to execute any timers that have fired.
+
+### Multi-subnet testing
+
+Test canister interactions that span subnets — for example, cross-subnet calls or NNS integration:
+
+```rust title=tests/multi_subnet.rs
+use pocket_ic::{PocketIc, PocketIcBuilder};
+use candid::Principal;
+
+#[test]
+fn test_cross_subnet_call() {
+    // Build an instance with an NNS subnet and two application subnets
+    let pic = PocketIcBuilder::new()
+        .with_nns_subnet()
+        .with_application_subnet()
+        .with_application_subnet()
+        .build();
+
+    // Get subnet IDs from the topology
+    let app_subnets = pic.topology().get_app_subnets();
+    let subnet_a = app_subnets[0];
+    let subnet_b = app_subnets[1];
+
+    // Create canisters on specific subnets
+    let canister_a = pic.create_canister_on_subnet(None, None, subnet_a);
+    pic.add_cycles(canister_a, 2_000_000_000_000);
+
+    let canister_b = pic.create_canister_on_subnet(None, None, subnet_b);
+    pic.add_cycles(canister_b, 2_000_000_000_000);
+
+    // Install and test cross-subnet interactions
+    // ...
+}
+```
+
+Named subnets (NNS, SNS, II) carry the same canister ID ranges as mainnet, which matters when testing code that references specific canister IDs.
+
+## JavaScript/TypeScript: Pic JS
+
+Pic JS (`@hadronous/pic`) is the JavaScript/TypeScript client for PocketIC, designed for testing frontend code, agent-based workflows, or JavaScript canister backends. It exposes the same PocketIC capabilities with a Promise-based API.
+
+### Install
+
+```bash
+npm install --save-dev @hadronous/pic
+```
+
+Pic JS downloads the PocketIC server binary on first use. Set `POCKET_IC_URL` to point to a running PocketIC server if you prefer managing it yourself.
+
+### Write a basic test
+
+This example uses [Jest](https://jestjs.io/), but Pic JS works with any test runner.
+
+```typescript title=src/__tests__/counter.test.ts
+import { PocketIc, createIdentity } from '@hadronous/pic';
+import { resolve } from 'node:path';
+
+const WASM_PATH = resolve(__dirname, '../../target/wasm32-unknown-unknown/release/counter.wasm');
+
+describe('Counter canister', () => {
+  let pic: PocketIc;
+
+  beforeEach(async () => {
+    pic = await PocketIc.create();
+  });
+
+  afterEach(async () => {
+    await pic.tearDown();
+  });
+
+  it('should increment and read the counter', async () => {
+    // Set up a fixture with the canister
+    const fixture = await pic.setupCanister({
+      wasm: WASM_PATH,
+    });
+
+    const { actor } = fixture;
+
+    // Call methods on the canister via the generated actor
+    await actor.increment();
+    const count = await actor.get_count();
+    expect(count).toBe(1n);
+  });
+});
+```
+
+Pic JS generates typed actors from Candid declarations automatically when you use `setupCanister`. See the [Pic JS documentation](https://js.icp.build/pic-js) for the full API, including typed actor generation and subnet configuration.
+
+### Advance time in JavaScript tests
+
+```typescript title=src/__tests__/timer.test.ts
+import { PocketIc } from '@hadronous/pic';
+
+it('should trigger timer after delay', async () => {
+  const pic = await PocketIc.create();
+  // ... deploy canister ...
+
+  // Advance time by 10 seconds and tick
+  await pic.advanceTime(10_000); // milliseconds
+  await pic.tick();
+
+  // Assert timer-triggered state change
+  // ...
+
+  await pic.tearDown();
+});
+```
+
+## Running PocketIC tests in CI
+
+PocketIC downloads its server binary on first use and caches it. In CI environments, cache this directory to avoid repeated downloads:
+
+```yaml title=.github/workflows/test.yml
+- name: Cache PocketIC binary
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/pocket-ic
+    key: pocket-ic-${{ runner.os }}
+
+- name: Run integration tests
+  run: |
+    cargo build --target wasm32-unknown-unknown --release
+    cargo test
+```
+
+PocketIC runs on macOS and Linux. Windows is not currently supported for standalone PocketIC use, but the containerized network (`icp network start`) supports Windows.
+
+## Connecting to a running network for testing
+
+For end-to-end tests that need a full network with all system canisters, use a containerized network instead of PocketIC. See the [icp-cli containerized networks documentation](https://cli.internetcomputer.org/) for how to configure Docker-based test networks in `icp.yaml`.
+
+The containerized network is appropriate when:
+
+- You need Internet Identity or NNS canisters pre-installed
+- You are testing frontend interactions via HTTP
+- You need to test with real cycle mechanics
+
+PocketIC is appropriate when:
+
+- You are testing canister logic in isolation
+- You want fast, parallelizable tests without Docker
+- You need deterministic time control or multi-subnet simulation
+
+## Next steps
+
+- [Testing strategies](strategies.md) — overview of unit, integration, and end-to-end testing
+- [Governance testing](../governance/testing.md) — SNS testflight with PocketIC
+- [Rust testing patterns](../../languages/rust/testing.md) — Rust-specific patterns including unit testing with mocks
+
+<!-- Upstream: informed by dfinity/portal docs/building-apps/test/pocket-ic.mdx; dfinity/examples rust/unit_testable_rust_canister rust/guards; dfinity/icp-cli docs/guides/containerized-networks.md -->
