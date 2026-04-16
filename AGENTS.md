@@ -40,7 +40,7 @@ All tasks (content pages, infrastructure, tooling) are coordinated through [Bead
 ./scripts/setup.sh    # submodules, npm deps, Beads task DB, Dolt server, build check
 ```
 
-> **Running from Claude Code:** `./scripts/setup.sh` is pre-approved in `.claude/settings.json` and runs without user prompts. It handles TCP port binding for Dolt and all `bd` calls internally. **`git` commands work within the sandbox and do NOT need `dangerouslyDisableSandbox: true`.** See "Session start" for the full procedure.
+> **Running from Claude Code:** `./scripts/setup.sh` is pre-approved in `.claude/settings.json` and runs without user prompts. It handles TCP port binding for Dolt and all `bd` calls internally. **Most `git` commands work within the sandbox and do NOT need `dangerouslyDisableSandbox: true`.** Exception: `git worktree` and `git -C` on `.claude/worktrees/` paths need bypass (OS restricts `.claude/` modifications) — see "Session start" for the full list. See "Session start" for the full procedure.
 
 Without `bd`/`dolt` you can still write docs — check `.docs-plan/migration-plan.md` for tasks manually.
 
@@ -54,7 +54,7 @@ For batch operations like addressing PR feedback across multiple PRs, Claude Cod
 
 **How it works:**
 1. The parent agent claims tasks in Beads, then launches one background agent per PR/task using `isolation: "worktree"`. **Immediately after launching all worktrees, run `git checkout main` in the parent session** — the worktree setup switches the main repo's HEAD to the backing branch of the last worktree created; returning to `main` prevents parent session commits from landing on the wrong branch.
-2. Each agent gets its own git worktree (isolated copy of the repo), checks out its branch, makes edits, commits, and **pushes its branch** (`git push` uses outbound SSH, which works in the sandbox)
+2. Each agent gets its own git worktree (isolated copy of the repo), checks out its branch, makes edits, and commits. **The parent pushes each branch** using `git -C <worktree-path> push -u origin <branch>` with `dangerouslyDisableSandbox: true` — worktree agents must never run `git push` because `~/.ssh` is in `denyRead` (SSH keys are blocked in the sandbox)
 3. **Each worktree agent must initialize submodules as its first step** (see "Submodule initialization in worktrees" below)
 4. The parent agent collects results and handles all `gh` and `bd` operations: creates PRs (`gh pr create`), posts comments (`gh pr comment`), and updates Beads (`bd update`). Worktrees never run `gh` or `bd`.
 5. The parent agent cleans up worktrees after all work is done:
@@ -145,7 +145,20 @@ This keeps review content off the parent's context entirely (no context bloat), 
 
 ### Session start
 
-> **Sandbox note:** `bd`, `gh`, `./scripts/setup.sh`, and `pkill*dolt*` require `dangerouslyDisableSandbox: true` and run **without user prompts** via a `PermissionRequest` hook in `.claude/settings.json` that auto-approves these specific commands. `git submodule update` is pre-approved in the `allow` list for sandbox bypass. **The allow list alone does not suppress sandbox bypass prompts** — the `PermissionRequest` hook is what makes them silent. `bd` requires sandbox bypass because it connects to Dolt via TCP on localhost (OS sandbox blocks this); `gh` needs the macOS Security framework for TLS certificate verification (system keychain) — attempting `gh` without `dangerouslyDisableSandbox: true` will always fail with a TLS/x509 error, never silently succeed. Always set `dangerouslyDisableSandbox: true` on the first `gh` call; do not attempt it sandboxed first. **Critical:** allow list patterns match only when the Bash command starts with the allowed prefix. Complex scripts that start with variable assignments (`DOLT_OUT=$(...)`, `EXISTING_PORT=...`), control flow (`if [`, `for`, `while`), or grouping constructs (`(`, `{`) do **not** match the hook patterns and **will prompt the user** for every call. For multi-target operations (e.g. checking several PRs), issue each command as a separate parallel Bash tool call — each one starts with `gh`/`bd` and is auto-approved. Always use pre-approved simple commands or scripts (`./scripts/setup.sh`) rather than inline multi-line shell scripts. **`git` commands (fetch, push, ls-remote, checkout, rebase, etc.) work within the sandbox and do NOT need `dangerouslyDisableSandbox: true`.** **Glob caveat for native tools (Write/Edit/Read):** `Write(**)` and `Edit(**)` in the `allow` list do **not** match hidden directories (paths starting with `.`, e.g. `.claude/wave-state.json`). For `.claude/` writes, explicit rules like `Write(.claude/**)` are required — these are already in `settings.json`. The `PermissionRequest` hook is only relevant for Bash sandbox-bypass (`dangerouslyDisableSandbox: true`) — it never fires for native tool (Write/Edit) permission checks.
+> **Sandbox note:** The following commands require `dangerouslyDisableSandbox: true` and are auto-approved **without user prompts** via a `PermissionRequest` hook in `.claude/settings.json`:
+> - `bd` — connects to Dolt via TCP on localhost (OS sandbox blocks this)
+> - `gh` — needs the macOS Security framework for TLS/keychain; **always fails with x509 error when run sandboxed** — always set `dangerouslyDisableSandbox: true` on the first call, never attempt sandboxed first
+> - `./scripts/setup.sh` — internally calls `bd` and `gh`
+> - `pkill*dolt*` — process management
+> - `git worktree add/remove` on `.claude/worktrees/` paths — OS restricts `.claude/` modifications
+> - `git -C .claude/worktrees/...` (e.g. parent pushing a worktree branch) — same `.claude/` restriction
+> - `rm` on `.claude/worktrees/` paths — same `.claude/` restriction
+>
+> All other `git` commands (fetch, push from main repo, checkout, rebase, ls-remote, `git submodule update`, etc.) **work within the sandbox** and do NOT need `dangerouslyDisableSandbox: true`. `git submodule update` runs sandboxed via `autoAllowBashIfSandboxed: true` — no bypass needed.
+>
+> **The allow list alone does not suppress sandbox bypass prompts** — the `PermissionRequest` hook is what makes them silent. **Critical:** hook patterns only match when the Bash command starts with the approved prefix. Complex scripts starting with variable assignments (`DOLT_OUT=$(...)`, `EXISTING_PORT=...`), control flow (`if [`, `for`, `while`), or grouping constructs (`(`, `{`) do **not** match and **will prompt the user**. For multi-target operations (e.g. checking several PRs), issue each as a separate parallel Bash call — each starts with `gh`/`bd` and is auto-approved. Always use pre-approved simple commands or scripts (`./scripts/setup.sh`) rather than inline multi-line shell scripts.
+>
+> **Glob caveat for native tools (Write/Edit/Read):** `Write(**)` and `Edit(**)` in the `allow` list do **not** match hidden directories (paths starting with `.`, e.g. `.claude/wave-state.json`). For `.claude/` writes, explicit rules like `Write(.claude/**)` are required — these are already in `settings.json`. The `PermissionRequest` hook is only relevant for Bash sandbox-bypass (`dangerouslyDisableSandbox: true`) — it never fires for native tool (Write/Edit) permission checks.
 
 **Step 0 — Navigate to main repo root and verify environment:**
 
