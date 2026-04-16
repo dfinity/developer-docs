@@ -44,7 +44,7 @@ Add `pocket-ic` to your `Cargo.toml` as a dev dependency:
 
 ```toml
 [dev-dependencies]
-pocket-ic = "*"
+pocket-ic = "9"
 candid = "*"
 ```
 
@@ -125,8 +125,8 @@ PocketIC automatically downloads the PocketIC server binary on first use and cac
 For multiple tests against the same canister, extract setup into a helper struct:
 
 ```rust title=tests/integration_tests.rs
-use candid::{Decode, Encode, Principal};
-use pocket_ic::{PocketIc, WasmResult};
+use candid::{decode_one, encode_one, Encode, Principal};
+use pocket_ic::PocketIc;
 
 pub const CANISTER_WASM: &[u8] =
     include_bytes!("../target/wasm32-unknown-unknown/release/my_canister.wasm");
@@ -150,14 +150,11 @@ impl CanisterFixture {
         method: &str,
         args: Vec<u8>,
     ) -> T {
-        match self
+        let bytes = self
             .env
             .query_call(self.canister_id, Principal::anonymous(), method, args)
-            .expect("query failed")
-        {
-            WasmResult::Reply(bytes) => Decode!(&bytes, T).unwrap(),
-            WasmResult::Reject(e) => panic!("query rejected: {}", e),
-        }
+            .expect("query failed");
+        decode_one(&bytes).unwrap()
     }
 
     pub fn update<T: candid::CandidType + for<'de> serde::Deserialize<'de>>(
@@ -165,14 +162,11 @@ impl CanisterFixture {
         method: &str,
         args: Vec<u8>,
     ) -> T {
-        match self
+        let bytes = self
             .env
             .update_call(self.canister_id, Principal::anonymous(), method, args)
-            .expect("update failed")
-        {
-            WasmResult::Reply(bytes) => Decode!(&bytes, T).unwrap(),
-            WasmResult::Reject(e) => panic!("update rejected: {}", e),
-        }
+            .expect("update failed");
+        decode_one(&bytes).unwrap()
     }
 }
 
@@ -190,6 +184,10 @@ PocketIC exposes the full canister lifecycle:
 
 ```rust title=tests/lifecycle.rs
 use pocket_ic::PocketIc;
+
+// WASM_V1 and WASM_V2 are defined like CANISTER_WASM above, pointing to
+// different compiled versions of the same canister
+// e.g.: pub const WASM_V1: &[u8] = include_bytes!("../target/.../my_canister_v1.wasm");
 
 #[test]
 fn test_upgrade() {
@@ -282,7 +280,7 @@ Pic JS (`@dfinity/pic`) is the JavaScript/TypeScript client for PocketIC, design
 npm install --save-dev @dfinity/pic
 ```
 
-Pic JS manages the PocketIC server process for you via `PocketIcServer`. Set `POCKET_IC_SERVER_PATH` to point to a pre-installed binary if you prefer not to download it automatically.
+Pic JS manages the PocketIC server process for you via `PocketIcServer`. <!-- Needs human verification: POCKET_IC_SERVER_PATH env var name for @dfinity/pic — not in StartServerOptions API docs; may be read directly by the server binary outside the options object -->
 
 ### Write a basic test
 
@@ -291,6 +289,9 @@ This example uses [Jest](https://jestjs.io/), but Pic JS works with Vitest, Bun,
 ```typescript title=src/__tests__/counter.test.ts
 import { PocketIc, PocketIcServer } from '@dfinity/pic';
 import { resolve } from 'node:path';
+// idlFactory is generated from the canister's Candid interface (e.g. via icp-cli or candid-extractor)
+// _SERVICE is the TypeScript type for the canister's public API
+import { idlFactory, type _SERVICE } from '../declarations/counter';
 
 const WASM_PATH = resolve(__dirname, '../../target/wasm32-unknown-unknown/release/counter.wasm');
 
@@ -315,7 +316,8 @@ describe('Counter canister', () => {
   });
 
   it('should increment and read the counter', async () => {
-    const fixture = await pic.setupCanister({
+    const fixture = await pic.setupCanister<_SERVICE>({
+      idlFactory,
       wasm: WASM_PATH,
     });
 
@@ -328,9 +330,11 @@ describe('Counter canister', () => {
 });
 ```
 
-Pic JS generates typed actors from Candid declarations automatically when you use `setupCanister`. See the [Pic JS documentation](https://js.icp.build/pic-js) for the full API, including typed actor generation and subnet configuration.
+Pic JS generates typed actors from Candid declarations automatically when you use `setupCanister`. The `idlFactory` is generated from your canister's `.did` file by `icp-cli` — it lives in the `declarations/` directory alongside the TypeScript types. See the [Pic JS documentation](https://js.icp.build/pic-js) for the full API, including typed actor generation and subnet configuration.
 
 ### Advance time in JavaScript tests
+
+This example uses inline setup for brevity. For test suites with multiple tests, the `beforeAll`/`afterAll` pattern from the basic example above is preferred — it avoids restarting the server for each test.
 
 ```typescript title=src/__tests__/timer.test.ts
 import { PocketIc, PocketIcServer } from '@dfinity/pic';
