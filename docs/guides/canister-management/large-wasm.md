@@ -24,7 +24,7 @@ Before reaching for the chunk store, consider whether [canister optimization](op
 
 ICP's management canister understands gzip-compressed Wasm modules. When the `wasm_module` field of `install_code` starts with the gzip magic bytes `[0x1f, 0x8b, 0x08]`, the system decompresses it automatically before installation.
 
-Gzip compression typically reduces Wasm binary size by 50-70%, which is often enough to bring a large module under the 2 MiB threshold.
+Gzip compression typically reduces Wasm binary size significantly, which is often enough to bring a large module under the 2 MiB threshold.
 
 ### Using a recipe
 
@@ -41,7 +41,7 @@ canisters:
         compress: true
 ```
 
-Setting `shrink: true` first removes unused functions and debug metadata, then `compress: true` gzip-compresses the result. Using both together gives the largest size reduction.
+Setting `shrink: true` first removes unused functions and debug info while preserving function names for readable backtraces, then `compress: true` gzip-compresses the result. Using both together gives the largest size reduction.
 
 ### Using a custom build script
 
@@ -72,11 +72,11 @@ When compression alone is not enough, the Wasm chunk store lets you upload modul
 1. **Upload chunks** — Call `upload_chunk` on the management canister to store up to 1 MiB chunks in the target canister's chunk store. Each call returns the SHA-256 hash of the stored chunk.
 2. **Assemble and install** — Call `install_chunked_code` with the ordered list of chunk hashes. The system concatenates the chunks, verifies the aggregate hash matches `wasm_module_hash`, and installs the result as if you had called `install_code` directly.
 
-The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE` in the IC interface spec). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
+The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE`, defined in the IC interface spec — see the [management canister reference](../../reference/management-canister.md) for the exact value). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
 
 ### icp-cli handles this automatically
 
-When you run `icp deploy` or `icp canister install` with a Wasm module larger than 2 MiB, icp-cli automatically uses the chunk store — no configuration required. The tool splits the module, uploads each chunk, and calls `install_chunked_code` behind the scenes.
+When you run `icp deploy` or `icp canister install` with a Wasm module larger than 2 MiB, icp-cli automatically uses the chunk store — no configuration required. The tool splits the module, uploads each chunk, and calls `install_chunked_code` behind the scenes. <!-- TODO: verify automatic chunking behavior against icp-cli release notes -->
 
 ```bash
 icp deploy
@@ -92,7 +92,7 @@ Storing each chunk costs cycles proportional to 1 MiB of storage (even if the ch
 
 ## Wasm64: 64-bit memory addressing
 
-Standard ICP canisters use the `wasm32-unknown-unknown` target, which limits addressable memory to 4 GiB. For canisters that need more — for example, those holding large in-memory datasets or running inference on large models — ICP supports the `wasm64-unknown-unknown` target with up to 6 GiB of addressable memory.
+Standard ICP canisters use the `wasm32-unknown-unknown` target, which limits addressable memory to 4 GiB. For canisters that need more — for example, those holding large in-memory datasets or running inference on large models — ICP supports the `wasm64-unknown-unknown` target with up to 6 GiB of addressable heap memory (an ICP platform limit).
 
 Wasm64 is a separate concern from the chunk store. You might use one, the other, or both: the chunk store addresses the 2 MiB upload limit, while Wasm64 addresses the runtime memory limit.
 
