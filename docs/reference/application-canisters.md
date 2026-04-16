@@ -127,6 +127,7 @@ const assetManager = new AssetManager({
 });
 
 // Upload a file (files >1.9MB are chunked automatically)
+// fileBuffer: Uint8Array | ArrayBuffer | number[] — e.g. from fs.readFileSync, fetch, or the File API
 await assetManager.store(fileBuffer, {
   fileName: "photo.jpg",
   contentType: "image/jpeg",
@@ -149,7 +150,7 @@ The asset canister Wasm version determines which features are available. Key ver
 
 Downgrading the Wasm version may fail if the stable memory format changed between versions. If a downgrade is necessary, use `icp deploy --mode reinstall` (wipes all stored assets).
 
-For a full deployment guide, see [Asset canister](../guides/frontends/asset-canister.md).
+For version history, upgrade guidance, and deployment pitfalls, see the [Asset canister guide](../guides/frontends/asset-canister.md).
 
 ---
 
@@ -184,7 +185,7 @@ The governance canister is the primary interface for SNS operations:
 
 ### SNS ledger
 
-The SNS ledger implements ICRC-1 and ICRC-2. The key methods are the same as any ICRC-1 ledger:
+The SNS ledger implements ICRC-1, ICRC-2, and ICRC-3. The key methods are the same as any ICRC-1 ledger:
 
 | Method | Description |
 |---|---|
@@ -193,15 +194,16 @@ The SNS ledger implements ICRC-1 and ICRC-2. The key methods are the same as any
 | `icrc1_total_supply` | Query the total token supply |
 | `icrc2_approve` | Approve a spender |
 | `icrc2_transfer_from` | Transfer on behalf of an approver |
+| `icrc3_get_blocks` | Query transaction history (ICRC-3 transaction log) |
 
 For token standard details, see [Token Standards](token-standards.md).
 
 ### Querying SNS canister IDs at runtime
 
-After an SNS is launched, call the `list_sns_canisters` method on the governance canister to retrieve the IDs of all canisters in the set:
+After an SNS is launched, call the `list_sns_canisters` method on the Root canister to retrieve the IDs of all canisters in the set:
 
 ```bash
-icp canister call <sns_governance_id> list_sns_canisters '()' -e ic
+icp canister call <sns_root_id> list_sns_canisters '()' -e ic
 # Returns: record { root: principal; swap: principal; ledger: principal; index: principal; governance: principal; dapps: vec principal; archives: vec principal }
 ```
 
@@ -313,21 +315,7 @@ ollama serve
 ollama pull llama3.1:8b
 ```
 
-Then add the LLM canister to your `icp.yaml` as a remote canister pointing to the local Ollama Wasm:
-
-```json
-"llm": {
-  "candid": "https://github.com/dfinity/llm/releases/latest/download/llm-canister-ollama.did",
-  "type": "custom",
-  "specified_id": "w36hm-eqaaa-aaaal-qr76a-cai",
-  "remote": {
-    "id": {
-      "ic": "w36hm-eqaaa-aaaal-qr76a-cai"
-    }
-  },
-  "wasm": "https://github.com/dfinity/llm/releases/latest/download/llm-canister-ollama.wasm"
-}
-```
+icp-cli does not yet have an equivalent of dfx's `"type": "custom"` / `"remote"` canister configuration for pointing a local replica at the Ollama-backed LLM Wasm. To test the LLM canister locally, use the example project from [dfinity/examples](https://github.com/dfinity/examples/tree/master/rust/llm_chatbot) which includes the `dfx.json` configuration needed for this setup.
 
 For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.md).
 
@@ -339,7 +327,7 @@ For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.
 |---|---|---|
 | Asset canister | Per-project | Static web asset hosting with HTTP certification |
 | SNS governance | Per-dapp | DAO governance for a specific dapp |
-| SNS ledger | Per-dapp | ICRC-1/ICRC-2 token ledger for a specific SNS |
+| SNS ledger | Per-dapp | ICRC-1/ICRC-2/ICRC-3 token ledger for a specific SNS |
 | SNS root | Per-dapp | Controller of all dapp canisters in the SNS set |
 | SNS swap | Per-dapp | Decentralization swap (ICP for SNS tokens) |
 | LLM | `w36hm-eqaaa-aaaal-qr76a-cai` | Onchain AI inference (Llama 3.1 8B) |
