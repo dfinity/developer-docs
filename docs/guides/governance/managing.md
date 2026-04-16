@@ -7,7 +7,7 @@ sidebar:
 
 After an SNS launch succeeds, no single entity controls the dapp or its governance canisters — the community does. Every upgrade, parameter change, treasury transfer, and asset update must go through an SNS proposal and be approved by token holder vote. This guide covers the day-to-day operations of a live SNS: submitting and understanding proposals, keeping canisters funded with cycles, updating asset canisters via governance, and participating as a neuron holder.
 
-For background on how SNS DAOs work, see [concepts/governance.md](../../concepts/governance.md). For the launch process itself, see [Launching an SNS](launching.md).
+For background on how SNS DAOs work, see [SNS governance concepts](../../concepts/governance.md). For the launch process itself, see [Launching an SNS](launching.md).
 
 ## How proposals work
 
@@ -32,7 +32,7 @@ Before submitting any proposal, export your neuron ID and PEM file path:
 
 ```bash
 export PROPOSAL_NEURON_ID="594fd5d8dce3e793c3e421e1b87d55247627f8a63473047671f7f5ccc48eda63"
-export PEM_FILE="/home/user/.config/dfx/identity/my-identity/identity.pem"
+export PEM_FILE="/home/user/.config/quill/identity.pem"
 ```
 
 The general structure for submitting a proposal:
@@ -215,7 +215,7 @@ quill sns \
       summary = "Advances the SNS framework canisters to the NNS-approved version X.Y.Z.";
       action = opt variant {
         AdvanceSnsTargetVersion = record {
-          new_target = null;
+          new_target = null;  -- null means "advance to the next approved version on SNS-W's upgrade path"
         };
       };
     }
@@ -264,7 +264,7 @@ quill sns \
 quill send message.json
 ```
 
-The `from_treasury` field uses `1` for ICP and `2` for SNS tokens.
+The `from_treasury` field uses `1` for ICP and `2` for SNS tokens. <!-- Needs human verification: verify ICPS_TREASURY_TRANSFER = 1 and SNS_TOKEN_TREASURY_TRANSFER = 2 against the SNS governance proto or Candid spec -->
 
 ### RegisterDappCanisters and DeregisterDappCanisters
 
@@ -396,6 +396,8 @@ quill send message.json
 
 IDs 0–999 are reserved for native proposal types. Use IDs 1000+ for custom proposals.
 
+The SNS governance interface also accepts an optional `topic` field in `GenericNervousSystemFunction` to categorize the proposal under a governance topic. The `topic` field is `opt Topic` — omitting it is valid, but setting an appropriate topic helps token holders filter and follow proposals by category.
+
 ### ExecuteGenericNervousSystemFunction
 
 Execute a previously registered custom proposal. The `function_id` must match the `id` you assigned when registering it:
@@ -463,6 +465,8 @@ Query SNS root to get a summary of all canisters and their current cycle balance
 icp canister call SNS_ROOT_CANISTER_ID get_sns_canisters_summary '(record { update_canister_list = opt false })' -e ic
 ```
 
+<!-- Needs human verification: verify the argument format `record { update_canister_list = opt false }` against the SNS root canister's published Candid interface -->
+
 This returns a list of all SNS framework canisters and registered dapp canisters with their current cycle balances.
 
 ### Top up a canister
@@ -529,28 +533,40 @@ quill send message.json
 
 ### Step 2: Stage the asset update
 
-A developer with `Prepare` permission stages new assets using icp-cli:
+A developer with `Prepare` permission stages new assets by calling the asset canister's batch APIs directly. The asset canister's `propose_commit_batch` method finalizes a staged batch and returns the evidence hash.
+
+The typical sequence using `icp canister call`:
 
 ```bash
-# Stage new assets without committing them
-icp deploy FRONTEND_CANISTER_NAME --by-proposal -e ic
+# 1. Create a new batch
+icp canister call YOUR_ASSET_CANISTER_ID create_batch '(record {})' -e ic
+# Returns: (record { batch_id = 2 : nat })
+
+# 2. Upload chunks (repeat for each file chunk)
+icp canister call YOUR_ASSET_CANISTER_ID create_chunk \
+  '(record { batch_id = 2 : nat; content = blob "..." })' -e ic
+
+# 3. Create assets and set their content (one call per asset)
+icp canister call YOUR_ASSET_CANISTER_ID create_asset \
+  '(record { key = "/index.html"; content_type = "text/html" })' -e ic
+icp canister call YOUR_ASSET_CANISTER_ID set_asset_content \
+  '(record { key = "/index.html"; sha256 = null; chunk_ids = vec { 1 : nat }; content_encoding = "identity" })' -e ic
+
+# 4. Propose committing the batch — this locks the batch for proposal and returns the evidence hash
+icp canister call YOUR_ASSET_CANISTER_ID propose_commit_batch \
+  '(record { batch_id = 2 : nat; operations = vec {} })' -e ic
+# Returns: (record { evidence = blob "..." })
 ```
 
-The output includes the batch ID and evidence hash. For example:
+The evidence is the SHA-256 hash of the batch contents. Note the batch ID and evidence blob for the proposal in Step 5.
 
-```
-Proposed commit of batch 2 with evidence e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855. Either commit it by proposal or delete it.
-```
+> For larger projects, use a build tool that wraps these asset canister calls, or consult your frontend framework's SNS deployment documentation for a streamlined staging workflow.
 
 ### Step 3: Verify the evidence (optional but recommended)
 
-Have another team member independently compute the evidence to confirm the staged content is correct:
+Have another team member independently rebuild the frontend assets from the same source and call `propose_commit_batch` on a separate staging batch to compute evidence from the same content. The evidence hash of both batches should match.
 
-```bash
-icp deploy FRONTEND_CANISTER_NAME --compute-evidence -e ic
-```
-
-The output should match the evidence from step 2.
+Alternatively, the `validate_commit_proposed_batch` method on the asset canister can be called (read-only) to confirm the evidence matches the staged batch without committing it.
 
 ### Step 4: Encode the proposal payload
 
@@ -599,7 +615,7 @@ icp canister call YOUR_ASSET_CANISTER_ID delete_batch \
 
 Neurons are the staking units that give token holders voting power and a share of governance rewards. To create an SNS neuron, stake SNS tokens to the SNS governance canister using the NNS dapp or a compatible wallet. The SNS governance canister derives your neuron's subaccount from your principal and a nonce using a domain-separated hash.
 
-For technical details on the two-step neuron staking process (ledger transfer + `claim_or_refresh_neuron_from_account`), including a complete Rust implementation, see the [stake_neuron_from_cli](https://github.com/dfinity/examples/tree/master/rust/stake_neuron_from_cli) example in `dfinity/examples`.
+The SNS neuron staking flow is a two-step process: first transfer SNS tokens to the governance canister using the derived subaccount, then call `claim_or_refresh_neuron_from_account` on the SNS governance canister to claim the neuron. Note that this is distinct from NNS neuron staking, which uses NNS governance and the ICP ledger.
 
 For information on neurons, dissolve delays, voting power bonuses, and reward mechanics, see the Learn Hub articles on [SNS Neurons](https://learn.internetcomputer.org/hc/en-us/articles/34084687583252) and [SNS Rewards](https://learn.internetcomputer.org/hc/en-us/articles/34143058069396).
 
@@ -634,4 +650,4 @@ icp canister status SNS_GOVERNANCE_CANISTER_ID -e ic
 - [Testing an SNS](testing.md) — test SNS governance flows locally before committing to mainnet changes
 - [Launching an SNS](launching.md) — the complete launch process reference
 
-<!-- Upstream: informed by dfinity/portal — building-apps/governing-apps/managing/manage-sns-intro.mdx, making-proposals.mdx, cycles-usage.mdx, sns-asset-canister.mdx; dfinity/icskills — skills/sns-launch/SKILL.md; dfinity/examples — rust/stake_neuron_from_cli; dfinity/icp-cli — docs/reference/cli.md -->
+<!-- Upstream: informed by dfinity/portal — building-apps/governing-apps/managing/manage-sns-intro.mdx, making-proposals.mdx, cycles-usage.mdx, sns-asset-canister.mdx; dfinity/icskills — skills/sns-launch/SKILL.md; dfinity/icp-cli — docs/reference/cli.md -->
