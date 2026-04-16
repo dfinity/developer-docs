@@ -1,0 +1,431 @@
+---
+title: "Cycles Management"
+description: "Acquire cycles, monitor canister balances, set freezing thresholds, and deploy to mainnet."
+sidebar:
+  order: 7
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Canisters on ICP pay for compute and storage using **cycles**. Unlike gas on Ethereum, cycles are paid by the canister — not the caller. This is ICP's [reverse gas model](../../concepts/reverse-gas-model.md): developers fund their own canisters, and users interact for free.
+
+This guide covers everything you need to manage cycles in production: acquiring them, monitoring balances, setting thresholds, and deploying to mainnet.
+
+## How cycles work
+
+Cycles are priced in XDR (Special Drawing Rights), a stable international reserve asset. **1 trillion cycles (1T) costs approximately 1 XDR**, which is roughly 1.3 USD as of 2025. This pricing is enforced by the Cycles Minting Canister (CMC) and updated via NNS governance proposals, so the cycle cost of a given operation stays stable even as ICP's price fluctuates.
+
+Canisters are charged continuously for:
+- **Storage** — bytes held in stable memory and heap
+- **Compute** — CPU cycles consumed by update and query calls
+- **Messages** — ingress and inter-canister calls
+- **Special operations** — HTTPS outcalls, threshold signatures, Bitcoin API calls
+
+See [Cycles costs reference](../../reference/cycles-costs.md) for exact cost tables by subnet size.
+
+### Local vs mainnet cycles
+
+Local development uses fabricated cycles — canisters on a local network start with a large balance and never actually run out. Code that works locally can fail on mainnet if the canister is underfunded. Always test with realistic cycle amounts before deploying.
+
+## Acquiring cycles
+
+To run canisters on mainnet you need ICP tokens, which you convert to cycles via the CMC.
+
+### Step 1: Create a mainnet identity
+
+```bash
+icp identity new mainnet-deployer
+icp identity default mainnet-deployer
+icp identity principal
+# Output: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+```
+
+Save your seed phrase — it is shown only once. Without it, you permanently lose access to the identity and any funds it controls.
+
+### Step 2: Get ICP tokens
+
+Purchase ICP on an exchange. When withdrawing, use your principal as the destination address (or `icp identity account-id` if the exchange requires an account identifier).
+
+Verify arrival:
+
+```bash
+icp token balance -n ic
+```
+
+### Step 3: Convert ICP to cycles
+
+```bash
+# Convert 5 ICP to cycles
+icp cycles mint --icp 5 -n ic
+
+# Or request a specific cycle amount (ICP is calculated automatically)
+icp cycles mint --cycles 5T -n ic
+```
+
+Verify your cycles balance:
+
+```bash
+icp cycles balance -n ic
+# Output: ~5T cycles
+```
+
+**Budget guidance:** Plan for 1–2T cycles per canister as a starting balance. A simple backend canister with moderate traffic costs roughly 0.1–0.5T cycles per month, though this varies with storage and call volume. See the [cycles costs reference](../../reference/cycles-costs.md) for per-operation pricing.
+
+## Checking canister cycle balances
+
+Only controllers can view a canister's cycle balance via `icp canister status`.
+
+### Via icp-cli
+
+```bash
+# Check a canister in your project
+icp canister status backend -e ic
+
+# Check any canister by ID
+icp canister status ryjl3-tyaaa-aaaaa-aaaba-cai -n ic
+```
+
+Example output:
+
+```text
+Status: Running
+Controllers: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+Memory allocation: 0
+Compute allocation: 0
+Freezing threshold: 2_592_000
+Balance: 9_811_813_913_485 Cycles
+```
+
+The `Balance` line shows the current cycle balance. The `Freezing threshold` shows how many seconds of idle cycles the canister must retain before freezing (see [Freezing threshold](#freezing-threshold) below).
+
+### Programmatically
+
+Canisters can check their own balance at runtime:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Cycles "mo:core/Cycles";
+
+persistent actor {
+  public query func getBalance() : async Nat {
+    Cycles.balance()
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::query;
+use candid::Nat;
+
+#[query]
+fn get_balance() -> Nat {
+    Nat::from(ic_cdk::api::canister_cycle_balance())
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Topping up canisters
+
+Anyone can top up any canister — you do not need to be its controller.
+
+```bash
+# Top up by canister name (in your project environment)
+icp canister top-up backend --amount 1T -e ic
+
+# Top up by canister ID (no project context required)
+icp canister top-up ryjl3-tyaaa-aaaaa-aaaba-cai --amount 1T -n ic
+```
+
+Amounts use human-readable suffixes: `T` = trillion, `b` = billion, `m` = million, `k` = thousand.
+
+To convert ICP and top up in sequence:
+
+```bash
+icp cycles mint --icp 1.0 -n ic
+icp canister top-up backend --amount 1T -e ic
+```
+
+### Accepting cycles in your canister
+
+Canisters can also accept cycles sent with an inter-canister call. This pattern is used for "tip jar" flows and payment routing:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Cycles "mo:core/Cycles";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+  public func deposit() : async Nat {
+    let available = Cycles.available();
+    if (available == 0) {
+      Runtime.trap("No cycles sent with this call")
+    };
+    Cycles.accept<system>(available)
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::update;
+use candid::Nat;
+
+#[update]
+fn deposit() -> Nat {
+    let available = ic_cdk::api::msg_cycles_available();
+    if available == 0 {
+        ic_cdk::trap("No cycles sent with this call");
+    }
+    let accepted = ic_cdk::api::msg_cycles_accept(available);
+    Nat::from(accepted)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Freezing threshold
+
+The **freezing threshold** is a canister setting that defines how long (in seconds) a canister can survive on its current balance while idle. When the canister's balance would fall below the estimated cost of running for that many seconds, the canister is frozen: it stops processing update calls but still serves query calls.
+
+The default is **2,592,000 seconds (30 days)**. Increase it for production canisters or those with large stable memory:
+
+```bash
+# Set freezing threshold to 90 days (7,776,000 seconds)
+icp canister settings update backend --freezing-threshold 7776000 -e ic
+
+# Or use icp.yaml to apply it per-environment
+```
+
+In `icp.yaml`:
+
+```yaml
+environments:
+  - name: production
+    network: ic
+    canisters: [backend]
+    settings:
+      backend:
+        freezing_threshold: 90d
+```
+
+See [Canister settings](settings.mdx) for all available settings and their syntax.
+
+**When a canister is frozen:**
+- Update calls return an error immediately
+- Query calls still succeed (read-only)
+- The canister is not deleted yet — top it up to unfreeze
+
+**When a frozen canister runs out of cycles entirely:**
+- The canister is deleted along with all its state
+- This is irreversible
+
+## Setting a freezing threshold programmatically
+
+You can also read and configure the freezing threshold from canister code:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Principal "mo:core/Principal";
+
+persistent actor Self {
+
+  type CreateCanisterSettings = {
+    controllers : ?[Principal];
+    compute_allocation : ?Nat;
+    memory_allocation : ?Nat;
+    freezing_threshold : ?Nat;
+  };
+
+  type CanisterId = { canister_id : Principal };
+
+  let ic = actor ("aaaaa-aa") : actor {
+    create_canister : shared { settings : ?CreateCanisterSettings } -> async CanisterId;
+    deposit_cycles : shared { canister_id : Principal } -> async ();
+  };
+
+  // Create a new canister with 1T cycles and a 30-day freezing threshold
+  public func createWithThreshold() : async Principal {
+    let result = await (with cycles = 1_000_000_000_000) ic.create_canister({
+      settings = ?{
+        controllers = ?[Principal.fromActor(Self)];
+        compute_allocation = null;
+        memory_allocation = null;
+        freezing_threshold = ?2_592_000; // 30 days
+      };
+    });
+    result.canister_id
+  };
+
+  // Top up another canister programmatically
+  public func topUp(canisterId : Principal, amount : Nat) : async () {
+    await (with cycles = amount) ic.deposit_cycles({ canister_id = canisterId });
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::{Nat, Principal};
+use ic_cdk::update;
+use ic_cdk::management_canister::{
+    create_canister_with_extra_cycles, deposit_cycles,
+    CreateCanisterArgs, DepositCyclesArgs, CanisterSettings,
+};
+
+#[update]
+async fn create_with_threshold() -> Principal {
+    let caller_principal = ic_cdk::api::canister_self();
+
+    let settings = CanisterSettings {
+        controllers: Some(vec![caller_principal]),
+        compute_allocation: None,
+        memory_allocation: None,
+        freezing_threshold: Some(Nat::from(2_592_000u64)), // 30 days
+        reserved_cycles_limit: None,
+        log_visibility: None,
+        wasm_memory_limit: None,
+        wasm_memory_threshold: None,
+        environment_variables: None,
+    };
+
+    let result = create_canister_with_extra_cycles(
+        &CreateCanisterArgs { settings: Some(settings) },
+        1_000_000_000_000u128, // 1T cycles
+    )
+    .await
+    .expect("Failed to create canister");
+
+    result.canister_id
+}
+
+#[update]
+async fn top_up_canister(canister_id: Principal, amount: u128) {
+    deposit_cycles(&DepositCyclesArgs { canister_id }, amount)
+        .await
+        .expect("Failed to deposit cycles");
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Multi-environment deployment
+
+For production, use separate environments for staging and production to avoid accidentally affecting live canisters. Configure environments in `icp.yaml`:
+
+```yaml
+environments:
+  - name: staging
+    network: ic
+    canisters: [frontend, backend]
+    settings:
+      backend:
+        freezing_threshold: 30d
+        environment_variables:
+          LOG_LEVEL: "debug"
+
+  - name: production
+    network: ic
+    canisters: [frontend, backend]
+    settings:
+      backend:
+        freezing_threshold: 90d
+        environment_variables:
+          LOG_LEVEL: "error"
+```
+
+Deploy to each environment independently:
+
+```bash
+# Deploy to staging first
+icp deploy -e staging
+
+# Verify, then deploy to production
+icp deploy -e production
+```
+
+Each environment maintains separate canister IDs. Mainnet IDs are stored in `.icp/data/mappings/<environment>.ids.json` and should be committed to version control. See [Managing environments](https://cli.internetcomputer.org/) for full configuration options.
+
+## Production deployment checklist
+
+Before deploying to mainnet, verify each of the following:
+
+- **Fund canisters** — Top up all canisters with at least 2–5T cycles each before deploying
+- **Set a freezing threshold** — Use 90 days (`7776000` seconds) or more for production
+- **Add a backup controller** — Without a backup, losing your identity means losing the canister permanently:
+  ```bash
+  icp canister settings update backend --add-controller BACKUP_PRINCIPAL -e ic
+  ```
+- **Verify cycle balance after deploy** — Check immediately after `icp deploy -e ic`:
+  ```bash
+  icp canister status backend -e ic
+  ```
+- **Enable reproducible builds** — See [Reproducible builds](reproducible-builds.md) to ensure your WASM is verifiable
+- **Review canister settings** — See [Canister settings](settings.mdx) for memory allocation, compute allocation, and access controls
+- **Review security** — See [Canister upgrades security](../security/canister-upgrades.md) for safe upgrade patterns
+
+## Monitoring cycle balances
+
+There is no built-in alerting for low balances — monitoring is your responsibility. Options:
+
+**Manual monitoring** — Check regularly via icp-cli:
+
+```bash
+# Check all canisters in an environment at once
+icp canister status -e ic
+```
+
+**Automated monitoring services** — Third-party services can monitor balances and alert or auto-top-up:
+- [CycleOps](https://cycleops.dev) — Onchain monitoring with automated top-ups and email notifications
+- [Canistergeek](https://cusyh-iyaaa-aaaah-qcpba-cai.raw.icp0.io/) — Cycles, memory, and log monitoring in one place
+
+**Automated top-up libraries:**
+- Rust: [canfund](https://github.com/dfinity/canfund) — DFINITY-maintained library for automated canister funding
+- Motoko: [cycles-manager](https://github.com/CycleOperators/cycles-manager) — Permissioned multi-canister cycles management
+
+## Common mistakes
+
+**Sending cycles to the wrong canister** — Cycles transferred to the wrong principal cannot be recovered. Double-check canister IDs before topping up.
+
+**Using the wrong flag (`-n` vs `-e`)** — Use `-e ic` for canister operations by name; use `-n ic` for token/cycles operations and canister IDs:
+```bash
+# Correct
+icp canister top-up backend --amount 1T -e ic
+icp cycles balance -n ic
+
+# Incorrect (fails — canister name requires -e)
+icp canister top-up backend --amount 1T -n ic
+```
+
+**Forgetting to add a backup controller** — Your identity is the only controller by default. If you lose access to it, the canister cannot be managed, upgraded, or deleted.
+
+**Confusing local and mainnet cycles** — Local deployments use fabricated cycles and never freeze. Test with realistic amounts on a staging environment before going to production.
+
+**Using `ExperimentalCycles` in Motoko** — In `mo:core`, the module is `Cycles`, not `ExperimentalCycles`. `import ExperimentalCycles "mo:base/ExperimentalCycles"` will fail with `mo:core`. Use `import Cycles "mo:core/Cycles"`.
+
+## Next steps
+
+- [Canister settings](settings.mdx) — Freezing threshold, memory allocation, compute allocation
+- [Canister lifecycle](lifecycle.mdx) — Create, install, upgrade, and delete canisters
+- [Cycles costs reference](../../reference/cycles-costs.md) — Exact cost tables per operation
+- [Reverse gas model](../../concepts/reverse-gas-model.md) — Why canisters pay for execution
+- [Reproducible builds](reproducible-builds.md) — Verify your WASM is trustworthy before deploying
+- [icp-cli docs](https://cli.internetcomputer.org/) — Full command reference
+
+{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/topping-up.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; dfinity/icp-cli — docs/guides/deploying-to-mainnet.md, docs/guides/tokens-and-cycles.md, docs/guides/managing-environments.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
