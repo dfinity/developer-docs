@@ -46,6 +46,8 @@ core = "2.0.0"
 npm install @dfinity/vetkeys
 ```
 
+> **API stability:** The `ic-vetkeys` crate and `@dfinity/vetkeys` package are published but their APIs may still change. Pin the versions above and check the [DFINITY forum](https://forum.dfinity.org) for migration guides before upgrading.
+
 ### Key names and environments
 
 | Key name | Environment | Cycle cost (approx.) |
@@ -53,7 +55,7 @@ npm install @dfinity/vetkeys
 | `test_key_1` | Local + mainnet (testing) | ~10B cycles |
 | `key_1` | Mainnet (production) | ~26B cycles |
 
-Use `test_key_1` during development. Switch to `key_1` before production deployment. `vetkd_public_key` does not cost cycles; only `vetkd_derive_key` does.
+Use `test_key_1` during development and mainnet testing. Switch to `key_1` for production. `vetkd_public_key` does not cost cycles; only `vetkd_derive_key` does.
 
 ### Rust implementation
 
@@ -61,10 +63,10 @@ The `ic-vetkeys` crate provides a high-level `KeyManager` that handles access co
 
 **Using `ic-vetkeys` KeyManager (recommended):**
 
+Initialize the `KeyManager` with stable memory and a key ID in the `init` hook:
+
 ```rust
-use candid::Principal;
-use ic_cdk::update;
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+use ic_stable_structures::memory_manager::{MemoryId, MemoryManager};
 use ic_stable_structures::DefaultMemoryImpl;
 use ic_vetkeys::key_manager::KeyManager;
 use ic_vetkeys::types::{AccessRights, VetKDCurve, VetKDKeyId};
@@ -72,7 +74,6 @@ use ic_vetkeys::types::{AccessRights, VetKDCurve, VetKDKeyId};
 thread_local! {
     static MEMORY_MANAGER: std::cell::RefCell<MemoryManager<DefaultMemoryImpl>> =
         std::cell::RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-
     static KEY_MANAGER: std::cell::RefCell<Option<KeyManager<AccessRights>>> =
         std::cell::RefCell::new(None);
 }
@@ -81,29 +82,33 @@ thread_local! {
 fn init() {
     let key_id = VetKDKeyId {
         curve: VetKDCurve::Bls12381G2,
-        name: "key_1".to_string(), // use "test_key_1" for local + mainnet testing
+        name: "key_1".to_string(), // "test_key_1" for local + mainnet testing
     };
     MEMORY_MANAGER.with(|mm| {
-        let mm = mm.borrow();
         KEY_MANAGER.with(|km| {
             *km.borrow_mut() = Some(KeyManager::init(
-                "my_app_v1",              // domain separator (context)
-                key_id,
-                mm.get(MemoryId::new(0)), // config memory
-                mm.get(MemoryId::new(1)), // access control memory
-                mm.get(MemoryId::new(2)), // shared keys memory
+                "my_app_v1", key_id,
+                mm.borrow().get(MemoryId::new(0)),
+                mm.borrow().get(MemoryId::new(1)),
+                mm.borrow().get(MemoryId::new(2)),
             ));
         });
     });
 }
+```
+
+Expose the two endpoints callers need — one to retrieve an encrypted key, one to retrieve the verification key:
+
+```rust
+use candid::Principal;
+use ic_cdk::update;
 
 #[update]
 async fn get_encrypted_vetkey(subkey_id: Vec<u8>, transport_public_key: Vec<u8>) -> Vec<u8> {
     let caller = ic_cdk::caller(); // capture BEFORE await
     let future = KEY_MANAGER.with(|km| {
-        let km = km.borrow();
-        let km = km.as_ref().expect("not initialized");
-        km.get_encrypted_vetkey(caller, subkey_id, transport_public_key)
+        km.borrow().as_ref().expect("not initialized")
+            .get_encrypted_vetkey(caller, subkey_id, transport_public_key)
             .expect("access denied")
     });
     future.await
@@ -112,9 +117,8 @@ async fn get_encrypted_vetkey(subkey_id: Vec<u8>, transport_public_key: Vec<u8>)
 #[update]
 async fn get_vetkey_verification_key() -> Vec<u8> {
     let future = KEY_MANAGER.with(|km| {
-        let km = km.borrow();
-        let km = km.as_ref().expect("not initialized");
-        km.get_vetkey_verification_key()
+        km.borrow().as_ref().expect("not initialized")
+            .get_vetkey_verification_key()
     });
     future.await
 }
@@ -122,58 +126,54 @@ async fn get_vetkey_verification_key() -> Vec<u8> {
 
 **Calling management canister directly (lower level):**
 
+Retrieve the public key (no cycles required):
+
 ```rust
 use ic_cdk::management_canister::{
-    VetKDCurve, VetKDDeriveKeyArgs, VetKDKeyId, VetKDPublicKeyArgs,
+    VetKDCurve, VetKDKeyId, VetKDPublicKeyArgs,
 };
-use ic_cdk::update;
 
 const CONTEXT: &[u8] = b"my_app_v1";
 
 fn key_id() -> VetKDKeyId {
     VetKDKeyId {
         curve: VetKDCurve::Bls12_381_G2,
-        name: "key_1".to_string(), // use "test_key_1" for testing
+        name: "key_1".to_string(), // "test_key_1" for testing
     }
 }
 
-#[update]
+#[ic_cdk::update]
 async fn get_public_key() -> Vec<u8> {
-    let request = VetKDPublicKeyArgs {
-        canister_id: None, // defaults to this canister
-        context: CONTEXT.to_vec(),
-        key_id: key_id(),
-    };
-
-    // vetkd_public_key does not require cycles
-    let response = ic_cdk::management_canister::vetkd_public_key(&request)
-        .await
-        .expect("vetkd_public_key call failed");
-
+    let response = ic_cdk::management_canister::vetkd_public_key(
+        &VetKDPublicKeyArgs { canister_id: None, context: CONTEXT.to_vec(), key_id: key_id() }
+    ).await.expect("vetkd_public_key call failed");
     response.public_key
 }
+```
 
-#[update]
+Derive a key for the authenticated caller (`key_1` costs ~26B cycles; `ic-cdk` attaches them automatically):
+
+```rust
+use ic_cdk::management_canister::{VetKDDeriveKeyArgs, VetKDCurve, VetKDKeyId};
+
+#[ic_cdk::update]
 async fn derive_key(transport_public_key: Vec<u8>) -> Vec<u8> {
     let caller = ic_cdk::api::msg_caller(); // MUST capture before await
-
-    let request = VetKDDeriveKeyArgs {
-        input: caller.as_slice().to_vec(), // derive a key specific to this caller
-        context: CONTEXT.to_vec(),
-        transport_public_key,
-        key_id: key_id(),
-    };
-
-    // key_1 costs ~26B cycles; ic-cdk attaches the required cycles automatically
-    let response = ic_cdk::management_canister::vetkd_derive_key(&request)
-        .await
-        .expect("vetkd_derive_key call failed");
-
+    let response = ic_cdk::management_canister::vetkd_derive_key(
+        &VetKDDeriveKeyArgs {
+            input: caller.as_slice().to_vec(),
+            context: CONTEXT.to_vec(),
+            transport_public_key,
+            key_id: key_id(),
+        }
+    ).await.expect("vetkd_derive_key call failed");
     response.encrypted_key
 }
 ```
 
 ### Motoko implementation
+
+Motoko uses the management canister directly. Define the request/response types and declare the actor interface:
 
 ```motoko
 import Blob "mo:core/Blob";
@@ -183,32 +183,11 @@ import Text "mo:core/Text";
 persistent actor {
 
   type VetKdCurve = { #bls12_381_g2 };
-
-  type VetKdKeyId = {
-    curve : VetKdCurve;
-    name : Text;
-  };
-
-  type VetKdPublicKeyRequest = {
-    canister_id : ?Principal;
-    context : Blob;
-    key_id : VetKdKeyId;
-  };
-
-  type VetKdPublicKeyResponse = {
-    public_key : Blob;
-  };
-
-  type VetKdDeriveKeyRequest = {
-    input : Blob;
-    context : Blob;
-    transport_public_key : Blob;
-    key_id : VetKdKeyId;
-  };
-
-  type VetKdDeriveKeyResponse = {
-    encrypted_key : Blob;
-  };
+  type VetKdKeyId = { curve : VetKdCurve; name : Text };
+  type VetKdPublicKeyRequest = { canister_id : ?Principal; context : Blob; key_id : VetKdKeyId };
+  type VetKdPublicKeyResponse = { public_key : Blob };
+  type VetKdDeriveKeyRequest = { input : Blob; context : Blob; transport_public_key : Blob; key_id : VetKdKeyId };
+  type VetKdDeriveKeyResponse = { encrypted_key : Blob };
 
   let managementCanister : actor {
     vetkd_public_key : VetKdPublicKeyRequest -> async VetKdPublicKeyResponse;
@@ -216,27 +195,26 @@ persistent actor {
   } = actor "aaaaa-aa";
 
   let context : Blob = Text.encodeUtf8("my_app_v1");
+  // "test_key_1" for local + mainnet testing, "key_1" for production
+  func keyId() : VetKdKeyId = { curve = #bls12_381_g2; name = "key_1" };
+  // ...
+```
 
-  // Use "test_key_1" for local + mainnet testing, "key_1" for production
-  func keyId() : VetKdKeyId {
-    { curve = #bls12_381_g2; name = "key_1" }
-  };
+Implement the public key and key derivation endpoints:
 
+```motoko
   public shared func getPublicKey() : async Blob {
     // vetkd_public_key does not require cycles
     let response = await managementCanister.vetkd_public_key({
-      canister_id = null;
-      context;
-      key_id = keyId();
+      canister_id = null; context; key_id = keyId();
     });
     response.public_key
   };
 
   public shared ({ caller }) func deriveKey(transportPublicKey : Blob) : async Blob {
-    // caller is captured here, before the await
-    // key_1 costs ~26B cycles; test_key_1 costs ~10B cycles
+    // caller captured before the await; key_1 costs ~26B cycles
     let response = await (with cycles = 26_000_000_000) managementCanister.vetkd_derive_key({
-      input = Principal.toBlob(caller); // derive a key specific to this caller
+      input = Principal.toBlob(caller);
       context;
       transport_public_key = transportPublicKey;
       key_id = keyId();
@@ -248,14 +226,15 @@ persistent actor {
 
 ### Frontend: decrypt and use the vetKey
 
-The frontend generates a transport key pair, sends the public half to the canister, receives the encrypted derived key, and decrypts it locally:
+The frontend generates a transport key pair, sends the public half to the canister, receives the encrypted derived key, and decrypts it locally.
+
+Generate a fresh transport key pair each session, then request and decrypt the vetKey:
 
 ```typescript
 import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey } from "@dfinity/vetkeys";
 
-// 1. Generate an ephemeral transport secret key — create a new one each session
-const seed = crypto.getRandomValues(new Uint8Array(32));
-const transportSecretKey = TransportSecretKey.fromSeed(seed);
+// 1. Generate an ephemeral transport key — new one each session
+const transportSecretKey = TransportSecretKey.fromSeed(crypto.getRandomValues(new Uint8Array(32)));
 const transportPublicKey = transportSecretKey.publicKey();
 
 // 2. Request encrypted vetkey and verification key from the canister
@@ -265,19 +244,21 @@ const [encryptedKeyBytes, verificationKeyBytes] = await Promise.all([
 ]);
 
 // 3. Decrypt the vetkey using the transport secret
-const verificationKey = DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes));
-const encryptedVetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes));
-const vetKey = encryptedVetKey.decryptAndVerify(
-  transportSecretKey,
-  verificationKey,
-  new Uint8Array(subkeyId),
-);
+const vetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes))
+  .decryptAndVerify(
+    transportSecretKey,
+    DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes)),
+    new Uint8Array(subkeyId),
+  );
+```
 
-// 4. Derive a symmetric key for AES-GCM encryption
-const aesKeyMaterial = vetKey.toDerivedKeyMaterial();
+Use the vetKey to derive a symmetric AES-GCM key and encrypt/decrypt data:
+
+```typescript
+// 4. Derive a 256-bit AES key from the vetKey material
 const aesKey = await crypto.subtle.importKey(
   "raw",
-  aesKeyMaterial.data.slice(0, 32), // 256-bit AES key
+  vetKey.toDerivedKeyMaterial().data.slice(0, 32),
   { name: "AES-GCM" },
   false,
   ["encrypt", "decrypt"],
@@ -292,11 +273,7 @@ const ciphertext = await crypto.subtle.encrypt(
 );
 
 // 6. Decrypt data
-const plaintext = await crypto.subtle.decrypt(
-  { name: "AES-GCM", iv },
-  aesKey,
-  ciphertext,
-);
+const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, ciphertext);
 ```
 
 ### Common mistakes
@@ -312,38 +289,42 @@ IBE lets you encrypt to an identity (such as a user's principal) without the rec
 
 This is useful for private messaging, sealed auctions, and any case where you want to encrypt data "to" a principal who will retrieve it later.
 
-**TypeScript IBE example:**
+> **Access control:** If you implement IBE without using `KeyManager` or `EncryptedMaps`, your canister must verify that `caller == recipient_principal` before calling `vetkd_derive_key`. Without this check, any caller can request any derived key and decrypt messages meant for someone else. The `ic-vetkeys` library handles this automatically.
+
+**TypeScript IBE example — encrypt (sender side):**
 
 ```typescript
-import {
-  TransportSecretKey, DerivedPublicKey, EncryptedVetKey,
-  IbeCiphertext, IbeIdentity, IbeSeed,
-} from "@dfinity/vetkeys";
+import { IbeCiphertext, IbeIdentity, IbeSeed } from "@dfinity/vetkeys";
 
-// --- Encrypt (sender side — no canister call needed if the public key is known) ---
-
+// No canister call needed if the public key is already known
 const recipientIdentity = IbeIdentity.fromBytes(recipientPrincipalBytes);
-const seed = IbeSeed.random();
-const plaintext = new TextEncoder().encode("secret message");
-
-const ciphertext = IbeCiphertext.encrypt(derivedPublicKey, recipientIdentity, plaintext, seed);
+const ciphertext = IbeCiphertext.encrypt(
+  derivedPublicKey, recipientIdentity,
+  new TextEncoder().encode("secret message"),
+  IbeSeed.random(),
+);
 const serialized = ciphertext.serialize(); // store this onchain (ciphertext, not plaintext)
+```
 
-// --- Decrypt (recipient side — requires authenticating to the canister) ---
+**TypeScript IBE example — decrypt (recipient side):**
 
+```typescript
+import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey, IbeCiphertext } from "@dfinity/vetkeys";
+
+// Recipient authenticates to the canister to obtain their vetKey
 const transportSecretKey = TransportSecretKey.fromSeed(crypto.getRandomValues(new Uint8Array(32)));
 const [encryptedKeyBytes, verificationKeyBytes] = await Promise.all([
   backendActor.get_encrypted_vetkey(subkeyId, transportSecretKey.publicKey()),
   backendActor.get_vetkey_verification_key(),
 ]);
-const verificationKey = DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes));
-const encryptedVetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes));
-const vetKey = encryptedVetKey.decryptAndVerify(
-  transportSecretKey, verificationKey, new Uint8Array(subkeyId),
-);
+const vetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes))
+  .decryptAndVerify(
+    transportSecretKey,
+    DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes)),
+    new Uint8Array(subkeyId),
+  );
 
-const deserialized = IbeCiphertext.deserialize(serialized);
-const decrypted = deserialized.decrypt(vetKey);
+const decrypted = IbeCiphertext.deserialize(serialized).decrypt(vetKey);
 // decrypted is Uint8Array containing "secret message"
 ```
 
@@ -399,7 +380,7 @@ For workflows that require additional independent verification (such as verifyin
 - **ECDSA on secp256r1 (P-256)** — used by some hardware authenticators  
 - **ECDSA on secp256k1** — used by Bitcoin-compatible wallets
 
-To verify IC signatures independently (outside the IC, or as a second layer of validation), use the `ic-validator-ingress-message` Rust crate or the `@dfinity/standalone-sig-verifier-web` JavaScript library. See the [independently verifying IC signatures](https://github.com/dfinity/ic/tree/master/rs/validator) documentation for details.
+To verify IC signatures independently (outside the IC, or as a second layer of validation), use the `ic-validator-ingress-message` Rust crate or the `@dfinity/standalone-sig-verifier-web` JavaScript library. See the [independently verifying IC signatures (Rust)](https://github.com/dfinity/ic/tree/master/rs/validator) documentation, or the [`@dfinity/standalone-sig-verifier-web` npm package](https://www.npmjs.com/package/@dfinity/standalone-sig-verifier-web) for the JavaScript path.
 
 ### X.509 certificate handling
 
@@ -467,7 +448,7 @@ Confirm that:
 ## Next steps
 
 - [vetKeys concept guide](../../concepts/vetkeys.md) — how the threshold key derivation protocol works
-- [Encryption guide](./encryption.md) — full vetKeys encryption patterns including EncryptedMaps
+- [Encryption guide](./encryption.md) — vetKeys encryption patterns including EncryptedMaps (coming soon)
 - [Certified variables](../backends/certified-variables.md) — full certified data implementation
 - [Security model](../../concepts/security.md) — IC security guarantees and threat model
 
