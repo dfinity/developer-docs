@@ -1,0 +1,297 @@
+---
+title: "Onchain AI"
+description: "Call large language models directly from canister code using the LLM canister"
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The LLM canister is an onchain service that gives ICP canisters access to large language models without relying on HTTPS outcalls to external AI APIs. Your canister calls a shared system canister, which routes inference requests to nodes running model weights onchain. No API keys, no off-chain dependencies — AI inference becomes a native part of your canister logic.
+
+## What the LLM canister provides
+
+The LLM canister (canister ID: `w36hm-eqaaa-aaaal-qr76a-cai`) exposes two APIs:
+
+- **Prompt API** — send a single text prompt and receive a text response. Best for one-shot interactions.
+- **Chat API** — send a sequence of messages with roles (`system`, `user`, `assistant`) and receive the next assistant turn. Best for multi-turn conversations.
+
+Currently supported models:
+
+| Model | Identifier |
+|-------|-----------|
+| Llama 3.1 8B | `Llama3_1_8B` |
+
+Inference is seeded from ICP's random beacon, making results deterministic per execution round and verifiable by the subnet.
+
+**Cycles cost:** Inference is free during the initial rollout period. Pricing will be announced before the free period ends.
+
+## How this differs from HTTPS outcalls
+
+Using the LLM canister is different from calling an external AI API via [HTTPS outcalls](https-outcalls.md):
+
+| | LLM canister | HTTPS outcalls to external AI |
+|---|---|---|
+| API keys required | No | Yes |
+| Inference runs | Onchain (ICP nodes) | External provider (OpenAI, Anthropic, etc.) |
+| Response determinism | Yes (random beacon seeded) | No |
+| Model choice | ICP-hosted models only | Any provider's API |
+| Response size | ~200 tokens output limit | Provider-dependent |
+
+Use the LLM canister when you want decentralized, key-free inference with deterministic results. Use HTTPS outcalls when you need a specific commercial model, larger context windows, or higher output limits.
+
+## Add the dependency
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+Add `llm` to your `mops.toml`:
+
+```toml
+[dependencies]
+llm = "2.1.0"
+```
+
+Then run:
+
+```sh
+mops install
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+Add `ic-llm` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+ic-cdk = "0.17"
+ic-llm = "1.1.0"
+```
+
+</TabItem>
+</Tabs>
+
+## Prompt API
+
+The prompt API sends a single text input to the model and returns a text response. Use it for one-shot tasks: summarization, classification, extraction, or simple Q&A.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import LLM "mo:llm";
+
+persistent actor {
+  public func prompt(p : Text) : async Text {
+    await LLM.prompt(#Llama3_1_8B, p);
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::update;
+use ic_llm::Model;
+
+#[update]
+async fn prompt(prompt_str: String) -> String {
+    ic_llm::prompt(Model::Llama3_1_8B, prompt_str).await
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Chat API
+
+The chat API accepts a list of messages with roles and returns the assistant's next response. Use it for multi-turn conversations or when you need a system prompt to shape the model's behavior.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import LLM "mo:llm";
+
+persistent actor {
+  public func chat(messages : [LLM.ChatMessage]) : async Text {
+    let response = await LLM.chat(#Llama3_1_8B).withMessages(messages).send();
+    switch (response.message.content) {
+      case (?text) text;
+      case null "";
+    };
+  };
+};
+```
+
+**`ChatMessage` type:**
+
+```motoko
+type ChatMessage = {
+  role : { #system_; #user; #assistant };
+  content : Text;
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::update;
+use ic_llm::{ChatMessage, Model};
+
+#[update]
+async fn chat(messages: Vec<ChatMessage>) -> String {
+    let response = ic_llm::chat(Model::Llama3_1_8B)
+        .with_messages(messages)
+        .send()
+        .await;
+    response.message.content.unwrap_or_default()
+}
+```
+
+**`ChatMessage` type:**
+
+```rust
+pub struct ChatMessage {
+    pub role: Role,       // Role::System | Role::User | Role::Assistant
+    pub content: String,
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Building a conversation
+
+To build a multi-turn conversation, accumulate messages in stable state and pass the full history on each call:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import LLM "mo:llm";
+import Array "mo:core/Array";
+
+persistent actor {
+  var history : [LLM.ChatMessage] = [];
+
+  public func send(userMessage : Text) : async Text {
+    let userEntry = { role = #user; content = userMessage };
+    let allMessages = Array.concat(history, [userEntry]);
+    let response = await LLM.chat(#Llama3_1_8B).withMessages(allMessages).send();
+    let assistantReply = switch (response.message.content) {
+      case (?text) text;
+      case null "";
+    };
+    let assistantEntry = { role = #assistant; content = assistantReply };
+    history := Array.concat(allMessages, [assistantEntry]);
+    assistantReply;
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::update;
+use ic_llm::{ChatMessage, Role, Model};
+use std::cell::RefCell;
+
+thread_local! {
+    static HISTORY: RefCell<Vec<ChatMessage>> = RefCell::new(Vec::new());
+}
+
+#[update]
+async fn send(user_message: String) -> String {
+    HISTORY.with(|h| {
+        h.borrow_mut().push(ChatMessage {
+            role: Role::User,
+            content: user_message,
+        });
+    });
+    let messages = HISTORY.with(|h| h.borrow().clone());
+    let response = ic_llm::chat(Model::Llama3_1_8B)
+        .with_messages(messages)
+        .send()
+        .await;
+    let reply = response.message.content.unwrap_or_default();
+    HISTORY.with(|h| {
+        h.borrow_mut().push(ChatMessage {
+            role: Role::Assistant,
+            content: reply.clone(),
+        });
+    });
+    reply
+}
+```
+
+</TabItem>
+</Tabs>
+
+Note that this example stores conversation history in heap memory. For production use, store history in stable memory so it persists across canister upgrades. See [data persistence](data-persistence.md) for details.
+
+## Limitations
+
+During the initial rollout, the LLM canister enforces the following limits:
+
+| Limit | Value |
+|-------|-------|
+| Max messages per chat request | 10 |
+| Max prompt size | 10 KiB |
+| Max output tokens | 200 |
+
+Requests that exceed these limits return an error. Design your application to stay within these bounds — for example, by trimming old messages from conversation history before each call.
+
+{/* Needs human verification: confirm the exact limits (10 messages, 10 KiB, 200 tokens) and whether streaming is supported in the current release */}
+
+## Deploy and test
+
+### Local testing
+
+The LLM canister is not available in a local replica. To develop locally, mock the LLM canister behind a canister interface:
+
+```motoko
+// mock_llm.mo — local test stub
+import LLM "mo:llm";
+
+persistent actor {
+  public func chat(messages : [LLM.ChatMessage]) : async Text {
+    "Mock response for: " # (if (messages.size() > 0) messages[messages.size() - 1].content else "");
+  };
+};
+```
+
+For integration tests that need real inference, deploy to mainnet and test there.
+
+### Deploy to mainnet
+
+```sh
+icp deploy --network ic
+```
+
+Once deployed, call your canister:
+
+```sh
+icp canister call --network ic <your-canister-id> prompt '("What is the Internet Computer?")'
+```
+
+## Full example
+
+The complete chatbot example — with frontend — is available in the `dfinity/examples` repository:
+
+- [Rust LLM chatbot](https://github.com/dfinity/examples/tree/master/rust/llm_chatbot)
+- [Motoko LLM chatbot](https://github.com/dfinity/examples/tree/master/motoko/llm_chatbot)
+
+Both examples include a browser UI and can be deployed to mainnet in a single command from [ICP Ninja](https://icp.ninja).
+
+## Next steps
+
+- [HTTPS outcalls](https-outcalls.md) — call external AI APIs when you need more model options or larger context windows
+- [Data persistence](data-persistence.md) — persist conversation history across canister upgrades using stable memory
+- [App architecture](../../concepts/app-architecture.md) — understand where AI inference fits in a multi-canister application
+
+{/* Upstream: informed by dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot */}
