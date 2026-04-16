@@ -16,6 +16,7 @@ This guide covers the patterns that protect against denial-of-service (DoS) atta
 - [ ] Enforce per-caller rate limits or concurrency locks for expensive operations
 - [ ] Set a conservative freezing threshold (90–180 days)
 - [ ] Set explicit `wasm_memory_limit` to guard against memory exhaustion
+- [ ] Set `wasm_memory_threshold` to receive an `on_low_wasm_memory` hook notification before the limit is hit
 - [ ] Monitor cycle balances and alert on unusual consumption spikes
 - [ ] Reserve compute or memory allocation for high-traffic canisters
 
@@ -23,7 +24,7 @@ This guide covers the patterns that protect against denial-of-service (DoS) atta
 
 Every ingress message (external call to your canister) costs cycles. The cost includes:
 
-- A base fee per message (~5M cycles on a 13-node subnet)
+- A base execution fee of 5M cycles per update message (13-node subnet), plus an ingress reception fee of ~1.2M cycles and 2,000 cycles per byte received
 - Per-instruction fees for all code executed before a trap or rejection
 - Candid decoding, which runs before your method body
 
@@ -135,7 +136,7 @@ public shared ({ caller }) func expensiveOperation() : async Result.Result<Text,
   try {
     let result = await someExpensiveCall();
     #ok(result)
-  } catch (e) {
+  } catch _ {
     #err("operation failed")
   } finally {
     // Released in cleanup context — runs even if the callback traps
@@ -190,7 +191,8 @@ async fn expensive_operation() -> Result<String, String> {
     // Acquire per-caller lock — Drop releases it even if the callback traps
     let _guard = CallerGuard::new(caller)?;
 
-    // Do expensive work
+    // Do expensive work — use Call::bounded_wait for inter-canister calls
+    // to avoid unbounded waits that would block canister upgrades
     let result = do_expensive_work().await?;
     Ok(result)
     // _guard dropped here -> lock released
@@ -232,10 +234,12 @@ If users can store data without limits, an attacker can fill the 4 GiB Wasm heap
 - **Set a `wasm_memory_limit`** — configures a soft ceiling below the 4 GiB hard limit. When exceeded, new update calls trap instead of corrupting state. See [Canister settings](../canister-management/settings.md).
 
 ```yaml
-# icp.yaml — memory protection
-settings:
-  wasm_memory_limit: 3gib
-  wasm_memory_threshold: 512mib  # triggers on_low_wasm_memory hook
+# icp.yaml — memory protection (settings nested under canister name)
+canisters:
+  - name: backend
+    settings:
+      wasm_memory_limit: 3gib
+      wasm_memory_threshold: 512mib  # triggers on_low_wasm_memory hook
 ```
 
 ### Paginate large queries
@@ -259,8 +263,11 @@ icp canister settings update backend --freezing-threshold 7776000 -e ic
 Or via `icp.yaml`:
 
 ```yaml
-settings:
-  freezing_threshold: 90d
+# icp.yaml — settings nested under canister name
+canisters:
+  - name: backend
+    settings:
+      freezing_threshold: 90d
 ```
 
 A conservative freezing threshold gives you time to detect and respond to a cycle drain attack before the canister is uninstalled. If cycles reach zero and the threshold expires, the canister is uninstalled: code and data are deleted permanently. See [Canister settings](../canister-management/settings.md) for full configuration details.
@@ -274,21 +281,25 @@ Multiple canisters share the same subnet. If a neighboring canister consumes exc
 Setting `compute_allocation` guarantees your canister a percentage of an execution core and ensures scheduled execution even when the subnet is busy:
 
 ```yaml
-# icp.yaml — compute reservation
-settings:
-  compute_allocation: 10  # Guaranteed 10% of one execution core
+# icp.yaml — settings nested under canister name
+canisters:
+  - name: backend
+    settings:
+      compute_allocation: 10  # Guaranteed 10% of one execution core
 ```
 
-A value of `10` means the canister is scheduled at least every 10 rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet) — only set it if you need guaranteed throughput under load. See [Cycles costs](../../reference/cycles-costs.md).
+A value of `10` means the canister is scheduled at least every 10 consensus rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet) — only set it if you need guaranteed throughput under load. See [Cycles costs](../../reference/cycles-costs.md).
 
 ### Memory allocation
 
 Setting `memory_allocation` reserves a fixed pool of memory for your canister, preventing other canisters from consuming the subnet's available memory:
 
 ```yaml
-# icp.yaml — memory reservation
-settings:
-  memory_allocation: 4gib
+# icp.yaml — settings nested under canister name
+canisters:
+  - name: backend
+    settings:
+      memory_allocation: 4gib
 ```
 
 Memory allocation is charged as if the full allocated amount were in use. Monitor actual memory usage to avoid paying for unused allocation.
@@ -319,7 +330,7 @@ Chain-key signing (threshold ECDSA/Schnorr), HTTPS outcalls, and Bitcoin API cal
 
 - **Require authentication** — never allow anonymous callers to trigger expensive operations.
 - **Apply per-caller locking** — use the CallerGuard pattern to prevent the same caller from queuing multiple expensive calls.
-- **Charge callers** — for canister-to-canister calls, require the calling canister to attach cycles to cover the cost. The called canister accepts the cycles using `ic0.msg_cycles_accept` (Rust: `ic_cdk::api::call::msg_cycles_accept128`).
+- **Charge callers** — for canister-to-canister calls, require the calling canister to attach cycles to cover the cost. The called canister accepts the cycles using `ic0.msg_cycles_accept` (Rust: `ic_cdk::api::msg_cycles_accept(max_amount: u128)`).
 - **Differentiate update vs. query** — move expensive computations to update calls and use query calls for cheap reads. Check whether a method is running as a query or update with `ic0.in_replicated_execution()` (Rust: `ic_cdk::api::in_replicated_execution()`).
 
 ## Next steps
