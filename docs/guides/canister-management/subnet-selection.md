@@ -22,7 +22,7 @@ Default subnet selection works for most projects. Consider targeting a specific 
 
 Application subnets are the standard deployment target for most canisters. Each application subnet has 13 nodes distributed across geographically diverse data centers. Application subnets can be individually configured to enable or disable specific features.
 
-The ICP Dashboard shows current load, node count, and block rate for each subnet, which is useful when comparing available application subnets.
+The [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) shows current load, node count, and block rate for each subnet, which is useful when comparing available application subnets.
 
 ### Fiduciary subnet
 
@@ -82,6 +82,8 @@ icp canister create my_canister -e ic --subnet pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt4
 
 The `--subnet` flag only affects canister creation. If a canister already exists, it stays on its current subnet — the flag has no effect on existing canisters.
 
+> **Tip:** Subnet principal IDs can change over time. Always verify the current ID for a named subnet on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before using it in production scripts.
+
 ## Colocation with an existing canister
 
 To create a new canister on the same subnet as an existing canister, use the `--proxy` flag with `icp canister create`. This routes the creation call through the existing canister and places the new canister on the same subnet:
@@ -90,13 +92,13 @@ To create a new canister on the same subnet as an existing canister, use the `--
 icp canister create my_new_canister -e ic --proxy <EXISTING_CANISTER_ID>
 ```
 
-This is the icp-cli equivalent of the dfx `--next-to` pattern. The proxy canister must implement a `proxy` method that forwards management canister calls.
+This is useful when you already have a deployed canister and want new canisters to live on the same subnet. The proxy canister must implement a `proxy` method that forwards management canister calls.
 
 ## Storage capacity considerations
 
 Subnets enforce a storage reservation policy above 750 GiB of total utilization. When a subnet's total storage usage exceeds that threshold, reservation costs scale linearly — canisters must reserve cycles for future storage payments up to 10 years of projected costs at full subnet capacity.
 
-If you expect your canister to use significant storage, check the current utilization of candidate subnets on the ICP Dashboard before deploying. Choosing a subnet with available headroom avoids unexpected reservation costs as your canister grows.
+If you expect your canister to use significant storage, check the current utilization of candidate subnets on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before deploying. Choosing a subnet with available headroom avoids unexpected reservation costs as your canister grows.
 
 For details on storage costs and the reservation formula, see [Cycles costs](../../reference/cycles-costs.md).
 
@@ -113,7 +115,7 @@ Canisters cannot be moved between subnets while keeping the same canister ID by 
 - **New canister ID is acceptable** — Transfer state via [canister snapshots](snapshots.md) to a new canister on the correct subnet.
 - **Canister ID must be preserved** — Transfer state via snapshots, copy settings, then use `icp canister migrate-id` to move the ID to the new canister.
 
-Note that migrating away from the fiduciary subnet means losing access to any threshold signature keys (tECDSA or tSchnorr) derived by the original canister.
+Note that any canister ID change means losing access to any threshold signature keys (tECDSA, tSchnorr) and vetKeys derived by the original canister — these are cryptographically bound to the canister ID. Any assets or encrypted data tied to those keys become permanently inaccessible under the new ID.
 
 ## Next steps
 
