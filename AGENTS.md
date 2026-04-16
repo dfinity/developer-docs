@@ -357,7 +357,14 @@ bd show <id> --json | jq -r .status                   # MUST print "in_progress"
 ```
 This is atomic — claim + push happens immediately. The race window for duplicate claims is negligible (sub-second).
 
-**Claiming multiple tasks (for parallel agents):** When claiming several tasks before launching worktree agents, claim them **sequentially** — wait for each `bd update && bd dolt push` to finish before starting the next. Never run `bd` calls in parallel; this can corrupt the Dolt journal.
+**Claiming multiple tasks (for parallel agents):** When claiming several tasks before launching worktree agents, run all `bd update` calls sequentially (never in parallel — parallel `bd` calls can corrupt the Dolt journal), then do a **single `bd dolt push` at the end**. This is safe as long as you are the only session running — no other agent can race for tasks you haven't pushed yet, and the window between updates is negligible. Example:
+```bash
+bd update <id1> --status in_progress
+bd update <id2> --status in_progress
+# ... remaining claims ...
+bd dolt push   # single push covers all claims
+```
+**Only push per-claim if multiple independent sessions might be racing for the same tasks** (rare in practice — most waves are single-session).
 
 **Batch status updates at wave end:** When updating many tasks to the same terminal state (e.g. all tasks in a wave going from `in_progress` → `draft` after all PRs are created), batch all `bd update` calls and do a **single `bd dolt push` at the end**. This is safe because no other agents are racing for these tasks at this point. Example:
 ```bash
@@ -418,10 +425,12 @@ Three outcomes:
 
   See "Worktree agent prompt structure" in the "Parallel agents" section for exactly what each worktree prompt must contain. Do not do the content research in the parent — each worktree does its own full research.
 - **PR feedback (formal reviews or comments):**
-  1. **Claim the task(s)** — set Beads status from `draft` to `in_progress` and push. This prevents other agents from picking up the same feedback. **When handling multiple PRs:** claim ALL tasks sequentially (see "Claiming multiple tasks" above) before launching any worktree agents or starting any fixes.
+  1. **Claim the task(s)** — set Beads status from `draft` to `in_progress`. This prevents other agents from picking up the same feedback. **When handling multiple PRs:** run all `bd update` calls sequentially then a single `bd dolt push` (see "Claiming multiple tasks" above) before launching any worktree agents or starting any fixes.
      ```bash
-     bd update <id> --status in_progress && bd dolt push
-     bd show <id> --json | jq -r .status   # MUST print "in_progress"
+     bd update <id1> --status in_progress
+     bd update <id2> --status in_progress
+     # ... remaining claims ...
+     bd dolt push   # single push covers all claims
      ```
   2. **Fetch raw feedback and write to file** — fetch all three feedback sources for each PR and write the verbatim API output to `pr-feedback.md` in the worktree directory. **Do not interpret, evaluate, or summarize the feedback** — the worktree agent is the decision-maker; the parent is a data fetcher only.
      ```bash
