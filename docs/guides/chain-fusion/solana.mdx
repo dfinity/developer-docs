@@ -1,0 +1,351 @@
+---
+title: "Solana Integration"
+description: "Interact with Solana from ICP canisters using the SOL RPC canister and threshold Ed25519 signatures"
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+ICP canisters can interact directly with the Solana network: read account balances, query transaction history, and sign and submit transactions — all without bridges, oracles, or external signers. This guide covers the SOL RPC canister for querying Solana and threshold Ed25519 signatures for signing Solana transactions.
+
+For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion.md).
+
+## How it works
+
+Two ICP features enable Solana integration:
+
+- **[HTTPS outcalls](../backends/https-outcalls.md)** — canisters can make HTTP requests to external services. The SOL RPC canister uses HTTPS outcalls to reach Solana JSON-RPC providers and aggregates their responses for consensus.
+- **Threshold Ed25519** — Solana uses Ed25519 signatures for authorizing transactions. ICP provides a threshold signature scheme where a canister can sign messages using a key that no single node holds outright. This lets canisters sign valid Solana transactions without ever exposing a private key.
+
+## SOL RPC canister
+
+The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet and handles Solana JSON-RPC calls on your behalf. When your canister calls it:
+
+1. Your canister sends a JSON-RPC request with cycles attached.
+2. The SOL RPC canister fans the request out to multiple Solana RPC providers via HTTPS outcalls.
+3. Responses are aggregated — the canister returns the result once providers agree.
+4. Unused cycles are refunded.
+
+No API keys are required. The SOL RPC canister is controlled by the [Network Nervous System](../../concepts/governance.md), so any change to it requires an NNS proposal.
+
+The SOL RPC canister contacts these JSON-RPC providers:
+- [Helius](https://www.helius.dev/)
+- [Alchemy](https://www.alchemy.com/)
+- [Ankr](https://www.ankr.com/)
+- [dRPC](https://drpc.org/)
+- [Public Node](https://www.publicnode.com/)
+
+## Querying Solana
+
+Use the SOL RPC canister's `request` method to send any Solana JSON-RPC call. Pass cycles to cover the HTTPS outcall cost; unused cycles are refunded.
+
+### Get an account balance
+
+The following example queries the SOL balance of a Solana public key using `getBalance`.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+
+  type SolRpc = actor {
+    request : (Text, Nat64) -> async { #Ok : Text; #Err : Text };
+  };
+
+  transient let solRpc : SolRpc = actor ("2xib7-jqaaa-aaaar-qai6q-cai");
+
+  public func getSolBalance(pubkey : Text) : async Text {
+    let json = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\","
+      # "\"params\":[\"" # pubkey # "\"]}";
+
+    let result = await (with cycles = 10_000_000_000)
+      solRpc.request(json, 1000);
+
+    switch (result) {
+      case (#Ok response) { response };
+      case (#Err err) {
+        Runtime.trap("RPC error: " # err);
+      };
+    };
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::Principal;
+use ic_cdk::call::Call;
+use ic_cdk::update;
+
+const SOL_RPC_CANISTER: &str = "2xib7-jqaaa-aaaar-qai6q-cai";
+
+fn sol_rpc_id() -> Principal {
+    Principal::from_text(SOL_RPC_CANISTER).unwrap()
+}
+
+#[update]
+async fn get_sol_balance(pubkey: String) -> String {
+    let json = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"getBalance","params":["{}"]}}"#,
+        pubkey
+    );
+
+    let (result,): (Result<String, String>,) =
+        Call::unbounded_wait(sol_rpc_id(), "request")
+            .with_args(&(json, 1000_u64))
+            .with_cycles(10_000_000_000_u128)
+            .await
+            .expect("Failed to call SOL RPC canister")
+            .candid_tuple()
+            .expect("Failed to decode response");
+
+    match result {
+        Ok(response) => response,
+        Err(err) => ic_cdk::trap(&format!("RPC error: {}", err)),
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+The response is the raw JSON-RPC response string. The `getBalance` result contains a `value` field with the balance in lamports (1 SOL = 1,000,000,000 lamports). Parse the JSON string to extract the value your canister needs.
+
+### Other common queries
+
+Any Solana JSON-RPC method works the same way — pass the JSON payload as the first argument to `request` and set the second argument (`max_response_bytes`) to the expected response size. Larger values cost more cycles; set it to the minimum needed:
+
+```rust
+// Get latest slot
+let json = r#"{"jsonrpc":"2.0","id":1,"method":"getSlot"}"#;
+
+// Get account information
+let json = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"getAccountInfo",
+     "params":["{}",{{"encoding":"base64"}}]}}"#,
+    pubkey
+);
+
+// Get recent transaction signatures for an address
+let json = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"getSignaturesForAddress",
+     "params":["{}"]}}"#,
+    pubkey
+);
+```
+
+For the full list of supported methods, see the [Solana JSON-RPC documentation](https://solana.com/docs/rpc/http).
+
+## Signing Solana transactions
+
+Solana uses Ed25519 signatures for all transactions. ICP supports threshold Ed25519 via the management canister's `sign_with_schnorr` method (using the `ed25519` algorithm variant). The key is distributed across ICP subnet nodes — no single node ever holds the full private key.
+
+The signing flow for a Solana transaction:
+1. Get your canister's Ed25519 public key from the management canister.
+2. Derive the Solana address (base58-encode the 32-byte public key).
+3. Build the Solana transaction message.
+4. Sign the serialized message bytes with `sign_with_schnorr`.
+5. Submit the signed transaction via the SOL RPC canister's `sendTransaction` method.
+
+### Get an Ed25519 public key
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Principal "mo:core/Principal";
+import Blob "mo:core/Blob";
+
+persistent actor {
+
+  type IC = actor {
+    schnorr_public_key : ({
+      canister_id : ?Principal;
+      derivation_path : [Blob];
+      key_id : { algorithm : { #ed25519 }; name : Text };
+    }) -> async ({ public_key : Blob; chain_code : Blob });
+  };
+
+  transient let ic : IC = actor ("aaaaa-aa");
+
+  public func getEd25519PublicKey() : async Blob {
+    let { public_key } = await ic.schnorr_public_key({
+      canister_id = null;
+      derivation_path = [];
+      key_id = {
+        algorithm = #ed25519;
+        name = "test_key_1"; // Use "key_1" for production
+      };
+    });
+    public_key;
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::management_canister::{
+    schnorr_public_key, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs,
+};
+use ic_cdk::update;
+
+#[update]
+async fn get_ed25519_public_key() -> Vec<u8> {
+    let args = SchnorrPublicKeyArgs {
+        canister_id: None,
+        derivation_path: vec![],
+        key_id: SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "test_key_1".to_string(), // Use "key_1" for production
+        },
+    };
+
+    let result = schnorr_public_key(&args)
+        .await
+        .expect("schnorr_public_key failed");
+
+    result.public_key
+}
+```
+
+</TabItem>
+</Tabs>
+
+The returned `public_key` is the raw 32-byte Ed25519 public key. To use it as a Solana address, base58-encode these 32 bytes. For a complete implementation of this step, see [`solana_helpers.rs`](https://github.com/dfinity/sol-rpc-canister/blob/main/examples/basic_solana/src/basic_solana_backend/src/solana_helpers.rs) in the `basic_solana` example.
+
+### Sign a transaction message
+
+`sign_with_schnorr` takes the full message bytes — not a hash. For Solana transactions, pass the serialized transaction message bytes directly.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Blob "mo:core/Blob";
+
+persistent actor {
+
+  type IC = actor {
+    sign_with_schnorr : ({
+      message : Blob;
+      derivation_path : [Blob];
+      key_id : { algorithm : { #ed25519 }; name : Text };
+      aux : ?{ #bip341 : { merkle_root_hash : Blob } };
+    }) -> async ({ signature : Blob });
+  };
+
+  transient let ic : IC = actor ("aaaaa-aa");
+
+  public func signSolanaMessage(message : Blob) : async Blob {
+    let { signature } = await (with cycles = 30_000_000_000)
+      ic.sign_with_schnorr({
+        message;
+        derivation_path = [];
+        key_id = {
+          algorithm = #ed25519;
+          name = "test_key_1"; // Use "key_1" for production
+        };
+        aux = null;
+      });
+    signature;
+  };
+};
+```
+
+{/* Note: 30B cycles is an intentional buffer above the ~26.15B fee (26_153_846_153 cycles, per cdk-rs SIGN_WITH_SCHNORR_FEE). Unused cycles are refunded. The Rust cdk-rs attaches the exact fee automatically; Motoko requires an explicit `with cycles` attachment. */}
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::management_canister::{
+    sign_with_schnorr, SchnorrAlgorithm, SchnorrKeyId, SignWithSchnorrArgs,
+};
+use ic_cdk::update;
+
+#[update]
+async fn sign_solana_message(message: Vec<u8>) -> Vec<u8> {
+    let args = SignWithSchnorrArgs {
+        message,
+        derivation_path: vec![],
+        key_id: SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "test_key_1".to_string(), // Use "key_1" for production
+        },
+        aux: None,
+    };
+
+    // sign_with_schnorr attaches the required cycles automatically
+    let result = sign_with_schnorr(&args)
+        .await
+        .expect("sign_with_schnorr failed");
+
+    result.signature
+}
+```
+
+</TabItem>
+</Tabs>
+
+The returned 64-byte signature is a valid Ed25519 signature that Solana accepts for transactions signed by this canister's key.
+
+### Key IDs
+
+| Key ID | Environment |
+|---|---|
+| `test_key_1` | ICP mainnet — test key, reduced security. Use for development and testing only. |
+| `key_1` | ICP mainnet — production key. Use for production deployments. |
+
+Ed25519 does not have a local development key — unlike ECDSA (which has `dfx_test_key` for local replica testing), there is no Ed25519 equivalent. All Ed25519 signing must be tested on ICP mainnet using `test_key_1`. Plan your test workflow accordingly: local replica development is not possible for the signing steps.
+
+## Complete transaction example
+
+Constructing a full Solana transaction requires:
+1. Fetching a recent blockhash via `getLatestBlockhash`
+2. Building the transaction structure (account keys, instructions, message header)
+3. Serializing the transaction message
+4. Signing the serialized bytes with `sign_with_schnorr`
+5. Submitting the signed transaction via `sendTransaction`
+
+For a complete end-to-end Rust implementation, see the [basic_solana example](https://github.com/dfinity/sol-rpc-canister/tree/main/examples/basic_solana) in the SOL RPC canister repository. It demonstrates a SOL transfer, including blockhash fetching, transaction serialization, signing, and submission.
+
+## Cycle costs
+
+Every SOL RPC call requires cycles to cover HTTPS outcall costs. The `sign_with_schnorr` management canister call also requires cycles.
+
+| Operation | Approximate cost |
+|---|---|
+| SOL RPC `request` (small response, 1–2 providers) | ~1–5B cycles |
+| `sign_with_schnorr` (Ed25519, Rust cdk auto-attached) | ~26.15B cycles |
+
+Send 10B cycles per RPC call as a starting budget — unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
+
+## Current status and limitations
+
+The Solana integration is newer than the Bitcoin and Ethereum integrations:
+
+- **SOL RPC canister is live on mainnet** — deployed and functional, with the API surface still evolving.
+- **Threshold Ed25519 is available** — both test (`test_key_1`) and production (`key_1`) keys are live on ICP mainnet.
+- **No SPL token helpers** — SPL token operations (reading token accounts, transferring tokens) require constructing JSON-RPC calls and transaction instructions manually.
+- **No ckSOL token** — unlike Bitcoin (ckBTC) and Ethereum (ckETH), there is no chain-key SOL token yet.
+- **Transaction construction is manual** — there is no official ICP library for building Solana transactions. See the [basic_solana example](https://github.com/dfinity/sol-rpc-canister/tree/main/examples/basic_solana) for a reference implementation.
+
+Follow the [SOL RPC canister repository](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md) for the latest updates.
+
+## Next steps
+
+- [SOL RPC canister README](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md) — full documentation and the `basic_solana` end-to-end example
+- [Bitcoin integration](bitcoin.md) — direct protocol-level BTC integration
+- [Ethereum integration](ethereum.md) — EVM RPC canister, similar JSON-RPC pattern
+- [HTTPS outcalls](../backends/https-outcalls.md) — the mechanism underlying the SOL RPC canister
+- [Chain Fusion concepts](../../concepts/chain-fusion.md) — how ICP connects to other blockchains
+
+{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/solana/overview.mdx; dfinity/cdk-rs — ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/examples — rust/basic_solana/README.md */}
