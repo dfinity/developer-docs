@@ -77,6 +77,17 @@ const principal = accounts[0].owner;
 
 `getAccounts()` triggers the wallet's `icrc27_accounts` flow. The popup opens, the user approves, and you receive their principal.
 
+You can request permissions upfront before calling `getAccounts()` to batch all permission prompts into a single interaction:
+
+```javascript
+// Request all needed permissions at once (optional but recommended)
+await signer.requestPermissions([{ method: 'icrc27_accounts' }]);
+
+const accounts = await signer.getAccounts();
+```
+
+If you skip this step, the signer handles permissions per-method — the user sees a permissions prompt the first time each method is called.
+
 ## Create a SignerAgent
 
 `SignerAgent` wraps a `Signer` and acts as a drop-in replacement for `HttpAgent`. Any canister actor built with it routes calls through the wallet for approval.
@@ -133,19 +144,21 @@ const blockIndex = await signedLedger.transfer({
 
 ## Disconnect
 
-Call `disconnect()` on the signer when the user logs out or closes the session:
+Call `closeChannel()` on the signer when the user logs out or closes the session:
 
 ```javascript
-await signer.disconnect();
+await signer.closeChannel();
 ```
 
-Disconnect closes the wallet popup and removes any cached session state.
+`closeChannel()` closes the open communication channel with the wallet popup.
 
 ## Session persistence
 
 The signer session is tied to the browser tab. After a page reload, the user's principal is no longer available from the signer. To avoid opening the popup again immediately, store the principal in `sessionStorage` and restore it on mount — then re-establish the signer session lazily when the user initiates a transfer:
 
 ```javascript
+import { Principal } from '@icp-sdk/core/principal';
+
 const SESSION_KEY = 'wallet-principal';
 
 // On connect: store principal
@@ -172,17 +185,25 @@ try {
   await signer.getAccounts();
 } catch (err) {
   if (err instanceof SignerError) {
-    // err.code: numeric error code from the ICRC-25 standard
-    // err.message: human-readable description
-    console.error('Signer error', err.code, err.message);
+    switch (err.code) {
+      case 3001: // ACTION_ABORTED — user closed the popup or rejected the prompt
+        break;
+      case 3000: // PERMISSION_NOT_GRANTED — permission was denied
+        break;
+      default:
+        console.error('Signer error', err.code, err.message);
+    }
   }
 }
 ```
 
-Common error scenarios:
-- User closes the wallet popup without approving
-- Wallet is not reachable at the configured URL
-- Call is rejected (user denies the consent message)
+Common `err.code` values from the ICRC-25 standard:
+
+| Code | Meaning |
+|------|---------|
+| `3000` | Permission not granted |
+| `3001` | Action aborted — user closed the popup or rejected |
+| `4000` | Network error — IC call failed |
 
 ## Local development
 
@@ -196,7 +217,7 @@ const signer = new Signer({
 const readAgent = await HttpAgent.create({ host: 'http://localhost:8000' });
 ```
 
-The `@dfinity/oisy-wallet-signer` repository includes a [pseudo wallet signer](https://github.com/dfinity/oisy-wallet-signer) you can run locally as a test signer. See its `demo/` directory for setup instructions.
+For a test signer target, you can use any ICRC-25-compliant wallet running locally that exposes a `/sign` endpoint — for example, a local instance of [OISY](https://github.com/dfinity/oisy-wallet) or a custom signer built with `@icp-sdk/signer`.
 
 On mainnet, omit `host` from `HttpAgent.create()` — it defaults to `https://icp0.io`.
 
@@ -211,12 +232,21 @@ The [oisy-signer-demo](https://github.com/dfinity/examples/tree/master/hosting/o
 To run locally:
 
 ```bash
-icp network start -d
+git clone https://github.com/dfinity/examples
 cd examples/hosting/oisy-signer-demo
+icp network start -d
 npm install
-cd frontend && npm install
 icp deploy
 ```
+
+## Ecosystem libraries
+
+Two additional libraries are available for more advanced wallet integration scenarios:
+
+- [`@dfinity/ledger-wallet-identity`](https://www.npmjs.com/package/@dfinity/ledger-wallet-identity) — hardware wallet identity support
+- [`@dfinity/icrc21-agent`](https://www.npmjs.com/package/@dfinity/icrc21-agent) — standalone ICRC-21 consent message agent
+
+Both libraries are expected to move to the `@icp-sdk` namespace on npm and will likely be covered in the wallet-integration skill going forward. They are not documented in detail here.
 
 ## Next steps
 
