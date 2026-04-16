@@ -44,11 +44,11 @@ A neuron is a governance participant created by locking ICP tokens in the NNS go
 - **Age**: How long the neuron has been non-dissolving. Older neurons earn an age bonus on voting power.
 - **State**: A neuron is either locked (non-dissolving), dissolving, or dissolved (ready to disburse).
 
-**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 2x at 8 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network.
+**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 2x at 8 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network. <!-- Needs human verification: NNS neuron voting power bonus percentages (2x at 8 years, 1.25x at 4 years) — these match SNS default parameters in the sns-launch skill but are not explicitly stated in the portal NNS source material -->
 
 **Liquid democracy (following):** Neurons can delegate their votes to other neurons on specific proposal topics. A neuron that doesn't vote directly inherits the vote of its followed neurons. This allows passive participation while still counting toward quorum.
 
-**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron with at least 25 ICP staked can submit a `RegisterKnownNeuron` proposal.
+**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron that meets the general proposal prerequisite (at least 10 ICP staked with 6 months dissolve delay) and has at least 25 ICP staked can submit a `RegisterKnownNeuron` proposal.
 
 ## Proposals
 
@@ -70,13 +70,15 @@ An NNS proposal is a governance action submitted by a neuron and voted on by the
 - *UpdateCanisterSettings* for NNS canisters: Can change the behavior of system canisters.
 - *CreateServiceNervousSystem*: Authorizes a new SNS DAO, launching the decentralization process for a dapp.
 
+See [system canisters](../reference/system-canisters.md) for the full list of NNS proposal topics and types.
+
 ## Voting rewards
 
 Neurons that vote (directly or through following) earn voting rewards. The protocol distributes a fixed annual reward pool as newly minted ICP. This pool is divided among neurons proportionally to their voting power weighted by how often they voted.
 
-Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with some randomness that approximates the expected value) or merge maturity back into their stake to compound future rewards.
+Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with a modulation of ±5% applied to the mint amount) or merge maturity back into their stake to compound future rewards.
 
-The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade.
+The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See the [ICP tokenomics overview](https://learn.internetcomputer.org/hc/en-us/articles/34090810571284) for details on the reward rate schedule.
 
 ## The Service Nervous System
 
