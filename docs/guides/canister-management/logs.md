@@ -115,13 +115,13 @@ By default, only the canister's controllers can read its logs. You can make logs
 ### Making logs public
 
 ```bash
-icp canister update-settings <canister-name> -e ic --log-visibility public
+icp canister settings update <canister-name> -e ic --log-visibility public
 ```
 
 To revert to controller-only visibility:
 
 ```bash
-icp canister update-settings <canister-name> -e ic --log-visibility controllers
+icp canister settings update <canister-name> -e ic --log-visibility controllers
 ```
 
 ### Granting specific principals access
@@ -129,21 +129,21 @@ icp canister update-settings <canister-name> -e ic --log-visibility controllers
 To allow a principal to view logs without making them public:
 
 ```bash
-icp canister update-settings <canister-name> -e ic \
+icp canister settings update <canister-name> -e ic \
   --add-log-viewer <principal-id>
 ```
 
 To replace the current set of allowed viewers with a single principal:
 
 ```bash
-icp canister update-settings <canister-name> -e ic \
+icp canister settings update <canister-name> -e ic \
   --set-log-viewer <principal-id>
 ```
 
 To revoke access for a principal:
 
 ```bash
-icp canister update-settings <canister-name> -e ic \
+icp canister settings update <canister-name> -e ic \
   --remove-log-viewer <principal-id>
 ```
 
@@ -177,7 +177,7 @@ To grant access to specific principals in the config:
 The default log buffer size is 4096 bytes. When the buffer fills up, older log entries are automatically purged to make room for new ones. You can increase the limit up to 2 MiB:
 
 ```bash
-icp canister update-settings <canister-name> -e ic --log-memory-limit 2mib
+icp canister settings update <canister-name> -e ic --log-memory-limit 2mib
 ```
 
 Supported suffixes: `kb` (1,000 bytes), `kib` (1,024 bytes), `mb` (1,000,000 bytes), `mib` (1,048,576 bytes). In `icp.yaml`:
@@ -204,6 +204,8 @@ fn inner() {
 }
 
 fn inner_2() {
+    // Note: `ic_cdk::api::stable` is deprecated since ic-cdk 0.18.0.
+    // Use `ic_cdk::stable::stable_write` instead.
     ic_cdk::api::stable::stable_write(0xdeadbeef, b"foo");
 }
 ```
@@ -251,13 +253,16 @@ If the `"name"` section is absent, backtraces will not be available.
 
 Each canister exposes cumulative statistics about its query call traffic. These are available through the [management canister](../../reference/management-canister.md)'s `canister_status` method.
 
-The statistics are cumulative since the canister was last installed or upgraded. They are updated approximately once per epoch (roughly every 10 minutes) rather than in real time.
+The statistics are cumulative since the canister was created. They are updated approximately once per epoch rather than in real time.
+
+<!-- TODO: verify whether query stats reset on reinstall/upgrade — per IC spec, query_stats is only initialized on canister creation; no reset occurs on reinstall or upgrade -->
+<!-- TODO: verify epoch duration for query stats -->
 
 **Rust** — read query stats from `canister_status`:
 
 ```rust
 use ic_cdk::{management_canister, update};
-use ic_cdk::management_canister::{CanisterStatusArgs, CanisterIdRecord};
+use ic_cdk::management_canister::CanisterIdRecord;
 
 #[update]
 async fn print_query_stats() -> String {
@@ -318,7 +323,7 @@ persistent actor QueryStats {
 | `request_payload_bytes_total` | Total bytes of query call request payloads |
 | `response_payload_bytes_total` | Total bytes of query call response payloads |
 
-These cumulative totals reset to zero when the canister is reinstalled or upgraded.
+These cumulative totals accumulate since the canister was created.
 
 ## Streaming access logs from API boundary nodes
 
@@ -400,6 +405,6 @@ async fn main() -> Result<()> {
 
 - [Canister lifecycle](lifecycle.md) — configure log visibility and memory limits when creating or deploying a canister
 - [Testing strategies](../testing/strategies.md) — use canister logs as part of your debugging workflow
-- [CLI reference](https://cli.internetcomputer.org/) — full documentation for `icp canister logs` and `icp canister update-settings`
+- [CLI reference](https://cli.internetcomputer.org/) — full documentation for `icp canister logs` and `icp canister settings update`
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/logs.mdx, docs/building-apps/canister-management/backtraces.mdx, docs/building-apps/advanced/canister-access-logs.mdx; dfinity/examples — rust/canister_logs, motoko/canister_logs, rust/query_stats, motoko/query_stats; dfinity/cdk-rs — ic-cdk/src/api.rs, ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/icp-cli — docs/reference/cli.md, docs/reference/canister-settings.md -->
