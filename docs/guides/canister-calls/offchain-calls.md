@@ -26,7 +26,7 @@ The IC has two call types that agents route differently:
 |---|---|---|
 | State changes | Not allowed | Allowed |
 | Routing | Single replica — fast (~200ms) | Goes through consensus (~2–4 seconds) |
-| Response verification | Optional (certified queries available) | Full certificate from consensus |
+| Response verification | Node key signatures verified by default; certified data provides app-layer guarantees | Full certificate from consensus |
 | Candid annotation | `query` | (default) |
 
 The Candid interface definition tells the agent which call type to use. When you generate typed bindings from a `.did` file, the generated code routes each method correctly — you do not need to decide manually.
@@ -103,8 +103,9 @@ interface CanisterEnv {
 const canisterEnv = getCanisterEnv<CanisterEnv>();
 const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
 
-// On mainnet, pass the root key from the cookie for certificate verification.
-// In local development, let the agent fetch the key from the local replica.
+// Pass rootKey only on non-standard networks. On mainnet the IC root key is
+// embedded in the agent — omit rootKey there.
+// In local development, let the agent fetch the root key from the local replica.
 const actor = createActor(canisterId, {
   agentOptions: {
     rootKey: !import.meta.env.DEV ? canisterEnv.IC_ROOT_KEY : undefined,
@@ -127,6 +128,7 @@ const agent = await HttpAgent.create({
   host: "https://icp-api.io",
   // Omit identity to use the anonymous identity.
   // Pass an identity here for authenticated calls.
+  // IC root key is embedded in the agent for mainnet — do not set shouldFetchRootKey.
 });
 
 const actor = createActor("<canister-id>", { agent });
@@ -219,7 +221,7 @@ For update calls, use `.call_and_wait()` instead of `.call()`:
 let response = agent
     .update(&canister, "update_name")
     .with_arg(Encode!(&"Ada")?)
-    .call_and_wait()
+    .call_and_wait() // submits the update and polls until the response is certified
     .await?;
 ```
 
@@ -259,14 +261,13 @@ The asset canister exposes these variables via an `ic_env` cookie, along with th
 ```typescript
 import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Extend the interface to match your project's canister names.
-declare module "@icp-sdk/core/agent/canister-env" {
-  interface CanisterEnv {
-    readonly "PUBLIC_CANISTER_ID:backend": string;
-  }
+// Declare the environment variables your asset canister exposes.
+// icp-cli injects PUBLIC_CANISTER_ID:<name> for every canister in the project.
+interface CanisterEnv {
+  readonly "PUBLIC_CANISTER_ID:backend": string;
 }
 
-const env = getCanisterEnv();
+const env = getCanisterEnv<CanisterEnv>();
 const backendId = env["PUBLIC_CANISTER_ID:backend"];
 const rootKey = env.IC_ROOT_KEY; // Uint8Array — use for certificate verification
 ```
@@ -279,7 +280,7 @@ During development, your dev server runs outside the asset canister and the `ic_
 
 ```typescript
 // vite.config.ts
-const IC_ROOT_KEY_HEX = "308182..."; // from `icp network start` output
+const IC_ROOT_KEY_HEX = "308182..."; // placeholder — replace with your local replica root key
 const BACKEND_CANISTER_ID = "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // from `icp canister list`
 
 export default defineConfig({
