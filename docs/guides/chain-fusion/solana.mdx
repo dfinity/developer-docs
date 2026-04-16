@@ -27,7 +27,7 @@ The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet 
 3. Responses are aggregated — the canister returns the result once providers agree.
 4. Unused cycles are refunded.
 
-No API keys are required. The SOL RPC canister is controlled by the [Network Nervous System](https://learn.internetcomputer.org/hc/en-us/articles/34209955782420-Subnet-Creation), so any change to it requires an NNS proposal.
+No API keys are required. The SOL RPC canister is controlled by the [Network Nervous System](../../concepts/governance.md), so any change to it requires an NNS proposal.
 
 The SOL RPC canister contacts these JSON-RPC providers:
 - [Helius](https://www.helius.dev/)
@@ -45,6 +45,37 @@ Use the SOL RPC canister's `request` method to send any Solana JSON-RPC call. Pa
 The following example queries the SOL balance of a Solana public key using `getBalance`.
 
 <Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+
+  type SolRpc = actor {
+    request : (Text, Nat64) -> async { #Ok : Text; #Err : Text };
+  };
+
+  transient let solRpc : SolRpc = actor ("2xib7-jqaaa-aaaar-qai6q-cai");
+
+  public func getSolBalance(pubkey : Text) : async Text {
+    let json = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\","
+      # "\"params\":[\"" # pubkey # "\"]}";
+
+    let result = await (with cycles = 10_000_000_000)
+      solRpc.request(json, 1000);
+
+    switch (result) {
+      case (#Ok response) { response };
+      case (#Err err) {
+        Runtime.trap("RPC error: " # err);
+      };
+    };
+  };
+};
+```
+
+</TabItem>
 <TabItem label="Rust">
 
 ```rust
@@ -82,44 +113,13 @@ async fn get_sol_balance(pubkey: String) -> String {
 ```
 
 </TabItem>
-<TabItem label="Motoko">
-
-```motoko
-import Runtime "mo:core/Runtime";
-
-persistent actor {
-
-  type SolRpc = actor {
-    request : (Text, Nat64) -> async { #Ok : Text; #Err : Text };
-  };
-
-  transient let solRpc : SolRpc = actor ("2xib7-jqaaa-aaaar-qai6q-cai");
-
-  public func getSolBalance(pubkey : Text) : async Text {
-    let json = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\","
-      # "\"params\":[\"" # pubkey # "\"]}";
-
-    let result = await (with cycles = 10_000_000_000)
-      solRpc.request(json, 1000);
-
-    switch (result) {
-      case (#Ok response) { response };
-      case (#Err err) {
-        Runtime.trap("RPC error: " # err);
-      };
-    };
-  };
-};
-```
-
-</TabItem>
 </Tabs>
 
 The response is the raw JSON-RPC response string. The `getBalance` result contains a `value` field with the balance in lamports (1 SOL = 1,000,000,000 lamports). Parse the JSON string to extract the value your canister needs.
 
 ### Other common queries
 
-Any Solana JSON-RPC method works the same way — replace the JSON payload and adjust `max_response_bytes` for the expected response size:
+Any Solana JSON-RPC method works the same way — pass the JSON payload as the first argument to `request` and set the second argument (`max_response_bytes`) to the expected response size. Larger values cost more cycles; set it to the minimum needed:
 
 ```rust
 // Get latest slot
@@ -156,34 +156,6 @@ The signing flow for a Solana transaction:
 ### Get an Ed25519 public key
 
 <Tabs syncKey="lang">
-<TabItem label="Rust">
-
-```rust
-use ic_cdk::management_canister::{
-    schnorr_public_key, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs,
-};
-use ic_cdk::update;
-
-#[update]
-async fn get_ed25519_public_key() -> Vec<u8> {
-    let args = SchnorrPublicKeyArgs {
-        canister_id: None,
-        derivation_path: vec![],
-        key_id: SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Ed25519,
-            name: "test_key_1".to_string(), // Use "key_1" for production
-        },
-    };
-
-    let result = schnorr_public_key(&args)
-        .await
-        .expect("schnorr_public_key failed");
-
-    result.public_key
-}
-```
-
-</TabItem>
 <TabItem label="Motoko">
 
 ```motoko
@@ -217,45 +189,43 @@ persistent actor {
 ```
 
 </TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::management_canister::{
+    schnorr_public_key, SchnorrAlgorithm, SchnorrKeyId, SchnorrPublicKeyArgs,
+};
+use ic_cdk::update;
+
+#[update]
+async fn get_ed25519_public_key() -> Vec<u8> {
+    let args = SchnorrPublicKeyArgs {
+        canister_id: None,
+        derivation_path: vec![],
+        key_id: SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "test_key_1".to_string(), // Use "key_1" for production
+        },
+    };
+
+    let result = schnorr_public_key(&args)
+        .await
+        .expect("schnorr_public_key failed");
+
+    result.public_key
+}
+```
+
+</TabItem>
 </Tabs>
 
-The returned `public_key` is the raw 32-byte Ed25519 public key. To use it as a Solana address, base58-encode these 32 bytes.
+The returned `public_key` is the raw 32-byte Ed25519 public key. To use it as a Solana address, base58-encode these 32 bytes. For a complete implementation of this step, see [`solana_helpers.rs`](https://github.com/dfinity/sol-rpc-canister/blob/main/examples/basic_solana/src/basic_solana_backend/src/solana_helpers.rs) in the `basic_solana` example.
 
 ### Sign a transaction message
 
 `sign_with_schnorr` takes the full message bytes — not a hash. For Solana transactions, pass the serialized transaction message bytes directly.
 
 <Tabs syncKey="lang">
-<TabItem label="Rust">
-
-```rust
-use ic_cdk::management_canister::{
-    sign_with_schnorr, SchnorrAlgorithm, SchnorrKeyId, SignWithSchnorrArgs,
-};
-use ic_cdk::update;
-
-#[update]
-async fn sign_solana_message(message: Vec<u8>) -> Vec<u8> {
-    let args = SignWithSchnorrArgs {
-        message,
-        derivation_path: vec![],
-        key_id: SchnorrKeyId {
-            algorithm: SchnorrAlgorithm::Ed25519,
-            name: "test_key_1".to_string(), // Use "key_1" for production
-        },
-        aux: None,
-    };
-
-    // sign_with_schnorr attaches the required cycles automatically
-    let result = sign_with_schnorr(&args)
-        .await
-        .expect("sign_with_schnorr failed");
-
-    result.signature
-}
-```
-
-</TabItem>
 <TabItem label="Motoko">
 
 ```motoko
@@ -290,7 +260,37 @@ persistent actor {
 };
 ```
 
-{/* Needs human verification: Motoko cycle attachment for sign_with_schnorr uses a fixed 30B cycles based on the cdk-rs SIGN_WITH_SCHNORR_FEE constant. The Rust cdk-rs uses cost_sign_with_schnorr() for dynamic fee calculation. Verify the exact fee against the IC interface spec before using in production. */}
+{/* Note: 30B cycles is an intentional buffer above the ~26.15B fee (26_153_846_153 cycles, per cdk-rs SIGN_WITH_SCHNORR_FEE). Unused cycles are refunded. The Rust cdk-rs attaches the exact fee automatically; Motoko requires an explicit `with cycles` attachment. */}
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::management_canister::{
+    sign_with_schnorr, SchnorrAlgorithm, SchnorrKeyId, SignWithSchnorrArgs,
+};
+use ic_cdk::update;
+
+#[update]
+async fn sign_solana_message(message: Vec<u8>) -> Vec<u8> {
+    let args = SignWithSchnorrArgs {
+        message,
+        derivation_path: vec![],
+        key_id: SchnorrKeyId {
+            algorithm: SchnorrAlgorithm::Ed25519,
+            name: "test_key_1".to_string(), // Use "key_1" for production
+        },
+        aux: None,
+    };
+
+    // sign_with_schnorr attaches the required cycles automatically
+    let result = sign_with_schnorr(&args)
+        .await
+        .expect("sign_with_schnorr failed");
+
+    result.signature
+}
+```
 
 </TabItem>
 </Tabs>
@@ -304,7 +304,7 @@ The returned 64-byte signature is a valid Ed25519 signature that Solana accepts 
 | `test_key_1` | ICP mainnet — test key, reduced security. Use for development and testing only. |
 | `key_1` | ICP mainnet — production key. Use for production deployments. |
 
-Ed25519 does not have a local development key (`dfx_test_key` is not available for Ed25519). Use `test_key_1` on ICP mainnet for development, and `key_1` for production.
+Ed25519 does not have a local development key — unlike ECDSA (which has `dfx_test_key` for local replica testing), there is no Ed25519 equivalent. All Ed25519 signing must be tested on ICP mainnet using `test_key_1`. Plan your test workflow accordingly: local replica development is not possible for the signing steps.
 
 ## Complete transaction example
 
@@ -324,7 +324,7 @@ Every SOL RPC call requires cycles to cover HTTPS outcall costs. The `sign_with_
 | Operation | Approximate cost |
 |---|---|
 | SOL RPC `request` (small response, 1–2 providers) | ~1–5B cycles |
-| `sign_with_schnorr` (Ed25519, Rust cdk auto-attached) | ~26B cycles |
+| `sign_with_schnorr` (Ed25519, Rust cdk auto-attached) | ~26.15B cycles |
 
 Send 10B cycles per RPC call as a starting budget — unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
 
