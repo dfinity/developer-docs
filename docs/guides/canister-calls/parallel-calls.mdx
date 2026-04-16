@@ -32,7 +32,7 @@ Parallel calls are most beneficial when the caller and callee are on **different
 
 In Motoko, futures are first-class values. You can start a call by evaluating `c.method()` without immediately awaiting it — this sends the request message and returns an `async T` handle. Collecting all handles before awaiting lets all calls run concurrently.
 
-In Rust, [`Call::bounded_wait`](https://docs.rs/ic-cdk/latest/ic_cdk/call/struct.Call.html) returns an `IntoFuture`. You can collect these futures into a `Vec` and pass them to [`futures::future::join_all`](https://docs.rs/futures/latest/futures/future/fn.join_all.html), which awaits all of them together.
+In Rust, you can collect calls into a `Vec` by calling `.into_future()` on each [`Call::bounded_wait(...)`](https://docs.rs/ic-cdk/latest/ic_cdk/call/struct.Call.html) expression (since `Call` implements `IntoFuture`), then pass them to [`futures::future::join_all`](https://docs.rs/futures/latest/futures/future/fn.join_all.html), which awaits all of them together.
 
 ## Parallel calls example
 
@@ -180,8 +180,11 @@ thread_local! {
 pub async fn parallel_calls(n: u64) -> u64 {
     let callee = CALLEE.with(|c| c.borrow().unwrap());
 
-    // Build all futures before awaiting any of them — each into_future()
-    // sends the request message immediately.
+    // Build all futures before awaiting any of them. All requests are
+    // dispatched when join_all polls each future — all fire before any
+    // response is awaited.
+    // Box::pin erases the lifetime parameters so futures can be collected
+    // into a homogeneous Vec.
     let calls: Vec<BoxFuture<_>> = (0..n)
         .map(|_| -> BoxFuture<_> {
             Box::pin(Call::bounded_wait(callee, "ping").into_future())
@@ -201,7 +204,7 @@ The full working example is available in [`dfinity/examples`](https://github.com
 
 ## In-flight call limit
 
-The IC enforces a limit on the number of in-flight calls a canister can have outstanding to any other single canister. Dispatching more calls than this limit causes the excess to be rejected immediately. Sequential calls stay within the limit because only one call is in-flight at a time. Parallel calls can exceed it when `n` is large.
+The IC enforces a limit on the number of in-flight calls a canister can have outstanding to any other single canister — approximately 500 per canister pair. Dispatching more calls than this limit causes the excess to be rejected immediately. Sequential calls stay within the limit because only one call is in-flight at a time. Parallel calls can exceed it when `n` is large.
 
 If calls fail due to the in-flight limit, do not retry immediately — the limit will still be full right after the failure. Instead, retry from a [timer](../backends/timers.md) or heartbeat after a delay.
 
@@ -299,10 +302,10 @@ persistent actor Map {
 ```rust
 use ic_cdk::call::Call;
 use candid::Principal;
-use std::sync::{Arc, RwLock};
+use std::cell::RefCell;
 
 thread_local! {
-    static PARTITIONS: Arc<RwLock<Vec<Principal>>> = Arc::new(RwLock::new(vec![]));
+    static PARTITIONS: RefCell<Vec<Principal>> = RefCell::new(vec![]);
 }
 
 // Composite query: annotated with composite = true
@@ -323,7 +326,7 @@ async fn get(key: u128) -> Option<u128> {
 
 fn get_partition_for(key: u128) -> Principal {
     PARTITIONS.with(|p| {
-        let p = p.read().unwrap();
+        let p = p.borrow();
         p[key as usize % p.len()]
     })
 }
