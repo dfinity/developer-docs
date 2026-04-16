@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(bd( |$)|gh( |$)|pkill|\\./scripts/setup\\.sh|git submodule update|git push|git -C)' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
+            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(bd( |$)|gh( |$)|pkill|\\./scripts/setup\\.sh|git submodule update|git push|git worktree |git -C|rm )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
             "timeout": 5
           }
         ]
