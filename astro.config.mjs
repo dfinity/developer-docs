@@ -22,6 +22,7 @@ export default defineConfig({
       title: "ICP Developer Docs",
       components: {
         EditLink: "./src/components/EditLink.astro",
+        Footer: "./src/components/Footer.astro",
       },
       head: [
         {
@@ -32,6 +33,58 @@ export default defineConfig({
             type: "text/plain",
             title: "LLM-friendly documentation index",
           },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "alternate",
+            type: "application/rss+xml",
+            title: "ICP Developer Docs",
+            href: "/feed.xml",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "robots", content: "index, follow, max-image-preview:large" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "author", content: "DFINITY Foundation" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image", content: "https://beta-docs.internetcomputer.org/og-image.png" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:alt", content: "ICP Developer Docs — Build on Internet Computer" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:image", content: "https://beta-docs.internetcomputer.org/og-image.png" },
+        },
+        {
+          tag: "script",
+          attrs: { type: "application/ld+json" },
+          content: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://beta-docs.internetcomputer.org/#website",
+                "name": "ICP Developer Docs",
+                "description": "Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.",
+                "url": "https://beta-docs.internetcomputer.org",
+                "publisher": { "@id": "https://beta-docs.internetcomputer.org/#organization" },
+              },
+              {
+                "@type": "Organization",
+                "@id": "https://beta-docs.internetcomputer.org/#organization",
+                "name": "DFINITY Foundation",
+                "url": "https://dfinity.org",
+              },
+            ],
+          }),
         },
         {
           tag: "script",

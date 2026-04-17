@@ -17,6 +17,7 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "glob": "^11.0.1",
     "gray-matter": "^4.0.3"
   }
