@@ -188,8 +188,8 @@ In a web app, call the signer from the browser using a generated TypeScript acto
 # Download the signer's Candid interface
 icp canister metadata "$SIGNER" candid:service --network ic > signer.did
 
-# Generate TypeScript bindings
-icp generate signer.did --output src/declarations/signer
+# Generate TypeScript bindings (requires @icp-sdk/bindgen)
+npx @icp-sdk/bindgen --did-file signer.did --out-dir src/declarations/signer
 ```
 
 Then create actors for both the Cycles Ledger (for payment approval) and the signer:
