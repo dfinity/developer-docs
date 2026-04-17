@@ -6,7 +6,7 @@ Covers all 80 content pages + infrastructure tasks (excluding synced Motoko page
 
 ## How to use this file
 
-1. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) (filter by `documentation` or `help wanted`)
+1. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — content pages use the `documentation` label; infra tasks use `enhancement`
 2. Check the **Dependency Layers** section below to understand what's unblocked
 3. Look up that task's details in the sprint tables: dependencies, source material, effort estimate
 4. Do the work following `AGENTS.md` rules

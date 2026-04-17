@@ -11,7 +11,7 @@ This file is the single source of truth for all agents (Claude Code, Codex, Curs
 1. Read this file for rules and boundaries
 2. Run `./scripts/setup.sh` — initializes submodules and npm deps
 3. Check `.docs-plan/decisions.md` before making any structural changes
-4. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — filter by `help wanted` or `documentation`
+4. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — content pages use the `documentation` label; infra tasks use `enhancement`
 5. Look up the page in `.docs-plan/migration-plan.md` for source material and effort
 6. Do the work following the rules below
 7. Record any structural decisions in `.docs-plan/decisions.md`

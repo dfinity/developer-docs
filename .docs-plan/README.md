@@ -6,7 +6,7 @@ This directory contains analysis, design decisions, and workflow references for 
 
 1. **Read `AGENTS.md`** (project root) — rules, boundaries, content guidelines
 2. **Read `decisions.md`** — understand past structural decisions before proposing new ones
-3. **Find your next task** in [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — filter by `documentation` or `help wanted`
+3. **Find your next task** in [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — content pages use the `documentation` label; infra tasks use `enhancement`
 4. **Get execution details** — read the stub file itself (has content brief, source material, cross-links in HTML comments), then check `migration-plan.md` for dependencies, effort estimate, and skills needed
 5. **Do the work** following `AGENTS.md` rules
 6. **Record decisions in `decisions.md`** if you made any structural choices
