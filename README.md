@@ -67,7 +67,7 @@ Developer: "write the vetkeys page"
 ### Things you can ask an agent to do
 
 - Check open PRs for unaddressed feedback
-- Write a specific page (link it the GitHub Issue)
+- Write a specific page (link to the GitHub Issue)
 - Address feedback on a specific PR
 - Review a PR (checks links, code, CLI commands, technical accuracy against `.sources/`)
 - Rebase a PR on main
@@ -76,7 +76,7 @@ Agent reviews complement but don't replace human review — use them to catch me
 
 ### Task coordination
 
-Open tasks are tracked as [GitHub Issues](https://github.com/dfinity/developer-docs/issues). Filter by `documentation` or `help wanted` to find available work.
+Open tasks are tracked as [GitHub Issues](https://github.com/dfinity/developer-docs/issues). Content pages use the `documentation` label; infra tasks use `enhancement`.
 
 **Merging PRs:** Use **squash and merge** (keeps `main` history clean — one commit per page). Branches are auto-deleted after merge.
 
