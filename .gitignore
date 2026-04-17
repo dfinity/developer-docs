@@ -32,17 +32,6 @@ public/docs-manifest.json
 .claude/settings.local.json
 .claude/worktrees/
 
-# Agent ephemeral output (review files, wave state — outside .claude/ to avoid hardcoded write restrictions)
-.review-output/
-wave-state.json
-
 # Skills install artifacts (npx skills add writes here; committed skills live in .agents/skills/)
 /skills/
 skills-lock.json
-
-# Dolt database files (added by bd init)
-.dolt/
-*.db
-
-# Beads / Dolt files (added by bd init)
-.beads-credential-key

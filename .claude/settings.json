@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(bd( |$)|gh( |$)|pkill|\\./scripts/setup\\.sh|git submodule update|git push|git worktree |git -C|rm )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
+            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(gh( |$)|\\./scripts/setup\\.sh|git submodule update|git push|git worktree |git -C|rm )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
             "timeout": 5
           }
         ]
@@ -38,11 +38,8 @@
     "allow": [
       "Bash(git submodule update*)",
       "Bash(./scripts/setup.sh*)",
-      "Bash(bd init --force*)",
-      "Bash(bd *)",
       "Bash(gh *)",
       "Bash(jq*)",
-      "Bash(pkill*dolt*)",
       "Edit(**)",
       "Edit(.claude/**)",
       "Write(**)",
@@ -61,10 +58,7 @@
     ],
     "deny": [
       "Bash(gh pr merge*)",
-      "Bash(git push --force *)",
-      "Bash(git push * refs/dolt*)",
-      "Bash(git push * --delete refs/dolt*)",
-      "Bash(git push * :refs/dolt*)"
+      "Bash(git push --force *)"
     ]
   }
 }

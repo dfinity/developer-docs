@@ -1,19 +1,16 @@
 # Migration Plan
 
-> This file is the **execution playbook** — it tells you _how_ to do each task (dependencies, source material, effort, skills). For _what to do next_, use `bd ready` (Beads).
-
-Generated 2026-03-11. Updated 2026-03-12 (corrected dependency layers, parallelism notes, reordered Sprint 1-2, switched to Beads coordination).
+> This file is the **execution playbook** — it tells you _how_ to do each task (dependencies, source material, effort, skills). For _what to do next_, check [GitHub Issues](https://github.com/dfinity/developer-docs/issues).
 
 Covers all 80 content pages + infrastructure tasks (excluding synced Motoko pages, section index pages, and the landing page).
 
 ## How to use this file
 
-1. Sync task state: `bd dolt pull`
-2. Pick a task following the priority order in `AGENTS.md` → "Multi-agent workflow"
-3. Check the **Dependency Layers** section below to understand what's unblocked
-4. Look up that task's details in the sprint tables: dependencies, source material, effort estimate
-5. Do the work following `AGENTS.md` rules
-6. Submit PR and update Beads: `bd update <id> --status draft --notes "PR #X" && bd dolt push`
+1. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) (filter by `documentation` or `help wanted`)
+2. Check the **Dependency Layers** section below to understand what's unblocked
+3. Look up that task's details in the sprint tables: dependencies, source material, effort estimate
+4. Do the work following `AGENTS.md` rules
+5. Submit PR with a `## Sync recommendation` section in the description
 
 ## Effort key
 
@@ -399,4 +396,4 @@ languages/rust/index.md
 - Cross-links between concept-guide pairs should be added as content is written.
 - **All icp-cli commands, flags, and installation instructions must be verified** against the icp-cli repo source (`dfinity/icp-cli`, `docs/reference/cli.md`). Never guess CLI syntax — fetch with: `gh api repos/dfinity/icp-cli/contents/docs/reference/cli.md --jq '.content' | base64 -d`
 - Each stub page contains `<!-- Content Brief -->`, `<!-- Source Material -->`, and `<!-- Cross-Links -->` HTML comments — read these before writing.
-- After completing a page, update Beads: `bd update <id> --status draft --notes "PR #X" && bd dolt push`
+- After completing a page, open a PR with a `## Sync recommendation` section and link it to the corresponding GitHub Issue.
