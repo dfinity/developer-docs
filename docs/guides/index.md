@@ -16,7 +16,7 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 
 ## Quality and shipping
 
-- **[Testing](testing/testing-strategies.md)** -- Unit testing, integration testing with PocketIC, and end-to-end strategies.
+- **[Testing](testing/strategies.md)** -- Unit testing, integration testing with PocketIC, and end-to-end strategies.
 - **[Canister Management](canister-management/lifecycle.md)** -- Create, upgrade, configure, optimize, fund, deploy, and back up canisters.
 - **[Security](security/access-management.md)** -- Access control, encryption, data integrity, DoS prevention, and safe upgrades.
 
@@ -29,5 +29,3 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 ## Developer tools
 
 - **[Tools](tools/ai-coding-agents.md)** — AI coding agents with ICP skills, developer tools, and migrating from dfx.
-
-<!-- Upstream: hand-written -->

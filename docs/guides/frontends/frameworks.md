@@ -28,7 +28,7 @@ The asset canister injects an `ic_env` cookie into every HTML response. This coo
 
 ## React with Vite
 
-The [hello-world template](../../../getting-started/project-structure.md) uses React with Vite. It demonstrates the full stack: backend canister, auto-generated TypeScript bindings, and a React frontend that reads canister IDs at runtime.
+The [hello-world template](../../getting-started/project-structure.md) uses React with Vite. It demonstrates the full stack: backend canister, auto-generated TypeScript bindings, and a React frontend that reads canister IDs at runtime.
 
 ### icp.yaml
 

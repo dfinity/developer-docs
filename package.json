@@ -8,7 +8,8 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate": "node scripts/validate.js --all"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",
