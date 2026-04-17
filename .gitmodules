@@ -43,3 +43,12 @@
 [submodule ".sources/dotskills"]
 	path = .sources/dotskills
 	url = git@github.com:vincentkoc/dotskills.git
+[submodule ".sources/chain-fusion-signer"]
+	path = .sources/chain-fusion-signer
+	url = git@github.com:dfinity/chain-fusion-signer.git
+[submodule ".sources/papi"]
+	path = .sources/papi
+	url = git@github.com:dfinity/papi.git
+[submodule ".sources/ic-pub-key"]
+	path = .sources/ic-pub-key
+	url = git@github.com:dfinity/ic-pub-key.git

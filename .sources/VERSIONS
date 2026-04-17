@@ -46,6 +46,9 @@
 #   instead. This is expected behaviour with --depth 1 submodule init.
 # -------------------------------------------------------
 
+chain-fusion-signer   v0.3.0                                                    8cea727
+papi                  v0.1.1                                                    168bc9d
+ic-pub-key            v1.0.1                                                    f89fa55
 icp-cli               v0.2.3                                                    caeac37
 motoko                v1.5.1  # tag 8e4c02d not in shallow clone                395ce0b
 motoko-core           v2.4.0                                                    cd37dbf
