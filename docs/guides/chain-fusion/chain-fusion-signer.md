@@ -1,6 +1,8 @@
 ---
 title: "Chain Fusion Signer"
 description: "Use the Chain Fusion Signer canister to sign transactions for Bitcoin, Ethereum, and other chains from web apps and the command line — no backend canister required."
+sidebar:
+  order: 5
 ---
 
 The Chain Fusion Signer is a public canister on ICP that exposes the IC's threshold signature APIs directly to web apps and CLI users. Normally, accessing threshold ECDSA or Schnorr requires deploying your own backend canister. With the Chain Fusion Signer, you call a shared, governance-controlled canister instead.
@@ -11,7 +13,7 @@ The signer charges callers in cycles for each API call. You pre-approve the sign
 
 ## Prerequisites
 
-- An ICP identity with cycles in the [Cycles Ledger](https://learn.internetcomputer.org/hc/en-us/articles/34574082975252-Cycles-Ledger) (`um5iw-rqaaa-aaaaq-qaaba-cai`)
+- An ICP identity with cycles in the [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger) (`um5iw-rqaaa-aaaaq-qaaba-cai`)
 - icp-cli installed and authenticated (`icp identity whoami`)
 - For offline address derivation: Node.js and `npx`
 
@@ -262,6 +264,6 @@ Pass `null` instead of a payment type to use the canister's default, which is `C
 
 - [Bitcoin integration guide](bitcoin.md) — build a full Bitcoin dapp with your own signing backend
 - [Ethereum integration guide](ethereum.md) — EVM RPC canister for reading Ethereum state
-- [Cycles Ledger](https://learn.internetcomputer.org/hc/en-us/articles/34574082975252-Cycles-Ledger) — fund your account with cycles
+- [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger) — fund your account with cycles
 
 <!-- Upstream: informed by dfinity/chain-fusion-signer — src/signer/canister/signer.did, src/signer/api/src/methods.rs, README.md; dfinity/papi — README.md; dfinity/ic-pub-key — README.md, src/cli.ts -->
