@@ -229,7 +229,7 @@ async function approveAndSign(identity: Identity, messageHash: string) {
 
 <!-- Needs human verification: TypeScript actor creation pattern — verify against generated bindings for the actual signer IDL -->
 
-OISY Wallet uses the Chain Fusion Signer as its production signing backend and serves as a reference implementation.
+OISY Wallet uses the Chain Fusion Signer as its production signing backend and serves as a reference implementation. OISY uses `PatronPaysIcrc2Cycles` — the OISY backend canister pre-approves cycles on each user's behalf, so individual users pay no cycles directly.
 
 ## API fees
 
@@ -254,11 +254,14 @@ The `opt PaymentType` argument accepts these variants:
 | Variant | Description |
 |---------|-------------|
 | `CallerPaysIcrc2Cycles` | Caller pre-approves the Cycles Ledger; recommended for CLI and web apps |
-| `CallerPaysIcrc2Tokens { ledger }` | Pay with any ICRC-2 token (ckBTC, ckETH, etc.) |
+| `CallerPaysIcrc2Tokens { ledger }` | Pay via ICRC-2 token transfer; for this canister the ledger is hardcoded to the Cycles Ledger |
 | `PatronPaysIcrc2Cycles { owner; subaccount }` | A patron account covers costs on the caller's behalf |
+| `PatronPaysIcrc2Tokens { owner; subaccount }` | Patron pays via ICRC-2 token; for this canister the ledger is hardcoded to the Cycles Ledger |
 | `AttachedCycles` | Cycles attached directly to the call (requires proxy canister support) |
 
 Pass `null` instead of a payment type to use the canister's default, which is `CallerPaysIcrc2Cycles`.
+
+**Note on token variants:** `CallerPaysIcrc2Tokens` and `PatronPaysIcrc2Tokens` are supported by this canister, but the ledger is hardcoded to the Cycles Ledger — they do not accept arbitrary tokens such as ckBTC or ckETH. All five variants settle in cycles.
 
 These variants are defined by [papi](https://github.com/dfinity/papi), an open-source Rust library for adding payment gateways to ICP canisters. The Chain Fusion Signer uses papi internally to handle fee collection. If you want to charge callers in your own canister — using the same `CallerPaysIcrc2Cycles` or `PatronPaysIcrc2Cycles` patterns — papi provides the implementation.
 
