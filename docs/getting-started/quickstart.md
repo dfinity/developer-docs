@@ -129,7 +129,7 @@ Each canister name maps to a directory containing its own `canister.yaml` with b
 - [Project structure](project-structure.md) — Understand how icp-cli projects are organized
 - [Choose your path](choose-your-path.md) — pick a development path based on what you want to build
 - [Concepts: Canisters](../concepts/canisters.md) — Learn what canisters are and how they work
-- [Agentic development](../guides/tools/agentic-development.md) — Use AI agents to build on the Internet Computer
+- [AI coding agents](../guides/tools/ai-coding-agents.md) — Use ICP skills to build on the Internet Computer with AI
 - [icp-cli documentation](https://cli.internetcomputer.org/) — Full CLI reference and guides
 
 <!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->

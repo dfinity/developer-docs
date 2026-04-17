@@ -28,4 +28,4 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 
 ## Developer tools
 
-- **[Tools](tools/agentic-development.md)** -- AI-assisted development with icskills, developer tools, and migrating from dfx.
+- **[Tools](tools/ai-coding-agents.md)** — AI coding agents with ICP skills, developer tools, and migrating from dfx.

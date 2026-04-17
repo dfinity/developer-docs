@@ -91,8 +91,8 @@ The Service Nervous System (SNS) lets you tokenize your application and create a
 
 **You want to:** Use AI coding agents to build on ICP.
 
-ICP has a set of [icskills](https://skills.internetcomputer.org) -- structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, icskills give them the context they need.
+ICP has a set of [ICP skills](https://skills.internetcomputer.org) — structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
 
-**Learn more:** [Agentic development](../guides/tools/agentic-development.md)
+**Learn more:** [AI coding agents](../guides/tools/ai-coding-agents.md)
 
 <!-- Upstream: hand-written -->
