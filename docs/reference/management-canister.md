@@ -392,6 +392,50 @@ Signs a message using threshold Schnorr. The corresponding public key can be obt
 
 For practical usage of chain-key signing in Bitcoin and Ethereum workflows, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md) and [Ethereum guide](../guides/chain-fusion/ethereum.md).
 
+### Offline public key derivation
+
+`ecdsa_public_key` and `schnorr_public_key` make on-chain calls and cost cycles. If you only need a public key — for example to derive a blockchain address or verify a signature — derivation can be done entirely offline. The algorithm is deterministic: given the master public key, the canister principal, and the derivation path, the result is always the same.
+
+Both a TypeScript library and a Rust crate are available. The mainnet master public keys for all key IDs are baked in, so no on-chain call is needed to get started.
+
+**TypeScript** (`@dfinity/ic-pub-key`):
+
+```typescript
+import { ecdsa, schnorr } from "@dfinity/ic-pub-key";
+import { Principal } from "@dfinity/principal";
+
+// ECDSA secp256k1
+const ecdsaMaster = ecdsa.secp256k1.PublicKeyWithChainCode.forMainnetKey("key_1");
+const ecdsaPath = ecdsa.secp256k1.DerivationPath.withCanisterPrefix(
+  Principal.fromText("your-canister-id"),
+  []
+);
+const ecdsaKey = ecdsaMaster.deriveSubkeyWithChainCode(ecdsaPath);
+console.log(ecdsaKey.public_key.toHex());
+
+// Schnorr Ed25519
+const schnorrMaster = schnorr.ed25519.PublicKeyWithChainCode.forMainnetKey("key_1");
+const schnorrPath = schnorr.ed25519.DerivationPath.withCanisterPrefix(
+  Principal.fromText("your-canister-id"),
+  []
+);
+const schnorrKey = schnorrMaster.deriveSubkeyWithChainCode(schnorrPath);
+console.log(schnorrKey.public_key.toHex());
+```
+
+**Rust** (`ic-pub-key`):
+
+```toml
+# Cargo.toml — disable the vetkeys feature to avoid heavy transitive dependencies
+ic-pub-key = { version = "0.3.0", default-features = false, features = ["secp256k1", "ed25519"] }
+```
+
+See [docs.rs/ic-pub-key](https://docs.rs/ic-pub-key) for the full Rust API.
+
+The CLI equivalent — `npx @dfinity/ic-pub-key derive ecdsa secp256k1` — accepts the same public key and chain code arguments and is useful for scripting and testing.
+
+<!-- ic-pub-key: known issue — @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release — update all references when that happens. -->
+
 ## vetKD (Verifiable Encrypted Threshold Key Derivation)
 
 ### `vetkd_public_key`

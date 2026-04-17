@@ -62,6 +62,10 @@ For ECDSA and BIP340, key derivation uses a generalized form of [BIP-32](https:/
 
 Derivation is transparent — it happens inside the protocol as part of the signing and public-key-retrieval APIs. You provide a derivation path and the protocol handles the rest.
 
+Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline** — no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or blockchain address without a live ICP connection. See [Offline public key derivation](../reference/management-canister.md#offline-public-key-derivation) for libraries and usage.
+
+<!-- ic-pub-key: known issue — @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release — update all references when that happens. -->
+
 ### Pre-signatures
 
 Signing is split into two phases for performance. An expensive **pre-signature computation** runs asynchronously in the background, producing pre-computed values that are consumed by individual signing requests. This means the latency you experience when calling `sign_with_ecdsa` or `sign_with_schnorr` is dominated by a single consensus round, not the full multi-party computation.
