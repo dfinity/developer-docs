@@ -47,7 +47,7 @@ Each ICP skill covers one capability area and includes:
 
 Skills are maintained by DFINITY and updated frequently. The full list is at [skills.internetcomputer.org](https://skills.internetcomputer.org).
 
-ICP skills follow the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) — a standard for machine-readable skill indexes that coding agents can auto-discover and load without manual configuration.
+ICP skills follow the [Agent Skills](https://agentskills.io/specification) open standard — [published by Anthropic](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) in December 2025 to define a portable SKILL.md format that works across coding agents. The registry uses the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) so agents can auto-discover and load skills without manual configuration.
 
 ## How discovery works
 
