@@ -108,7 +108,7 @@ If you have an existing project using `base`, you can migrate incrementally — 
 - [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
 - [Motoko documentation](https://docs.motoko.org) — Full language reference (fundamentals, ICP features, error codes)
 - [core library API docs](https://mops.one/core/docs) — Standard library reference
-- [Data persistence](../../guides/backends/data-persistence.md) — Persistence patterns for Motoko and Rust canisters
+- [Data persistence](/languages/motoko/fundamentals/data-persistence) — Persistence patterns for Motoko and Rust canisters
 - [Rust](../rust/index.md) — Alternative language for ICP development using the Rust CDK
 - [Motoko GitHub](https://github.com/caffeinelabs/motoko) — Compiler source and issue tracker
 
