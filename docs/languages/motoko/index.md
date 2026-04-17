@@ -108,7 +108,6 @@ If you have an existing project using `base`, you can migrate incrementally — 
 - [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
 - [core library API docs](https://mops.one/core/docs) — Standard library reference
 - [Orthogonal persistence](../../concepts/orthogonal-persistence.md) — How persistent memory works at the platform level
-- [Rust](../rust/index.md) — Alternative language for ICP development using the Rust CDK
 - [Motoko GitHub](https://github.com/caffeinelabs/motoko) — Compiler source and issue tracker
 
 <!-- Upstream: hand-written -->
