@@ -62,8 +62,7 @@ loop {
 } while (count < 5);
 ```
 
-:::note
-Even if the condition starts as false, the body runs at least once.
+:::note[Even if the condition starts as false, the body runs at least once.]
 :::
 
 ## `for` loop

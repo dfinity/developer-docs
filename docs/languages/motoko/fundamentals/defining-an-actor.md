@@ -49,8 +49,7 @@ persistent actor Main {
 };
 ```
 
-:::info
-This code defines an actor that can be deployed on ICP.
+:::note[This code defines an actor that can be deployed on ICP.]
 The actor is declared as `persistent` so that its state, `count`, will be preserved
 when the actor is upgraded.
 Learn more about [persistence](/languages/motoko/fundamentals/data-persistence).

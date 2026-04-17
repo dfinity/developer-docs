@@ -232,9 +232,7 @@ persistent actor Coin {
 } 
 ```
 
-:::warn
-
-There is currently no way to verify the actual type of the actor is compatible with the declared type. The validity of the actor reference and any type incompatibility will be detected later, on interaction with the actor.
+:::caution[There is currently no way to verify the actual type of the actor is compatible with the declared type. The validity of the actor reference and any type incompatibility will be detected later, on interaction with the actor.]
 For this reason, you should only use actor references sparingly. It's typically safer to use explicitly imported canisters with their given actor types and avoid using `Text` or `Principal` to represent canisters in your methods (just use actor types instead).
 
 For example, a safer variant of `flipWith` is:

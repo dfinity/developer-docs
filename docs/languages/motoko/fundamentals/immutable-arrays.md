@@ -190,8 +190,7 @@ The function `Array.tabulate(size, f)` creates an array of `size` elements, popu
 
 The function `Array.foldLeft` combines the squares in the row into a single text string, which can then be printed.
 
-:::note
-`Array.foldRight` is also available.
+:::note[`Array.foldRight` is also available.]
 :::
 
 ``` md

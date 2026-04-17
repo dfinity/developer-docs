@@ -17,7 +17,7 @@ let symbol : Char = '✮';
 ```
 
 
-:::info [Iter](https://mops.one/core/docs/Iter)
+:::note [Iter](https://mops.one/core/docs/Iter)
 An `Iter<T>` is an object that sequentially produces values of specified type `T` until no more values remain.
 :::
 ``` motoko
@@ -70,7 +70,7 @@ persistent actor Alternator {
 };
 ```
 
-:::note Conversions
+:::note[Conversions]
 
 - `Char` can be converted to a single-character `Text` using `Char.toText(c)`.
 - `Char` can be converted to its 32-bit Unicode scalar value using `Char.toNat32(c)`.

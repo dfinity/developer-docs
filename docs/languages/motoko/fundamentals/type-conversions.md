@@ -42,7 +42,7 @@ let result3 = intToNat(10);   // 10
 let result4 = intToNat(-5);   // 5
 ```
 
-:::info `Nat` to `Int` conversions functions
+:::note[`Nat` to `Int` conversions functions]
 
 `Int.toNat`, `Int.fromNat`, `Nat.toInt`, `Nat.fromInt` all exist in the core package.
 
@@ -102,7 +102,7 @@ persistent actor TextToBlobConverter {
 
 ### `Text` to `Float`
 
-:::info `Text` to `Float` example
+:::note[`Text` to `Float` example]
 Motoko does not have a built-in `Text.toFloat` function, so parsing [`Text`](https://mops.one/core/docs/Text) into [`Float`](https://mops.one/core/docs/Float) requires handling:
 
 - Integer and decimal parts.
@@ -123,7 +123,7 @@ Motoko does not have a built-in `Text.toFloat` function, so parsing [`Text`](htt
 
 On ICP, time is measured in nanoseconds since the Unix epoch (January 1, 1970, UTC). The `Time.now()` function returns the current system time in nanoseconds, which must be converted accordingly for date and time.
 
-:::info `Time` to date
+:::note[`Time` to date]
 Motoko does not provide a built-in function for converting `Time` into a date-time representation. Doing so requires:
 
 - Calculating days and seconds since the Unix epoch (1970-01-01).

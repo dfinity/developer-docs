@@ -10,8 +10,7 @@ Stable memory has a maximum size of 500 GiB and is preserved across canister upg
 
 The system automatically commits all memory modifications, both Wasm and stable, after the successful execution of a message. If a message execution fails, the changes are not committed.
 
-:::caution
-The `Regions` library should only be used if [enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced) does not fit your use case.
+:::caution[The `Regions` library should only be used if ][enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced) does not fit your use case.
 :::
 
 ## What is a `Region`?

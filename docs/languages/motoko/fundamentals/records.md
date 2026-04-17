@@ -19,7 +19,7 @@ let person = {
 };
 ```
 
-:::info Inferred types
+:::note[Inferred types]
 Type annotations on immutable record fields are optional, as the compiler can infer their types automatically.
 However, for mutable fields (`var`), it's good practice to explicitly declare the type.
 Without an explicit annotation, the compiler might infer a more specific type than intended, which can restrict future assignments to broader types.
@@ -197,9 +197,7 @@ let updatedPerson = { person with age : Nat = 26; city : Text = "New York"; };
 debug_show(updatedPerson);
 ```
 
-:::info
-
-If `person` contained a mutable (`var`) field, `with` must redefine it, preventing aliasing.
+:::note[If `person` contained a mutable (`var`) field, `with` must redefine it, preventing aliasing.]
 
 :::
 

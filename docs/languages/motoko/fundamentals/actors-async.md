@@ -139,9 +139,7 @@ let sum : Nat = (await a) + (await? b);
 Here the futures `a` and `b` are racing to complete, and it is likely that the first `await` on `a` will resume with `b` already completed.
 Using `await? b` ensures that `b`'s result can be used immediately, if available, without an unnecessary suspension.
 
-:::danger
-
-Since a commit of global state may not happen when using `await?`, this construct should be only used when the commit can be safely omitted.
+:::danger[Since a commit of global state may not happen when using `await?`, this construct should be only used when the commit can be safely omitted.]
 
 :::
 
@@ -171,9 +169,7 @@ let a = (boundedWait with cycles = 42_000_000) Counter.bump();
 
 This approach lets you easily customize message sending with cycles and timeouts.
 
-:::danger
-
-A function that does not use `await` runs atomically, meaning nothing else can change the actor’s state while it’s running. But if the function uses `await`, it can be paused, and during that pause, other messages may change the actor’s state. It’s up to the programmer to handle these possible changes safely. However, any state changes made before the `await` are guaranteed to be saved.
+:::danger[A function that does not use `await` runs atomically, meaning nothing else can change the actor’s state while it’s running. But if the function uses `await`, it can be paused, and during that pause, other messages may change the actor’s state. It’s up to the programmer to handle these possible changes safely. However, any state changes made before the `await` are guaranteed to be saved.]
 
 For example, the implementation of `bump()` above is guaranteed to increment and read the value of `count`, in one atomic step. The following alternative implementation does not have the same semantics and allows another client of the actor to interfere with its operation.
 
@@ -277,9 +273,7 @@ You create an `async*` value by using an `async*` expression, but usually, it’
 
 To get the result of an `async*` computation, you use `await*`.
 
-:::danger
-
-Use `async*` and `await*` carefully. In Motoko, a regular `await` is a commit point. State changes are saved before the function pauses.
+:::danger[Use `async*` and `await*` carefully. In Motoko, a regular `await` is a commit point. State changes are saved before the function pauses.]
 
 `await*` is not a commit point because the computation it runs may not pause or commit at a predictable time. This means if a trap happens inside an `await*` computation, the actor’s state will roll back to the last commit point before the `await*`, not to the point of the `await*` itself.
 

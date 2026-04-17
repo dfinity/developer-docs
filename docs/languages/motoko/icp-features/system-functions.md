@@ -168,8 +168,7 @@ persistent actor Counter {
 
 ## `heartbeat()`
 
-:::caution
-Heartbeats are computationally expensive for both the network and user, and instead you should use a timer if possible.
+:::caution[Heartbeats are computationally expensive for both the network and user, and instead you should use a timer if possible.]
 :::
 
 Canisters can opt to receive [heartbeat messages](https://internetcomputer.org/docs/building-apps/network-features/periodic-tasks-timers#heartbeats) by exposing a `canister_heartbeat` function. In Motoko, this is achieved by declaring the system function `heartbeat`, which takes no arguments and returns an asynchronous unit type (`async ()`).

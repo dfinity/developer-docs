@@ -14,9 +14,7 @@ Motoko provides various operators for working with numbers, text, and boolean va
 | Logical | Logical/boolean operations       | `not`, `and`, `or` |
 | Ordered | Comparing values                  | `==`, `!=`, `<`, `>` |
 
-:::info
-
-Bitwise operators can only be used with bounded types, such as `Int8`, `Nat8`.
+:::note[Bitwise operators can only be used with bounded types, such as `Int8`, `Nat8`.]
 
 :::
 
@@ -87,9 +85,7 @@ Binary operators combine two numbers to produce a result.
 | `%`      | Modulus (remainder) | `a % b` |
 | `**`     | Exponentiation | `a ** b` |
 
-:::caution
-
-Division (`/`) on integers **truncates** decimals. For floating-point division, use `Float.fromInt()`:
+:::caution[Division (`/`) on integers **truncates** decimals. For floating-point division, use `Float.fromInt()`:]
 
 ```motoko no-repl
 let result = Float.fromInt(10) / Float.fromInt(3);
@@ -111,9 +107,7 @@ Bitwise operators manipulate numbers **at the binary level**.
 | `<<>`    | Rotate left (circular shift) | `a <<> b` |
 | `<>`     | Rotate right (circular shift)| `a <> b` |
 
-:::info
-
-Bitwise operators can only be used with bounded types. eg: `Int8`, `Nat8`.
+:::note[Bitwise operators can only be used with bounded types. eg: `Int8`, `Nat8`.]
 
 :::
 

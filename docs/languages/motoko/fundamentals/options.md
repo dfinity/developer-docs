@@ -19,7 +19,7 @@ username;
 
 `username` is an optional [`Text`](https://mops.one/core/docs/Text) value that starts as `null` (no username set).
 
-:::info Null semantics
+:::note[Null semantics]
 
 The constant `null` is the sole value of Motoko’s trivial `Null` type. It also represents the absence of a value in an optional type (`?T`). In this role, `null` is similar to `None` in Rust and Scala, and to `Nothing` in Haskell. Likewise, Motoko’s optional type `?T` is conceptually similar to `Option<T>` in Rust, `Option[T]` in Scala, and `Maybe T` in Haskell. In all these languages, the type system enforces explicit handling of missing values by representing optionality through a dedicated type.
 

@@ -109,8 +109,7 @@ func checkStatus(r : HttpRequestStatus) : Text {
 };
 ```
 
-:::note
-Unlike a `switch`, `let-else` discards any additional error information from non-matching cases, making it less suitable when detailed error handling is needed. The `(#err e)` case is dropped entirely; `e` cannot be inspected or logged.
+:::note[Unlike a `switch`, `let-else` discards any additional error information from non-matching cases, making it less suitable when detailed error handling is needed. The `(#err e)` case is dropped entirely; `e` cannot be inspected or logged.]
 :::
 
 ## Option block

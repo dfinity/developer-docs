@@ -21,8 +21,7 @@ Motoko provides multiple options for incorporating randomness into your code, ea
 | [`fuzz` package](https://mops.one/fuzz)     | Pseudo-random generator that can be seeded with time, `Blob`s, or custom functions. | Security depends on the seed. | Fuzz testing, procedural generation, simulations, dynamic randomness. | Default seed is `Time.now` (low security), can be initialized with `raw_rand` for high security, supports custom generators. |
 | [`idempotency-keys` package](https://mops.one/idempotency-keys)  | Generates UUID v4 from a 16-byte random seed. | Security depends on the provided entropy.   | Unique transaction IDs, idempotency, database keys.   | Produces RFC4122-compliant UUIDs, requires secure entropy source, simple API `UUID.generateV4(seed)`. |
 
-:::info
-Before using the [`fuzz`](https://mops.one/fuzz) or [`idempotency-keys`](https://mops.one/idempotency-keys) packages, ensure that [Mops](https://mops.one/) is installed and initialized in your Motoko project.
+:::note[Before using the ][`fuzz`](https://mops.one/fuzz) or [`idempotency-keys`](https://mops.one/idempotency-keys) packages, ensure that [Mops](https://mops.one/) is installed and initialized in your Motoko project.
 :::
 
 ## `raw_rand`

@@ -44,9 +44,7 @@ The argument to `shared` is just a pattern. You can rewrite the above to use pat
 ``` motoko file=../examples/Counters-caller-pat.mo
 ```
 
-:::note
-
-Simple actor declarations do not let you access their installer. If you need access to the installer of an actor, rewrite the actor declaration as a zero-argument actor class instead.
+:::note[Simple actor declarations do not let you access their installer. If you need access to the installer of an actor, rewrite the actor declaration as a zero-argument actor class instead.]
 
 ```motoko no-repl
 shared(msg) actor class InstallerAware() {

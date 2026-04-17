@@ -13,12 +13,11 @@ As a result, the use of secondary storage (explicit stable memory, dedicated sta
 
 Enhanced orthogonal persistence is enabled by default. (It was previously only offered via the compiler flag `--enhanced-orthogonal-persistence`, which is now redundant.)
 
-:::tip
-Despite the use of enhanced orthogonal persistence, it is strongly recommended to thoroughly test the upgrades of your application.
+:::tip[Despite the use of enhanced orthogonal persistence, it is strongly recommended to thoroughly test the upgrades of your application.]
 Moreover, it is advised to have a backup possibility for rescuing data even when upgrades fail, e.g. by controller-privileged data query calls.
 :::
 
-:::info
+:::note
 [Classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical) with 32-bit main memory and Candid stabilization was the previous default compilation mode for `moc`. If necessary, it can be re-enabled with compiler flag `--legacy-persistence`.
 See [orthogonal persistence modes](/languages/motoko/fundamentals/) for a comparison.
 :::

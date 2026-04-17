@@ -96,6 +96,15 @@ function processFile(filePath) {
   const relPath = filePath.replace(ROOT + '/', '');
   let changed = false;
 
+  // Normalize Starlight aside syntax
+  // 1. Map unsupported types: info -> note, warn -> caution
+  // 2. Space-separated title -> bracket title: :::note Title -> :::note[Title]
+  const normalized = content
+    .replace(/^:::info\b/gm, ':::note')
+    .replace(/^:::warn\b/gm, ':::caution')
+    .replace(/^(:::(?:note|tip|caution|danger|warning))\s+([^\n\[]+)/gm, '$1[$2]');
+  if (normalized !== content) { content = normalized; changed = true; }
+
   // Remove duplicate H1 when frontmatter already has a title
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
   if (fmMatch && /^title:/m.test(fmMatch[1])) {

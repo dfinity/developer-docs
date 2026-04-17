@@ -8,8 +8,7 @@ This section reproduces the changelog of Motoko up until this release.
 
 More recent `moc` releases may be available on the [release page](https://github.com/dfinity/motoko/releases/).
 
-:::tip
-You can determine the version of your `moc` installation using
+:::tip[You can determine the version of your `moc` installation using]
 ```bash
 moc --version
 ```
