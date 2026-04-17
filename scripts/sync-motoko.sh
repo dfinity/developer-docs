@@ -24,7 +24,7 @@ cp "$TARGET_DIR/index.md" "$INDEX_BACKUP"
 for dir in fundamentals icp-features reference; do
   rm -rf "$TARGET_DIR/$dir"
 done
-rm -f "$TARGET_DIR/base-core-migration.md" "$TARGET_DIR/reference/base-core-migration.md"
+rm -f "$TARGET_DIR/base-core-migration.md"
 
 # Copy sections
 for dir in fundamentals icp-features reference; do
@@ -34,10 +34,10 @@ for dir in fundamentals icp-features reference; do
   fi
 done
 
-# Copy base-core-migration guide into reference/ so it appears in the sidebar
+# Copy base-core-migration guide (linked from index, intentionally not in sidebar)
 if [ -f "$SOURCE_DIR/12-base-core-migration.md" ]; then
-  cp "$SOURCE_DIR/12-base-core-migration.md" "$TARGET_DIR/reference/base-core-migration.md"
-  echo "  Copied reference/base-core-migration.md"
+  cp "$SOURCE_DIR/12-base-core-migration.md" "$TARGET_DIR/base-core-migration.md"
+  echo "  Copied base-core-migration.md"
 fi
 
 # Restore hand-written index.md
