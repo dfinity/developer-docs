@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-The Chain Fusion Signer is a public canister on ICP that exposes the IC's threshold signature APIs directly to web apps and CLI users. Normally, accessing threshold ECDSA or Schnorr requires deploying your own backend canister. With the Chain Fusion Signer, you call a shared, governance-controlled canister instead.
+The [Chain Fusion Signer](https://github.com/dfinity/chain-fusion-signer) is a public canister on ICP that exposes the IC's threshold signature APIs directly to web apps and CLI users. Normally, accessing threshold ECDSA or Schnorr requires deploying your own backend canister. With the Chain Fusion Signer, you call a shared, governance-controlled canister instead.
 
 **Canister ID (mainnet):** `grghe-syaaa-aaaar-qabyq-cai`
 
@@ -233,7 +233,7 @@ OISY Wallet uses the Chain Fusion Signer as its production signing backend and s
 
 ## API fees
 
-Fees are charged per call in cycles (at v0.3.0):
+Fees are charged per call in cycles. Verify against the [source](https://github.com/dfinity/chain-fusion-signer/blob/main/src/signer/api/src/methods.rs) for the latest values (table reflects v0.3.0):
 
 | Method | Fee (cycles) |
 |--------|-------------|
