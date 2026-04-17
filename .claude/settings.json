@@ -1,64 +1,14 @@
 {
-  "hooks": {
-    "PermissionRequest": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -re '.tool_input.command' 2>/dev/null | grep -qE '^(gh( |$)|\\./scripts/setup\\.sh|git submodule update|git push|git worktree |git -C|rm )' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'; true",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  },
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "failIfUnavailable": true,
-    "network": {
-      "allowedDomains": [
-        "github.com",
-        "internetcomputer.org",
-        "learn.internetcomputer.org",
-        "skills.internetcomputer.org",
-        "cli.internetcomputer.org",
-        "docs.internetcomputer.org",
-        "js.icp.build"
-      ]
-    },
-    "filesystem": {
-      "allowWrite": ["."],
-      "allowRead": ["~/.ssh/known_hosts"],
-      "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws"]
-    }
-  },
   "permissions": {
     "allow": [
-      "Bash(git submodule update*)",
-      "Bash(./scripts/setup.sh*)",
-      "Bash(gh *)",
-      "Bash(jq*)",
-      "Edit(**)",
-      "Edit(.claude/**)",
-      "Write(**)",
-      "Write(.claude/**)",
       "Read(**)",
       "Grep",
       "Glob",
       "WebSearch",
-      "WebFetch"
-    ],
-    "ask": [
-      "Edit(.claude/settings.json)",
-      "Edit(.claude/settings.local.json)",
-      "Write(.claude/settings.json)",
-      "Write(.claude/settings.local.json)"
-    ],
-    "deny": [
-      "Bash(gh pr merge*)",
-      "Bash(git push --force *)"
+      "WebFetch",
+      "Bash(git submodule update*)",
+      "Bash(npm *)",
+      "Bash(gh *)"
     ]
   }
 }
