@@ -270,6 +270,7 @@ These variants are defined by [papi](https://github.com/dfinity/papi), an open-s
 - [Bitcoin integration guide](bitcoin.md) — build a full Bitcoin dapp with your own signing backend
 - [Ethereum integration guide](ethereum.md) — EVM RPC canister for reading Ethereum state
 - [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger) — fund your account with cycles
+- [Offline key derivation](offline-key-derivation.md) — derive ETH/BTC addresses for any canister principal without a management canister call
 - [papi](https://github.com/dfinity/papi) — add the same `CallerPaysIcrc2Cycles` / `PatronPaysIcrc2Cycles` payment pattern to your own canister
 
 <!-- Upstream: informed by dfinity/chain-fusion-signer — src/signer/canister/signer.did, src/signer/api/src/methods.rs, README.md, check-pricing.report.md; dfinity/papi — README.md (payment variants and patron pattern); dfinity/ic-pub-key — README.md, src/cli.ts -->
