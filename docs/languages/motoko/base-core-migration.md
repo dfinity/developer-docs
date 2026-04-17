@@ -5,7 +5,7 @@ title: "Motoko `base` to `core` migration guide"
 ---
 
 * [GitHub repository](https://github.com/dfinity/motoko-core)
-* [Documentation](./core/)
+* [Documentation](https://mops.one/core)
 
 The `core` package is a new and improved standard library for Motoko, focusing on:
 * AI-friendly design patterns.
@@ -40,7 +40,7 @@ When updating to the `core` package:
 - Hash-based data structures are no longer included in the standard library. It is encouraged to use ordered maps and sets for improved security.
 - In some cases, it won't be possible to fully migrate to `core` due to removal of some features in `base`. In these cases, you can continue using both packages side-by-side or search for [Mops packages](https://mops.one/) built by the community.
 
-For details on function signatures, please refer to the official [documentation](./core/).
+For details on function signatures, please refer to the official [documentation](https://mops.one/core).
 
 Also, feel free to ask for help by posting on the [ICP developer forum](https://forum.dfinity.org/c/developers) or opening a GitHub issue on the [`dfinity/motoko-core`](https://github.com/dfinity/motoko-core/issues) repository.
 
@@ -120,7 +120,7 @@ The `core` package brings significant changes to data structures, making a clear
 
 ## Interface changes by module
 
-### [`Array`](./core/Array)
+### [`Array`](https://mops.one/core/docs/Array)
 
 #### Renamed functions
 - `append()` → `concat()`
@@ -158,7 +158,7 @@ The `core` package brings significant changes to data structures, making a clear
 - `sortInPlace()` - Use `VarArray.sortInPlace()` instead
 - `tabulateVar()` - Use `VarArray.tabulate()` instead
 
-### [`Blob`](./core/Blob)
+### [`Blob`](https://mops.one/core/docs/Blob)
 
 #### Modified functions
 - `fromArrayMut()` → `fromVarArray()`
@@ -170,7 +170,7 @@ The `core` package brings significant changes to data structures, making a clear
 - `isEmpty()` - Check if blob is empty
 - `size()` - Get number of bytes in a blob (equivalent to `blob.size()`)
 
-### [`Bool`](./core/Bool)
+### [`Bool`](https://mops.one/core/docs/Bool)
 
 #### Renamed functions
 - `logand()` → `logicalAnd()`
@@ -181,13 +181,13 @@ The `core` package brings significant changes to data structures, making a clear
 #### New functions
 - `allValues()` - Iterator over all boolean values
 
-### [`Char`](./core/Char)
+### [`Char`](https://mops.one/core/docs/Char)
 
 #### Renamed functions
 - `isLowercase()` → `isLower()`
 - `isUppercase()` → `isUpper()`
 
-### [`Debug`](./core/Debug)
+### [`Debug`](https://mops.one/core/docs/Debug)
 
 #### Added functions
 - `todo()` - Replaces `Prelude.nyi()`
@@ -195,7 +195,7 @@ The `core` package brings significant changes to data structures, making a clear
 #### Removed functions
 - `trap()` - Moved to `Runtime.trap()`
 
-### [`Float`](./core/Float)
+### [`Float`](https://mops.one/core/docs/Float)
 
 #### Modified functions
 - `equal()` - Now requires epsilon parameter
@@ -204,7 +204,7 @@ The `core` package brings significant changes to data structures, making a clear
 #### Removed functions
 - `equalWithin()`, `notEqualWithin()` - Use `equal()` and `notEqual()` with epsilon
 
-### [`Iter`](./core/Iter)
+### [`Iter`](https://mops.one/core/docs/Iter)
 
 `Iter.range()` has been removed in favor of type-specific range functions such as `Nat.range()`, `Int.range()`, `Nat32.range()`, etc. These functions have an **exclusive upper bound**, in contrast to the original inclusive upper bound of `Iter.range()`. 
 
@@ -229,7 +229,7 @@ persistent actor {
 
 Helper functions have been added, such as `allValues()`, for each finite type in the `base` package.
 
-### [`Int`](./core/Int)
+### [`Int`](https://mops.one/core/docs/Int)
 
 #### New functions
 - `fromNat()` - Convert Nat to Int
@@ -247,7 +247,7 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 - `hash()`
 - `hashAcc()` 
 
-### [`Nat`](./core/Nat)
+### [`Nat`](https://mops.one/core/docs/Nat)
 
 #### New functions
 - `allValues()` - Iterator over all natural numbers
@@ -258,7 +258,7 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 - `rangeBy()`, `rangeByInclusive()` - Range with step
 - `toInt()` - Convert to Int
 
-### [`Int8`, `Int16`, `Int32`, `Int64`, `Nat8`, `Nat16`, `Nat32`, `Nat64`](./core/)
+### [`Int8`, `Int16`, `Int32`, `Int64`, `Nat8`, `Nat16`, `Nat32`, `Nat64`](https://mops.one/core)
 
 #### Renamed fields
 
@@ -270,7 +270,7 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 - `range()`, `rangeInclusive()` - Range iterators (replaces `Iter.range()`)
 - `explode()` - Slice into constituent bytes (only for sizes `16`, `32`, `64`)
 
-### [`Option`](./core/Option)
+### [`Option`](https://mops.one/core/docs/Option)
 
 #### Renamed functions
 - `make()` → `some()` - Create option from value
@@ -284,12 +284,12 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 - `assertNull()` - Removed in favor of pattern matching
 - `assertSome()` - Removed in favor of pattern matching
 
-### [`Order`](./core/Order)
+### [`Order`](https://mops.one/core/docs/Order)
 
 #### New functions
 - `allValues()` - Iterator over all order values (`#less`, `#equal`, `#greater`)
 
-### [`Random`](./core/Random)
+### [`Random`](https://mops.one/core/docs/Random)
 
 The `Random` module has been completely redesigned in the core package with a new API that provides better control over random number generation and supports both pseudo-random and cryptographic random number generation.
 
@@ -328,7 +328,7 @@ persistent actor {
 - `crypto()` - Create cryptographic random generator using ICP entropy
 - `cryptoFromState()` - Create cryptographic generator from state
 
-### [`Result`](./core/Result)
+### [`Result`](https://mops.one/core/docs/Result)
 
 #### New functions
 - `all()` - Check all results in iterator
@@ -337,7 +337,7 @@ persistent actor {
 - `forErr()` - Apply function to `#err` value
 - `fromBool()` - Create Result from boolean
 
-### [`Text`](./core/Text)
+### [`Text`](https://mops.one/core/docs/Text)
 
 #### Renamed functions
 - `toLowercase()` → `toLower()`

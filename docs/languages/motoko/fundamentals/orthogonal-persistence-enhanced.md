@@ -19,8 +19,8 @@ Moreover, it is advised to have a backup possibility for rescuing data even when
 :::
 
 :::info
-[Classical orthogonal persistence](./classical.md) with 32-bit main memory and Candid stabilization was the previous default compilation mode for `moc`. If necessary, it can be re-enabled with compiler flag `--legacy-persistence`.
-See [orthogonal persistence modes](./index.md) for a comparison.
+[Classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical) with 32-bit main memory and Candid stabilization was the previous default compilation mode for `moc`. If necessary, it can be re-enabled with compiler flag `--legacy-persistence`.
+See [orthogonal persistence modes](/languages/motoko/fundamentals/) for a comparison.
 :::
 
 ## Design

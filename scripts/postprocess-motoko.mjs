@@ -36,7 +36,7 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
   const cleanPath = matchedPath.replace(/\.md$/, '').replace(/\/index$/, '');
 
   // Core library links -> mops.one
-  const coreMatch = cleanPath.match(/(?:\.\.\/)*core(?:\/(\w+))?$/);
+  const coreMatch = cleanPath.match(/(?:(?:\.\.\/)*|\.\/?)core(?:\/(\w+))?/);
   if (coreMatch) {
     const mod = coreMatch[1];
     return mod
@@ -56,6 +56,12 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
   const parts = cleanPath.split('/');
   const fileSlug = parts[parts.length - 1];
 
+  // Section index links (e.g. ./index.md) — redirect to the section page
+  if (fileSlug === 'index' || fileSlug === '' || fileSlug === '.') {
+    const sourceDir = sourceFile.split('/').slice(-2, -1)[0];
+    return `/languages/motoko/${sourceDir}/${anchor}`;
+  }
+
   // Direct match
   if (slugIndex.has(fileSlug)) return `${slugIndex.get(fileSlug)}${anchor}`;
 
@@ -68,6 +74,16 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
     const parent = parts[parts.length - 2].replace(/^\d+-/, '');
     const combined = `${parent}-${stripped}`;
     if (slugIndex.has(combined)) return `${slugIndex.get(combined)}${anchor}`;
+  }
+
+  // Same-directory sibling: infer prefix from the source file's own slug
+  // e.g. orthogonal-persistence-classical.md linking to ./enhanced.md -> orthogonal-persistence-enhanced
+  const sourceSlug = sourceFile.split('/').pop().replace(/\.md$/, '');
+  const sourceParts = sourceSlug.split('-');
+  for (let i = sourceParts.length - 1; i >= 1; i--) {
+    const prefix = sourceParts.slice(0, i).join('-');
+    const candidate = `${prefix}-${stripped}`;
+    if (slugIndex.has(candidate)) return `${slugIndex.get(candidate)}${anchor}`;
   }
 
   unresolvedCount++;
@@ -91,8 +107,8 @@ function processFile(filePath) {
     }
   }
 
-  // Rewrite relative links (../ paths ending in .md or pointing to directories)
-  const linkRe = /\]\((\.\.[^)#]*?)(#[^)]+)?\)/g;
+  // Rewrite relative links (./ and ../ paths)
+  const linkRe = /\]\((\.[^)#]*?)(#[^)]+)?\)/g;
   content = content.replace(linkRe, (match, path, anchor) => {
     anchor = anchor || '';
     const newUrl = rewriteLink(path, anchor, relPath);

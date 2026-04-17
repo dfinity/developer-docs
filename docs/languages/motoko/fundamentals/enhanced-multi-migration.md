@@ -20,7 +20,7 @@ With enhanced multi-migration you:
 The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed — already-applied migrations are skipped automatically.
 
 :::note
-Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](./4-compatibility.md#explicit-migration-using-a-migration-function).
+Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](/languages/motoko/fundamentals/compatibility#explicit-migration-using-a-migration-function).
 :::
 
 ## Getting started
@@ -412,6 +412,6 @@ moc --enhanced-orthogonal-persistence \
 
 ## See also
 
-- [Data persistence](./3-data-persistence.md)
-- [Verifying upgrade compatibility](./4-compatibility.md)
-- [Enhanced orthogonal persistence](./6-orthogonal-persistence/enhanced.md)
+- [Data persistence](/languages/motoko/fundamentals/data-persistence)
+- [Verifying upgrade compatibility](/languages/motoko/fundamentals/compatibility)
+- [Enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced)
