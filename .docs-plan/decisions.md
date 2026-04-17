@@ -4,6 +4,11 @@ Record decisions that constrain future work — things an agent needs to know th
 
 ---
 
+## 2026-04-17: Added chain-fusion-signer, papi, ic-pub-key submodules
+**Context:** Page proposal #24 (chain-fusion signer guide) required source material not yet in `.sources/`
+**Decision:** Added three new release-pinned submodules: `chain-fusion-signer` (v0.3.0), `papi` (v0.1.1), `ic-pub-key` (v1.0.1)
+**Rationale:** All three are needed to write accurate code examples — signer API, ICRC-2 payment setup, and CLI usage respectively. All follow "track latest release" strategy.
+
 ## 2026-03-11: Diataxis framework with 5 top-level sections
 **Context:** Need a clear information architecture for the new developer docs
 **Decision:** Use Diataxis with 5 sections: Getting Started (tutorials), Guides (how-to), Concepts (explanations), Languages (synced + hand-written), Reference (information)

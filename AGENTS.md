@@ -682,6 +682,9 @@ For current release hashes, see `.sources/VERSIONS`.
 | `.sources/cdk-rs` | `dfinity/cdk-rs` | latest release | Rust CDK (`ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros`) — API signatures, management canister types |
 | `.sources/candid` | `dfinity/candid` | latest release | Candid spec, type system, `didc` tool source |
 | `.sources/response-verification` | `dfinity/response-verification` | latest release | Response verification, certified variables, certificate trees |
+| `.sources/chain-fusion-signer` | `dfinity/chain-fusion-signer` | latest release | Chain Fusion Signer canister — API, key derivation, address generation, ICRC-2 payment model |
+| `.sources/papi` | `dfinity/papi` | latest release | PAPI (payment API) — cycle payment interface used by the Chain Fusion Signer |
+| `.sources/ic-pub-key` | `dfinity/ic-pub-key` | latest release | `@dfinity/ic-pub-key` CLI tool for deriving public keys and addresses via the Chain Fusion Signer |
 | `.sources/dotskills` | `vincentkoc/dotskills` | `main` | Technical documentation skill (AGPL-3.0 — kept as submodule to avoid license mixing) |
 
 ### Submodule initialization
@@ -766,6 +769,9 @@ EOF
 | `candid` | Check for spec changes that affect the Candid reference page or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns in docs |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria or authoring rules |
+| `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns — grep chain-fusion guide and any pages referencing the signer |
+| `papi` | Check for changed payment interface or cycle cost model — update any payment setup examples in the chain-fusion signer guide |
+| `ic-pub-key` | Check for changed CLI flags or commands — update CLI examples in the chain-fusion signer guide |
 
 ### Synced files from submodules
 
