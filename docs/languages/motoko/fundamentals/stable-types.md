@@ -10,7 +10,8 @@ Storing a value in a `stable` declaration ensures that it persists across canist
 The set of stable types defines the kinds of values that can be transferred from an actor to its future upgraded versions.
 Types that cannot be transferred include those whose values depend on the actor's current code, such as non-shared functions or, more generally, objects containing function members. These types are not stable because their behavior cannot be preserved independently of the code that defines them.
 
-:::note[In Motoko, the treatment of private declarations depends on whether an actor is declared with the `persistent` keyword:]
+:::note
+In Motoko, the treatment of private declarations depends on whether an actor is declared with the `persistent` keyword:
 
 - In actors **without** the `persistent` keyword, all private declarations are considered **transient** by default, unless explicitly marked `stable`.
 
@@ -45,7 +46,8 @@ While all shared types are stable, the reverse is not true. Some stable types ca
 \* provided `T` is stable.
 \** provided `T` is shared.
 
-:::note[In composite types like `][T]`, `[var T]`, and `?T`, the element type `T` must also be stable (for use in stable variables) or shared (for use in shared declarations). This ensures that the entire structure adheres to the requirements of stability or shareability, respectively.
+:::note
+In composite types like `[T]`, `[var T]`, and `?T`, the element type `T` must also be stable (for use in stable variables) or shared (for use in shared declarations). This ensures that the entire structure adheres to the requirements of stability or shareability, respectively.
 Non-shared functions and futures (`async T`) and computations (`async* T`) depend on the current actor's code and execution context and therefore cannot be preserved across upgrades or transferred between actors.
 :::
 

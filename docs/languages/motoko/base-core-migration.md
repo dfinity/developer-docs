@@ -74,7 +74,8 @@ The following modules are **new** in the `core` package:
 | `OrderedMap`                   | `pure/Map`         | Ordered map moved to `pure/` namespace              |
 | `OrderedSet`                   | `pure/Set`         | Ordered set moved to `pure/` namespace              |
 
-:::note[The `pure/` namespace contains immutable (purely functional) data structures where operations return new values rather than modifying in place. The namespace makes it clear which data structures are mutable and which are immutable.]
+:::note
+The `pure/` namespace contains immutable (purely functional) data structures where operations return new values rather than modifying in place. The namespace makes it clear which data structures are mutable and which are immutable.
 :::
 
 ### 3. Removed modules
@@ -95,7 +96,8 @@ The following modules have been **removed** in the core package:
 - `TrieMap` - Use `Map` or `pure/Map` instead
 - `TrieSet` - Use `Set` or `pure/Set` instead
 
-:::note[Modules like `Random`, `Region`, `Time`, `Timer`, and `Stack` still exist in core but with modified APIs.]
+:::note
+Modules like `Random`, `Region`, `Time`, `Timer`, and `Stack` still exist in core but with modified APIs.
 :::
 
 ## Data structure improvements
@@ -360,7 +362,8 @@ This section provides detailed migration examples showing how to convert common 
 2. **Updated implementation** using the `core` package with automatic stable memory support
 3. **Migration pattern** using the new `with migration` syntax for seamless data structure conversion
 
-:::tip[The new migration pattern allows you to automatically convert existing stable data from `base` package structures to `core` package structures during canister upgrades. The migration function runs once during the first upgrade and the converted data becomes the new stable state.]
+:::tip
+The new migration pattern allows you to automatically convert existing stable data from `base` package structures to `core` package structures during canister upgrades. The migration function runs once during the first upgrade and the converted data becomes the new stable state.
 :::
 
 ### Understanding the migration pattern

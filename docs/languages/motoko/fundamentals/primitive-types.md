@@ -117,7 +117,8 @@ let back : Float = float32ToFloat a;
 Arithmetic (`+`, `-`, `*`, `/`, `**`) and comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 work directly on `Float32` values without going through `Float`.
 
-:::note[`Float32` has approximately 7 significant decimal digits of precision, compared to ~15 for]
+:::note
+`Float32` has approximately 7 significant decimal digits of precision, compared to ~15 for
 [`Float`](https://mops.one/core/docs/Float). Use `Float` when precision matters; use `Float32` when
 memory compactness or Candid `float32` interoperability is the priority.
 :::

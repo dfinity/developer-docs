@@ -197,7 +197,9 @@ let updatedPerson = { person with age : Nat = 26; city : Text = "New York"; };
 debug_show(updatedPerson);
 ```
 
-:::note[If `person` contained a mutable (`var`) field, `with` must redefine it, preventing aliasing.]
+:::note
+
+If `person` contained a mutable (`var`) field, `with` must redefine it, preventing aliasing.
 
 :::
 

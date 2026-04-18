@@ -18,7 +18,8 @@ Motoko canisters automatically handle the serialization and deserialization of d
 
 Motoko provides the `to_candid` and `from_candid` functions for serializing and deserializing Candid-encoded data.
 
-:::danger[It's important to note that there are many valid Candid encodings, and therefore many different `Blob` representations, for the same value. As a result, `to_candid` does not guarantee that the same input will always produce the same `Blob`. You should never use the output of `to_candid` to compare values for equality or to compute hashes.]
+:::danger
+It's important to note that there are many valid Candid encodings, and therefore many different `Blob` representations, for the same value. As a result, `to_candid` does not guarantee that the same input will always produce the same `Blob`. You should never use the output of `to_candid` to compare values for equality or to compute hashes.
 :::
 
 In most cases, explicit serialization using `to_candid` and `from_candid` is unnecessary during regular development. These functions are typically reserved for advanced scenarios, such as:
@@ -122,7 +123,8 @@ persistent actor MyActor {
 }
 ```
 
-:::danger[While dynamic calls offer more flexibility, they should be used judiciously. In most cases, the standard inter-canister call mechanisms and automatic Candid handling in Motoko provide a safer and more convenient approach to canister interactions.]
+:::danger
+While dynamic calls offer more flexibility, they should be used judiciously. In most cases, the standard inter-canister call mechanisms and automatic Candid handling in Motoko provide a safer and more convenient approach to canister interactions.
 :::
 
 ## Resources

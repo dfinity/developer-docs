@@ -8,7 +8,9 @@ Motoko minimizes built-in types and operations, relying on a core package of mod
 
 The examples in this section show how to use the `module` and `import` keywords in different scenarios.
 
-:::caution[The core package is actively maintained and updates may introduce breaking changes. Developers should review the latest Motoko migration guide when updating dependencies.]
+:::caution
+
+The core package is actively maintained and updates may introduce breaking changes. Developers should review the latest Motoko migration guide when updating dependencies.
 
 :::
 
@@ -122,7 +124,8 @@ Unlike a Motoko module, an imported canister:
 - Can be implemented in any language that emits a Candid interface.
 - Has its type derived from a `.did` file, not from Motoko itself.
 
-:::danger[When importing from another canister, the canister must be listed as a dependency in the importing canister's `dfx.json`. These must both:]
+:::danger
+When importing from another canister, the canister must be listed as a dependency in the importing canister's `dfx.json`. These must both:
 
 1. Be listed in the `dependencies` array of `my_canister`.
 2. Have their own canister definitions specified elsewhere in the same file.

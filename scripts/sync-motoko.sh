@@ -12,6 +12,28 @@ if [ ! -d "$SOURCE_DIR/fundamentals" ]; then
   exit 1
 fi
 
+# Guard: detect new content sections not in the known lists.
+# SYNCED_SECTIONS: directories we actively copy into docs/languages/motoko/.
+# EXCLUDED_SECTIONS: directories intentionally skipped (links redirected or not doc content).
+SYNCED_SECTIONS="fundamentals icp-features reference"
+EXCLUDED_SECTIONS="base core examples motoko-tooling old"
+SYNC_WARNINGS=""
+for dir in "$SOURCE_DIR"/*/; do
+  section=$(basename "$dir")
+  if ! echo "$SYNCED_SECTIONS" | grep -qw "$section" && \
+     ! echo "$EXCLUDED_SECTIONS" | grep -qw "$section"; then
+    echo "WARNING: Unknown section '$section' in $SOURCE_DIR — not synced and not in exclusion list"
+    SYNC_WARNINGS="${SYNC_WARNINGS}  - New section '$section' found but not synced — add it to sync-motoko.sh\n"
+  fi
+done
+
+# Guard: base-core-migration.md must exist (filename prefix may change across releases)
+MIGRATION_SOURCE=$(ls "$SOURCE_DIR"/[0-9]*-base-core-migration.md 2>/dev/null | head -1)
+if [ -z "$MIGRATION_SOURCE" ]; then
+  echo "WARNING: base-core-migration.md not found in $SOURCE_DIR — check filename"
+  SYNC_WARNINGS="${SYNC_WARNINGS}  - base-core-migration.md missing from source — filename may have changed\n"
+fi
+
 VERSION=$(git -C .sources/motoko describe --tags --exact-match 2>/dev/null \
   || git -C .sources/motoko rev-parse --short HEAD)
 echo "Syncing Motoko docs from caffeinelabs/motoko@$VERSION..."
@@ -35,8 +57,8 @@ for dir in fundamentals icp-features reference; do
 done
 
 # Copy base-core-migration guide (linked from index, intentionally not in sidebar)
-if [ -f "$SOURCE_DIR/12-base-core-migration.md" ]; then
-  cp "$SOURCE_DIR/12-base-core-migration.md" "$TARGET_DIR/base-core-migration.md"
+if [ -n "$MIGRATION_SOURCE" ]; then
+  cp "$MIGRATION_SOURCE" "$TARGET_DIR/base-core-migration.md"
   echo "  Copied base-core-migration.md"
 fi
 
@@ -122,3 +144,11 @@ file_count=$(find "$TARGET_DIR" -name '*.md' | wc -l | tr -d ' ')
 echo ""
 echo "Sync complete: $file_count files from caffeinelabs/motoko@$VERSION in $TARGET_DIR/"
 echo "Run 'npm run build' to verify."
+
+# Write warnings to a file so CI can include them in the PR body
+if [ -n "$SYNC_WARNINGS" ]; then
+  printf "%b" "$SYNC_WARNINGS" > /tmp/sync-motoko-warnings.txt
+  echo ""
+  echo "WARNINGS (manual review required):"
+  printf "%b" "$SYNC_WARNINGS"
+fi

@@ -14,7 +14,8 @@ Upon upgrade, the classical orthogonal persistence mechanism serializes all stab
 * The serialization and deserialization is expensive and can hit ICP's instruction limits.
 * There is no built-in stable compatibility check in the runtime system. If users ignore the `dfx` upgrade warning, data may be lost or an upgrade fails.
 
-:::danger[The above-mentioned issues can lead to a stuck canister that can no longer be upgraded.]
+:::danger
+The above-mentioned issues can lead to a stuck canister that can no longer be upgraded.
 Therefore, it is absolutely necessary to thoroughly test how much data an upgrade of your application can handle and then conservatively limit the data held by that canister.
 Moreover, it is ideal to have a backup plan to rescue data even if upgrades fail, e.g. by controller-privileged data query calls. Another option is to [snapshot](https://internetcomputer.org/docs/building-apps/canister-management/snapshots) the canister before attempting the upgrade.
 :::
@@ -22,7 +23,8 @@ Moreover, it is ideal to have a backup plan to rescue data even if upgrades fail
 These issues are solved by [enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced).
 
 
-:::note[Classical orthogonal persistence was previously the default compilation mode for Motoko code. Going forward, the default compilation mode is enhanced orthogonal persistence,]
+:::note
+Classical orthogonal persistence was previously the default compilation mode for Motoko code. Going forward, the default compilation mode is enhanced orthogonal persistence,
 previously available only with `moc` compiler flag `--enhanced-orthogonal-persistence`.
 
 Users unwilling or unable to migrate their code can re-enable support for classical orthogonal persistence using the new compiler flag `--legacy-persistence`.

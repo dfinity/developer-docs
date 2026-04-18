@@ -1,0 +1,144 @@
+name: Motoko release check
+
+on:
+  schedule:
+    - cron: '0 8 * * 1' # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Initialize motoko submodule
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git submodule update --init --depth 1 .sources/motoko
+
+      - name: Get latest Motoko release tag
+        id: latest
+        run: |
+          LATEST=$(gh release view --repo caffeinelabs/motoko --json tagName -q .tagName)
+          echo "tag=$LATEST" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get currently pinned version
+        id: current
+        run: |
+          CURRENT=$(grep '^motoko ' .sources/VERSIONS | awk '{print $2}')
+          echo "version=$CURRENT" >> $GITHUB_OUTPUT
+
+      - name: Check if update needed
+        id: check
+        run: |
+          if [ "${{ steps.latest.outputs.tag }}" = "${{ steps.current.outputs.version }}" ]; then
+            echo "Already at latest: ${{ steps.current.outputs.version }}"
+            echo "needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "New release: ${{ steps.latest.outputs.tag }} (current: ${{ steps.current.outputs.version }})"
+            echo "needed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump submodule to new release
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          TAG="${{ steps.latest.outputs.tag }}"
+          git -C .sources/motoko fetch --depth 1 origin "refs/tags/${TAG}:refs/tags/${TAG}" || \
+            git -C .sources/motoko fetch --unshallow origin
+          git -C .sources/motoko checkout "$TAG" 2>/dev/null || \
+            git -C .sources/motoko checkout "tags/${TAG}"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.check.outputs.needed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.check.outputs.needed == 'true'
+        run: npm ci
+
+      - name: Initialize examples submodule (required for build)
+        if: steps.check.outputs.needed == 'true'
+        run: git submodule update --init --depth 1 .sources/examples
+
+      - name: Run Motoko sync
+        if: steps.check.outputs.needed == 'true'
+        run: npm run sync:motoko
+
+      - name: Build check
+        if: steps.check.outputs.needed == 'true'
+        run: npm run build
+
+      - name: Update VERSIONS file
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          NEW_TAG="${{ steps.latest.outputs.tag }}"
+          NEW_HASH=$(git -C .sources/motoko rev-parse --short HEAD)
+          sed -i "s|^motoko .*|motoko                ${NEW_TAG}                                                     ${NEW_HASH}|" .sources/VERSIONS
+
+      - name: Read sync warnings
+        if: steps.check.outputs.needed == 'true'
+        id: warnings
+        run: |
+          if [ -f /tmp/sync-motoko-warnings.txt ]; then
+            WARNINGS=$(cat /tmp/sync-motoko-warnings.txt)
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$WARNINGS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "body=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="infra/bump-motoko-${{ steps.latest.outputs.tag }}"
+          git checkout -b "$BRANCH"
+          git add .sources/motoko .sources/VERSIONS docs/languages/motoko/
+          git commit -m "chore: bump Motoko to ${{ steps.latest.outputs.tag }}"
+          git push -u origin "$BRANCH"
+
+          WARNINGS="${{ steps.warnings.outputs.body }}"
+          WARNINGS_SECTION=""
+          if [ -n "$WARNINGS" ]; then
+            WARNINGS_SECTION="## ⚠️ Warnings — manual review required
+
+${WARNINGS}
+
+"
+          fi
+
+          gh pr create \
+            --title "chore: bump Motoko to ${{ steps.latest.outputs.tag }}" \
+            --body "$(cat <<EOF
+## Summary
+
+Automated bump of \`.sources/motoko\` from \`${{ steps.current.outputs.version }}\` to \`${{ steps.latest.outputs.tag }}\`.
+
+- Ran \`npm run sync:motoko\` — synced docs from the new release
+- Build passed ✓
+
+${WARNINGS_SECTION}## Checklist
+
+- [ ] Review synced content for breaking changes
+- [ ] Check [release notes](https://github.com/caffeinelabs/motoko/releases/tag/${{ steps.latest.outputs.tag }}) for API or syntax changes that affect hand-written docs
+- [ ] Verify any new sections or renamed files are handled correctly
+
+## Sync recommendation
+
+\`sync from caffeinelabs/motoko doc/md\`
+EOF
+)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -145,7 +145,9 @@ persistent actor {
 
 Unlike object classes, actor class constructors are asynchronous. The constructor returns a future that contains the instance. You obtain the instance itself using `await`.
 
-:::note[On ICP, calls to a class constructor must be provisioned with cycles to pay for the creation of a principal. See ][Cycles](https://mops.one/core/docs/Cycles) for instructions on how to add cycles to a call using the imperative `Cycles.add<system>(cycles)` function.
+:::note
+
+On ICP, calls to a class constructor must be provisioned with cycles to pay for the creation of a principal. See [Cycles](https://mops.one/core/docs/Cycles) for instructions on how to add cycles to a call using the imperative `Cycles.add<system>(cycles)` function.
 
 :::
 

@@ -78,7 +78,10 @@ Consider the following four versions of the counter example:
 
 Version `v0` with Candid interface `v0.did` and stable type interface `v0.most`:
 
-``` candid file=../../examples/count-v0.did
+```candid
+service : {
+  increment: () -> ();
+}
 ```
 
 ``` motoko no-repl file=../../examples/count-v0.most
@@ -86,7 +89,10 @@ Version `v0` with Candid interface `v0.did` and stable type interface `v0.most`:
 
 Version `v1` with Candid interface `v1.did` and stable type interface `v1.most`,
 
-``` candid file=../../examples/count-v1.did
+```candid
+service : {
+  increment: () -> ();
+}
 ```
 
 ``` motoko no-repl file=../../examples/count-v1.most
@@ -94,7 +100,10 @@ Version `v1` with Candid interface `v1.did` and stable type interface `v1.most`,
 
 Version `v2` with Candid interface `v2.did` and stable type interface `v2.most`,
 
-``` candid file=../../examples/count-v2.did
+```candid
+service : {
+  increment: () -> ();
+}
 ```
 
 ``` motoko no-repl file=../../examples/count-v2.most
@@ -102,7 +111,12 @@ Version `v2` with Candid interface `v2.did` and stable type interface `v2.most`,
 
 Version `v3` with Candid interface `v3.did` and stable type interface `v3.most`:
 
-``` candid file=../../examples/count-v3.did
+```candid
+service : {
+  decrement: () -> ();
+  increment: () -> ();
+  read: () -> (int) query;
+}
 ```
 
 ``` motoko no-repl file=../../examples/count-v3.most
@@ -133,7 +147,8 @@ In addition to Motoko's runtime check, `dfx` raises a warning message for these 
 
 Motoko tolerates Candid interface changes, since these are more likely to be intentional, breaking changes.
 
-:::danger[Versions of Motoko using ][classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical) will drop the state and reinitialize the counter with `0.0`, if the `dfx` warning is ignored.
+:::danger
+Versions of Motoko using [classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical) will drop the state and reinitialize the counter with `0.0`, if the `dfx` warning is ignored.
 
 For this reason, users should always heed any compatibility warnings issued by `dfx`.
 :::
@@ -369,7 +384,8 @@ cannot be consumed at new type
 
 With [enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced), compatibility errors of stable variables are always detected in the runtime system and if failing, the upgrade is safely rolled back.
 
-:::danger[With ][classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical), however, an upgrade attempt from `v2.wasm` to `v3.wasm` is unpredictable and may lead to partial or complete data loss if the `dfx` warning is ignored.
+:::danger
+With [classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical), however, an upgrade attempt from `v2.wasm` to `v3.wasm` is unpredictable and may lead to partial or complete data loss if the `dfx` warning is ignored.
 :::
 
 ## Adding record fields

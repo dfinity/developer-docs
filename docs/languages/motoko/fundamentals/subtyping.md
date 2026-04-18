@@ -12,7 +12,9 @@ If you have a value of type `Nat`, you can supply it to a function taking the mo
 Motoko applies subtyping when necessary to prove that a program is type correct.
 
 
-:::note[Subtyping is similar to the notion of subsets, where one set `A` is a subset of another `B`, written `A ⊆ B`, if every element of the set `A` is contained in the set `B` (which may have additional elements).]
+:::note
+
+Subtyping is similar to the notion of subsets, where one set `A` is a subset of another `B`, written `A ⊆ B`, if every element of the set `A` is contained in the set `B` (which may have additional elements).
 
 Every set `A` is a subset of itself (that is `A ⊆ A`). This property of the subset relation is called [reflexivity](https://en.wikipedia.org/wiki/Reflexive_relation).
 

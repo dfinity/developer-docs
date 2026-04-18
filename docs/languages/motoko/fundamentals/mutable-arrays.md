@@ -16,7 +16,8 @@ A mutable array is created using a mutable array expression:
  [var 1, 2, 3, 4, 5];
  ```
 
-:::note[Its type is inferred to be `][var Nat]`.
+:::note
+Its type is inferred to be `[var Nat]`.
 :::
 
 If you want to update the array with negative elements, use a type annotation:
@@ -85,7 +86,9 @@ Mutable arrays are beneficial when:
 | Conversion      | Can be converted to mutable with `Array.thaw`. | Can be converted to immutable with `Array.freeze`. |
 | Use case        |  Tabular fixed, data       |  Iterative algorithms |
 
-:::warning[Unlike some other programming languages that support resizable arrays, Motoko's arrays (both mutable and immutable) are fixed-size. Motoko arrays cannot shrink or grow in length, and operations like `Array.concat` always construct new arrays.]
+:::warning
+
+Unlike some other programming languages that support resizable arrays, Motoko's arrays (both mutable and immutable) are fixed-size. Motoko arrays cannot shrink or grow in length, and operations like `Array.concat` always construct new arrays.
 For dynamically-sized, array-like data structures, consider using modules in `core` (e.g. `List`) or other `mops` packages (e.g. [`vector`](https://mops.one/vector)).
 
 :::

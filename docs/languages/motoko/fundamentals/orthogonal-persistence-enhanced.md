@@ -13,7 +13,8 @@ As a result, the use of secondary storage (explicit stable memory, dedicated sta
 
 Enhanced orthogonal persistence is enabled by default. (It was previously only offered via the compiler flag `--enhanced-orthogonal-persistence`, which is now redundant.)
 
-:::tip[Despite the use of enhanced orthogonal persistence, it is strongly recommended to thoroughly test the upgrades of your application.]
+:::tip
+Despite the use of enhanced orthogonal persistence, it is strongly recommended to thoroughly test the upgrades of your application.
 Moreover, it is advised to have a backup possibility for rescuing data even when upgrades fail, e.g. by controller-privileged data query calls.
 :::
 

@@ -19,7 +19,8 @@ With enhanced multi-migration you:
 
 The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed — already-applied migrations are skipped automatically.
 
-:::note[Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for ][single migration functions](/languages/motoko/fundamentals/compatibility#explicit-migration-using-a-migration-function).
+:::note
+Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](/languages/motoko/fundamentals/compatibility#explicit-migration-using-a-migration-function).
 :::
 
 ## Getting started
@@ -74,7 +75,8 @@ The initial value of each uninitialized variable is determined entirely by the m
 
 The compiler rejects any stable variable that carries an initializer when `--enhanced-migration` is enabled. This prevents ambiguity about whether the value comes from the migration chain or from the inline expression.
 
-:::note[Non-stable declarations (local variables inside functions, private helper fields, etc.) still require initializers as usual. Only stable actor fields use the uninitialized syntax.]
+:::note
+Non-stable declarations (local variables inside functions, private helper fields, etc.) still require initializers as usual. Only stable actor fields use the uninitialized syntax.
 :::
 
 ### Static actor body
@@ -141,7 +143,8 @@ module {
 
 The resulting state is `{a : Int; c : Bool; d : Float}`.
 
-:::note[The state's field types must be compatible with the migration's input field types. The compiler checks this and rejects the program otherwise.]
+:::note
+The state's field types must be compatible with the migration's input field types. The compiler checks this and rejects the program otherwise.
 :::
 
 ## How migrations compose
@@ -164,7 +167,8 @@ After `Init`, the state is `{name : Text; balance : Nat}`.
 
 The actor must declare fields compatible with this final state.
 
-:::tip[Each migration only needs to declare the fields it reads and produces. You do not need to repeat fields that pass through unchanged.]
+:::tip
+Each migration only needs to declare the fields it reads and produces. You do not need to repeat fields that pass through unchanged.
 :::
 
 ## Common migration patterns
@@ -242,7 +246,8 @@ module {
 
 The corresponding actor declaration should no longer include `email`.
 
-:::caution[Consuming a field without producing it causes data loss. The compiler issues a warning when a consumed field is not present in the final actor declaration.]
+:::caution
+Consuming a field without producing it causes data loss. The compiler issues a warning when a consumed field is not present in the final actor declaration.
 :::
 
 ### Transforming data

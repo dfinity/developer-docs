@@ -102,11 +102,21 @@ function processFile(filePath) {
   let changed = false;
 
   // Expand Docusaurus file-embed blocks: ```lang file=<relative-path>
-  // Path is relative to the source's reference/ dir inside the submodule
+  // The path is relative to the source file's original location in the submodule.
+  // After flattening, that depth information is lost, so we probe at increasing
+  // subdirectory depths (0, 1, 2) until the file resolves.
   const fileEmbedRe = /^```\s*(\w+) file=([^\n]+)\n```/gm;
   content = content.replace(fileEmbedRe, (match, lang, filePath) => {
-    const abs = resolvePath(join(MOTOKO_SOURCE_MD, 'reference'), filePath.trim());
-    if (existsSync(abs)) {
+    const sectionMatch = relPath.match(/docs\/languages\/motoko\/([^/]+)\//);
+    const section = sectionMatch ? sectionMatch[1] : 'reference';
+    const fp = filePath.trim();
+    let abs = null;
+    for (let depth = 0; depth <= 2; depth++) {
+      // Simulate being `depth` levels deeper by adding placeholder subdirs
+      const candidate = resolvePath(join(MOTOKO_SOURCE_MD, section, 'x/'.repeat(depth)), fp);
+      if (existsSync(candidate)) { abs = candidate; break; }
+    }
+    if (abs) {
       changed = true;
       return `\`\`\`${lang}\n${readFileSync(abs, 'utf-8').trim()}\n\`\`\``;
     }

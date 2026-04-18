@@ -20,13 +20,24 @@ More precisely, each `let` and `var` variable declaration in an actor can specif
 
 * `transient` means that the variable is re-initialized on upgrade such that the values referenced by the transient variable are discarded, unless the values are transitively reachable by other variables that are stable. `transient` is only used for temporary state or references to high-order types, such as local function references.
 
-:::note[You can only use the `stable`, `transient` (or legacy `flexible`) modifier on `let` and `var` declarations that are **actor fields**. You cannot use these modifiers anywhere else in your program.]
+:::note
+
+You can only use the `stable`, `transient` (or legacy `flexible`) modifier on `let` and `var` declarations that are **actor fields**. You cannot use these modifiers anywhere else in your program.
 
 :::
 
 The following is a simple example of how to declare a stable counter that can be upgraded while preserving the counter’s value:
 
-``` motoko file=../../examples/StableCounter.mo
+```motoko
+persistent actor Counter {
+
+  var value = 0;
+
+  public func inc() : async Nat {
+    value += 1;
+    return value;
+  };
+}
 ```
 
 When you compile and deploy a canister for the first time, all transient and stable variables in the actor are initialized in sequence. When a canister is upgraded, all stable variables that existed in the previous version of the actor are pre-initialized with their old values and the remaining transient and any newly-added stable variables are initialized in sequence.
@@ -35,7 +46,16 @@ Starting with Motoko v0.13.5, if you prefix the `actor` keyword with the keyword
 
 Using a `persistent` actor can help avoid unintended data loss. It is the recommended declaration syntax for actors and actor classes. The non-`persistent` declaration is provided for backwards compatibility.
 
-``` motoko file=../../examples/PersistentCounter.mo
+```motoko
+persistent actor Counter {
+
+  var value = 0; // implicitly stable!
+
+  public func inc() : async Nat {
+    value += 1;
+    value;
+  };
+}
 ```
 
 ## Stable types
@@ -44,7 +64,9 @@ The Motoko compiler must ensure that stable variables are compatible with the up
 
 The only difference between stable types and shared types is the former’s support for mutation. Like shared types, stable types are restricted to first-order data, excluding local functions and structures built from local functions (such as class instances). Excluding local functions is required because the meaning of a function value, consisting of both data and code, cannot easily be preserved across an upgrade while the value of plain data, mutable or not, can be.
 
-:::note[In general, classes are not stable because they can contain local functions. However, a plain record of stable data is a special case of object types that are stable. Moreover, references to actors and shared functions are also stable, allowing you to preserve their values across upgrades.]
+:::note
+
+In general, classes are not stable because they can contain local functions. However, a plain record of stable data is a special case of object types that are stable. Moreover, references to actors and shared functions are also stable, allowing you to preserve their values across upgrades.
 
 :::
 
@@ -58,7 +80,8 @@ For variables that do not have a stable type, there are two options for making t
   - [StableHashMap](https://github.com/canscale/StableHashMap)
   - [StableRBTree](https://github.com/canscale/StableRBTree)
 
-:::note[Unlike stable data structures in the Rust CDK, these modules do not use stable memory but instead rely on orthogonal persistence. The adjective "stable" only denotes a stable type in Motoko.]
+:::note
+Unlike stable data structures in the Rust CDK, these modules do not use stable memory but instead rely on orthogonal persistence. The adjective "stable" only denotes a stable type in Motoko.
 :::
 
 2. Extract the state in a stable type and wrap it in the non-stable type.
@@ -83,7 +106,9 @@ actor {
 };
 ```
 
-:::tip[You can emit the stable signature of an actor or actor class to a `.most` file using `moc` compiler option `--stable-types`. You should never need to author your own `.most` file.]
+:::tip
+
+You can emit the stable signature of an actor or actor class to a `.most` file using `moc` compiler option `--stable-types`. You should never need to author your own `.most` file.
 
 :::
 
@@ -99,7 +124,9 @@ A stable signature `<stab-sig1>` is stable-compatible with another signature `<s
 
 The stable subtyping condition ensures that the final value of a field from the old version can be safely used as the initial value of that field in the new version, without loss of data.
 
-:::tip[You can check the stable-compatibility of two `.most` files containing stable signatures using the `moc` compiler option `--stable-compatible file1.most file2.most`.]
+:::tip
+
+You can check the stable-compatibility of two `.most` files containing stable signatures using the `moc` compiler option `--stable-compatible file1.most file2.most`.
 
 :::
 
@@ -119,7 +146,8 @@ A Motoko canister upgrade is safe provided:
 -  The canister’s Candid interface evolves to a Candid subtype. You can check valid Candid subtyping between two services described in `.did` files using the [`didc` tool](https://github.com/dfinity/candid) with argument `check file1.did file2.did`.
 -  The canister’s Motoko stable signature evolves to a stable-compatible one.
 
-:::danger[With ][classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical), the upgrade can still fail due to resource constraints. This is problematic as the canister can then not be upgraded. It is therefore strongly advised to test the scalability of upgrades extensively. This does not apply to enhanced orthogonal persistence.
+:::danger
+With [classical orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-classical), the upgrade can still fail due to resource constraints. This is problematic as the canister can then not be upgraded. It is therefore strongly advised to test the scalability of upgrades extensively. This does not apply to enhanced orthogonal persistence.
 :::
 
 
@@ -173,7 +201,8 @@ reference material on [migration expressions](https://docs.motoko.org#migration-
 
 ## Legacy features
 
-:::danger[Using the pre- and post-upgrade system methods is discouraged. It is error-prone and can render a canister unusable. In particular, if a `preupgrade` method traps and cannot be prevented from trapping by other means, then your canister may be left in a state in which it can no longer be upgraded. Per best practices, using these methods should be avoided if possible.]
+:::danger
+Using the pre- and post-upgrade system methods is discouraged. It is error-prone and can render a canister unusable. In particular, if a `preupgrade` method traps and cannot be prevented from trapping by other means, then your canister may be left in a state in which it can no longer be upgraded. Per best practices, using these methods should be avoided if possible.
 :::
 
 Motoko supports user-defined upgrade hooks that run immediately before and after an upgrade. These upgrade hooks allow triggering additional logic on upgrade.
