@@ -114,12 +114,21 @@ function processFile(filePath) {
     return match;
   });
 
-  // Convert Docusaurus remote-reference blocks to plain links
-  // ```md reference\n<url>\n```
-  const remoteRefRe = /^```\w+ reference\n(https?:\/\/[^\n]+)\n```/gm;
-  content = content.replace(remoteRefRe, (_, url) => {
-    changed = true;
-    return `See the full content at [${url}](${url}).`;
+  // Expand Docusaurus remote-reference blocks by reading from the local submodule.
+  // Maps https://github.com/<org>/<repo>/blob/<ref>/<path> -> .sources/<repo>/<path>
+  const remoteRefRe = /^```(\w+) reference\n(https?:\/\/[^\n]+)\n```/gm;
+  content = content.replace(remoteRefRe, (match, lang, url) => {
+    const ghMatch = url.match(/github\.com\/[^/]+\/([^/]+)\/blob\/[^/]+\/(.+)/);
+    if (ghMatch) {
+      const localPath = join(ROOT, '.sources', ghMatch[1], ghMatch[2]);
+      if (existsSync(localPath)) {
+        changed = true;
+        const fileContent = readFileSync(localPath, 'utf-8').trim();
+        return lang === 'md' ? fileContent : `\`\`\`${lang}\n${fileContent}\n\`\`\``;
+      }
+    }
+    console.warn(`  REMOTE-REF UNRESOLVED: ${url} in ${relPath}`);
+    return match;
   });
 
   // Normalize Starlight aside syntax
