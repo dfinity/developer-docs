@@ -13,6 +13,11 @@ You can determine the version of your `moc` installation using
 ```bash
 moc --version
 ```
+
+If using `moc` via `dfx`, you can determine the version of moc bundled with `dfx` using:
+```bash
+$(dfx cache show)/moc --version
+```
 :::
 
 # Motoko compiler changelog

@@ -142,12 +142,6 @@ function processFile(filePath) {
     .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
   if (normalized !== content) { content = normalized; changed = true; }
 
-  // Strip dfx-specific paragraphs from aside blocks (dfx is deprecated)
-  // Targets the "If using moc via dfx..." section in changelog
-  const dfxPara = /\n\nIf using `moc` via `dfx`[^\n]*\n```bash\n[^`]+```\n/g;
-  const nodfx = content.replace(dfxPara, '\n');
-  if (nodfx !== content) { content = nodfx; changed = true; }
-
   // Remove duplicate H1 when frontmatter already has a title
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
   if (fmMatch && /^title:/m.test(fmMatch[1])) {
