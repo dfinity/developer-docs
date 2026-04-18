@@ -25,6 +25,8 @@ jobs:
         id: latest
         run: |
           LATEST=$(gh release view --repo caffeinelabs/motoko --json tagName -q .tagName)
+          # Normalize: ensure v prefix for consistency with VERSIONS file
+          [[ "$LATEST" == v* ]] || LATEST="v${LATEST}"
           echo "tag=$LATEST" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -38,11 +40,18 @@ jobs:
       - name: Check if update needed
         id: check
         run: |
-          if [ "${{ steps.latest.outputs.tag }}" = "${{ steps.current.outputs.version }}" ]; then
-            echo "Already at latest: ${{ steps.current.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.tag }}"
+          CURRENT="${{ steps.current.outputs.version }}"
+          BRANCH="infra/bump-motoko-${LATEST}"
+
+          if [ "$LATEST" = "$CURRENT" ]; then
+            echo "Already at latest: $CURRENT"
+            echo "needed=false" >> $GITHUB_OUTPUT
+          elif git ls-remote --exit-code origin "refs/heads/${BRANCH}" > /dev/null 2>&1; then
+            echo "Branch $BRANCH already exists — PR likely open, skipping"
             echo "needed=false" >> $GITHUB_OUTPUT
           else
-            echo "New release: ${{ steps.latest.outputs.tag }} (current: ${{ steps.current.outputs.version }})"
+            echo "New release: $LATEST (current: $CURRENT)"
             echo "needed=true" >> $GITHUB_OUTPUT
           fi
 
@@ -110,35 +119,33 @@ jobs:
           git push -u origin "$BRANCH"
 
           WARNINGS="${{ steps.warnings.outputs.body }}"
-          WARNINGS_SECTION=""
-          if [ -n "$WARNINGS" ]; then
-            WARNINGS_SECTION="## ⚠️ Warnings — manual review required
-
-${WARNINGS}
-
-"
-          fi
+          {
+            echo "## Summary"
+            echo ""
+            echo "Automated bump of \`.sources/motoko\` from \`${{ steps.current.outputs.version }}\` to \`${{ steps.latest.outputs.tag }}\`."
+            echo ""
+            echo "- Ran \`npm run sync:motoko\` — synced docs from the new release"
+            echo "- Build passed ✓"
+            echo ""
+            if [ -n "$WARNINGS" ]; then
+              echo "## ⚠️ Warnings — manual review required"
+              echo ""
+              echo "$WARNINGS"
+              echo ""
+            fi
+            echo "## Checklist"
+            echo ""
+            echo "- [ ] Review synced content for breaking changes"
+            echo "- [ ] Check [release notes](https://github.com/caffeinelabs/motoko/releases/tag/${{ steps.latest.outputs.tag }}) for API or syntax changes that affect hand-written docs"
+            echo "- [ ] Verify any new sections or renamed files are handled correctly"
+            echo ""
+            echo "## Sync recommendation"
+            echo ""
+            echo "\`sync from caffeinelabs/motoko doc/md\`"
+          } > /tmp/pr-body.md
 
           gh pr create \
             --title "chore: bump Motoko to ${{ steps.latest.outputs.tag }}" \
-            --body "$(cat <<EOF
-## Summary
-
-Automated bump of \`.sources/motoko\` from \`${{ steps.current.outputs.version }}\` to \`${{ steps.latest.outputs.tag }}\`.
-
-- Ran \`npm run sync:motoko\` — synced docs from the new release
-- Build passed ✓
-
-${WARNINGS_SECTION}## Checklist
-
-- [ ] Review synced content for breaking changes
-- [ ] Check [release notes](https://github.com/caffeinelabs/motoko/releases/tag/${{ steps.latest.outputs.tag }}) for API or syntax changes that affect hand-written docs
-- [ ] Verify any new sections or renamed files are handled correctly
-
-## Sync recommendation
-
-\`sync from caffeinelabs/motoko doc/md\`
-EOF
-)"
+            --body-file /tmp/pr-body.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
