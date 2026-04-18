@@ -5,14 +5,19 @@
  * 2. Rewrite relative links to match the flattened directory structure
  * 3. Redirect core library links to mops.one
  * 4. Remove _category_.yml and sub-section index.md files
+ * 5. Expand Docusaurus file-embed blocks (```lang file=<path>)
+ * 6. Convert Docusaurus remote-reference blocks (```md reference) to links
  */
 
 import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { resolve as resolvePath } from 'node:path';
+
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const MOTOKO_DIR = join(ROOT, 'docs', 'languages', 'motoko');
+const MOTOKO_SOURCE_MD = join(ROOT, '.sources', 'motoko', 'doc', 'md');
 
 // Build slug index: basename (without .md) -> absolute URL path
 const slugIndex = new Map();
@@ -96,14 +101,43 @@ function processFile(filePath) {
   const relPath = filePath.replace(ROOT + '/', '');
   let changed = false;
 
+  // Expand Docusaurus file-embed blocks: ```lang file=<relative-path>
+  // Path is relative to the source's reference/ dir inside the submodule
+  const fileEmbedRe = /^```\s*(\w+) file=([^\n]+)\n```/gm;
+  content = content.replace(fileEmbedRe, (match, lang, filePath) => {
+    const abs = resolvePath(join(MOTOKO_SOURCE_MD, 'reference'), filePath.trim());
+    if (existsSync(abs)) {
+      changed = true;
+      return `\`\`\`${lang}\n${readFileSync(abs, 'utf-8').trim()}\n\`\`\``;
+    }
+    console.warn(`  FILE-EMBED UNRESOLVED: ${filePath} in ${relPath}`);
+    return match;
+  });
+
+  // Convert Docusaurus remote-reference blocks to plain links
+  // ```md reference\n<url>\n```
+  const remoteRefRe = /^```\w+ reference\n(https?:\/\/[^\n]+)\n```/gm;
+  content = content.replace(remoteRefRe, (_, url) => {
+    changed = true;
+    return `See the full content at [${url}](${url}).`;
+  });
+
   // Normalize Starlight aside syntax
   // 1. Map unsupported types: info -> note, warn -> caution
-  // 2. Space-separated title -> bracket title: :::note Title -> :::note[Title]
+  // 2. Space-separated title (same line only) -> bracket title: :::note Title -> :::note[Title]
+  //    Use [^\S\n]+ to match only horizontal whitespace, not newlines, so the first body
+  //    line is not accidentally promoted to a title.
   const normalized = content
     .replace(/^:::info\b/gm, ':::note')
     .replace(/^:::warn\b/gm, ':::caution')
-    .replace(/^(:::(?:note|tip|caution|danger|warning))\s+([^\n\[]+)/gm, '$1[$2]');
+    .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
   if (normalized !== content) { content = normalized; changed = true; }
+
+  // Strip dfx-specific paragraphs from aside blocks (dfx is deprecated)
+  // Targets the "If using moc via dfx..." section in changelog
+  const dfxPara = /\n\nIf using `moc` via `dfx`[^\n]*\n```bash\n[^`]+```\n/g;
+  const nodfx = content.replace(dfxPara, '\n');
+  if (nodfx !== content) { content = nodfx; changed = true; }
 
   // Remove duplicate H1 when frontmatter already has a title
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
