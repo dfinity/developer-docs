@@ -149,7 +149,7 @@ git checkout main
 ## Key directories
 
 - `docs/` — All documentation (`.md` only). `src/content/docs/` symlinks here for Astro.
-- `docs/languages/motoko/` — Auto-synced from `caffeinelabs/motoko` (do not edit directly)
+- `docs/languages/motoko/` — Auto-synced from `caffeinelabs/motoko` (do not edit directly). Bumps are fully automated: a weekly workflow (`.github/workflows/sync-motoko.yml`) detects new releases, runs `npm run sync:motoko`, and opens a PR with the synced content already committed. No manual sync step needed — just review and merge the PR.
 - `docs/guides/tools/migrating-from-dfx.md` — Synced from `dfinity/icp-cli` (do not edit directly)
 - `.docs-plan/` — Planning artifacts, decisions, authoring workflow, review guidelines
 - `.sources/` — **Pinned submodules of upstream source repos** (see "Source material repos" below)
@@ -272,7 +272,8 @@ EOF
 | Submodule | Extra checks on bump |
 |---|---|
 | `portal` | Follow the `ic.did` checklist in "Synced files from submodules" below |
-| `motoko` / `motoko-core` | Check for changed/removed API signatures — grep all Motoko code blocks in docs |
+| `motoko` | **Automated** — `.github/workflows/sync-motoko.yml` opens a PR with the submodule bump, synced docs, and VERSIONS update already committed. Review the content diff and merge. Also check for changed/removed API signatures — grep all Motoko code blocks in docs. |
+| `motoko-core` | Check for changed/removed API signatures — grep all Motoko code blocks in docs |
 | `cdk-rs` | Check `ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros` API changes — grep all Rust code blocks |
 | `icp-cli` | Check for changed/removed commands or flags — grep all CLI examples |
 | `icskills` | Check for changed canister IDs or code patterns |
