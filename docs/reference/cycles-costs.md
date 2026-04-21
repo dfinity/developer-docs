@@ -2,7 +2,7 @@
 title: "Cycles Costs"
 description: "Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations"
 sidebar:
-  order: 6
+  order: 10
 ---
 
 Canisters pay for the resources they consume and operations they perform using **cycles**. The price of cycles is pegged to [XDR](glossary.md) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. As of May 22, 2025, 1 XDR ≈ $1.35 USD — this rate fluctuates; see the [IMF's XDR exchange data](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) for the current rate.

@@ -2,7 +2,7 @@
 title: "Management Canister"
 description: "API reference for the IC management canister (aaaaa-aa): canister lifecycle, signing, randomness, and more"
 sidebar:
-  order: 1
+  order: 5
 ---
 
 The management canister provides access to system features on the Internet Computer: creating and managing canisters, chain-key signing, HTTPS outcalls, randomness, and Bitcoin integration. It is not a real canister with its own state or Wasm module. It is a virtual canister implemented as part of the IC protocol itself.

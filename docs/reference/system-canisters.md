@@ -2,7 +2,7 @@
 title: "System Canisters"
 description: "NNS canisters, Internet Identity, ICP ledger, and other system-level canisters with canister IDs and interface references"
 sidebar:
-  order: 2
+  order: 6
 ---
 
 System canisters are canisters that provide necessary functions to the ICP network. They are controlled by the NNS (Network Nervous System) and upgraded via NNS proposals. Each system canister runs on a system subnet, which has special parameters — including no cycles costs — to guarantee uninterrupted operation. System canisters have static canister IDs that any project can call.

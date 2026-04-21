@@ -2,7 +2,7 @@
 title: "Execution Errors"
 description: "Reference for canister execution errors on ICP: causes, example messages, and how to fix each error."
 sidebar:
-  order: 8
+  order: 12
 ---
 
 A reference for errors returned when executing canisters on ICP. Each entry includes the error message, what causes it, and how to fix it.

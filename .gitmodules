@@ -52,3 +52,6 @@
 [submodule ".sources/ic-pub-key"]
 	path = .sources/ic-pub-key
 	url = git@github.com:dfinity/ic-pub-key.git
+[submodule ".sources/internetidentity"]
+	path = .sources/internetidentity
+	url = https://github.com/dfinity/internet-identity.git

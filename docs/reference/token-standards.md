@@ -2,7 +2,7 @@
 title: "Token Standards"
 description: "ICRC-1 fungible tokens, ICRC-2 approval, ICRC-3 transaction log, and ICRC-7 NFTs"
 sidebar:
-  order: 5
+  order: 9
 ---
 
 ICP uses the ICRC standard family for tokens and token-related operations. This page covers the token standards (ICRC-1 through ICRC-37) and wallet signer standards (ICRC-21 through ICRC-49) that developers need to build DeFi applications, wallets, and token integrations.

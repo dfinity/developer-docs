@@ -2,7 +2,7 @@
 title: "Application Canisters"
 description: "Reference for the asset canister, SNS canisters, LLM canister, and other application-layer canisters with their interfaces and canister IDs"
 sidebar:
-  order: 4
+  order: 8
 ---
 
 Application canisters are well-known canisters at the application layer of the Internet Computer that developers commonly integrate into their projects. Unlike [system canisters](system-canisters.md) (which govern the network) or [protocol canisters](protocol-canisters.md) (which provide platform infrastructure), application canisters implement higher-level functionality: hosting web frontends, governing dapps via DAO, and running AI inference.

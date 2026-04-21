@@ -210,6 +210,7 @@ For current release hashes, see `.sources/VERSIONS`.
 | `.sources/papi` | `dfinity/papi` | latest release | PAPI (payment API) — cycle payment interface used by the Chain Fusion Signer |
 | `.sources/ic-pub-key` | `dfinity/ic-pub-key` | latest release | `@dfinity/ic-pub-key` CLI tool for deriving public keys via the Chain Fusion Signer |
 | `.sources/dotskills` | `vincentkoc/dotskills` | `main` | Technical documentation skill (AGPL-3.0 — kept as submodule to avoid license mixing) |
+| `.sources/internetidentity` | `dfinity/internet-identity` | `main` | Internet Identity spec (`docs/ii-spec.mdx`), Candid interface (`src/internet_identity/internet_identity.did`) |
 
 ### Submodule initialization
 
@@ -284,6 +285,7 @@ EOF
 | `candid` | Check for spec changes affecting the Candid reference or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria |
+| `internetidentity` | Check for spec changes in `docs/ii-spec.mdx`; re-sync `internet-identity-spec.md`. Re-copy Candid interface from `src/internet_identity/internet_identity.did` if changed |
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |

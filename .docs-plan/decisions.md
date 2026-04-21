@@ -218,6 +218,13 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** The blanket `"Bash"` allow was false security — it looked like bash was controlled but actually everything was pre-approved. The new model: sandboxed commands run silently (low risk, OS-isolated), pre-approved bypass commands cover the specific cases that need it (submodule init, Dolt), and `bd init --force` still prompts (it destroys local DB state). Pre-gathering source material in the parent before launching worktrees was producing lower-quality content because it bypassed the skill research workflow; worktrees reading primary sources directly produces better output.
 **Alternatives considered:** Keep blanket `"Bash"` (no user visibility into bypasses), require user approval for `bd dolt push` (too noisy — fires on every status update), have parent collect review findings and present to user before posting (intentional pause, now removed for full autonomy)
 
+## 2026-04-21: Reference pages synced 1:1 from portal — ic-interface-spec, glossary, candid-spec
+
+**Context:** An audit revealed three reference pages had significant content gaps vs. the portal: `ic-interface-spec.md` (was a 355-line overview vs. 9,197-line portal spec), `glossary.md` (~39% of portal terms), and `candid-spec.md` (~57% of portal content). Since this site replaces the portal, missing content was a blocker.
+**Decision:** Replace all three pages with 1:1 content from the portal (dfinity/portal master branch), stripping only MDX/Docusaurus artifacts (import lines, JSX components). Banned `internetcomputer.org/docs` URLs updated to internal links or `developer-docs.icp.xyz`. The `dfx` mention in candid-ref replaced with `icp`. The ic-interface-spec changelog (previously a separate MDX import) is inlined at the end of the spec. These pages should be re-synced whenever the portal is bumped.
+**Rationale:** Portal is the current upstream for these specs; maintaining divergent summaries risks shipping incomplete/wrong reference docs to developers who were previously served by the portal. Full 1:1 sync is the only safe approach until an automated workflow is added.
+**Alternatives considered:** Automated portal sync workflow (deferred — manual sync is sufficient for now), keep overview pages and link out (insufficient — this site is the portal replacement)
+
 ## 2026-04-17: og-image.svg has a hardcoded domain
 
 **Context:** `public/og-image.svg` contains the site URL in its footer text (`DFINITY Foundation  ·  beta-docs.internetcomputer.org`). The build plugin converts the SVG to `og-image.png` at build time, so the hardcoded URL ends up baked into the PNG served as the social share preview.
