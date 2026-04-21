@@ -4,6 +4,7 @@ canisters:
       type: "@dfinity/asset-canister@v2.1.0"
       configuration:
         dir: dist
+        version: asset-canister-404-support
         build:
           - npm install
           - npm run build
