@@ -571,4 +571,4 @@ Link replacements from portal source (portal used absolute paths):
 Other changes from source:
   - `# The HTTP Gateway Protocol Specification` H1 removed (Starlight renders frontmatter title as H1; duplicate would produce two H1s)
 -->
-<!-- Upstream: dfinity/portal — docs/references/http-gateway-protocol-spec.md -->
+<!-- Upstream: sync from dfinity/portal — docs/references/http-gateway-protocol-spec.md -->

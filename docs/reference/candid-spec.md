@@ -825,4 +825,4 @@ Other changes from portal source:
   - `dfx` → `icp` (CLAUDE.md rule: never reference dfx)
   - `# Candid` H1 removed (Starlight renders frontmatter title as H1; duplicate would produce two H1s)
 -->
-<!-- Upstream: dfinity/portal — docs/references/candid-ref.mdx -->
+<!-- Upstream: sync from dfinity/portal — docs/references/candid-ref.mdx -->

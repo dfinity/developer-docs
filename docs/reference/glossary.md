@@ -729,4 +729,4 @@ stack-based virtual machine.
 Link replacements from portal source (portal used absolute paths):
   - /references/ic-interface-spec/ → ./ic-interface-spec.md (×2, link text shortened to "IC interface specification")
 -->
-<!-- Upstream: dfinity/portal — docs/references/glossary.mdx -->
+<!-- Upstream: sync from dfinity/portal — docs/references/glossary.mdx -->

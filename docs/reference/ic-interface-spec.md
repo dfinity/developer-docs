@@ -3670,7 +3670,7 @@ In the pruned tree, the `lookup_path` function behaves as follows:
 
 ## The HTTP Gateway protocol {#http-gateway}
 
-The HTTP Gateway Protocol has been moved into its own [specification](./http-gateway-protocol-spec.md).
+The HTTP Gateway Protocol has been moved into its own [specification](./http-gateway-spec.md).
 
 ## Abstract behavior {#abstract-behavior}
 
@@ -9667,8 +9667,8 @@ ic0.trap<es>(src : I, size : I) =
 
 <!--
 Link replacements from portal source (portal used absolute paths):
-  - https://internetcomputer.org/docs/home → / (site root)
-  - https://internetcomputer.org/docs/developer-docs/backend/resource-limits#resource-constraints-and-limits → ./cycles-costs.md (×3: max response size, max inter-canister call payload, Wasm stable memory limit)
-  - https://internetcomputer.org/docs/developer-docs/integrations/bitcoin/bitcoin-how-it-works → ../guides/chain-fusion/bitcoin.mdx
+  - internetcomputer.org [/docs]/home → / (site root)
+  - internetcomputer.org/.../resource-limits → ./cycles-costs.md (×3: max response size, max inter-canister call payload, Wasm stable memory limit)
+  - internetcomputer.org/.../bitcoin-how-it-works → ../guides/chain-fusion/bitcoin.mdx
 -->
-<!-- Upstream: dfinity/portal — docs/references/ic-interface-spec.md, docs/references/_attachments/interface-spec-changelog.md -->
+<!-- Upstream: sync from dfinity/portal — docs/references/ic-interface-spec.md, docs/references/_attachments/interface-spec-changelog.md -->

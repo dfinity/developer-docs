@@ -1471,15 +1471,15 @@ Therefore, the Internet Identity Canister intentionally does not implement `cani
 
 <!--
 Link replacements from source (source used absolute/relative paths pointing outside this site):
-  - https://internetcomputer.org/docs/current/references/ic-interface-spec#id-classes → ./ic-interface-spec.md#id-classes
-  - https://internetcomputer.org/docs/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec.md#canister-signatures (×2)
-  - https://internetcomputer.org/docs/current/references/ic-interface-spec#authentication → ./ic-interface-spec.md#authentication
-  - https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec.md#system-api-inspect-message
-  - https://internetcomputer.org/docs/current/references/http-gateway-protocol-spec → ./http-gateway-spec.md
-  - https://internetcomputer.org/docs/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec#id-classes → ./ic-interface-spec.md#id-classes
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec.md#canister-signatures (×2)
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec#authentication → ./ic-interface-spec.md#authentication
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec.md#system-api-inspect-message
+  - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-spec.md
+  - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
   - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md
 Other changes from source:
   - `# The Internet Identity Specification` H1 removed (Starlight renders frontmatter title as H1)
   - `<CodeBlock language="candid">{IICandidInterface}</CodeBlock>` replaced with inlined content from src/internet_identity/internet_identity.did
 -->
-<!-- Upstream: dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did -->
+<!-- Upstream: sync from dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did -->
