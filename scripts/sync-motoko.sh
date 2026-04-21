@@ -138,7 +138,15 @@ done
 
 # Post-process: remove duplicate H1s, rewrite relative links, clean up nav files
 echo "  Post-processing..."
-node scripts/postprocess-motoko.mjs
+POSTPROCESS_OUTPUT=$(node scripts/postprocess-motoko.mjs 2>&1)
+echo "$POSTPROCESS_OUTPUT"
+# Capture any FILE-EMBED warnings (unresolved or empty) into SYNC_WARNINGS
+while IFS= read -r line; do
+  case "$line" in
+    *"FILE-EMBED UNRESOLVED:"*) SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
+    *"FILE-EMBED EMPTY:"*)      SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
+  esac
+done <<< "$POSTPROCESS_OUTPUT"
 
 file_count=$(find "$TARGET_DIR" -name '*.md' | wc -l | tr -d ' ')
 echo ""

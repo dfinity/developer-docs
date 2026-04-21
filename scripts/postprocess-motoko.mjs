@@ -5,8 +5,20 @@
  * 2. Rewrite relative links to match the flattened directory structure
  * 3. Redirect core library links to mops.one
  * 4. Remove _category_.yml and sub-section index.md files
- * 5. Expand Docusaurus file-embed blocks (```lang file=<path>)
+ * 5. Expand Docusaurus file-embed blocks (```lang file=<path>[#L<n>-L<m>])
  * 6. Convert Docusaurus remote-reference blocks (```md reference) to links
+ * 7. Normalize Starlight aside syntax
+ *
+ * Docusaurus patterns handled vs. left as-is:
+ *   file=<path>        EXPANDED — inline file content (step 5). Supports extra attrs
+ *                      (no-repl, title=) and #L<n>-L<m> line ranges.
+ *   title="<name>"     LEFT — Starlight renders code block titles natively.
+ *   name=<label>       LEFT — Docusaurus named-block marker; Starlight ignores the
+ *                      attribute but renders the code content correctly.
+ *   _include=<label>   LEFT — Docusaurus cross-block include; Starlight ignores the
+ *                      attribute. Each _include= block carries its own standalone
+ *                      content so output is readable, just without the prepended
+ *                      definition from the name= block.
  */
 
 import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
@@ -126,8 +138,12 @@ function processFile(filePath) {
         const end = parseInt(lineEnd, 10);
         fileContent = lines.slice(start - 1, end).join('\n');
       }
+      const trimmed = fileContent.trim();
+      if (!trimmed) {
+        console.warn(`  FILE-EMBED EMPTY: ${fp}#L${lineStart}-L${lineEnd} in ${relPath} — line range resolved to empty content (upstream off-by-one?)`);
+      }
       changed = true;
-      return `\`\`\`${lang}\n${fileContent.trim()}\n\`\`\``;
+      return `\`\`\`${lang}\n${trimmed}\n\`\`\``;
     }
     console.warn(`  FILE-EMBED UNRESOLVED: ${fp}${lineStart ? `#L${lineStart}-L${lineEnd}` : ''} in ${relPath}`);
     return match;
