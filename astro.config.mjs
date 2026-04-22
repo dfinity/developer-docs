@@ -30,6 +30,28 @@ export default defineConfig({
         {
           tag: "link",
           attrs: {
+            rel: "preconnect",
+            href: "https://fonts.googleapis.com",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "preconnect",
+            href: "https://fonts.gstatic.com",
+            crossorigin: "anonymous",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600&display=swap",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
             rel: "llms",
             href: "/llms.txt",
             type: "text/plain",

@@ -1,285 +1,681 @@
 /*
- * ICP Developer Docs — Custom Theme
+ * ICP Developer Docs — Direction A ("Operator") Theme
  *
- * Brand alignment with internetcomputer.org:
- *   - Primary accent: #3b00b9 (ICP purple)
- *   - Font: Inter
- *   - Dark-first, uniform black background
- *   - White-on-black text hierarchy (no colorful accents)
+ * Cloudflare/Supabase-inspired. Clean, confident, information-dense.
+ * Accent: #00b4d8 (cyan). Dark-first, light toggle.
+ * Font: Inter (body) + JetBrains Mono (code/mono).
  *
- * The marketing site uses a white-alpha transparency system on pure black.
- * Sidebar, nav, and content all share the same black background —
- * there is no visible two-tone panel effect.
- *
- * Accent usage: The marketing site keeps purple very subtle (glows, badges).
- * Primary navigation and text use white hierarchy only. We keep the purple
- * accent for interactive elements (links, active states) but tone it down.
+ * Mapped from the Direction A design tokens (docs-handoff.md §6).
  */
 
-/* ── Font ─────────────────────────────────────────────────── */
+/* ── Fonts ─────────────────────────────────────────────────── */
 
 :root {
-	--sl-font: 'Inter', var(--sl-font-system);
-	--sl-content-width: 55rem;
+  --sl-font: 'Inter', system-ui, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+
+  /* Direction A type scale */
+  --da-body-size: 14.5px;
+  --da-body-line: 1.65;
+  --da-small-size: 12.5px;
+  --da-mono-size: 12.5px;
+
+  /* Body column cap per Direction A spec: 72ch */
+  --sl-content-width: 52rem; /* ~72ch at 14.5px ≈ 720px ≈ 52rem */
 }
 
-/* ── Dark mode (default) ──────────────────────────────────── */
+/* ── Dark mode (default) — Direction A tokens ─────────────── */
 
 :root {
-	/* Accent — toned-down purple, closer to the marketing site's subtle usage */
-	--sl-color-accent-low: hsl(259, 40%, 10%);
-	--sl-color-accent: hsl(259, 60%, 60%);
-	--sl-color-accent-high: hsl(265, 60%, 75%);
+  /* Accent — cyan #00b4d8 */
+  --sl-color-accent-low: #001e28;
+  --sl-color-accent: #00b4d8;
+  --sl-color-accent-high: #38d0ef;
 
-	/* Gray scale — derived from marketing site's white-alpha on #000 */
-	--sl-color-white: #ffffff;
-	--sl-color-gray-1: #cccccc;  /* white-80 */
-	--sl-color-gray-2: #a3a3a3;  /* white-64 — body text */
-	--sl-color-gray-3: #7a7a7a;  /* white-48 — secondary text */
-	--sl-color-gray-4: #525252;  /* white-32 — muted */
-	--sl-color-gray-5: #1f1f1f;  /* white-12 — subtle borders, inline code bg */
-	--sl-color-gray-6: #0a0a0a;  /* near-black — sidebar/nav blend with bg */
-	--sl-color-black: #000000;   /* page background */
+  /* Gray scale from Direction A */
+  --sl-color-white: #e8eaed;
+  --sl-color-gray-1: #c9cdd4;
+  --sl-color-gray-2: #a8adb5;
+  --sl-color-gray-3: #6b7078;
+  --sl-color-gray-4: #3a3f46;
+  --sl-color-gray-5: #22262c;
+  --sl-color-gray-6: #161a1f;
+  --sl-color-gray-7: #111418;
+  --sl-color-black: #0b0d10;
 
-	/* Uniform dark background — no two-tone sidebar/nav */
-	--sl-color-bg-nav: var(--sl-color-black);
-	--sl-color-bg-sidebar: var(--sl-color-black);
+  /* Background tokens matching Direction A */
+  --da-bg: #0b0d10;
+  --da-bg-2: #111418;
+  --da-bg-3: #161a1f;
+  --da-border: #22262c;
+  --da-border-strong: #2c3138;
+  --da-text: #e8eaed;
+  --da-text-2: #a8adb5;
+  --da-text-3: #6b7078;
+  --da-accent: #00b4d8;
+  --da-accent-soft: rgba(0, 180, 216, 0.10);
+  --da-code-bg: #0e1114;
+  --da-code-border: #1e2228;
 
-	/* Subtle hairlines (white-8 equivalent) */
-	--sl-color-hairline-light: rgba(255, 255, 255, 0.08);
-	--sl-color-hairline: rgba(255, 255, 255, 0.12);
-	--sl-color-hairline-shade: rgba(255, 255, 255, 0.04);
+  /* Starlight background mapping */
+  --sl-color-bg-nav: var(--da-bg-2);
+  --sl-color-bg-sidebar: var(--da-bg);
 
-	/* Semantic hues */
-	--sl-hue-purple: 259;
+  /* Hairlines */
+  --sl-color-hairline-light: var(--da-border);
+  --sl-color-hairline: var(--da-border);
+  --sl-color-hairline-shade: rgba(34, 38, 44, 0.6);
 }
 
-/* Widen content only when screen has room for left sidebar + content + TOC.
-   Formula: viewport ≥ content-width + 2 × sidebar-width (18.75rem each) + margin.
-   - 65rem content needs ~105rem viewport
-   - 75rem content needs ~115rem viewport */
+/* Wider content on larger viewports */
 @media (min-width: 105rem) {
-	:root {
-		--sl-content-width: 65rem;
-	}
+  :root { --sl-content-width: 58rem; }
 }
-@media (min-width: 115rem) {
-	:root {
-		--sl-content-width: 75rem;
-	}
-}
-
-/* ── Hero button hover states ────────────────────────────── */
-
-.sl-link-button {
-	transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
-}
-
-.sl-link-button.primary:hover {
-	filter: brightness(1.15);
-	box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
-}
-
-.sl-link-button.secondary:hover {
-	background: rgba(255, 255, 255, 0.08);
-	border-color: rgba(255, 255, 255, 0.4);
-}
-
-:root[data-theme='light'] .sl-link-button.secondary:hover {
-	background: rgba(0, 0, 0, 0.06);
-	border-color: rgba(0, 0, 0, 0.4);
-}
-
-/* ── Landing page hero — tighten spacing ─────────────────── */
-
-/* Reduce hero vertical padding so skills banner is visible without scrolling */
-.hero {
-	padding-block: clamp(2rem, 6vmin, 4rem) !important;
-}
-
-/* Cap the hero title size so it doesn't wrap awkwardly on mid-width screens */
-.hero h1 {
-	font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 4vw), var(--sl-text-5xl)) !important;
-}
-
-/* Tighten the tagline — less gap between "Tamperproof..." and the description */
-.hero .tagline br + br {
-	display: block;
-	content: '';
-	margin-top: 0.5rem;
-}
-
-/* ── Skills banner (landing page) ─────────────────────────── */
-
-.skills-banner {
-	background: #181818;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	border-radius: 1rem;
-	padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
-	text-align: center;
-	margin-block: 0 2rem;
-}
-
-.skills-banner h2 {
-	font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-	font-weight: 600;
-	color: #fff;
-	margin: 0 0 0.5rem;
-	border: none;
-}
-
-.skills-banner p {
-	color: rgba(255, 255, 255, 0.64);
-	font-size: clamp(0.85rem, 1.2vw, 1rem);
-	max-width: 42rem;
-	margin: 0 auto 1.25rem;
-	line-height: 1.6;
-}
-
-.skills-banner .skills-actions {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 1rem;
-	flex-wrap: wrap;
-}
-
-.skills-banner .skills-primary {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.625rem;
-	background: #fff;
-	border: 1px solid rgba(255, 255, 255, 0.9);
-	border-radius: 0.5rem;
-	padding: 0.6rem 1.25rem;
-	font-family: inherit;
-	font-size: 0.9rem;
-	font-weight: 500;
-	color: #111;
-	cursor: pointer;
-	transition: background 0.15s;
-}
-
-.skills-banner .skills-primary:hover {
-	background: rgba(255, 255, 255, 0.88);
-}
-
-.skills-banner .skills-primary svg {
-	width: 1rem;
-	height: 1rem;
-	flex-shrink: 0;
-	opacity: 0.6;
-}
-
-.skills-banner .skills-cta {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	background: rgba(255, 255, 255, 0.08);
-	border: 1px solid rgba(255, 255, 255, 0.16);
-	border-radius: 0.5rem;
-	padding: 0.6rem 1.25rem;
-	color: #fff;
-	font-size: 0.9rem;
-	font-weight: 500;
-	text-decoration: none;
-	transition: background 0.15s, border-color 0.15s;
-}
-
-.skills-banner .skills-cta:hover {
-	background: rgba(255, 255, 255, 0.14);
-	border-color: rgba(255, 255, 255, 0.24);
-}
-
-.skills-banner .skills-cta .arrow-icon {
-	width: 0.85rem;
-	height: 0.85rem;
-}
-
-:root[data-theme='light'] .skills-banner {
-	background: #f0f0f0;
-	border-color: rgba(0, 0, 0, 0.08);
-}
-
-:root[data-theme='light'] .skills-banner h2 {
-	color: #1a1a1a;
-}
-
-:root[data-theme='light'] .skills-banner p {
-	color: rgba(0, 0, 0, 0.6);
-}
-
-:root[data-theme='light'] .skills-banner .skills-primary {
-	background: #1a1a1a;
-	border-color: rgba(0, 0, 0, 0.85);
-	color: #fff;
-}
-
-:root[data-theme='light'] .skills-banner .skills-primary:hover {
-	background: #333;
-}
-
-:root[data-theme='light'] .skills-banner .skills-cta {
-	background: rgba(0, 0, 0, 0.06);
-	border-color: rgba(0, 0, 0, 0.16);
-	color: #1a1a1a;
-}
-
-:root[data-theme='light'] .skills-banner .skills-cta:hover {
-	background: rgba(0, 0, 0, 0.1);
-}
-
-/* ── External LinkCard indicator ─────────────────────────── */
-
-/* Replace → with ↗ for LinkCards that open in a new tab (external URLs) */
-.sl-link-card:has(a[target="_blank"]) .icon {
-	display: none;
-}
-
-.sl-link-card:has(a[target="_blank"])::after {
-	content: '↗';
-	color: var(--sl-color-gray-3);
-	font-size: 1.333em;
-	line-height: 1;
-	align-self: center;
-}
-
-.sl-link-card:has(a[target="_blank"]):hover::after {
-	color: var(--sl-color-white);
-}
-
-/* ── Agent signaling ──────────────────────────────────────── */
-
-/* Visually hidden but present in DOM for HTML-to-markdown converters.
-   Uses clip-rect (not display:none) per agentdocsspec.com. */
-.agent-signaling {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
+@media (min-width: 120rem) {
+  :root { --sl-content-width: 64rem; }
 }
 
 /* ── Light mode ───────────────────────────────────────────── */
 
 :root[data-theme='light'] {
-	/* Accent — exact brand purple #3b00b9 = hsl(259, 100%, 36%) */
-	--sl-color-accent-high: hsl(259, 100%, 28%);
-	--sl-color-accent: hsl(259, 100%, 36%);
-	--sl-color-accent-low: hsl(259, 80%, 93%);
+  --sl-color-accent-high: #005f73;
+  --sl-color-accent: #0077a8;
+  --sl-color-accent-low: #e0f4f8;
 
-	/* Gray scale — inverted for light backgrounds */
-	--sl-color-white: #1a1a1a;
-	--sl-color-gray-1: #333333;
-	--sl-color-gray-2: #4d4d4d;
-	--sl-color-gray-3: #808080;
-	--sl-color-gray-4: #999999;
-	--sl-color-gray-5: #e6e6e6;
-	--sl-color-gray-6: #f5f5f5;
-	--sl-color-gray-7: #fafafa;
-	--sl-color-black: #ffffff;
+  --sl-color-white: #1a1a1a;
+  --sl-color-gray-1: #2c2c2c;
+  --sl-color-gray-2: #4a4a4a;
+  --sl-color-gray-3: #737373;
+  --sl-color-gray-4: #a3a3a3;
+  --sl-color-gray-5: #e7e5e0;
+  --sl-color-gray-6: #f4f4f2;
+  --sl-color-gray-7: #f9f9f7;
+  --sl-color-black: #fbfbfa;
+
+  --da-bg: #fbfbfa;
+  --da-bg-2: #ffffff;
+  --da-bg-3: #f4f4f2;
+  --da-border: #e7e5e0;
+  --da-border-strong: #d6d3cc;
+  --da-text: #1a1a1a;
+  --da-text-2: #5a5a57;
+  --da-text-3: #87857f;
+  --da-accent: #0077a8;
+  --da-accent-soft: rgba(0, 119, 168, 0.08);
+  --da-code-bg: #f7f6f2;
+  --da-code-border: #e7e5e0;
+
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #fbfbfa;
+}
+
+/* ── Base typography improvements ────────────────────────── */
+
+.sl-markdown-content {
+  font-size: var(--da-body-size);
+  line-height: var(--da-body-line);
+}
+
+/* Heading scale per Direction A spec */
+.sl-markdown-content h1 { font-size: 2rem; letter-spacing: -0.04em; font-weight: 600; line-height: 1.2; }
+.sl-markdown-content h2 { font-size: 1.25rem; letter-spacing: -0.015em; font-weight: 600; line-height: 1.4; }
+.sl-markdown-content h3 { font-size: 1rem; letter-spacing: 0; font-weight: 600; line-height: 1.5; }
+
+/* Code blocks — Direction A mono style */
+.sl-markdown-content :not(pre) > code,
+.sl-markdown-content code {
+  font-size: var(--da-mono-size);
+  font-family: var(--sl-font-mono);
+  background: var(--da-code-bg);
+  border: 1px solid var(--da-code-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--da-accent);
+}
+
+.expressive-code pre,
+.expressive-code code {
+  font-family: var(--sl-font-mono) !important;
+  font-size: var(--da-mono-size) !important;
+}
+
+/* ── Top nav — Direction A top bar ───────────────────────── */
+
+/* Nav bar border bottom */
+header.header {
+  border-bottom: 1px solid var(--da-border);
+  background: var(--da-bg-2);
+}
+
+/* ── Sidebar — Direction A styling ───────────────────────── */
+
+/* Sidebar group label */
+.sidebar-pane .group-label span,
+.sidebar-pane details > summary > span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--da-text-3);
+}
+
+/* Active nav item — left border indicator */
+.sidebar-pane a[aria-current="page"] {
+  color: var(--da-accent);
+  background: var(--da-accent-soft);
+  border-left: 2px solid var(--da-accent);
+  padding-left: calc(var(--sl-sidebar-item-padding-inline) - 2px);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+
+.sl-link-button {
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sl-link-button.primary {
+  background: var(--da-accent);
+  border-color: var(--da-accent);
+  color: #fff;
+}
+
+.sl-link-button.primary:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 0 14px rgba(0, 180, 216, 0.3);
+}
+
+.sl-link-button.secondary:hover {
+  background: var(--da-border);
+  border-color: var(--da-border-strong);
+}
+
+/* ── Landing page: hero ───────────────────────────────────── */
+
+/* Hide the default Starlight hero since we're building a custom one */
+.hero {
+  display: none !important;
+}
+
+/* Direction A hero wrapper */
+.da-hero {
+  padding: 56px 64px 40px;
+  border-bottom: 1px solid var(--da-border);
+  background: linear-gradient(180deg, var(--da-bg-2), var(--da-bg));
+  margin: 0 calc(-1 * var(--sl-content-pad-x));
+}
+
+.da-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.da-hero-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--da-accent);
+  font-weight: 600;
+  margin-bottom: 14px;
+  font-family: var(--sl-font-mono);
+}
+
+.da-hero h1 {
+  font-size: 2.75rem;
+  line-height: 1.08;
+  margin: 0 0 18px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  max-width: 820px;
+  text-wrap: balance;
+}
+
+.da-hero-sub {
+  font-size: 16px;
+  color: var(--da-text-2);
+  max-width: 680px;
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+/* Install command block */
+.da-install {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.da-install-cmd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--da-code-bg);
+  border: 1px solid var(--da-code-border);
+  border-radius: 8px;
+  font-family: var(--sl-font-mono);
+  font-size: 13px;
+  min-width: 380px;
+  color: var(--da-text);
+  position: relative;
+}
+
+.da-install-cmd .prompt {
+  color: var(--da-text-3);
+  font-family: var(--sl-font-mono);
+  user-select: none;
+}
+
+.da-install-cmd .cmd-text {
+  flex: 1;
+  color: var(--da-text);
+}
+
+.da-install-cmd .cmd-keyword {
+  color: var(--da-accent);
+}
+
+.da-install-try {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--da-border-strong);
+  background: var(--da-bg-2);
+  color: var(--da-text);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.da-install-try:hover {
+  background: var(--da-bg-3);
+  border-color: var(--da-accent);
+}
+
+.da-install-try svg {
+  color: var(--da-accent);
+  fill: var(--da-accent);
+}
+
+/* ── Landing: "Choose your path" ─────────────────────────── */
+
+.da-section {
+  margin: 0 calc(-1 * var(--sl-content-pad-x));
+  padding: 40px 64px;
+}
+
+.da-section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.da-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.da-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--da-text-3);
+  border: none;
+}
+
+.da-paths {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 72rem) {
+  .da-paths { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 40rem) {
+  .da-paths { grid-template-columns: 1fr; }
+  .da-hero { padding: 40px 24px 32px; }
+  .da-section { padding: 32px 24px; }
+  .da-install-cmd { min-width: 0; width: 100%; }
+}
+
+.da-path-card {
+  padding: 18px;
+  border: 1px solid var(--da-border);
+  border-radius: 10px;
+  background: var(--da-bg-2);
+  cursor: pointer;
+  color: inherit;
+  display: block;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.da-path-card:hover {
+  border-color: var(--da-accent);
+  background: var(--da-bg-3);
+}
+
+.da-path-link {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  z-index: 0;
+}
+
+.da-path-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.da-path-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: var(--da-accent-soft);
+  color: var(--da-accent);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.da-path-time {
+  font-size: 11px;
+  color: var(--da-text-3);
+  font-family: var(--sl-font-mono);
+  margin-left: auto;
+}
+
+.da-path-label {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--da-text);
+}
+
+.da-path-sub {
+  font-size: 12px;
+  color: var(--da-text-2);
+  line-height: 1.5;
+}
+
+/* ── Landing: Browse documentation grid ──────────────────── */
+
+.da-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--da-border);
+  border: 1px solid var(--da-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@media (max-width: 60rem) {
+  .da-doc-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 40rem) {
+  .da-doc-grid { grid-template-columns: 1fr; }
+}
+
+.da-doc-cell {
+  background: var(--da-bg-2);
+  padding: 20px;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: background 0.15s;
+}
+
+.da-doc-cell:hover {
+  background: var(--da-bg-3);
+}
+
+.da-doc-cell-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 10px;
+  background: var(--da-accent);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-family: var(--sl-font-mono);
+}
+
+.da-doc-cell-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.da-doc-cell-icon {
+  color: var(--da-accent);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.da-doc-cell-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--da-text);
+}
+
+.da-doc-cell-link {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--da-text);
+  text-decoration: none;
+  position: relative;
+}
+
+.da-doc-cell-link::after {
+  content: '';
+  position: absolute;
+  inset: -20px -20px -20px -20px;
+}
+
+.da-doc-cell:hover .da-doc-cell-link {
+  color: var(--da-accent);
+}
+
+.da-doc-cell-count {
+  font-size: 11px;
+  color: var(--da-text-3);
+  font-family: var(--sl-font-mono);
+  margin-left: auto;
+}
+
+.da-doc-cell-pages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.da-doc-cell-page {
+  font-size: 12.5px;
+  color: var(--da-text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.da-doc-cell-page svg {
+  color: var(--da-text-3);
+  flex-shrink: 0;
+}
+
+/* ── Landing: Agent strip ─────────────────────────────────── */
+
+.da-agent-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--da-bg-2);
+  border: 1px solid var(--da-border);
+}
+
+@media (max-width: 56rem) {
+  .da-agent-strip { grid-template-columns: 1fr; gap: 20px; }
+}
+
+.da-agent-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--da-accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-family: var(--sl-font-mono);
+}
+
+.da-agent-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.015em;
+}
+
+.da-agent-desc {
+  font-size: 13px;
+  color: var(--da-text-2);
+  line-height: 1.6;
+}
+
+.da-agent-code {
+  background: var(--da-code-bg);
+  border: 1px solid var(--da-code-border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--sl-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--da-text);
+}
+
+.da-agent-code .comment { color: var(--da-text-3); }
+.da-agent-code .kw { color: var(--da-accent); }
+.da-agent-code-indent { padding-left: 16px; }
+
+/* CTA button */
+.da-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  background: var(--da-accent);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s;
+}
+
+.da-cta-btn:hover {
+  filter: brightness(1.12);
+}
+
+/* ── Page footer: "Was this helpful?" ────────────────────── */
+
+.da-feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.da-feedback-label {
+  color: var(--da-text-2);
+}
+
+.da-feedback-btn {
+  padding: 4px 14px;
+  border: 1px solid var(--da-border);
+  background: transparent;
+  color: var(--da-text-2);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.da-feedback-btn:hover {
+  border-color: var(--da-accent);
+  color: var(--da-accent);
+  background: var(--da-accent-soft);
+}
+
+/* ── Callout — Direction A left-border style ──────────────── */
+
+.starlight-aside {
+  border-left: 3px solid var(--da-accent);
+  border-radius: 4px;
+  padding: 12px 16px;
+  background: var(--da-accent-soft);
+  font-size: 13px;
+}
+
+.starlight-aside--caution { border-color: #d97706; background: rgba(217, 119, 6, 0.08); }
+.starlight-aside--danger  { border-color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+.starlight-aside--tip     { border-color: #10b981; background: rgba(16, 185, 129, 0.08); }
+
+/* ── Agent signaling ──────────────────────────────────────── */
+
+.agent-signaling {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── External LinkCard indicator ─────────────────────────── */
+
+.sl-link-card:has(a[target="_blank"]) .icon {
+  display: none;
+}
+
+.sl-link-card:has(a[target="_blank"])::after {
+  content: '↗';
+  color: var(--sl-color-gray-3);
+  font-size: 1.333em;
+  line-height: 1;
+  align-self: center;
+}
+
+.sl-link-card:has(a[target="_blank"]):hover::after {
+  color: var(--sl-color-white);
 }

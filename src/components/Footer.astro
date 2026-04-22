@@ -4,9 +4,20 @@ import LastUpdated from 'virtual:starlight/components/LastUpdated';
 import Pagination from 'virtual:starlight/components/Pagination';
 import config from 'virtual:starlight/user-config';
 import { Icon } from '@astrojs/starlight/components';
+
+const { entry } = Astro.props;
+const isLanding = entry?.id === 'index' || Astro.url.pathname === '/';
 ---
 
 <footer class="sl-flex">
+  {!isLanding && (
+    <div class="da-feedback" aria-label="Page feedback">
+      <span class="da-feedback-label">Was this page helpful?</span>
+      <button class="da-feedback-btn" data-feedback="yes" aria-label="Yes, this page was helpful">Yes</button>
+      <button class="da-feedback-btn" data-feedback="no" aria-label="No, this page needs improvement">No</button>
+    </div>
+  )}
+
   <div class="meta sl-flex">
     <EditLink />
     <LastUpdated />
@@ -31,6 +42,18 @@ import { Icon } from '@astrojs/starlight/components';
   </div>
 </footer>
 
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.da-feedback-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.feedback;
+      const parent = btn.closest('.da-feedback');
+      if (parent) {
+        parent.innerHTML = `<span style="font-size:13px;color:var(--da-text-2)">Thanks for the feedback${val === 'yes' ? ' 👍' : ' — we\'ll improve this page'}.</span>`;
+      }
+    });
+  });
+</script>
+
 <style>
   @layer starlight.core {
     footer {
@@ -41,7 +64,7 @@ import { Icon } from '@astrojs/starlight/components';
       gap: 0.75rem 3rem;
       justify-content: space-between;
       flex-wrap: wrap;
-      margin-top: 3rem;
+      margin-top: 1rem;
       font-size: var(--sl-text-sm);
       color: var(--sl-color-gray-3);
     }

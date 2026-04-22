@@ -1,0 +1,235 @@
+---
+// Direction A landing: hero, paths, doc-grid, agent strip
+---
+
+<!-- Hero -->
+<div class="da-hero">
+  <div class="da-hero-inner">
+    <div class="da-hero-label">ICP · developer platform</div>
+    <h1 class="da-hero-h1">Ship full-stack apps on a public network.<br/>No cloud. No bridges. No keepers.</h1>
+    <p class="da-hero-sub">
+      Canisters are smart contracts that serve HTTP, call Bitcoin and Ethereum natively,
+      and schedule their own execution. This is the official developer documentation.
+    </p>
+    <div class="da-install">
+      <div class="da-install-cmd">
+        <span class="prompt">$</span>
+        <span class="cmd-text"><span class="cmd-keyword">npm</span> install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm</span>
+      </div>
+      <a class="da-install-try" href="https://icp.ninja/projects/hello-world">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M5 3l8 5-8 5V3z"/></svg>
+        Try in browser
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Choose your path -->
+<div class="da-section">
+  <div class="da-section-inner">
+    <div class="da-section-header">
+      <h2 class="da-section-title">Choose your path</h2>
+      <span class="da-section-hint">Not sure? Start with <a href="/getting-started/quickstart/">Quickstart</a></span>
+    </div>
+    <div class="da-paths">
+      <div class="da-path-card">
+        <a class="da-path-link" href="/languages/rust/" aria-label="I know Rust"></a>
+        <div class="da-path-card-head">
+          <div class="da-path-icon">Rs</div>
+          <span class="da-path-time">~15 min</span>
+        </div>
+        <div class="da-path-label">I know Rust</div>
+        <div class="da-path-sub">Use the Rust CDK. Stable structures, ic_cdk, PocketIC.</div>
+      </div>
+      <div class="da-path-card">
+        <a class="da-path-link" href="/languages/motoko/" aria-label="Learn Motoko"></a>
+        <div class="da-path-card-head">
+          <div class="da-path-icon">Mo</div>
+          <span class="da-path-time">~30 min</span>
+        </div>
+        <div class="da-path-label">Learn Motoko</div>
+        <div class="da-path-sub">ICP-native language. Actors, orthogonal persistence.</div>
+      </div>
+      <div class="da-path-card">
+        <a class="da-path-link" href="/guides/chain-fusion/" aria-label="Chain Fusion"></a>
+        <div class="da-path-card-head">
+          <div class="da-path-icon">⛓</div>
+          <span class="da-path-time">~20 min</span>
+        </div>
+        <div class="da-path-label">Chain Fusion</div>
+        <div class="da-path-sub">Bitcoin, Ethereum, Solana from a canister.</div>
+      </div>
+      <div class="da-path-card">
+        <a class="da-path-link" href="/guides/tools/ai-coding-agents/" aria-label="Ship with an agent"></a>
+        <div class="da-path-card-head">
+          <div class="da-path-icon">🤖</div>
+          <span class="da-path-time">~5 min</span>
+        </div>
+        <div class="da-path-label">Ship with an agent</div>
+        <div class="da-path-sub">Give Claude, Cursor, or Copilot ICP skills.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Browse documentation -->
+<div class="da-section" style="padding-top:0;">
+  <div class="da-section-inner">
+    <h2 class="da-section-title" style="margin-bottom:20px;">Browse documentation</h2>
+    <div class="da-doc-grid">
+      <div class="da-doc-cell">
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8.5 2L4 9h3.5L7 14l4.5-7H8l.5-5z"/></svg>
+          <a class="da-doc-cell-link" href="/getting-started/quickstart/">Getting Started</a>
+          <span class="da-doc-cell-count">4</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>Install the CLI</li>
+          <li>Your first canister</li>
+          <li>Deploy to mainnet</li>
+          <li>Project structure</li>
+        </ul>
+      </div>
+      <div class="da-doc-cell">
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3h5a2 2 0 012 2v8a2 2 0 00-2-2H3V3zM13 3H8a2 2 0 00-2 2v8a2 2 0 012-2h5V3z"/></svg>
+          <a class="da-doc-cell-link" href="/guides/">Guides</a>
+          <span class="da-doc-cell-count">42</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>HTTPS outcalls</li>
+          <li>Internet Identity</li>
+          <li>Bitcoin integration</li>
+          <li>Testing with PocketIC</li>
+        </ul>
+      </div>
+      <div class="da-doc-cell">
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2l5.5 3v6L8 14l-5.5-3V5L8 2zM2.5 5L8 8m0 0l5.5-3M8 8v6"/></svg>
+          <a class="da-doc-cell-link" href="/concepts/">Concepts</a>
+          <span class="da-doc-cell-count">13</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>Chain-key cryptography</li>
+          <li>Orthogonal persistence</li>
+          <li>Reverse gas model</li>
+          <li>Canisters</li>
+        </ul>
+      </div>
+      <div class="da-doc-cell">
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 5a1 1 0 011-1h3l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"/></svg>
+          <a class="da-doc-cell-link" href="/languages/">Languages</a>
+          <span class="da-doc-cell-count">2</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>Rust CDK</li>
+          <li>Motoko language reference</li>
+          <li>Stable structures</li>
+        </ul>
+      </div>
+      <div class="da-doc-cell">
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2L4 14M12 2l-2 12M2 6h12M2 10h12"/></svg>
+          <a class="da-doc-cell-link" href="/reference/">Reference</a>
+          <span class="da-doc-cell-count">12</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>Management canister</li>
+          <li>Cycles costs</li>
+          <li>Token standards (ICRC-1, 2, 3, 7)</li>
+          <li>Execution errors</li>
+        </ul>
+      </div>
+      <div class="da-doc-cell">
+        <span class="da-doc-cell-badge">NEW</span>
+        <div class="da-doc-cell-head">
+          <svg class="da-doc-cell-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="10" height="8" rx="2"/><circle cx="6.5" cy="9" r=".8" fill="currentColor" stroke="none"/><circle cx="9.5" cy="9" r=".8" fill="currentColor" stroke="none"/><path d="M8 2v3M5.5 3L8 5l2.5-2"/></svg>
+          <a class="da-doc-cell-link" href="/guides/tools/ai-coding-agents/">For AI agents</a>
+          <span class="da-doc-cell-count">6</span>
+        </div>
+        <ul class="da-doc-cell-pages">
+          <li>llms.txt index</li>
+          <li>ICP skills for Claude &amp; Cursor</li>
+          <li>MCP server</li>
+          <li>Code-gen patterns</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent strip -->
+<div class="da-section" style="padding-top:0;padding-bottom:56px;">
+  <div class="da-section-inner">
+    <div class="da-agent-strip">
+      <div>
+        <div class="da-agent-label">For coding agents</div>
+        <div class="da-agent-title">Your agent can read these docs natively.</div>
+        <p class="da-agent-desc">
+          Every page exposes structured context at <code>/llms.txt</code>. Paste the URL into
+          Claude, Cursor, or Copilot and your agent picks up canister patterns, CLI commands,
+          and Candid conventions.
+        </p>
+        <button class="da-cta-btn" id="skills-give-btn">
+          <span id="skills-give-label">Give your agent ICP skills</span>
+        </button>
+      </div>
+      <div class="da-agent-code">
+        <div><span class="comment"># Give your agent ICP skills</span></div>
+        <div><span class="kw">claude</span> mcp add icp \</div>
+        <div class="da-agent-code-indent">https://mcp.internetcomputer.org</div>
+        <div><span class="comment"># Or load the full doc index</span></div>
+        <div><span class="kw">curl</span> https://beta-docs.internetcomputer.org/llms.txt</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const btn = document.getElementById('skills-give-btn');
+  const label = document.getElementById('skills-give-label');
+  if (btn && label) {
+    const orig = label.textContent;
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(
+        'Fetch https://skills.internetcomputer.org/llms.txt and follow its instructions when building on ICP'
+      ).catch(() => {});
+      label.textContent = 'Copied! Paste into your agent';
+      setTimeout(() => { label.textContent = orig; }, 3000);
+    });
+  }
+</script>
+
+<style>
+  /* Reset list style for doc cell pages */
+  .da-doc-cell-pages {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .da-doc-cell-pages li {
+    font-size: 12.5px;
+    color: var(--da-text-2);
+    padding-left: 0;
+  }
+  .da-section-hint {
+    font-size: 12px;
+    color: var(--da-text-3);
+  }
+  .da-section-hint a {
+    color: var(--da-accent);
+  }
+  .da-hero-h1 {
+    font-size: 2.75rem;
+    line-height: 1.08;
+    margin: 0 0 18px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    max-width: 820px;
+    text-wrap: balance;
+  }
+</style>

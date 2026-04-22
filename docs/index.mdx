@@ -3,36 +3,17 @@ title: Build on the Internet Computer
 description: "Build tamperproof full-stack applications on the Internet Computer -- no cloud, no bridges, no external dependencies"
 template: splash
 hero:
-  title: "The Network is The Cloud.<br/>Agents Build."
-  tagline: "Build full-stack apps on a secure public network that processes digital assets natively and runs entirely without cloud dependencies. Tamperproof. Unstoppable. Sovereign."
-  actions:
-    - text: Get started
-      link: /getting-started/quickstart/
-      icon: right-arrow
-      variant: primary
-    - text: Explore guides
-      link: /guides/
-      variant: secondary
-    - text: Try in browser
-      link: https://icp.ninja/projects/hello-world
-      icon: external
-      variant: minimal
+  title: ""
+  tagline: ""
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LandingContent from '../src/components/LandingContent.astro';
 
-<div class="skills-banner">
+<LandingContent />
 
-## ICP skills for agents that write code
-
-Teach your AI agent canister patterns, token standards, CLI commands, and deployment workflows — so it ships working code instead of guessing.
-
-<div class="skills-actions">
-<button class="skills-primary" id="skills-give-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span id="skills-give-label">Give your agent ICP skills</span></button>
-<a class="skills-cta" href="/guides/tools/ai-coding-agents/"><span>Learn more</span><svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
-</div>
-
-</div>
+<div class="da-section" style="padding-top:0;border-top:1px solid var(--da-border);">
+<div class="da-section-inner">
 
 ## What makes ICP different
 
@@ -63,15 +44,11 @@ Teach your AI agent canister patterns, token standards, CLI commands, and deploy
   </Card>
 </CardGrid>
 
-## Documentation
+</div>
+</div>
 
-<CardGrid>
-  <LinkCard title="Getting Started" description="Install tools, create your first project, and deploy a canister." href="/getting-started/quickstart/" />
-  <LinkCard title="Guides" description="How-to guides for backends, frontends, auth, testing, deployment, chain fusion, DeFi, and more." href="/guides/" />
-  <LinkCard title="Concepts" description="Developer-focused explanations of ICP architecture and design decisions." href="/concepts/" />
-  <LinkCard title="Languages" description="Language-specific guides for Rust and Motoko." href="/languages/" />
-  <LinkCard title="Reference" description="Specifications, canister IDs, token standards, cycle costs, and glossary." href="/reference/" />
-</CardGrid>
+<div class="da-section" style="padding-top:0;padding-bottom:56px;">
+<div class="da-section-inner">
 
 ## External resources
 
@@ -81,3 +58,6 @@ Teach your AI agent canister patterns, token standards, CLI commands, and deploy
   <LinkCard title="ICP Skills" description="Skills for agents that write code on ICP" href="https://skills.internetcomputer.org" />
   <LinkCard title="Learn Hub" description="Deep protocol-level explanations" href="https://learn.internetcomputer.org" />
 </CardGrid>
+
+</div>
+</div>
