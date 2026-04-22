@@ -160,6 +160,39 @@ function stripMdx(body) {
       continue;
     }
 
+    // Strip <CardGrid> layout wrappers (Starlight built-in)
+    if (/^\s*<\/?CardGrid\b[^>]*>\s*$/.test(line)) {
+      continue;
+    }
+
+    // Convert <Card title="X"> to a heading; strip </Card>
+    if (/^\s*<\/Card>\s*$/.test(line)) {
+      out.push("");
+      continue;
+    }
+    const cardMatch = line.match(/^\s*<Card\b([^>]*)>\s*$/);
+    if (cardMatch) {
+      const title = cardMatch[1].match(/\btitle=["']([^"']+)["']/)?.[1];
+      if (title) {
+        out.push(`### ${title}`);
+        out.push("");
+        continue;
+      }
+    }
+
+    // Convert <LinkCard title="X" description="Y" href="Z" /> to a markdown link
+    const linkCardMatch = line.match(/^\s*<LinkCard\b([^>]*)\/>\s*$/);
+    if (linkCardMatch) {
+      const attrs = linkCardMatch[1];
+      const title = attrs.match(/\btitle=["']([^"']+)["']/)?.[1];
+      const description = attrs.match(/\bdescription=["']([^"']+)["']/)?.[1];
+      const href = attrs.match(/\bhref=["']([^"']+)["']/)?.[1];
+      if (title && href) {
+        out.push(`- [${title}](${href})${description ? ` — ${description}` : ""}`);
+        continue;
+      }
+    }
+
     // Strip ESM import statements (e.g. `import { Tabs } from '...'`)
     if (/^\s*import\s+.+\s+from\s+['"]/.test(line)) {
       continue;
@@ -237,9 +270,12 @@ function validateAgentMarkdown(file, content) {
 
     if (inCodeFence) continue;
 
-    // Check for leftover JSX tags (< followed by uppercase = component)
-    // Skip table rows (start with |) — generics like <T> cause false positives
-    if (!line.trimStart().startsWith("|") && /<\/?[A-Z]\w*[\s>]/.test(line)) {
+    // Check for leftover JSX tags (< followed by uppercase = component).
+    // Strip inline code spans first to avoid false positives on generic type
+    // parameters and URL path variables like <T>, <ECID> inside backticks.
+    // Skip table rows (start with |) for the same reason.
+    const lineForJsxCheck = line.replace(/`[^`]*`/g, "``");
+    if (!lineForJsxCheck.trimStart().startsWith("|") && /<\/?[A-Z]\w*[\s>]/.test(lineForJsxCheck)) {
       warnings.push({
         file,
         line: lineNum,
