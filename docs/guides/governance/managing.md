@@ -2,7 +2,7 @@
 title: "Managing an SNS"
 description: "Operate a live SNS: proposals, cycles, asset updates, and neuron management"
 sidebar:
-  order: 2
+  order: 3
 ---
 
 After an SNS launch succeeds, no single entity controls the dapp or its governance canisters — the community does. Every upgrade, parameter change, treasury transfer, and asset update must go through an SNS proposal and be approved by token holder vote. This guide covers the day-to-day operations of a live SNS: submitting and understanding proposals, keeping canisters funded with cycles, updating asset canisters via governance, and participating as a neuron holder.

@@ -2,7 +2,7 @@
 title: "AI Coding Agents"
 description: "ICP skills are agent-readable instruction files that teach AI coding agents how to build correctly on the Internet Computer."
 sidebar:
-  order: 1
+  order: 3
 ---
 
 AI coding agents frequently hallucinate canister IDs, use deprecated APIs, and miss ICP-specific constraints. ICP skills solve this: structured markdown files containing accurate canister IDs, tested code patterns, and documented pitfalls — so your agent writes correct ICP code on the first attempt.

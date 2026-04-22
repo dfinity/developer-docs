@@ -2,7 +2,7 @@
 title: "Canisters"
 description: "Smart contracts that run WebAssembly, hold state, serve HTTP, and pay for their own compute"
 sidebar:
-  order: 3
+  order: 2
 ---
 
 Canisters are smart contracts on the Internet Computer. Each canister bundles compiled WebAssembly code with its own persistent state into a single unit that the network executes, replicates, and secures. You deploy code to a canister, send it messages, and the network guarantees that every honest node in the subnet reaches the same result.

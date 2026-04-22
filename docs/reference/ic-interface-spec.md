@@ -2,7 +2,7 @@
 title: "IC Interface Specification"
 description: "The authoritative formal specification of the Internet Computer's external interfaces: System API, HTTPS interface, certified data, management canister, and abstract behavior"
 sidebar:
-  order: 1
+  order: 9
 ---
 
 

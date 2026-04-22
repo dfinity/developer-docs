@@ -2,7 +2,7 @@
 title: "Testing SNS Governance"
 description: "Test your SNS configuration locally and with a mainnet testflight before submitting the NNS proposal"
 sidebar:
-  order: 3
+  order: 2
 ---
 
 Testing your SNS before launch catches configuration mistakes that are impossible to fix after the NNS proposal is adopted. This guide covers two complementary testing stages: local testing with the `sns-testing` repository and a mainnet testflight using a mock SNS.

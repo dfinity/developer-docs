@@ -2,7 +2,7 @@
 title: "Offchain Calls"
 description: "Call canister functions from frontends, scripts, and backend services using IC agent libraries"
 sidebar:
-  order: 4
+  order: 3
 ---
 
 An **agent** is a client-side library that constructs ingress messages, signs them with a cryptographic identity, and sends them to ICP boundary nodes. Agents handle the protocol details — CBOR encoding, request IDs, certificate verification — so your application code works with native language types.

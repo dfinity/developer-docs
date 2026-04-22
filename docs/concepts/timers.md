@@ -2,7 +2,7 @@
 title: "Timers"
 description: "How canisters schedule automatic work: the global timer, CDK timer libraries, scheduling guarantees, upgrade behavior, and security considerations."
 sidebar:
-  order: 8
+  order: 6
 ---
 
 Canisters on the Internet Computer can schedule work to run automatically — after a delay or on a repeating interval — without any external trigger. This capability is built into the protocol itself, not bolted on with an offchain scheduler.

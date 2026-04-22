@@ -2,7 +2,7 @@
 title: "Candid Type Reference"
 description: "Complete reference for all Candid types: syntax, subtyping rules, and Motoko/Rust/JavaScript mappings"
 sidebar:
-  order: 3
+  order: 11
 ---
 
 This document provides detailed reference information about Candid-supported types and links to the Candid specification and documentation for the Candid Rust crate.

@@ -1,6 +1,8 @@
 ---
 title: "Verifiable Credentials"
 description: "Issue and verify credentials on ICP using Internet Identity and the VC protocol — covers issuer and relying party integration patterns."
+sidebar:
+  order: 2
 ---
 
 A verifiable credential (VC) is a cryptographically signed digital attestation about a user — for example, that they are over 18, passed KYC, or are a member of an organization. On ICP, verifiable credentials are issued by canister-based issuers, mediated by Internet Identity, and consumed by relying party applications.

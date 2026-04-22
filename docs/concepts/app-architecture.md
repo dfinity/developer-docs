@@ -2,7 +2,7 @@
 title: "Application Architecture"
 description: "How ICP applications are structured: canisters, frontends, and inter-canister communication"
 sidebar:
-  order: 2
+  order: 3
 ---
 
 An application on the Internet Computer typically consists of one or more [canisters](canisters.md) that handle backend logic, store data, and optionally serve a web frontend — all without external servers, databases, or CDNs. This page explains how these pieces fit together and what architectural patterns are available as your application grows.

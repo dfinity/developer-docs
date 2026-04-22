@@ -2,7 +2,7 @@
 title: "HTTPS Outcalls"
 description: "How canisters make HTTP requests to external services with consensus on responses"
 sidebar:
-  order: 6
+  order: 8
 ---
 
 Canisters on the Internet Computer can make HTTP requests to any public web server — fetching API data, posting to webhooks, or querying offchain services — without relying on oracles or other intermediaries. This capability is called **HTTPS outcalls**.
