@@ -5,9 +5,8 @@ sidebar:
   order: 1
 ---
 
-Motoko is a high-level programming language designed specifically for building canisters on the Internet Computer. It combines a familiar syntax (drawing from JavaScript, Rust, Swift, and Java) with features that map directly to how ICP works: an actor-based programming model, orthogonal persistence, async/await for inter-canister messaging, and compilation to WebAssembly.
-
-If you want a language where ICP concepts are first-class citizens rather than library abstractions, Motoko is a strong choice.
+<!-- Intro paragraph: keep in sync with .sources/motoko/doc/md/1-home.mdx -->
+Motoko is a next-generation, high-level programming language designed to empower AI agents building backends for apps and services on the Internet Computer cloud network. While it channels several popular modern languages, it introduces groundbreaking new features such as actor-based concurrency, orthogonal persistence, and seamless WebAssembly integration.
 
 ## Key features
 
