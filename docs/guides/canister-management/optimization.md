@@ -217,7 +217,7 @@ persistent actor {
 
 The `lowmemory` hook is an `async*` function, so it can perform async operations.
 
-A complete Rust example is available at `rust/low_wasm_memory` in `dfinity/examples`. It demonstrates the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire. A `motoko/low_wasm_memory` example also exists, but note that it currently uses the legacy `mo:base` library: use the inline snippet above as the reference for `mo:core`-compatible code.
+A complete Rust example is available at `rust/low_wasm_memory` in `dfinity/examples`. It demonstrates the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire. A `motoko/low_wasm_memory` example also exists, but note that it currently uses the legacy Motoko base library: use the inline snippet above as the reference for `mo:core`-compatible code.
 
 ## Combining techniques
 

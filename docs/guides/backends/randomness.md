@@ -217,7 +217,7 @@ The `std_rng` feature compiles `StdRng` without requiring OS entropy, which is c
 
 The `random_maze` example in the ICP examples repository generates a maze using randomness to decide which walls to remove during a depth-first search. It demonstrates how to consume entropy incrementally across many cells.
 
-Note: this example predates `mo:core` and uses `mo:base/Random.Finite`. The patterns in this guide use `mo:core/Random` instead.
+Note: this example predates `mo:core` and uses the older `Random.Finite` API. The patterns in this guide use `mo:core/Random` instead.
 
 - [random_maze (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/random_maze)
 
