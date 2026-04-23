@@ -210,6 +210,7 @@ For current release hashes, see `.sources/VERSIONS`.
 | `.sources/papi` | `dfinity/papi` | latest release | PAPI (payment API) — cycle payment interface used by the Chain Fusion Signer |
 | `.sources/ic-pub-key` | `dfinity/ic-pub-key` | latest release | `@dfinity/ic-pub-key` CLI tool for deriving public keys via the Chain Fusion Signer |
 | `.sources/dotskills` | `vincentkoc/dotskills` | `main` | Technical documentation skill (AGPL-3.0 — kept as submodule to avoid license mixing) |
+| `.agents/skills/icp-brand-guidelines` | n/a — lives directly in this repo | n/a | ICP / DFINITY brand guidelines: colors, typography, voice, component patterns |
 | `.sources/internetidentity` | `dfinity/internet-identity` | `main` | Internet Identity spec (`docs/ii-spec.mdx`), Candid interface (`src/internet_identity/internet_identity.did`) |
 
 ### Submodule initialization
@@ -348,6 +349,8 @@ ls .agents/skills/icp-cli/SKILL.md .agents/skills/technical-documentation/SKILL.
 | vetKD / encryption | `vetkd` |
 
 If no skill matches, use `technical-documentation` only. Topics with no dedicated icskill yet: on-chain AI, randomness/VRF, timers, Candid, chain-key tokens.
+
+**For design and brand work** (CSS, copy, UI components, docs styling, marketing copy) — load `icp-brand-guidelines` instead of or in addition to the above. This skill is not an icskill; it covers visual tokens, typography, voice, and component patterns for all surfaces under the DFINITY / Internet Computer mark.
 
 ## Frontmatter schema
 

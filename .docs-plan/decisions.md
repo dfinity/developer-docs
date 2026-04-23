@@ -4,6 +4,22 @@ Record decisions that constrain future work — things an agent needs to know th
 
 ---
 
+## 2026-04-23: icp-brand-guidelines skill lives directly in the repo
+
+**Context:** The `icp-brand-guidelines` skill was added to support design/brand work on the docs (CSS tokens, typography, voice). No upstream repo exists for it yet.
+**Decision:** Committed directly under `.agents/skills/icp-brand-guidelines/` (real directory, not a submodule). Symlinked from `.claude/skills/icp-brand-guidelines`. If the skill is later published to a DFINITY repo, migrate to a submodule then.
+**Rationale:** No upstream repo to pin. All other skills are submodule-backed; this is the only exception. The skill contains `SKILL.md` and `assets/tokens.css`.
+
+---
+
+## 2026-04-23: ICP brand guidelines applied to docs design
+
+**Context:** New `icp-brand-guidelines` skill defines the visual and verbal system for all DFINITY/ICP surfaces.
+**Decision:** Switched docs theme from dark-first/purple to light-default/terracotta. Newsreader serif added for headings. Custom `ThemeProvider` overrides Starlight's default to prevent auto-switching on `prefers-color-scheme`.
+**Rationale:** Brand skill spec: "Light mode is the default. Dark mode is opt-in. Never use `prefers-color-scheme` to auto-switch."
+
+---
+
 ## 2026-04-17: Added chain-fusion-signer, papi, ic-pub-key submodules
 **Context:** Page proposal #24 (chain-fusion signer guide) required source material not yet in `.sources/`
 **Decision:** Added three new release-pinned submodules: `chain-fusion-signer` (v0.3.0), `papi` (v0.1.1), `ic-pub-key` (v1.0.1)
