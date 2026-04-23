@@ -1,0 +1,73 @@
+/* =========================================================
+   ICP / DFINITY Product Design Tokens
+   Source of truth: https://skills.internetcomputer.org
+   Version 1.0 — 2026
+   ========================================================= */
+
+:root {
+  /* --- Backgrounds --- */
+  --icp-bg:          #f8f5ef;  /* parchment — page background */
+  --icp-bg-elev:     #fdfaf3;  /* cream — cards, inputs, code headers */
+
+  /* --- Text --- */
+  --icp-fg:          #1a1714;  /* ink — headings, body */
+  --icp-muted:       #6b6660;  /* stone — subtext, captions */
+
+  /* --- Lines --- */
+  --icp-rule:        #e5ddcf;  /* tan — borders, dividers */
+
+  /* --- Accent / Brand --- */
+  --icp-accent:      #cc5a2b;  /* terracotta — primary brand color */
+  --icp-accent-dim:  #f2d7c7;  /* blush — callout / tinted background */
+
+  /* --- Code --- */
+  --icp-code-bg:     #efe8da;  /* sand — code surfaces */
+  --icp-code-fg:     #1a1714;
+
+  /* --- Fonts --- */
+  --icp-serif: "Newsreader", "Source Serif 4", "EB Garamond", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --icp-sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --icp-mono:  ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* --- Layout --- */
+  --icp-max:        68rem;   /* container  ~1088px */
+  --icp-max-prose:  48rem;   /* prose      ~768px  */
+  --icp-gutter:     1.75rem; /* 28px horizontal padding */
+
+  /* --- Radii --- */
+  --icp-r-sm: 3px;   /* inline code */
+  --icp-r-md: 6px;   /* buttons, pre, meta cards */
+  --icp-r-lg: 8px;   /* search, callout right-side */
+
+  /* --- Transitions --- */
+  --icp-transition: 0.15s ease;
+}
+
+/* Dark mode is opt-in only. Apply [data-theme="dark"] on <html> to activate.
+   We do NOT listen to prefers-color-scheme: light mode is the default
+   so that every product in the system looks the same out of the box. */
+
+/* Manual override — useful when a product ships its own theme switcher. */
+[data-theme="dark"] {
+  --icp-bg:         #14110d;
+  --icp-bg-elev:    #1b1812;
+  --icp-fg:         #f0ebe0;
+  --icp-muted:      #a29a8d;
+  --icp-rule:       #2d2820;
+  --icp-accent:     #ff7a4d;
+  --icp-accent-dim: #3a2218;
+  --icp-code-bg:    #1b1812;
+  --icp-code-fg:    #f0ebe0;
+}
+
+[data-theme="light"] {
+  --icp-bg:         #f8f5ef;
+  --icp-bg-elev:    #fdfaf3;
+  --icp-fg:         #1a1714;
+  --icp-muted:      #6b6660;
+  --icp-rule:       #e5ddcf;
+  --icp-accent:     #cc5a2b;
+  --icp-accent-dim: #f2d7c7;
+  --icp-code-bg:    #efe8da;
+  --icp-code-fg:    #1a1714;
+}
