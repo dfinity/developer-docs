@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-ICP hosts frontend applications as asset canisters — static files (HTML, CSS, JavaScript) deployed onchain and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
+ICP hosts frontend applications as asset canisters: static files (HTML, CSS, JavaScript) deployed onchain and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
 
 This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy to an asset canister.
 
@@ -24,7 +24,7 @@ Every frontend framework integration follows the same pattern:
 3. Use `@icp-sdk/core` in your app to read canister IDs and the root key at runtime from the `ic_env` cookie served by the asset canister
 4. Deploy with `icp deploy`
 
-The asset canister injects an `ic_env` cookie into every HTML response. This cookie carries the root key and any `PUBLIC_CANISTER_ID:<name>` environment variables you set — so your frontend never needs canister IDs baked into the build artifact.
+The asset canister injects an `ic_env` cookie into every HTML response. This cookie carries the root key and any `PUBLIC_CANISTER_ID:<name>` environment variables you set: so your frontend never needs canister IDs baked into the build artifact.
 
 ## React with Vite
 
@@ -87,7 +87,7 @@ export default defineConfig({
 
 The `icpBindgen` Vite plugin regenerates TypeScript bindings whenever the `.did` file changes during development.
 
-The `server.headers` block simulates the `ic_env` cookie during `vite dev`. In production, the asset canister injects this cookie automatically — your code reads it without any build-time environment variables.
+The `server.headers` block simulates the `ic_env` cookie during `vite dev`. In production, the asset canister injects this cookie automatically: your code reads it without any build-time environment variables.
 
 Install the required packages:
 
@@ -178,15 +178,15 @@ export default defineConfig({
 });
 ```
 
-If your Vue app calls `getCanisterEnv()` to read canister IDs, add the same `server.headers` block from the React section to simulate the `ic_env` cookie during local development — otherwise `getCanisterEnv()` will throw because the cookie is absent. The `icp.yaml` configuration is the same as the React example — point `dir` at `dist`.
+If your Vue app calls `getCanisterEnv()` to read canister IDs, add the same `server.headers` block from the React section to simulate the `ic_env` cookie during local development (otherwise `getCanisterEnv()` will throw because the cookie is absent. The `icp.yaml` configuration is the same as the React example) point `dir` at `dist`.
 
 ## Authentication
 
-Authentication with Internet Identity is framework-agnostic — the `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md) for integration steps.
+Authentication with Internet Identity is framework-agnostic. The `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md) for integration steps.
 
 ## Svelte and SvelteKit
 
-For SvelteKit, you must configure static export mode before deploying — the asset canister serves static files and does not support server-side rendering.
+For SvelteKit, you must configure static export mode before deploying. The asset canister serves static files and does not support server-side rendering.
 
 ### SvelteKit with static adapter
 
@@ -222,11 +222,11 @@ canisters:
         dir: build
 ```
 
-For Svelte (without SvelteKit), Vite is the standard build tool. The `vite.config.js` setup is the same as Vue — swap `@vitejs/plugin-vue` for `@sveltejs/vite-plugin-svelte`.
+For Svelte (without SvelteKit), Vite is the standard build tool. The `vite.config.js` setup is the same as Vue: swap `@vitejs/plugin-vue` for `@sveltejs/vite-plugin-svelte`.
 
 ## Next.js
 
-Next.js requires static export mode. Server components, API routes, and `getServerSideProps` are not supported in an asset canister — the canister only serves static files.
+Next.js requires static export mode. Server components, API routes, and `getServerSideProps` are not supported in an asset canister. The canister only serves static files.
 
 Enable static export in your Next.js config:
 
@@ -260,7 +260,7 @@ Only Next.js pages that can be statically generated are compatible with ICP. Any
 
 ## Game engines
 
-Game engines that export HTML5 or WebGL builds can be deployed as asset canisters without a backend canister. The build output is pre-generated in the export step of the engine — `icp.yaml` just copies the files into place.
+Game engines that export HTML5 or WebGL builds can be deployed as asset canisters without a backend canister. The build output is pre-generated in the export step of the engine: `icp.yaml` just copies the files into place.
 
 ### Unity WebGL
 
@@ -319,7 +319,7 @@ icp deploy
 # http://<canister-id>.localhost:8000
 ```
 
-No Vite plugin or JS SDK integration is needed for game builds — the asset canister serves the pre-built HTML and JavaScript files directly.
+No Vite plugin or JS SDK integration is needed for game builds. The asset canister serves the pre-built HTML and JavaScript files directly.
 
 ## Static sites
 
@@ -370,8 +370,8 @@ icp canister settings show frontend -i
 
 ## Next steps
 
-- [Asset canister](asset-canister.md) — configure headers, caching, and SPA routing in `.ic-assets.json5`
-- [Internet Identity](../authentication/internet-identity.md) — add authentication to your frontend
-- [Project structure](../../getting-started/project-structure.md) — explore the hello-world template with React, Vite, and a Motoko backend
+- [Asset canister](asset-canister.md): configure headers, caching, and SPA routing in `.ic-assets.json5`
+- [Internet Identity](../authentication/internet-identity.md): add authentication to your frontend
+- [Project structure](../../getting-started/project-structure.md): explore the hello-world template with React, Vite, and a Motoko backend
 
 <!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md; dfinity/icp-cli-templates — hello-world/frontend/; dfinity/examples — hosting/react, hosting/unity-webgl-template, hosting/godot-html5-template, svelte/svelte-motoko-starter; dfinity/icp-js-sdk-docs — core/canister-environment.mdx, bindgen/plugins/vite/index.md, auth/quick-start.md -->

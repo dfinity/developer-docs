@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. HTTP gateways (boundary nodes) verify every response automatically, so users are protected without any extra client-side code — as long as the canister certifies its responses.
+Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. HTTP gateways (boundary nodes) verify every response automatically, so users are protected without any extra client-side code: as long as the canister certifies its responses.
 
 This guide explains how certification works at the HTTP layer, what the asset canister does automatically, when you need custom certification, and how to verify certificates client-side.
 
@@ -13,11 +13,11 @@ This guide explains how certification works at the HTTP layer, what the asset ca
 
 The asset canister implements **HTTP certification v2**, a protocol on top of certified data:
 
-1. **Certification setup (update call)** — when an asset is uploaded, the canister inserts its path, response headers, and body hash into a Merkle tree and commits the tree's root hash via `certified_data_set`. The subnet includes this root hash in its certified state each consensus round.
+1. **Certification setup (update call)**: when an asset is uploaded, the canister inserts its path, response headers, and body hash into a Merkle tree and commits the tree's root hash via `certified_data_set`. The subnet includes this root hash in its certified state each consensus round.
 
-2. **HTTP query call** — when a browser requests an asset, the canister retrieves the subnet BLS certificate via `data_certificate()`, generates a Merkle proof (witness) for the requested path, and returns the response with `IC-Certificate` and `IC-Certificate-Expression` headers containing the certificate and witness.
+2. **HTTP query call**: when a browser requests an asset, the canister retrieves the subnet BLS certificate via `data_certificate()`, generates a Merkle proof (witness) for the requested path, and returns the response with `IC-Certificate` and `IC-Certificate-Expression` headers containing the certificate and witness.
 
-3. **Boundary node verification** — the HTTP gateway (boundary node) verifies the BLS signature on the certificate, extracts the certified root hash, and confirms the witness proves the response body and headers are included under that root hash. If verification fails, the gateway returns an error.
+3. **Boundary node verification**: the HTTP gateway (boundary node) verifies the BLS signature on the certificate, extracts the certified root hash, and confirms the witness proves the response body and headers are included under that root hash. If verification fails, the gateway returns an error.
 
 ```
 UPLOAD (update call, goes through consensus):
@@ -47,7 +47,7 @@ The asset canister supports two serving modes:
 | Domain | Certification | Notes |
 |--------|--------------|-------|
 | `<canister-id>.icp0.io` | Verified | Boundary node checks every response |
-| `<canister-id>.raw.icp0.io` | None | Responses not verified — use only when necessary |
+| `<canister-id>.raw.icp0.io` | None | Responses not verified: use only when necessary |
 
 Raw access is enabled by default. Disable it in `.ic-assets.json5` for any assets that must not be served unverified:
 
@@ -80,10 +80,10 @@ The asset canister certifies the full response: path, response body, status code
 
 Always certify headers that affect browser behavior. In particular:
 
-- `Content-Type` — if uncertified, a malicious replica could serve HTML with `Content-Type: application/javascript`, causing the browser to execute it in a different context
-- Security headers (`Content-Security-Policy`, `X-Frame-Options`, etc.) — if uncertified, a malicious replica could strip them
+- `Content-Type`: if uncertified, a malicious replica could serve HTML with `Content-Type: application/javascript`, causing the browser to execute it in a different context
+- Security headers (`Content-Security-Policy`, `X-Frame-Options`, etc.): if uncertified, a malicious replica could strip them
 
-The `security_policy: "standard"` option in `.ic-assets.json5` certifies a baseline set of security headers. For custom headers, list them explicitly in `headers` — the asset canister certifies everything in that object.
+The `security_policy: "standard"` option in `.ic-assets.json5` certifies a baseline set of security headers. For custom headers, list them explicitly in `headers`: the asset canister certifies everything in that object.
 
 ## Custom HTTP canisters
 
@@ -97,7 +97,7 @@ Use custom HTTP certification when:
 - You need to certify dynamic responses (generated per request, not pre-uploaded assets)
 - You are building a canister that functions as its own frontend without using the standard asset canister
 
-For static assets (HTML, CSS, JS, images), use the standard asset canister instead — it handles all certification automatically and is more efficient.
+For static assets (HTML, CSS, JS, images), use the standard asset canister instead: it handles all certification automatically and is more efficient.
 
 ### Using ic-asset-certification
 
@@ -167,7 +167,7 @@ fn init() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Certified data is cleared on upgrade — must be re-established.
+    // Certified data is cleared on upgrade: must be re-established.
     certify_assets();
 }
 
@@ -196,13 +196,13 @@ For the full pattern including streaming, 404 fallbacks, and compressed encoding
 
 ### Using ic-http-certification
 
-For more control — certifying dynamic responses, certifying only specific headers, or building a custom CEL expression — use the lower-level `ic-http-certification` crate directly. See the [ic-http-certification documentation](https://docs.rs/ic-http-certification) for details.
+For more control (certifying dynamic responses, certifying only specific headers, or building a custom CEL expression) use the lower-level `ic-http-certification` crate directly. See the [ic-http-certification documentation](https://docs.rs/ic-http-certification) for details.
 
 ## Client-side certificate verification
 
 For standard asset serving via the asset canister, verification is transparent: the boundary node verifies every response before forwarding it to the browser, and you do not need any JavaScript verification code.
 
-For custom canisters returning certified data over the Candid interface (not HTTP), you may need to verify the certificate in JavaScript. This is the pattern covered in [Certified variables](../backends/certified-variables.md) — the canister returns `(data, certificate, witness)` as Candid values, and the frontend verifies them with `@dfinity/certificate-verification`.
+For custom canisters returning certified data over the Candid interface (not HTTP), you may need to verify the certificate in JavaScript. This is the pattern covered in [Certified variables](../backends/certified-variables.md): the canister returns `(data, certificate, witness)` as Candid values, and the frontend verifies them with `@dfinity/certificate-verification`.
 
 ### When client-side verification is needed
 
@@ -221,7 +221,7 @@ npm install @dfinity/certificate-verification
 The `verifyCertification` function performs the full six-step verification:
 
 1. Verify the certificate BLS signature against the IC root public key
-2. Check certificate freshness — `/time` must be within `maxCertificateTimeOffsetMs` of the current time
+2. Check certificate freshness: `/time` must be within `maxCertificateTimeOffsetMs` of the current time
 3. CBOR-decode the witness into a hash tree
 4. Reconstruct the witness root hash
 5. Compare with `certified_data` in the certificate
@@ -269,7 +269,7 @@ async function getVerifiedValue(
   // Confirm the canister-returned value matches what the witness proves.
   if (response.value !== null && response.value !== verifiedValue) {
     throw new Error(
-      "Response value does not match witness — canister returned tampered data"
+      "Response value does not match witness: canister returned tampered data"
     );
   }
 
@@ -288,14 +288,14 @@ const agent = await HttpAgent.create({
   host: IS_LOCAL ? "http://localhost:8000" : "https://icp-api.io",
   // Only fetch root key on local networks.
   // On mainnet, the root key is hardcoded in the JS SDK.
-  // Fetching it on mainnet is a security risk — never do this in production.
+  // Fetching it on mainnet is a security risk: never do this in production.
   shouldFetchRootKey: IS_LOCAL,
 });
 
 // Use agent.rootKey in verifyCertification calls
 ```
 
-> **Never call `fetchRootKey()` or set `shouldFetchRootKey: true` against mainnet.** These options let the agent fetch the root key from the replica over an unauthenticated connection — a man-in-the-middle could supply a fake root key and make forged certificates appear valid. On mainnet, the root key is hardcoded in the JS SDK.
+> **Never call `fetchRootKey()` or set `shouldFetchRootKey: true` against mainnet.** These options let the agent fetch the root key from the replica over an unauthenticated connection: a man-in-the-middle could supply a fake root key and make forged certificates appear valid. On mainnet, the root key is hardcoded in the JS SDK.
 
 For the full working example including a backend canister, see the [certified-counter example](https://github.com/dfinity/response-verification/tree/main/examples/certification/certified-counter).
 
@@ -315,9 +315,9 @@ For the full working example including a backend canister, see the [certified-co
 
 ## Next steps
 
-- [Asset canister](asset-canister.md) — deploy and configure the standard asset canister with automatic certification
-- [Certified variables](../backends/certified-variables.md) — certify Candid query responses from backend canisters
-- [Security concepts](../../concepts/security.md) — why query integrity matters
-- [HTTP Gateway specification](../../reference/http-gateway-spec.md) — how boundary nodes verify responses
+- [Asset canister](asset-canister.md): deploy and configure the standard asset canister with automatic certification
+- [Certified variables](../backends/certified-variables.md): certify Candid query responses from backend canisters
+- [Security concepts](../../concepts/security.md): why query integrity matters
+- [HTTP Gateway specification](../../reference/http-gateway-spec.md): how boundary nodes verify responses
 
 <!-- Upstream: informed by dfinity/response-verification — packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts, examples/certification/certified-counter; dfinity/portal — docs/building-apps/frontends/asset-security.mdx; dfinity/icskills — skills/certified-variables/SKILL.md, skills/asset-canister/SKILL.md -->

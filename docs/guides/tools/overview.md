@@ -14,9 +14,9 @@ Developer tools are used to create, manage, and interact with canisters. ICP pro
 `icp-cli` is the primary tool for building and deploying applications on the Internet Computer. It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens.
 
 Key features:
-- **Recipes** — reusable, versioned build templates for Rust, Motoko, and asset canisters
-- **Environments** — named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
-- **Project scaffolding** — `icp new` bootstraps new projects from official templates
+- **Recipes**: reusable, versioned build templates for Rust, Motoko, and asset canisters
+- **Environments**: named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
+- **Project scaffolding**: `icp new` bootstraps new projects from official templates
 
 Install via npm (requires Node.js LTS):
 
@@ -40,8 +40,8 @@ icp --version
 Full documentation: [cli.internetcomputer.org](https://cli.internetcomputer.org/)
 
 For advanced users, icp-cli supports authoring custom recipes and project templates:
-- [Creating recipes](https://cli.internetcomputer.org/guides/creating-recipes) — encode build conventions as reusable Handlebars templates
-- [Creating templates](https://cli.internetcomputer.org/guides/creating-templates) — scaffold new projects with `icp new`
+- [Creating recipes](https://cli.internetcomputer.org/guides/creating-recipes): encode build conventions as reusable Handlebars templates
+- [Creating templates](https://cli.internetcomputer.org/guides/creating-templates): scaffold new projects with `icp new`
 
 #### Telemetry opt-out
 
@@ -57,7 +57,7 @@ Or set `DO_NOT_TRACK=1` in your environment. Telemetry is automatically disabled
 
 ### ic-wasm
 
-`ic-wasm` is a utility for optimizing and annotating WebAssembly modules for the Internet Computer. It shrinks Wasm binary size, embeds Candid metadata, and strips unused sections. The official Rust and Motoko recipes use `ic-wasm` automatically — you only need to call it directly when using custom build steps.
+`ic-wasm` is a utility for optimizing and annotating WebAssembly modules for the Internet Computer. It shrinks Wasm binary size, embeds Candid metadata, and strips unused sections. The official Rust and Motoko recipes use `ic-wasm` automatically: you only need to call it directly when using custom build steps.
 
 Install:
 
@@ -69,7 +69,7 @@ brew install ic-wasm
 
 ### Quill
 
-Quill is a minimalistic, offline-first CLI for signing and sending governance messages — NNS and SNS proposals, neuron management — from air-gapped machines. Unlike `icp-cli`, Quill is designed for cold wallet workflows: you generate signed messages on an offline device, then submit them from a networked machine.
+Quill is a minimalistic, offline-first CLI for signing and sending governance messages (NNS and SNS proposals, neuron management) from air-gapped machines. Unlike `icp-cli`, Quill is designed for cold wallet workflows: you generate signed messages on an offline device, then submit them from a networked machine.
 
 Quill is suited for:
 - Submitting NNS governance proposals
@@ -91,9 +91,9 @@ For language documentation, see [languages/motoko](../../languages/motoko/index.
 ### Rust CDK (`ic-cdk`)
 
 The Rust CDK (`ic-cdk`) is the official DFINITY-maintained library for building canisters in Rust. It exposes the ICP system API as safe Rust abstractions, including:
-- `ic_cdk::api` — system calls (time, caller, stable memory, management canister)
-- `ic_cdk_timers` — periodic timers and one-shot timers
-- `ic_cdk_macros` — `#[update]`, `#[query]`, `#[init]`, and other attribute macros
+- `ic_cdk::api`: system calls (time, caller, stable memory, management canister)
+- `ic_cdk_timers`: periodic timers and one-shot timers
+- `ic_cdk_macros`: `#[update]`, `#[query]`, `#[init]`, and other attribute macros
 
 API reference: [docs.rs/ic-cdk](https://docs.rs/ic-cdk/latest/ic_cdk/)
 
@@ -116,7 +116,7 @@ Community CDKs are maintained independently of DFINITY. Check each project's doc
 
 ### ICP Ninja
 
-[ICP Ninja](https://icp.ninja) is a web-based IDE for writing and deploying ICP canisters directly from a browser — no local toolchain required. It provides a gallery of example projects (Motoko and Rust backends, React frontends) that you can browse, edit, and deploy to the mainnet in one click.
+[ICP Ninja](https://icp.ninja) is a web-based IDE for writing and deploying ICP canisters directly from a browser. No local toolchain required. It provides a gallery of example projects (Motoko and Rust backends, React frontends) that you can browse, edit, and deploy to the mainnet in one click.
 
 Deployed canisters remain live for 20 minutes. You can redeploy to reset the timer, or download the project files to continue development locally with icp-cli.
 
@@ -146,8 +146,8 @@ Resources:
 
 ## Next steps
 
-- **Start building:** [Quickstart](../../getting-started/quickstart.md) — deploy your first canister with icp-cli
-- **Migrating from the legacy CLI?** [Migration guide](migrating-from-dfx.md) — command mapping and configuration changes
+- **Start building:** [Quickstart](../../getting-started/quickstart.md): deploy your first canister with icp-cli
+- **Migrating from the legacy CLI?** [Migration guide](migrating-from-dfx.md): command mapping and configuration changes
 - **Rust development:** [Rust language guide](../../languages/rust/index.md)
 - **Motoko development:** [Motoko language guide](../../languages/motoko/index.md)
 

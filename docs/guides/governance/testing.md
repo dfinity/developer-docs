@@ -9,49 +9,49 @@ Testing your SNS before launch catches configuration mistakes that are impossibl
 
 These stages address different questions:
 
-- **Local testing** — Does the SNS launch process work? Can proposals be submitted and voted on? Do upgrade flows work as designed?
-- **Mainnet testflight** — Does your dapp operate correctly *after* decentralization? Does your team have the right tooling and workflows for day-to-day governance operations?
+- **Local testing**: Does the SNS launch process work? Can proposals be submitted and voted on? Do upgrade flows work as designed?
+- **Mainnet testflight**: Does your app operate correctly *after* decentralization? Does your team have the right tooling and workflows for day-to-day governance operations?
 
-Run both stages before submitting your NNS proposal. Skipping testflight is one of the most common mistakes teams make — the post-decentralization operational experience is very different from what local testing reveals.
+Run both stages before submitting your NNS proposal. Skipping testflight is one of the most common mistakes teams make. The post-decentralization operational experience is very different from what local testing reveals.
 
 ## Before you start
 
 You should already have:
 
 - A working `sns_init.yaml` with parameters defined (see [Launching an SNS](launching.md))
-- Dapp canisters deployed on mainnet
+- App canisters deployed on mainnet
 - Reviewed the SNS launch stages and what each one does
 
 ## Stage 1: Local testing with sns-testing
 
-The [dfinity/sns-testing](https://github.com/dfinity/sns-testing) repository contains scripts that simulate the full SNS launch flow on a local replica. The main goal is to confirm that the launch process itself — from proposal submission through swap finalization — works with your configuration.
+The [dfinity/sns-testing](https://github.com/dfinity/sns-testing) repository contains scripts that simulate the full SNS launch flow on a local replica. The main goal is to confirm that the launch process itself (from proposal submission through swap finalization) works with your configuration.
 
 Using `sns-testing` you can:
 
 - Initiate proposals
 - Pass proposals
 - Start decentralization swaps
-- Upgrade a dapp via DAO voting
+- Upgrade an app via DAO voting
 
 ### What sns-testing covers
 
-`sns-testing` is designed around a single-canister dapp and a standard local IC environment. It works best when your dapp matches that setup. If you have a multi-canister dapp or custom governance flows, you may need to fork or adapt it.
+`sns-testing` is designed around a single-canister app and a standard local IC environment. It works best when your app matches that setup. If you have a multi-canister app or custom governance flows, you may need to fork or adapt it.
 
-This is intentional — `sns-testing` is one example of how to test the SNS process, not a universal test harness. Adapt it for your dapp or use your own tooling.
+This is intentional: `sns-testing` is one example of how to test the SNS process, not a universal test harness. Adapt it for your app or use your own tooling.
 
 ### Steps
 
 The following maps each SNS launch stage to what you do (or observe) locally:
 
-**Step 0: Deploy your dapp locally**
+**Step 0: Deploy your app locally**
 
-For a test dapp bundled with sns-testing:
+For a test app bundled with sns-testing:
 
 ```bash
 ./deploy_test_canister.sh
 ```
 
-For your own dapp, deploy using your normal setup. For a multi-canister dapp, use whatever scripts or configuration you use to deploy locally.
+For your own app, deploy using your normal setup. For a multi-canister app, use whatever scripts or configuration you use to deploy locally.
 
 **Step 1: Add NNS root as co-controller**
 
@@ -88,7 +88,7 @@ Stages 4 through 10 run automatically after the proposal is adopted:
 |-------|-------------|
 | 4 | NNS votes on and adopts the proposal |
 | 5 | SNS-W deploys SNS canisters |
-| 6 | SNS root becomes sole controller of your dapp |
+| 6 | SNS root becomes sole controller of your app |
 | 7 | SNS canisters are initialized in pre-swap mode |
 | 8 | Swap opens; participate: `./participate_in_sns_swap.sh` |
 | 9 | Swap closes |
@@ -117,18 +117,18 @@ use candid::Principal;
 // pocket-ic = "9"
 #[test]
 fn test_canister_under_sns_governance() {
-    // Build an instance with NNS and SNS subnets — matching mainnet topology
+    // Build an instance with NNS and SNS subnets: matching mainnet topology
     let pic = PocketIcBuilder::new()
         .with_nns_subnet()
         .with_sns_subnet()  // requires human verification: check pocket-ic 9.x API
         .with_application_subnet()
         .build();
 
-    // Get the application subnet for your dapp canisters
+    // Get the application subnet for your app canisters
     let app_subnets = pic.topology().get_app_subnets();
     let app_subnet = app_subnets[0];
 
-    // Create and install your dapp canister on the application subnet
+    // Create and install your app canister on the application subnet
     let canister_id = pic.create_canister_on_subnet(None, None, app_subnet);
     pic.add_cycles(canister_id, 2_000_000_000_000);
 
@@ -143,16 +143,16 @@ See [PocketIC](../testing/pocket-ic.md) for the full setup guide, including mult
 
 ## Stage 2: Mainnet testflight
 
-An SNS testflight deploys a mock SNS directly to the mainnet without going through an NNS proposal or running a real decentralization swap. You retain full control of the mock SNS throughout the test flight — there are no real token holders, no real swap participants, and no irreversible steps.
+An SNS testflight deploys a mock SNS directly to the mainnet without going through an NNS proposal or running a real decentralization swap. You retain full control of the mock SNS throughout the test flight: there are no real token holders, no real swap participants, and no irreversible steps.
 
-**The testflight tests what local testing cannot:** how your dapp operates after the transfer of control. You will interact with your dapp exclusively through SNS proposals, which reveals operational gaps that developers consistently miss:
+**The testflight tests what local testing cannot:** how your app operates after the transfer of control. You will interact with your app exclusively through SNS proposals, which reveals operational gaps that developers consistently miss:
 
-- Gaps in proposal tooling — creating, describing, and executing proposals for routine operations
-- Missing custom (generic) proposals for operations specific to your dapp
-- Cycles management issues — canisters that go dark because no one can top them up through governance
-- Monitoring blind spots — metrics and alerting that relied on direct canister access
+- Gaps in proposal tooling: creating, describing, and executing proposals for routine operations
+- Missing custom (generic) proposals for operations specific to your app
+- Cycles management issues: canisters that go dark because no one can top them up through governance
+- Monitoring blind spots: metrics and alerting that relied on direct canister access
 
-Run the testflight for days or weeks, not hours. Operate your dapp in this mode as if it were live: push updates, respond to issues, exercise every governance flow you expect to need after launch.
+Run the testflight for days or weeks, not hours. Operate your app in this mode as if it were live: push updates, respond to issues, exercise every governance flow you expect to need after launch.
 
 ### Testflight vs. production
 
@@ -172,8 +172,8 @@ The testflight commands below require the `dfx sns` extension. No `icp-cli` equi
 
 You also need:
 
-- [quill](https://github.com/dfinity/quill) — for submitting SNS proposals from the command line
-- [didc](https://github.com/dfinity/candid) — for encoding Candid payloads
+- [quill](https://github.com/dfinity/quill): for submitting SNS proposals from the command line
+- [didc](https://github.com/dfinity/candid): for encoding Candid payloads
 
 ### Step 1: Import and download SNS canisters
 
@@ -208,7 +208,7 @@ Copy the neuron ID that appears after the colon for use in subsequent steps.
 
 ### Step 3: Add SNS root as co-controller
 
-Add the SNS root canister as an **additional** controller of each dapp canister. Keep yourself as a controller too — this lets you abort the testflight later if needed.
+Add the SNS root canister as an **additional** controller of each app canister. Keep yourself as a controller too: this lets you abort the testflight later if needed.
 
 ```bash
 # Locally:
@@ -221,7 +221,7 @@ icp canister settings update test \
   -e ic
 ```
 
-### Step 4: Register dapp canisters with SNS root
+### Step 4: Register app canisters with SNS root
 
 Register your canisters with the testflight SNS by submitting a proposal via `quill`. Set the environment variables for your deployment:
 
@@ -229,7 +229,7 @@ Register your canisters with the testflight SNS by submitting a proposal via `qu
 export DEVELOPER_NEURON_ID="<neuron-id-from-step-2>"
 # icp identity default prints the current identity name; the .config/dfx/identity/ path
 # is where dfx stores PEM files. If you created your identity with icp-cli, the path
-# may differ — check ~/.config/icp/identity/ or the path shown by `icp identity export`.
+# may differ: check ~/.config/icp/identity/ or the path shown by `icp identity export`.
 export PEM_FILE="$HOME/.config/dfx/identity/$(icp identity default)/identity.pem"
 export CID="$(icp canister id test -e ic)"
 ```
@@ -267,7 +267,7 @@ Verify registration succeeded:
 
 ```bash
 icp canister call sns_root list_sns_canisters '(record {})' -e ic
-# Expected: your dapp canisters listed under "dapps"
+# Expected: your app canisters listed under "dapps"
 ```
 
 ### Step 5: Test canister upgrades via SNS proposals
@@ -298,7 +298,7 @@ The `grep -v "^ *new_canister_wasm"` suppresses the WASM binary in output. Omit 
 
 ### Testing generic proposals
 
-Generic proposals let you execute arbitrary code on SNS-managed canisters through governance. If your dapp requires operations beyond standard canister upgrades — for example, updating configuration, rotating keys, or publishing new content — you will need generic proposals.
+Generic proposals let you execute arbitrary code on SNS-managed canisters through governance. If your app requires operations beyond standard canister upgrades (for example, updating configuration, rotating keys, or publishing new content) you will need generic proposals.
 
 First, implement the required validation and execution functions in your canister:
 
@@ -405,7 +405,7 @@ Adjust `limit` to fetch only the most recent proposals if you have many.
 
 ### Aborting the testflight
 
-When you have finished testing, verify that you are still a controller of your dapp canisters:
+When you have finished testing, verify that you are still a controller of your app canisters:
 
 ```bash
 icp canister status test -e ic
@@ -431,11 +431,11 @@ The `dfx sns init-config-file validate` command in the checklist below requires 
 **Local testing**
 - [ ] Full SNS launch cycle completed locally with `sns-testing`
 - [ ] Canister upgrade via SNS proposal tested and working
-- [ ] Custom (generic) proposals registered and tested if your dapp needs them
+- [ ] Custom (generic) proposals registered and tested if your app needs them
 - [ ] Token distribution matches expected neuron balances
 
 **Mainnet testflight**
-- [ ] Testflight SNS deployed and dapp canisters registered
+- [ ] Testflight SNS deployed and app canisters registered
 - [ ] Canister upgrade executed successfully via SNS proposal
 - [ ] All governance flows needed for day-to-day operations have been tested
 - [ ] Cycles management strategy confirmed: governance can top up canisters
@@ -452,7 +452,7 @@ For the full pre-submission checklist including tokenomics review and community 
 
 ## Next steps
 
-- [Managing an SNS](managing.md) — post-launch operations: submitting proposals, managing the treasury, and upgrading canisters once your SNS is live
-- [PocketIC](../testing/pocket-ic.md) — set up PocketIC for automated canister integration tests with NNS and SNS subnets
+- [Managing an SNS](managing.md): post-launch operations: submitting proposals, managing the treasury, and upgrading canisters once your SNS is live
+- [PocketIC](../testing/pocket-ic.md): set up PocketIC for automated canister integration tests with NNS and SNS subnets
 
 <!-- Upstream: informed by dfinity/portal — building-apps/governing-apps/testing/testing-before-launch.mdx, building-apps/governing-apps/testing/testing-locally.mdx, building-apps/governing-apps/testing/testing-on-mainnet.mdx; dfinity/icskills — skills/sns-launch/SKILL.md; dfinity/icp-js-sdk-docs — public/pic-js/latest.zip -->

@@ -1,21 +1,21 @@
 ---
 title: "Launching an SNS"
-description: "Decentralize your dapp with an SNS: token economics, governance setup, and NNS proposal submission"
+description: "Decentralize your app with an SNS: token economics, governance setup, and NNS proposal submission"
 sidebar:
   order: 1
 ---
 
-A Service Nervous System (SNS) is a DAO framework that transfers control of your dapp from your team to a community of token holders. After launch, canister upgrades, treasury spending, and governance parameters all require token holder votes — your team no longer has unilateral control.
+A Service Nervous System (SNS) is a DAO framework that transfers control of your app from your team to a community of token holders. After launch, canister upgrades, treasury spending, and governance parameters all require token holder votes: your team no longer has unilateral control.
 
 This guide walks through the complete launch process: from designing your tokenomics and configuring `sns_init.yaml`, to adding NNS root as a co-controller and submitting the NNS proposal that triggers the swap.
 
 ## Before you start
 
-SNS launch is irreversible. Once the NNS proposal is adopted and the swap succeeds, your dapp canisters are fully controlled by SNS root. Review these prerequisites before proceeding:
+SNS launch is irreversible. Once the NNS proposal is adopted and the swap succeeds, your app canisters are fully controlled by SNS root. Review these prerequisites before proceeding:
 
-- Your dapp canisters are deployed and working on mainnet
+- Your app canisters are deployed and working on mainnet
 - You hold an NNS neuron with sufficient stake to submit proposals (8 ICP minimum stake, plus dissolve delay)
-- You have done a security review and open-sourced the dapp code
+- You have done a security review and open-sourced the app code
 - Your tokenomics design is finalized and community-vetted
 
 See [concepts/governance.md](../../concepts/governance.md) for background on how SNS DAOs work.
@@ -26,14 +26,14 @@ See [concepts/governance.md](../../concepts/governance.md) for background on how
 
 Before writing a single line of configuration, define these parameters clearly:
 
-**Token utility** — explain what the token is used for within your ecosystem. Common utilities include governance voting, access to premium features, and in-app payments.
+**Token utility**: explain what the token is used for within your ecosystem. Common utilities include governance voting, access to premium features, and in-app payments.
 
-**Initial token allocation** — decide how tokens are split across these buckets:
-- **Developer neurons** — tokens for founders and seed investors, with vesting schedules. Best practice is 12–48 months of vesting.
-- **Treasury** — tokens controlled by the DAO governance canister for future spending proposals.
-- **Swap** — tokens sold during the decentralization swap in exchange for ICP.
+**Initial token allocation**: decide how tokens are split across these buckets:
+- **Developer neurons**: tokens for founders and seed investors, with vesting schedules. Best practice is 12–48 months of vesting.
+- **Treasury**: tokens controlled by the DAO governance canister for future spending proposals.
+- **Swap**: tokens sold during the decentralization swap in exchange for ICP.
 
-**Swap parameters** — set realistic minimums. If you require 500 participants but only 200 show up, the entire swap fails and all ICP is refunded. Most successful SNS launches use 100–200 minimum participants.
+**Swap parameters**: set realistic minimums. If you require 500 participants but only 200 show up, the entire swap fails and all ICP is refunded. Most successful SNS launches use 100–200 minimum participants.
 
 Use the [SNS Tokenomics Analyzer](https://dashboard.internetcomputer.org/sns/tokenomics) to evaluate your configuration and model voting power distribution before committing to parameters.
 
@@ -56,12 +56,12 @@ Start a discussion thread in the [SNS Launch Proposals](https://forum.dfinity.or
 
 Before submitting the NNS proposal:
 
-- [ ] Dapp canisters are deployed and stable on mainnet
+- [ ] App canisters are deployed and stable on mainnet
 - [ ] Source code is open-sourced with reproducible build instructions
 - [ ] Security review completed, critical findings addressed
 - [ ] SNS launch tested locally using [dfinity/sns-testing](https://github.com/dfinity/sns-testing)
 - [ ] SNS testflight deployed on mainnet to verify governance and upgrade flows
-- [ ] All dapp operations (canister upgrades, asset updates) tested via SNS proposals
+- [ ] All app operations (canister upgrades, asset updates) tested via SNS proposals
 - [ ] Cycles management strategy in place so canisters never run out after launch
 - [ ] Frontend SNS integration tested (swap UI, proposal voting)
 - [ ] `sns_init.yaml` parameters validated locally
@@ -72,15 +72,15 @@ All launch parameters are defined in a single YAML file. Copy the [template](htt
 
 The file has five sections:
 
-**Project metadata** — name, description, logo, and URL displayed to NNS voters and swap participants.
+**Project metadata**: name, description, logo, and URL displayed to NNS voters and swap participants.
 
-**Governance parameters** — proposal rejection fees, voting periods, minimum neuron stake, and voting power bonuses for dissolve delay and neuron age.
+**Governance parameters**: proposal rejection fees, voting periods, minimum neuron stake, and voting power bonuses for dissolve delay and neuron age.
 
-**Token configuration** — token name, ticker symbol, and ledger transaction fee.
+**Token configuration**: token name, ticker symbol, and ledger transaction fee.
 
-**Token distribution** — developer neuron allocations (with dissolve delays and vesting periods), treasury balance, and swap allocation.
+**Token distribution**: developer neuron allocations (with dissolve delays and vesting periods), treasury balance, and swap allocation.
 
-**Swap parameters** — minimum and maximum ICP participation, minimum participant count, swap duration (3–7 days is standard), Neurons' Fund participation, and any geo-restrictions or confirmation text.
+**Swap parameters**: minimum and maximum ICP participation, minimum participant count, swap duration (3–7 days is standard), Neurons' Fund participation, and any geo-restrictions or confirmation text.
 
 Example configuration skeleton:
 
@@ -165,25 +165,25 @@ Swap:
     - CN
 ```
 
-Add comments throughout the file explaining your parameter choices — the NNS community will read this file when evaluating the proposal.
+Add comments throughout the file explaining your parameter choices. The NNS community will read this file when evaluating the proposal.
 
 **Important constraints:**
 
-- `fallback_controller_principals` must be set. If the swap fails, these principals regain control of the dapp canisters. Without this, your dapp becomes uncontrollable if the swap fails.
+- `fallback_controller_principals` must be set. If the swap fails, these principals regain control of the app canisters. Without this, your app becomes uncontrollable if the swap fails.
 - Developer neuron `total` must equal the sum of all neuron stakes, treasury, and swap allocations exactly.
 - Only six proposal types are blocked during the swap window: `ManageNervousSystemParameters`, `TransferSnsTreasuryFunds`, `MintSnsTokens`, `UpgradeSnsControlledCanister`, `RegisterDappCanisters`, and `DeregisterDappCanisters`. Do not plan operations requiring these during the swap.
 
 ## Launch stages
 
-The SNS launch proceeds through 11 stages. Only the first three require action from your team — the rest are automatic.
+The SNS launch proceeds through 11 stages. Only the first three require action from your team. The rest are automatic.
 
 ### Stage 1: Define parameters (manual)
 
-Finalize `sns_init.yaml` with the parameters you have designed. These parameters become locked into the NNS proposal — you cannot change them after submission.
+Finalize `sns_init.yaml` with the parameters you have designed. These parameters become locked into the NNS proposal: you cannot change them after submission.
 
 ### Stage 2: Add NNS root as co-controller (manual)
 
-Add the NNS root canister (`r7inp-6aaaa-aaaaa-aaabq-cai`) as a co-controller of each dapp canister. This is required for the automated stages to proceed — it gives NNS the authority to transfer canister control to SNS root after the proposal is adopted.
+Add the NNS root canister (`r7inp-6aaaa-aaaaa-aaabq-cai`) as a co-controller of each app canister. This is required for the automated stages to proceed: it gives NNS the authority to transfer canister control to SNS root after the proposal is adopted.
 
 ```bash
 icp canister settings update BACKEND_CANISTER_ID \
@@ -195,7 +195,7 @@ icp canister settings update FRONTEND_CANISTER_ID \
   -e ic
 ```
 
-Also revoke any special permissions your team held. For example, if developers had direct commit access to asset canisters, revoke that now — after launch, asset updates must go through SNS proposals:
+Also revoke any special permissions your team held. For example, if developers had direct commit access to asset canisters, revoke that now: after launch, asset updates must go through SNS proposals:
 
 ```bash
 # If using the asset canister, revoke direct commit permission from developer principals
@@ -219,7 +219,7 @@ dfx sns propose --network ic --neuron $NEURON_ID sns_init.yaml
 
 There can only be one SNS creation proposal active in the NNS at a time. If another project's proposal is currently being voted on, you must wait for it to resolve before submitting yours.
 
-After submitting, monitor your proposal's status on the [NNS dapp](https://nns.ic0.app) or by querying NNS governance directly.
+After submitting, monitor your proposal's status on the [NNS app](https://nns.ic0.app) or by querying NNS governance directly.
 
 ### Stages 4–11: Automatic
 
@@ -229,18 +229,18 @@ After the NNS community votes to adopt the proposal, the remaining stages execut
 |-------|-------------|
 | 4 | NNS community votes; if adopted, remaining stages are triggered |
 | 5 | SNS-W deploys uninitialized SNS canisters on an SNS subnet |
-| 6 | SNS root becomes sole controller of dapp canisters |
+| 6 | SNS root becomes sole controller of app canisters |
 | 7 | SNS canisters are initialized in pre-decentralization-swap mode |
 | 8 | 24-hour minimum wait before swap opens (timing protocol applied) |
 | 9 | Decentralization swap opens; users send ICP and receive SNS neurons |
 | 10 | Swap closes (duration expires or maximum ICP reached) |
 | 11 | Finalization: exchange rate set, SNS neurons distributed, normal mode activated |
 
-If the swap reaches the minimum participation requirements, it succeeds: SNS governance enters normal mode, token holders become the DAO, and your dapp is fully decentralized. If the swap fails (not enough participants or ICP), everything reverts: your dapp's control returns to the `fallback_controller_principals`, and all ICP contributions are refunded.
+If the swap reaches the minimum participation requirements, it succeeds: SNS governance enters normal mode, token holders become the DAO, and your app is fully decentralized. If the swap fails (not enough participants or ICP), everything reverts: your app's control returns to the `fallback_controller_principals`, and all ICP contributions are refunded.
 
 ## Prepare your canister for SNS governance
 
-Your canister code does not need to change for basic SNS compatibility — SNS governance controls upgrades through the standard canister management API. However, if your canister has admin functions that were previously protected by principal checks, transition them to accept calls from the SNS governance canister:
+Your canister code does not need to change for basic SNS compatibility: SNS governance controls upgrades through the standard canister management API. However, if your canister has admin functions that were previously protected by principal checks, transition them to accept calls from the SNS governance canister:
 
 **Motoko:**
 
@@ -287,7 +287,7 @@ use ic_cdk::update;
 use std::cell::RefCell;
 
 thread_local! {
-    // ⚠ STATE LOSS: thread_local! RefCell is heap storage — it is wiped on upgrade.
+    // ⚠ STATE LOSS: thread_local! RefCell is heap storage: it is wiped on upgrade.
     // Use ic-stable-structures in production to persist across upgrades.
     // See: https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ for StableCell.
     static SNS_GOVERNANCE: RefCell<Option<Principal>> = RefCell::new(None);
@@ -348,7 +348,7 @@ icp canister call sns_governance get_nervous_system_parameters '()'
 # Verify total token supply matches your configuration
 icp canister call sns_ledger icrc1_total_supply '()'
 
-# Confirm dapp canister controller is SNS root (not your principal)
+# Confirm app canister controller is SNS root (not your principal)
 icp canister status BACKEND_CANISTER_ID
 ```
 
@@ -361,23 +361,23 @@ icp canister call SNS_SWAP_CANISTER_ID get_state '()' -e ic
 
 ## Common mistakes
 
-**Setting `min_participants` too high.** If the minimum is not reached, the swap fails and all ICP is refunded. Start conservative — 100–200 is typical for a first launch.
+**Setting `min_participants` too high.** If the minimum is not reached, the swap fails and all ICP is refunded. Start conservative: 100–200 is typical for a first launch.
 
 **Forgetting to add NNS root as co-controller.** The launch will fail at stage 6 if NNS root was not added before the proposal was submitted.
 
-**Not doing a testflight first.** The SNS testflight deploys a mock SNS on mainnet without doing a real swap — it lets you test governance flows and canister upgrade proposals before committing to the real launch.
+**Not doing a testflight first.** The SNS testflight deploys a mock SNS on mainnet without doing a real swap: it lets you test governance flows and canister upgrade proposals before committing to the real launch.
 
 **Developer neurons with no vesting or short dissolve delays.** These are separate but related concerns: a *vesting period* prevents a neuron from being dissolved during the vesting window; a *dissolve delay* sets the cooldown before a stopped neuron becomes liquid. Developer neurons with no vesting period and zero dissolve delay allow the team to immediately sell tokens post-launch. Set both a vesting period and a dissolve delay (12–48 months is standard for each) to demonstrate long-term commitment to the NNS community.
 
 **Unreasonable tokenomics.** The NNS community votes on your proposal. Excessive developer allocation, zero vesting, or swap parameters outside reasonable bounds will lead to rejection. Review past successful SNS launches (OpenChat, Hot or Not, Kinic) for parameter ranges the community accepts.
 
-**Not defining fallback controllers.** Without `fallback_controller_principals`, a failed swap leaves your dapp without any controllers — permanently unupgradeable.
+**Not defining fallback controllers.** Without `fallback_controller_principals`, a failed swap leaves your app without any controllers: permanently unupgradeable.
 
 **Swap duration too short.** Less than 24 hours is risky given global time zones. Three to seven days is standard.
 
 ## Next steps
 
-- [Testing an SNS](testing.md) — test your SNS configuration locally and with a mainnet testflight before submitting the NNS proposal
-- [Managing an SNS](managing.md) — post-launch operations: submitting proposals, managing the treasury, upgrading canisters
+- [Testing an SNS](testing.md): test your SNS configuration locally and with a mainnet testflight before submitting the NNS proposal
+- [Managing an SNS](managing.md): post-launch operations: submitting proposals, managing the treasury, upgrading canisters
 
 <!-- Upstream: informed by dfinity/portal — building-apps/governing-apps/launching/launch-summary-1proposal.mdx, launching/launch-steps-1proposal.mdx, launching/integrating.mdx, tokenomics/index.mdx, tokenomics/predeployment-considerations.mdx, tokenomics/preparation.mdx, tokenomics/sns-checklist.mdx; dfinity/icskills — skills/sns-launch/SKILL.md -->

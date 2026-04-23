@@ -22,10 +22,10 @@ A trap is an interruption of code execution that returns an error. WebAssembly o
 
 Common root causes:
 
-- **Heap out of bounds** — the canister accessed heap memory that has not been allocated. Check for places where memory is allocated (creating vectors, buffers) and whether you try to access that memory before it is allocated.
-- **Stable memory out of bounds** — similar to heap out of bounds but for stable memory.
-- **Integer division by zero** — the canister attempted to divide by zero. Inspect the canister code for any division operations.
-- **Unreachable** — typically produced when a Rust canister panics. Rust canisters using `ic-cdk` macros automatically convert panics to `ic0.trap` calls with a human-readable message including the file, line, and panic reason.
+- **Heap out of bounds**: the canister accessed heap memory that has not been allocated. Check for places where memory is allocated (creating vectors, buffers) and whether you try to access that memory before it is allocated.
+- **Stable memory out of bounds**: similar to heap out of bounds but for stable memory.
+- **Integer division by zero**: the canister attempted to divide by zero. Inspect the canister code for any division operations.
+- **Unreachable**: typically produced when a Rust canister panics. Rust canisters using `ic-cdk` macros automatically convert panics to `ic0.trap` calls with a human-readable message including the file, line, and panic reason.
 
 To fix this error, test the canister to identify unhandled errors. Review the [canister trapping guide](../guides/canister-management/lifecycle.md) for detailed guidance on traps during upgrades and inter-canister calls.
 
@@ -90,7 +90,7 @@ The canister tried to perform a large copy that cannot be completed in a single 
 Canister attempted to perform a large memory operation that used N instructions and exceeded the slice limit M.
 ```
 
-ICP maintains a consistent block rate by limiting the number of operations per round. A single large copy — to or from stable memory, or within the main heap — may be too large to execute within a round and cannot be automatically split into smaller copies.
+ICP maintains a consistent block rate by limiting the number of operations per round. A single large copy (to or from stable memory, or within the main heap) may be too large to execute within a round and cannot be automatically split into smaller copies.
 
 To fix this error, find the locations in the canister code that execute large copies and split them into multiple smaller copies.
 
@@ -580,7 +580,7 @@ A canister executed a request to delete itself.
 Canister xxx-xxx cannot delete itself.
 ```
 
-A canister cannot delete itself. To fix this error, delete the canister from one of its other controllers. If the only controller is the canister itself, it cannot be directly deleted — it will first be frozen when its cycle balance falls below the freezing threshold, and eventually deleted when the balance reaches zero.
+A canister cannot delete itself. To fix this error, delete the canister from one of its other controllers. If the only controller is the canister itself, it cannot be directly deleted: it will first be frozen when its cycle balance falls below the freezing threshold, and eventually deleted when the balance reaches zero.
 
 ### Delete canister queue not empty
 

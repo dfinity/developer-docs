@@ -40,8 +40,8 @@ Registers a new canister on the IC and returns its canister ID. The canister sta
 
 - **Caller:** Canisters, or subnet admins via ingress messages
 - **Parameters:**
-  - `settings` (`opt canister_settings`) — initial canister settings
-  - `sender_canister_version` (`opt nat64`) — caller's canister version (must match `ic0.canister_version` if provided)
+  - `settings` (`opt canister_settings`): initial canister settings
+  - `sender_canister_version` (`opt nat64`): caller's canister version (must match `ic0.canister_version` if provided)
 - **Returns:** `record { canister_id : principal }`
 - **Cycles:** Must be explicitly attached to the call (not deducted automatically)
 
@@ -55,8 +55,8 @@ Updates the settings of an existing canister. Only controllers can call this met
 
 - **Caller:** Controllers (canisters or external users)
 - **Parameters:**
-  - `canister_id` (`principal`) — target canister
-  - `settings` (`canister_settings`) — settings to update
+  - `canister_id` (`principal`): target canister
+  - `settings` (`canister_settings`): settings to update
   - `sender_canister_version` (`opt nat64`)
 - **Returns:** Nothing
 
@@ -66,10 +66,10 @@ Installs or upgrades code on a canister. Only controllers can call this method.
 
 - **Caller:** Controllers (canisters or external users)
 - **Parameters:**
-  - `mode` — one of `install`, `reinstall`, or `upgrade`
-  - `canister_id` (`principal`) — target canister
-  - `wasm_module` (`blob`) — Wasm binary (raw or gzip-compressed)
-  - `arg` (`blob`) — initialization argument
+  - `mode`: one of `install`, `reinstall`, or `upgrade`
+  - `canister_id` (`principal`): target canister
+  - `wasm_module` (`blob`): Wasm binary (raw or gzip-compressed)
+  - `arg` (`blob`): initialization argument
   - `sender_canister_version` (`opt nat64`)
 - **Returns:** Nothing
 
@@ -91,11 +91,11 @@ Installs code that was previously uploaded in chunks. Useful for Wasm modules th
 
 - **Caller:** Controllers (canisters or external users)
 - **Parameters:**
-  - `mode` — same as `install_code`
-  - `target_canister` (`principal`) — where to install
-  - `store_canister` (`opt principal`) — where chunks are stored (defaults to `target_canister`)
-  - `chunk_hashes_list` (`vec record { hash : blob }`) — ordered list of chunk hashes
-  - `wasm_module_hash` (`blob`) — SHA-256 of the concatenated chunks
+  - `mode`: same as `install_code`
+  - `target_canister` (`principal`): where to install
+  - `store_canister` (`opt principal`): where chunks are stored (defaults to `target_canister`)
+  - `chunk_hashes_list` (`vec record { hash : blob }`): ordered list of chunk hashes
+  - `wasm_module_hash` (`blob`): SHA-256 of the concatenated chunks
   - `arg` (`blob`)
   - `sender_canister_version` (`opt nat64`)
 - **Returns:** Nothing
@@ -122,17 +122,17 @@ Returns detailed information about a canister: status, settings, module hash, cy
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
-  - `status` — `running`, `stopping`, or `stopped`
-  - `ready_for_migration` (`bool`) — whether a stopped canister is ready for subnet migration (always `false` unless `stopped`)
-  - `canister_version` (`nat64`) — the canister's current version number
-  - `settings` — the definite canister settings currently in effect
-  - `module_hash` (`opt blob`) — SHA-256 of installed module (`null` if empty)
-  - `memory_size` (`nat`) — total memory consumed
-  - `memory_metrics` — breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots)
-  - `cycles` (`nat`) — current cycle balance
-  - `reserved_cycles` (`nat`) — reserved cycle balance
-  - `idle_cycles_burned_per_day` (`nat`) — daily idle burn rate
-  - `query_stats` — query call statistics (total calls, instructions, request/response bytes)
+  - `status`: `running`, `stopping`, or `stopped`
+  - `ready_for_migration` (`bool`): whether a stopped canister is ready for subnet migration (always `false` unless `stopped`)
+  - `canister_version` (`nat64`): the canister's current version number
+  - `settings`: the definite canister settings currently in effect
+  - `module_hash` (`opt blob`): SHA-256 of installed module (`null` if empty)
+  - `memory_size` (`nat`): total memory consumed
+  - `memory_metrics`: breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots)
+  - `cycles` (`nat`): current cycle balance
+  - `reserved_cycles` (`nat`): reserved cycle balance
+  - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
+  - `query_stats`: query call statistics (total calls, instructions, request/response bytes)
 
 ### `canister_info`
 
@@ -141,10 +141,10 @@ Returns the history, current module hash, and controllers of any canister. Unlik
 - **Caller:** Canisters only
 - **Parameters:**
   - `canister_id` (`principal`)
-  - `num_requested_changes` (`opt nat64`) — how many history entries to return (default `0`)
+  - `num_requested_changes` (`opt nat64`): how many history entries to return (default `0`)
 - **Returns:**
   - `total_num_changes` (`nat64`)
-  - `recent_changes` — list of canister changes (creation, deployment, controller changes, etc.)
+  - `recent_changes`: list of canister changes (creation, deployment, controller changes, etc.)
   - `module_hash` (`opt blob`)
   - `controllers` (`vec principal`)
 
@@ -156,10 +156,10 @@ Reads custom-section metadata from a canister. Custom sections with names of the
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `canister_id` (`principal`) — the canister to read metadata from
-  - `name` (`text`) — identifies the custom section (`icp:public <name>` or `icp:private <name>`)
+  - `canister_id` (`principal`): the canister to read metadata from
+  - `name` (`text`): identifies the custom section (`icp:public <name>` or `icp:private <name>`)
 - **Returns:**
-  - `value` (`blob`) — the content of the custom section
+  - `value` (`blob`): the content of the custom section
 
 Common uses include reading `candid:service` for Candid interface discovery.
 
@@ -236,8 +236,8 @@ Creates a snapshot of the specified canister. Stop the canister first to ensure 
 - **Caller:** Controllers (canisters or external users)
 - **Parameters:**
   - `canister_id` (`principal`)
-  - `replace_snapshot` (`opt snapshot_id`) — delete this snapshot after creating the new one
-  - `uninstall_code` (`opt bool`) — uninstall code after snapshot creation
+  - `replace_snapshot` (`opt snapshot_id`): delete this snapshot after creating the new one
+  - `uninstall_code` (`opt bool`): uninstall code after snapshot creation
   - `sender_canister_version` (`opt nat64`)
 - **Returns:** Snapshot metadata including `snapshot_id`
 
@@ -288,8 +288,8 @@ Returns a requested chunk of binary data from a snapshot: Wasm binary, heap memo
 - **Parameters:**
   - `canister_id` (`principal`)
   - `snapshot_id` (`snapshot_id`)
-  - `kind` — which data to read (`wasm`, `wasm_memory`, `stable_memory`, or `chunk_store`), with `offset` and `size` (or `hash` for chunk store)
-- **Returns:** `blob` — the requested data chunk
+  - `kind`: which data to read (`wasm`, `wasm_memory`, `stable_memory`, or `chunk_store`), with `offset` and `size` (or `hash` for chunk store)
+- **Returns:** `blob`: the requested data chunk
 
 ### `upload_canister_snapshot_metadata`
 
@@ -298,7 +298,7 @@ Creates a new snapshot by uploading metadata (Wasm size, globals, memory sizes, 
 - **Caller:** Controllers (canisters or external users)
 - **Parameters:**
   - `canister_id` (`principal`)
-  - `replace_snapshot` (`opt snapshot_id`) — delete this snapshot after creating the new one
+  - `replace_snapshot` (`opt snapshot_id`): delete this snapshot after creating the new one
   - Snapshot metadata fields (Wasm size, globals, memory sizes, certified data, timer state, hook state)
 - **Returns:** Snapshot metadata including `snapshot_id`
 
@@ -310,7 +310,7 @@ Uploads a chunk of binary data to a snapshot created via `upload_canister_snapsh
 - **Parameters:**
   - `canister_id` (`principal`)
   - `snapshot_id` (`snapshot_id`)
-  - `kind` — which data to upload, with `offset` and chunk content
+  - `kind`: which data to upload, with `offset` and chunk content
 - **Returns:** Nothing
 
 For practical usage, see the [canister snapshots guide](../guides/canister-management/snapshots.md).
@@ -319,7 +319,7 @@ For practical usage, see the [canister snapshots guide](../guides/canister-manag
 
 ### `raw_rand`
 
-Returns 32 bytes of cryptographic randomness. The return value is unknown to any part of the IC at the time the call is submitted — it is resolved in the next execution round using the IC's random tape.
+Returns 32 bytes of cryptographic randomness. The return value is unknown to any part of the IC at the time the call is submitted: it is resolved in the next execution round using the IC's random tape.
 
 - **Caller:** Canisters only
 - **Parameters:** None
@@ -337,12 +337,12 @@ Returns a SEC1-encoded ECDSA public key derived for the given canister and deriv
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `canister_id` (`opt principal`) — defaults to caller
-  - `derivation_path` (`vec blob`) — up to 255 byte strings of arbitrary length
-  - `key_id` (`record { curve : ecdsa_curve; name : text }`) — currently supports `secp256k1`
+  - `canister_id` (`opt principal`): defaults to caller
+  - `derivation_path` (`vec blob`): up to 255 byte strings of arbitrary length
+  - `key_id` (`record { curve : ecdsa_curve; name : text }`): currently supports `secp256k1`
 - **Returns:**
-  - `public_key` (`blob`) — SEC1 compressed public key
-  - `chain_code` (`blob`) — for deterministic child key derivation
+  - `public_key` (`blob`): SEC1 compressed public key
+  - `chain_code` (`blob`): for deterministic child key derivation
 
 For `secp256k1`, key derivation uses a generalization of BIP-32. To derive BIP-32-compatible public keys, each entry in `derivation_path` must be a 4-byte big-endian unsigned integer less than 2^31.
 
@@ -352,11 +352,11 @@ Signs a message hash using threshold ECDSA. The corresponding public key can be 
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `message_hash` (`blob`) — must be exactly 32 bytes
+  - `message_hash` (`blob`): must be exactly 32 bytes
   - `derivation_path` (`vec blob`)
   - `key_id` (`record { curve : ecdsa_curve; name : text }`)
 - **Returns:**
-  - `signature` (`blob`) — concatenation of SEC1-encoded `r` and `s` values (64 bytes for `secp256k1`)
+  - `signature` (`blob`): concatenation of SEC1-encoded `r` and `s` values (64 bytes for `secp256k1`)
 - **Cycles:** Must be explicitly attached to the call
 
 > If the call returns a reject with code `SYS_UNKNOWN` or `CANISTER_ERROR`, the signature may still exist in the system. Do not assume the signature was not produced.
@@ -367,11 +367,11 @@ Returns a Schnorr public key derived for the given canister and derivation path.
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `canister_id` (`opt principal`) — defaults to caller
-  - `derivation_path` (`vec blob`) — up to 255 byte strings
-  - `key_id` (`record { algorithm : schnorr_algorithm; name : text }`) — supports `bip340secp256k1` and `ed25519`
+  - `canister_id` (`opt principal`): defaults to caller
+  - `derivation_path` (`vec blob`): up to 255 byte strings
+  - `key_id` (`record { algorithm : schnorr_algorithm; name : text }`): supports `bip340secp256k1` and `ed25519`
 - **Returns:**
-  - `public_key` (`blob`) — SEC1 compressed (for `bip340secp256k1`) or 32-byte Ed25519 format
+  - `public_key` (`blob`): SEC1 compressed (for `bip340secp256k1`) or 32-byte Ed25519 format
   - `chain_code` (`blob`)
 
 ### `sign_with_schnorr`
@@ -380,12 +380,12 @@ Signs a message using threshold Schnorr. The corresponding public key can be obt
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `message` (`blob`) — the message to sign (not a hash)
+  - `message` (`blob`): the message to sign (not a hash)
   - `derivation_path` (`vec blob`)
   - `key_id` (`record { algorithm : schnorr_algorithm; name : text }`)
-  - `aux` (`opt schnorr_aux`) — optional; the `bip341` variant accepts a `merkle_root_hash` for Taproot signatures (only with `bip340secp256k1`)
+  - `aux` (`opt schnorr_aux`): optional; the `bip341` variant accepts a `merkle_root_hash` for Taproot signatures (only with `bip340secp256k1`)
 - **Returns:**
-  - `signature` (`blob`) — 64 bytes (BIP-340 for `bip340secp256k1`, RFC 8032 for `ed25519`)
+  - `signature` (`blob`): 64 bytes (BIP-340 for `bip340secp256k1`, RFC 8032 for `ed25519`)
 - **Cycles:** Must be explicitly attached to the call
 
 > If the call returns a reject with code `SYS_UNKNOWN` or `CANISTER_ERROR`, the signature may still exist in the system.
@@ -394,7 +394,7 @@ For practical usage of chain-key signing in Bitcoin and Ethereum workflows, see 
 
 ### Offline public key derivation
 
-If you only need a public key — to derive a blockchain address or verify a signature — the management canister call can be avoided entirely. ICP's key derivation algorithm is deterministic and uses only public parameters, so derivation can be performed offline without cycles or a network connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
+If you only need a public key: to derive a blockchain address or verify a signature. The management canister call can be avoided entirely. ICP's key derivation algorithm is deterministic and uses only public parameters, so derivation can be performed offline without cycles or a network connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
 
 ## vetKD (Verifiable Encrypted Threshold Key Derivation)
 
@@ -404,11 +404,11 @@ Returns a vetKD public (verification) key derived for the given canister and con
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `canister_id` (`opt principal`) — defaults to caller
-  - `context` (`blob`) — variable-length byte string
-  - `key_id` (`record { curve : vetkd_curve; name : text }`) — supports `bls12_381_g2`
+  - `canister_id` (`opt principal`): defaults to caller
+  - `context` (`blob`): variable-length byte string
+  - `key_id` (`record { curve : vetkd_curve; name : text }`): supports `bls12_381_g2`
 - **Returns:**
-  - `public_key` (`blob`) — G2 element in BLS12-381 compressed form
+  - `public_key` (`blob`): G2 element in BLS12-381 compressed form
 
 ### `vetkd_derive_key`
 
@@ -416,12 +416,12 @@ Returns an encrypted vetKD key that can be decrypted with the caller's transport
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `input` (`blob`) — primary key material differentiator
-  - `context` (`blob`) — domain separator
+  - `input` (`blob`): primary key material differentiator
+  - `context` (`blob`): domain separator
   - `key_id` (`record { curve : vetkd_curve; name : text }`)
-  - `transport_public_key` (`blob`) — G1 element for encrypting the derived key
+  - `transport_public_key` (`blob`): G1 element for encrypting the derived key
 - **Returns:**
-  - `encrypted_key` (`blob`) — the encrypted vetKD key
+  - `encrypted_key` (`blob`): the encrypted vetKD key
 - **Cycles:** Must be explicitly attached to the call
 
 ## HTTPS outcalls
@@ -432,18 +432,18 @@ Makes an HTTP request to an external URL and returns the response. This enables 
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `url` (`text`) — must start with `https://`; max 8192 characters
-  - `max_response_bytes` (`opt nat64`) — max response size (up to 2 MB; defaults to 2 MB if not set)
-  - `method` — `GET`, `HEAD`, or `POST` (replicated); additionally `PUT` and `DELETE` (non-replicated mode only)
-  - `headers` (`vec record { name : text; value : text }`) — request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
-  - `body` (`opt blob`) — request body
-  - `transform` (`opt record { function : func; context : blob }`) — response transformation function exported by the calling canister
-  - `is_replicated` (`opt bool`) — select replicated (default) or non-replicated mode
+  - `url` (`text`): must start with `https://`; max 8192 characters
+  - `max_response_bytes` (`opt nat64`): max response size (up to 2 MB; defaults to 2 MB if not set)
+  - `method`: `GET`, `HEAD`, or `POST` (replicated); additionally `PUT` and `DELETE` (non-replicated mode only)
+  - `headers` (`vec record { name : text; value : text }`): request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
+  - `body` (`opt blob`): request body
+  - `transform` (`opt record { function : func; context : blob }`): response transformation function exported by the calling canister
+  - `is_replicated` (`opt bool`): select replicated (default) or non-replicated mode
 - **Returns:**
-  - `status` (`nat`) — HTTP status code
+  - `status` (`nat`): HTTP status code
   - `headers` (`vec record { name : text; value : text }`)
   - `body` (`blob`)
-- **Cycles:** Must be explicitly attached to the call. Charged based on `max_response_bytes` — always set this to a reasonable value to avoid overpaying.
+- **Cycles:** Must be explicitly attached to the call. Charged based on `max_response_bytes`: always set this to a reasonable value to avoid overpaying.
 
 In replicated mode, multiple replicas make the same request. Use the `transform` function to sanitize non-deterministic parts of the response (timestamps, unique IDs) so replicas can reach consensus.
 
@@ -461,14 +461,14 @@ Returns unspent transaction outputs (UTXOs) for a Bitcoin address.
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `address` (`text`) — Bitcoin address (P2PKH, P2SH, P2WPKH, P2WSH, or P2TR)
-  - `network` — `mainnet` or `testnet`
-  - `filter` (`opt variant`) — either `min_confirmations : nat32` (max 144) or `page : blob` for pagination
+  - `address` (`text`): Bitcoin address (P2PKH, P2SH, P2WPKH, P2WSH, or P2TR)
+  - `network`: `mainnet` or `testnet`
+  - `filter` (`opt variant`): either `min_confirmations : nat32` (max 144) or `page : blob` for pagination
 - **Returns:**
-  - `utxos` (`vec utxo`) — up to 10,000 UTXOs per request, sorted by block height descending
+  - `utxos` (`vec utxo`): up to 10,000 UTXOs per request, sorted by block height descending
   - `tip_block_hash` (`blob`)
   - `tip_height` (`nat32`)
-  - `next_page` (`opt blob`) — pagination token if more UTXOs exist
+  - `next_page` (`opt blob`): pagination token if more UTXOs exist
 
 ### `bitcoin_get_balance`
 
@@ -477,7 +477,7 @@ Returns the balance of a Bitcoin address in satoshi.
 - **Caller:** Canisters only
 - **Parameters:**
   - `address` (`text`)
-  - `network` — `mainnet` or `testnet`
+  - `network`: `mainnet` or `testnet`
   - `min_confirmations` (`opt nat32`)
 - **Returns:** `nat64` (balance in satoshi)
 
@@ -487,8 +487,8 @@ Submits a Bitcoin transaction to the network. The transaction must be well-forme
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `transaction` (`blob`) — serialized Bitcoin transaction
-  - `network` — `mainnet` or `testnet`
+  - `transaction` (`blob`): serialized Bitcoin transaction
+  - `network`: `mainnet` or `testnet`
 - **Returns:** Nothing
 
 No guarantee is provided that the transaction will enter the mempool or appear in a block.
@@ -499,8 +499,8 @@ Returns fee percentiles (in millisatoshi/vbyte) over the last ~10,000 transactio
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `network` — `mainnet` or `testnet`
-- **Returns:** `vec nat64` — 101 percentiles (0th through 100th)
+  - `network`: `mainnet` or `testnet`
+- **Returns:** `vec nat64`: 101 percentiles (0th through 100th)
 
 ### `bitcoin_get_block_headers`
 
@@ -509,11 +509,11 @@ Returns block headers for a range of block heights.
 - **Caller:** Canisters only
 - **Parameters:**
   - `start_height` (`nat32`)
-  - `end_height` (`opt nat32`) — defaults to tip height
-  - `network` — `mainnet` or `testnet`
+  - `end_height` (`opt nat32`): defaults to tip height
+  - `network`: `mainnet` or `testnet`
 - **Returns:**
   - `tip_height` (`nat32`)
-  - `block_headers` (`vec blob`) — 80-byte headers in standard Bitcoin format
+  - `block_headers` (`vec blob`): 80-byte headers in standard Bitcoin format
 
 For Bitcoin integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
 
@@ -538,7 +538,7 @@ For practical usage, see the [canister logs guide](../guides/canister-management
 
 > This API is **experimental** and may change in a non-backward-compatible way.
 
-Returns a time series of node metrics for a given subnet. Returns up to 60 timestamps (no two from the same UTC day), starting from `start_at_timestamp_nanos`. A sample only includes metrics for nodes whose values changed since the previous sample — consumers must handle resets when a node disappears and reappears.
+Returns a time series of node metrics for a given subnet. Returns up to 60 timestamps (no two from the same UTC day), starting from `start_at_timestamp_nanos`. A sample only includes metrics for nodes whose values changed since the previous sample: consumers must handle resets when a node disappears and reappears.
 
 - **Caller:** Canisters only
 - **Parameters:**
@@ -557,8 +557,8 @@ Returns metadata about a subnet.
 - **Parameters:**
   - `subnet_id` (`principal`)
 - **Returns:**
-  - `replica_version` (`text`) — the replica version running on the subnet
-  - `registry_version` (`nat64`) — the registry version of the subnet
+  - `replica_version` (`text`): the replica version running on the subnet
+  - `registry_version` (`nat64`): the registry version of the subnet
 
 ## Provisional methods (local testing only)
 
@@ -570,9 +570,9 @@ Behaves like `create_canister` but initializes the canister with the specified n
 
 - **Caller:** Canisters or external users
 - **Parameters:**
-  - `amount` (`opt nat`) — initial cycle balance
+  - `amount` (`opt nat`): initial cycle balance
   - `settings` (`opt canister_settings`)
-  - `specified_id` (`opt principal`) — request a specific canister ID
+  - `specified_id` (`opt principal`): request a specific canister ID
   - `sender_canister_version` (`opt nat64`)
 - **Returns:** `record { canister_id : principal }`
 
@@ -583,19 +583,19 @@ Adds cycles to any canister out of thin air.
 - **Caller:** Canisters or external users (any caller)
 - **Parameters:**
   - `canister_id` (`principal`)
-  - `amount` (`nat`) — cycles to add
+  - `amount` (`nat`): cycles to add
 - **Returns:** Nothing
 
 ## Cycle costs
 
 Cycle costs for management canister calls vary depending on subnet replication factor and are subject to change. Rather than hardcoding costs, use the System API cost functions to query current prices programmatically:
 
-- `ic0.cost_create_canister` — cost of `create_canister`
-- `ic0.cost_call` — cost of an inter-canister call (base + per-byte)
-- `ic0.cost_http_request` — cost of `http_request`
-- `ic0.cost_sign_with_ecdsa` — cost of `sign_with_ecdsa`
-- `ic0.cost_sign_with_schnorr` — cost of `sign_with_schnorr`
-- `ic0.cost_vetkd_derive_key` — cost of `vetkd_derive_key`
+- `ic0.cost_create_canister`: cost of `create_canister`
+- `ic0.cost_call`: cost of an inter-canister call (base + per-byte)
+- `ic0.cost_http_request`: cost of `http_request`
+- `ic0.cost_sign_with_ecdsa`: cost of `sign_with_ecdsa`
+- `ic0.cost_sign_with_schnorr`: cost of `sign_with_schnorr`
+- `ic0.cost_vetkd_derive_key`: cost of `vetkd_derive_key`
 
 Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`) will fail if insufficient cycles are provided.
 
@@ -607,10 +607,10 @@ The complete Candid interface definition for the management canister is availabl
 
 ## Next steps
 
-- [Canister lifecycle guide](../guides/canister-management/lifecycle.md) — practical workflows for creating, upgrading, and managing canisters
-- [Canister settings guide](../guides/canister-management/settings.md) — configuring controllers, memory, compute, and freezing thresholds
-- [HTTPS outcalls](../concepts/https-outcalls.md) — architecture and constraints of outbound HTTP requests
-- [Bitcoin integration](../guides/chain-fusion/bitcoin.md) — building Bitcoin-native applications with chain-key signing
-- [IC interface specification](ic-interface-spec.md) — the complete formal specification
+- [Canister lifecycle guide](../guides/canister-management/lifecycle.md): practical workflows for creating, upgrading, and managing canisters
+- [Canister settings guide](../guides/canister-management/settings.md): configuring controllers, memory, compute, and freezing thresholds
+- [HTTPS outcalls](../concepts/https-outcalls.md): architecture and constraints of outbound HTTP requests
+- [Bitcoin integration](../guides/chain-fusion/bitcoin.md): building Bitcoin-native applications with chain-key signing
+- [IC interface specification](ic-interface-spec.md): the complete formal specification
 
 <!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md, docs/references/_attachments/ic.did; dfinity/icskills — skills/cycles-management/SKILL.md -->

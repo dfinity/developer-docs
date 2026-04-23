@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canisters can schedule code to run automatically after a delay or on a repeating interval — no external cron job required. This guide covers the timer APIs for Rust and Motoko, how system time works, upgrade handling, and when to use heartbeats instead.
+Canisters can schedule code to run automatically after a delay or on a repeating interval. No external cron job required. This guide covers the timer APIs for Rust and Motoko, how system time works, upgrade handling, and when to use heartbeats instead.
 
 ## System time
 
@@ -32,7 +32,7 @@ let now_ns: u64 = ic_cdk::api::time();
 </TabItem>
 </Tabs>
 
-System time is constant within a single message execution — it does not advance mid-call. Different messages in the same round may observe different timestamps.
+System time is constant within a single message execution: it does not advance mid-call. Different messages in the same round may observe different timestamps.
 
 ## One-shot timers
 
@@ -66,7 +66,7 @@ let timer_id: TimerId = ic_cdk_timers::set_timer(
 );
 ```
 
-`set_timer` takes a future directly — no closure or `ic_cdk::spawn` wrapper needed.
+`set_timer` takes a future directly. No closure or `ic_cdk::spawn` wrapper needed.
 
 </TabItem>
 </Tabs>
@@ -108,13 +108,13 @@ let timer_id: TimerId = ic_cdk_timers::set_timer_interval(
 </TabItem>
 </Tabs>
 
-For recurring tasks that mutate state, use `set_timer_interval_serial` in Rust to prevent concurrent invocations — if the interval fires while the previous invocation is still running, the new one is skipped:
+For recurring tasks that mutate state, use `set_timer_interval_serial` in Rust to prevent concurrent invocations: if the interval fires while the previous invocation is still running, the new one is skipped:
 
 ```rust
 ic_cdk_timers::set_timer_interval_serial(
     Duration::from_secs(3600),
     async || {
-        // safe to mutate state — only one invocation runs at a time
+        // safe to mutate state: only one invocation runs at a time
     },
 );
 ```
@@ -142,10 +142,10 @@ ic_cdk_timers::clear_timer(timer_id);
 
 ## Common patterns
 
-- **Periodic cleanup** — purge expired cache entries, remove stale sessions, or compact data structures on a fixed schedule.
-- **Scheduled data aggregation** — periodically fetch exchange rates, collect metrics, or roll up statistics from child canisters.
-- **Timed state transitions** — expire auctions, unlock funds after a vesting period, or transition a proposal from "voting" to "decided" after a deadline.
-- **Heartbeat-to-timer migration** — replace a `canister_heartbeat` export with a recurring timer at the desired interval (see [Heartbeats](#heartbeats-legacy) below).
+- **Periodic cleanup**: purge expired cache entries, remove stale sessions, or compact data structures on a fixed schedule.
+- **Scheduled data aggregation**: periodically fetch exchange rates, collect metrics, or roll up statistics from child canisters.
+- **Timed state transitions**: expire auctions, unlock funds after a vesting period, or transition a proposal from "voting" to "decided" after a deadline.
+- **Heartbeat-to-timer migration**: replace a `canister_heartbeat` export with a recurring timer at the desired interval (see [Heartbeats](#heartbeats-legacy) below).
 
 ## Starting timers on canister init
 
@@ -221,8 +221,8 @@ See [Cycles and costs](../../reference/cycles-costs.md) for current pricing.
 
 Heartbeats call `canister_heartbeat` at intervals close to the blockchain finalization rate (~1s). They predate timers and have significant drawbacks:
 
-- Fixed interval close to block rate — cannot be adjusted
-- Run every block regardless of whether work is needed — burns cycles continuously
+- Fixed interval close to block rate: cannot be adjusted
+- Run every block regardless of whether work is needed: burns cycles continuously
 - Cannot be disabled without upgrading to remove the export
 
 **Prefer timers for all new code.** Heartbeats are only appropriate when you need sub-second execution or must respond to every block unconditionally.
@@ -251,7 +251,7 @@ For protocol internals, see [Timers](../../concepts/timers.md) and the [IC inter
 Yes. Each timer executes as a self-canister call, so normal update message instruction limits apply with DTS enabled.
 
 **What happens if a timer handler awaits an inter-canister call?**
-Normal await point rules apply — any new execution can start at the await point (a new message, another timer, or a heartbeat). The current timer handler resumes after the new execution finishes or reaches its own await point.
+Normal await point rules apply: any new execution can start at the await point (a new message, another timer, or a heartbeat). The current timer handler resumes after the new execution finishes or reaches its own await point.
 
 **What happens if a periodic timer takes longer than its interval?**
 With `set_timer_interval`, multiple invocations can run concurrently. With `set_timer_interval_serial`, the new invocation is skipped if the previous one is still running. If there are no await points, the timer is rescheduled after execution completes.
@@ -265,7 +265,7 @@ System time is returned in nanoseconds. For DateTime conversions, use these pack
 
 ## Limitations
 
-- Timer resolution is similar to the block rate — choose durations well above ~1s.
+- Timer resolution is similar to the block rate: choose durations well above ~1s.
 - The CDK timers library uses **relative time** only. To schedule at an absolute time, calculate the duration from `now` to the target time manually.
 - Using timers for security (e.g., access control) is strongly discouraged. Timers vanish on upgrades and reinstalls, and reentrancy can undermine access checks.
 
@@ -277,8 +277,8 @@ For a complete working example with cycle tracking and multiple timers:
 
 ## Next steps
 
-- [Canister lifecycle](../canister-management/lifecycle.md) — init, pre/post-upgrade hooks
-- [Timers (concept)](../../concepts/timers.md) — how the IC protocol timer works
-- [Cycles and costs](../../reference/cycles-costs.md) — current pricing
+- [Canister lifecycle](../canister-management/lifecycle.md): init, pre/post-upgrade hooks
+- [Timers (concept)](../../concepts/timers.md): how the IC protocol timer works
+- [Cycles and costs](../../reference/cycles-costs.md): current pricing
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, docs/building-apps/network-features/time-and-timestamps.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, and caffeinelabs/motoko-core src/Timer.mo */}

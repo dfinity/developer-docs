@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-An **agent** is a client-side library that constructs ingress messages, signs them with a cryptographic identity, and sends them to ICP boundary nodes. Agents handle the protocol details — CBOR encoding, request IDs, certificate verification — so your application code works with native language types.
+An **agent** is a client-side library that constructs ingress messages, signs them with a cryptographic identity, and sends them to ICP boundary nodes. Agents handle the protocol details (CBOR encoding, request IDs, certificate verification) so your application code works with native language types.
 
 ## How agents work
 
@@ -25,11 +25,11 @@ The IC has two call types that agents route differently:
 | | Query | Update |
 |---|---|---|
 | State changes | Not allowed | Allowed |
-| Routing | Single replica — fast (~200ms) | Goes through consensus (~2–4 seconds) |
+| Routing | Single replica: fast (~200ms) | Goes through consensus (~2–4 seconds) |
 | Response verification | Node key signatures verified by default; certified data provides app-layer guarantees | Full certificate from consensus |
 | Candid annotation | `query` | (default) |
 
-The Candid interface definition tells the agent which call type to use. When you generate typed bindings from a `.did` file, the generated code routes each method correctly — you do not need to decide manually.
+The Candid interface definition tells the agent which call type to use. When you generate typed bindings from a `.did` file, the generated code routes each method correctly: you do not need to decide manually.
 
 ## Available agents
 
@@ -37,7 +37,7 @@ DFINITY maintains official agents for JavaScript/TypeScript and Rust. Several co
 
 ### Official agents
 
-**JavaScript / TypeScript — `@icp-sdk/core`**
+**JavaScript / TypeScript: `@icp-sdk/core`**
 
 The primary agent for browser and Node.js applications. Install from npm:
 
@@ -49,7 +49,7 @@ Import path: `@icp-sdk/core/agent`
 
 Full documentation: [js.icp.build](https://js.icp.build)
 
-**Rust — `ic-agent`**
+**Rust: `ic-agent`**
 
 A low-level Rust library for building applications that interact with ICP. Add to your project:
 
@@ -104,7 +104,7 @@ const canisterEnv = getCanisterEnv<CanisterEnv>();
 const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
 
 // Pass rootKey only on non-standard networks. On mainnet the IC root key is
-// embedded in the agent — omit rootKey there.
+// embedded in the agent: omit rootKey there.
 // In local development, let the agent fetch the root key from the local replica.
 const actor = createActor(canisterId, {
   agentOptions: {
@@ -128,7 +128,7 @@ const agent = await HttpAgent.create({
   host: "https://icp-api.io",
   // Omit identity to use the anonymous identity.
   // Pass an identity here for authenticated calls.
-  // IC root key is embedded in the agent for mainnet — do not set shouldFetchRootKey.
+  // IC root key is embedded in the agent for mainnet: do not set shouldFetchRootKey.
 });
 
 const actor = createActor("<canister-id>", { agent });
@@ -148,7 +148,7 @@ const agent = await HttpAgent.create({
 Once you have an actor, call methods as regular async functions. The generated bindings handle Candid encoding and routing:
 
 ```typescript
-// Query call — fast, read-only
+// Query call: fast, read-only
 const greeting = await actor.greet("Ada");
 console.log(greeting); // "Hello, Ada!"
 ```
@@ -269,7 +269,7 @@ interface CanisterEnv {
 
 const env = getCanisterEnv<CanisterEnv>();
 const backendId = env["PUBLIC_CANISTER_ID:backend"];
-const rootKey = env.IC_ROOT_KEY; // Uint8Array — use for certificate verification
+const rootKey = env.IC_ROOT_KEY; // Uint8Array: use for certificate verification
 ```
 
 This works identically on local networks and mainnet without code changes.
@@ -280,7 +280,7 @@ During development, your dev server runs outside the asset canister and the `ic_
 
 ```typescript
 // vite.config.ts
-const IC_ROOT_KEY_HEX = "308182..."; // placeholder — replace with your local replica root key
+const IC_ROOT_KEY_HEX = "308182..."; // placeholder: replace with your local replica root key
 const BACKEND_CANISTER_ID = "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // from `icp canister list`
 
 export default defineConfig({
@@ -322,9 +322,9 @@ const agent = await HttpAgent.create({
 
 ## Next steps
 
-- [Candid and binding generation](candid.md) — generate typed clients from `.did` files
-- [Onchain calls](onchain-calls.md) — canister-to-canister calls from within the IC
-- [Internet Identity](../authentication/internet-identity.md) — adding user authentication to offchain calls
-- [Asset canister](../frontends/asset-canister.md) — deploying the frontend that makes these calls
+- [Candid and binding generation](candid.md): generate typed clients from `.did` files
+- [Onchain calls](onchain-calls.md): canister-to-canister calls from within the IC
+- [Internet Identity](../authentication/internet-identity.md): adding user authentication to offchain calls
+- [Asset canister](../frontends/asset-canister.md): deploying the frontend that makes these calls
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/interact-with-canisters/agents/overview.mdx, docs/building-apps/interact-with-canisters/agents/javascript-agent.mdx, docs/building-apps/interact-with-canisters/agents/rust-agent.mdx; dfinity/icp-cli — docs/concepts/canister-discovery.md; dfinity/icp-cli-templates — hello-world/frontend/app/src/App.tsx, hello-world/frontend/app/vite.config.ts; dfinity/icp-js-sdk-docs — @icp-sdk/core/agent, @icp-sdk/core/agent/canister-env, @icp-sdk/bindgen -->

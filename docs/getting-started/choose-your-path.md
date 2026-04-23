@@ -36,7 +36,7 @@ This is where most developers start after the quickstart. The backend guides cov
 
 **You want to:** Build a web application with a frontend that talks to your canister.
 
-ICP can serve web assets directly from the blockchain through an asset canister, giving you a fully decentralized application with no external hosting required.
+ICP can serve web assets directly from canisters, giving you a tamperproof application with no external hosting required.
 
 **Start with:** [Asset canister](../guides/frontends/asset-canister.md) -- deploy a frontend alongside your backend canister.
 
@@ -91,7 +91,7 @@ The Service Nervous System (SNS) lets you tokenize your application and create a
 
 **You want to:** Use AI coding agents to build on ICP.
 
-ICP has a set of [ICP skills](https://skills.internetcomputer.org) — structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
+ICP has a set of [ICP skills](https://skills.internetcomputer.org): structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
 
 **Learn more:** [AI coding agents](../guides/tools/ai-coding-agents.md)
 

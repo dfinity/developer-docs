@@ -7,13 +7,13 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Every token on ICP — ICP, ckBTC, ckETH, and custom tokens — is managed by a **ledger canister** that implements the ICRC token standards. Because all ledgers share the same interface, code that works with the ICP ledger also works with ckBTC, ckETH, or any ICRC-1 compliant token. You only need to swap the canister ID and fee.
+Every token on ICP (ICP, ckBTC, ckETH, and custom tokens) is managed by a **ledger canister** that implements the ICRC token standards. Because all ledgers share the same interface, code that works with the ICP ledger also works with ckBTC, ckETH, or any ICRC-1 compliant token. You only need to swap the canister ID and fee.
 
 This guide covers the most common token operations: transfers, approvals, subaccounts, and local test ledger setup. For the formal standard specifications, see [Token standards](../../reference/token-standards.md).
 
 ## Well-known token ledgers
 
-The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP — see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a broader overview. Anyone can deploy an ICRC-1 compliant ledger.
+The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP: see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a broader overview. Anyone can deploy an ICRC-1 compliant ledger.
 
 | Token | Ledger canister ID |
 |-------|-------------------|
@@ -186,7 +186,7 @@ Always set `created_at_time` to enable deduplication. Without it, two identical 
 
 ### Checking balances
 
-Query an account's balance with `icrc1_balance_of`. This is a query call — fast and free.
+Query an account's balance with `icrc1_balance_of`. This is a query call: fast and free.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -234,7 +234,7 @@ async fn get_balance(ledger: Principal, owner: Principal) -> Result<Nat, String>
 
 ## Approve and transfer-from (ICRC-2)
 
-ICRC-2 adds an approve/transferFrom pattern, similar to ERC-20 on Ethereum. The token owner first approves a spender for a certain amount, then the spender calls `icrc2_transfer_from` to move tokens. This is a two-step flow — calling `transfer_from` without a prior approval fails with `InsufficientAllowance`.
+ICRC-2 adds an approve/transferFrom pattern, similar to ERC-20 on Ethereum. The token owner first approves a spender for a certain amount, then the spender calls `icrc2_transfer_from` to move tokens. This is a two-step flow: calling `transfer_from` without a prior approval fails with `InsufficientAllowance`.
 
 **When to use:** DEX swaps, payment processors, subscription services, or any case where a canister needs to pull tokens from a user's account.
 
@@ -417,7 +417,7 @@ async fn transfer_from(
 
 ## Working with subaccounts
 
-An ICRC-1 account is a principal plus an optional 32-byte subaccount. Subaccounts let a single canister manage many logical accounts — useful for deposit flows where each user gets a unique deposit address.
+An ICRC-1 account is a principal plus an optional 32-byte subaccount. Subaccounts let a single canister manage many logical accounts: useful for deposit flows where each user gets a unique deposit address.
 
 To derive a subaccount from a principal (a common pattern for deposit accounts):
 
@@ -483,12 +483,12 @@ ICRC-37 extends ICRC-7 with an approval workflow (similar to how ICRC-2 extends 
 
 Key operations:
 
-- **`icrc7_transfer`** — transfer one or more NFTs by token ID
-- **`icrc7_balance_of`** — count how many NFTs an account owns
-- **`icrc7_owner_of`** — look up the owner of specific token IDs
-- **`icrc7_tokens_of`** — list token IDs owned by an account
-- **`icrc37_approve_tokens`** — approve a spender for specific NFTs (ICRC-37)
-- **`icrc37_transfer_from`** — transfer NFTs using a prior approval (ICRC-37)
+- **`icrc7_transfer`**: transfer one or more NFTs by token ID
+- **`icrc7_balance_of`**: count how many NFTs an account owns
+- **`icrc7_owner_of`**: look up the owner of specific token IDs
+- **`icrc7_tokens_of`**: list token IDs owned by an account
+- **`icrc37_approve_tokens`**: approve a spender for specific NFTs (ICRC-37)
+- **`icrc37_transfer_from`**: transfer NFTs using a prior approval (ICRC-37)
 
 For a complete working example with minting, transferring, and a frontend, see the [nft-creator example](https://github.com/dfinity/examples/tree/master/motoko/nft-creator). For the full standard specifications, see [ICRC-7](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md) and [ICRC-37](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-37/ICRC-37.md).
 
@@ -562,9 +562,9 @@ icp canister call icrc1_ledger icrc1_transfer \
 
 ## Next steps
 
-- [Token standards](../../reference/token-standards.md) — formal ICRC-1, ICRC-2, ICRC-7, and ICRC-37 specifications
-- [Chain-key tokens](chain-key-tokens.md) — working with ckBTC and ckETH (minting, deposits, withdrawals)
-- [Wallet integration](wallet-integration.md) — connecting wallets to your dapp
-- [Onchain calls](../canister-calls/onchain-calls.md) — how inter-canister calls work (ledger calls are inter-canister calls)
+- [Token standards](../../reference/token-standards.md): formal ICRC-1, ICRC-2, ICRC-7, and ICRC-37 specifications
+- [Chain-key tokens](chain-key-tokens.md): working with ckBTC and ckETH (minting, deposits, withdrawals)
+- [Wallet integration](wallet-integration.md): connecting wallets to your app
+- [Onchain calls](../canister-calls/onchain-calls.md): how inter-canister calls work (ledger calls are inter-canister calls)
 
-{/* Upstream: informed by dfinity/portal docs/defi/token-standards/, docs/defi/token-integrations/ — icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/examples motoko/nft-creator */}
+{/* Upstream: informed by dfinity/portal docs/defi/token-standards/, docs/defi/token-integrations/: icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/examples motoko/nft-creator */}

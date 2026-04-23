@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them onchain — all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
+ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them onchain: all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
 
 For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion.md).
 
@@ -41,10 +41,10 @@ The EVM RPC canister supports Ethereum and several L2 networks out of the box. Y
 | Provider | Ethereum | Sepolia | Arbitrum | Base | Optimism |
 |---|---|---|---|---|---|
 | Alchemy | yes | yes | yes | yes | yes |
-| Ankr | yes | — | yes | yes | yes |
+| Ankr | yes | - | yes | yes | yes |
 | BlockPi | yes | yes | yes | yes | yes |
-| Cloudflare | yes | — | — | — | — |
-| LlamaNodes | yes | — | yes | yes | yes |
+| Cloudflare | yes | - | - | - | - |
+| LlamaNodes | yes | - | yes | yes | yes |
 | PublicNode | yes | yes | yes | yes | yes |
 
 Pass `null` (Motoko) or `None` (Rust) for the provider list to use all available defaults. To use a specific provider, pass it explicitly (e.g., `#EthMainnet(#PublicNode)` in Motoko, `RpcService::EthMainnet(EthMainnetService::PublicNode)` in Rust).
@@ -53,10 +53,10 @@ Pass `null` (Motoko) or `None` (Rust) for the provider list to use all available
 
 The EVM RPC canister offers two styles of API:
 
-- **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt` — these query multiple providers by default and return a `MultiRpcResult` with built-in consensus.
-- **Raw JSON-RPC** via the `request` method — sends a single JSON-RPC request to one provider. More flexible, but you handle parsing and consensus yourself.
+- **Typed Candid-RPC methods** like `eth_getBlockByNumber` and `eth_getTransactionReceipt`: these query multiple providers by default and return a `MultiRpcResult` with built-in consensus.
+- **Raw JSON-RPC** via the `request` method: sends a single JSON-RPC request to one provider. More flexible, but you handle parsing and consensus yourself.
 
-{/* Needs human verification: `canister:name` import syntax (e.g., `import EvmRpc "canister:evm_rpc"`) may not work with icp-cli; the Motoko team is redesigning canister discovery. The Motoko examples below use this syntax — verify the correct import approach with icp-cli before shipping. */}
+{/* Needs human verification: `canister:name` import syntax (e.g., `import EvmRpc "canister:evm_rpc"`) may not work with icp-cli; the Motoko team is redesigning canister discovery. The Motoko examples below use this syntax: verify the correct import approach with icp-cli before shipping. */}
 
 ### Get the latest block (typed API)
 
@@ -644,11 +644,11 @@ icp network start -d
 icp deploy -e local
 ```
 
-On mainnet, only the backend is deployed — the EVM RPC canister is already available at `7hfb6-caaaa-aaaar-qadga-cai`.
+On mainnet, only the backend is deployed. The EVM RPC canister is already available at `7hfb6-caaaa-aaaar-qadga-cai`.
 
 ### Testing via icp-cli
 
-Query methods (`requestCost`, `getProviders`) work directly from the CLI. Update calls require cycles — the CLI cannot attach cycles to a direct canister call. Test those through your backend canister's wrapper functions instead, since the backend attaches cycles to the inter-canister call internally:
+Query methods (`requestCost`, `getProviders`) work directly from the CLI. Update calls require cycles. The CLI cannot attach cycles to a direct canister call. Test those through your backend canister's wrapper functions instead, since the backend attaches cycles to the inter-canister call internally:
 
 ```bash
 # Query: estimate cost (no cycles needed)
@@ -699,11 +699,11 @@ ic-cdk = "0.20"
 
 ## Next steps
 
-- [Bitcoin integration](bitcoin.md) — similar patterns for BTC using the Bitcoin API
-- [Chain-key tokens](../defi/chain-key-tokens.md) — learn about ckETH and other chain-key tokens backed 1:1 by native assets
-- [Chain Fusion concepts](../../concepts/chain-fusion.md) — understand how ICP connects to external blockchains
-- [HTTPS outcalls](../backends/https-outcalls.md) — the underlying mechanism the EVM RPC canister uses
-- [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum) — complete end-to-end Rust example with address generation, signing, and transaction submission
-- [EVM RPC canister source](https://github.com/dfinity/evm-rpc-canister) — canister source code and Candid interface
+- [Bitcoin integration](bitcoin.md): similar patterns for BTC using the Bitcoin API
+- [Chain-key tokens](../defi/chain-key-tokens.md): learn about ckETH and other chain-key tokens backed 1:1 by native assets
+- [Chain Fusion concepts](../../concepts/chain-fusion.md): understand how ICP connects to external blockchains
+- [HTTPS outcalls](../backends/https-outcalls.md): the underlying mechanism the EVM RPC canister uses
+- [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum): complete end-to-end Rust example with address generation, signing, and transaction submission
+- [EVM RPC canister source](https://github.com/dfinity/evm-rpc-canister): canister source code and Candid interface
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/ethereum/*; dfinity/icskills — skills/evm-rpc/SKILL.md; dfinity/cdk-rs — ic-cdk/src/management_canister.rs */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/chain-fusion/ethereum/*; dfinity/icskills) skills/evm-rpc/SKILL.md; dfinity/cdk-rs: ic-cdk/src/management_canister.rs */}

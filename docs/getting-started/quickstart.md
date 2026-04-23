@@ -21,8 +21,8 @@ npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
 
 This installs:
 
-- **icp-cli** — builds and deploys canisters on the Internet Computer
-- **ic-wasm** — optimizes WebAssembly modules for onchain deployment
+- **icp-cli**: builds and deploys canisters on the Internet Computer
+- **ic-wasm**: optimizes WebAssembly modules for onchain deployment
 
 For Motoko projects, also install the Motoko package manager:
 
@@ -48,7 +48,7 @@ icp new my-project --subfolder hello-world \
   --define network_type=Default && cd my-project
 ```
 
-This creates a full-stack project from the `hello-world` template with a Motoko backend and React frontend. The `--define` flags skip interactive prompts — without them, `icp new` asks you to choose a template, language, and network type.
+This creates a full-stack project from the `hello-world` template with a Motoko backend and React frontend. The `--define` flags skip interactive prompts. Without them, `icp new` asks you to choose a template, language, and network type.
 
 > **Prefer Rust?** Use `--define backend_type=rust` instead. You'll need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
 
@@ -58,7 +58,7 @@ Your new project contains:
 
 | Path | Description |
 |------|-------------|
-| `icp.yaml` | Project configuration — lists your canisters |
+| `icp.yaml` | Project configuration: lists your canisters |
 | `backend/` | Motoko source code with a `greet` function |
 | `frontend/` | React app that calls the backend |
 
@@ -68,7 +68,7 @@ Your new project contains:
 icp network start -d
 ```
 
-This starts a local Internet Computer replica in the background. The local network comes pre-funded — you can deploy immediately without setting up a wallet or acquiring cycles.
+This starts a local Internet Computer replica in the background. The local network comes pre-funded. You can deploy immediately without setting up a wallet or acquiring cycles.
 
 ## Deploy
 
@@ -84,7 +84,7 @@ Deployed canisters:
   frontend: http://...localhost:8000
 ```
 
-Open the **frontend URL** in your browser to see your app running. The **Candid UI URL** opens a web interface where you can test backend methods directly — try calling `greet` with your name.
+Open the **frontend URL** in your browser to see your app running. The **Candid UI URL** opens a web interface where you can test backend methods directly. Try calling `greet` with your name.
 
 ## Call your canister
 
@@ -96,7 +96,7 @@ icp canister call backend greet '("World")'
 
 Output: `("Hello, World!")`
 
-The argument `'("World")'` uses [Candid](../reference/candid-spec.md) syntax — the interface description language for the Internet Computer. The outer single quotes are shell quoting; the Candid value itself is `("World")`. You can also omit the argument and `icp canister call` will prompt you interactively.
+The argument `'("World")'` uses [Candid](../reference/candid-spec.md) syntax (the interface description language for the Internet Computer). The outer single quotes are shell quoting; the Candid value itself is `("World")`. You can also omit the argument and `icp canister call` will prompt you interactively.
 
 ## Stop the network
 
@@ -108,11 +108,11 @@ icp network stop
 
 ## What's happening under the hood
 
-The hello-world template deploys two [canisters](../concepts/canisters.md) — smart contracts that run on the Internet Computer:
+The hello-world template deploys two [canisters](../concepts/canisters.md) that run on the Internet Computer:
 
-1. **Backend canister** — Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](../reference/candid-spec.md) interface, making it callable from any client.
+1. **Backend canister**: Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](../reference/candid-spec.md) interface, making it callable from any client.
 
-2. **Frontend canister** — An asset canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
+2. **Frontend canister**: An asset canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
 
 The `icp.yaml` file ties everything together:
 
@@ -122,14 +122,14 @@ canisters:
   - frontend
 ```
 
-Each canister name maps to a directory containing its own `canister.yaml` with build configuration (recipe, source files, etc.). icp-cli handles the rest — compiling, optimizing, deploying, and wiring up canister-to-canister discovery.
+Each canister name maps to a directory containing its own `canister.yaml` with build configuration (recipe, source files, etc.). icp-cli handles the rest: compiling, optimizing, deploying, and wiring up canister-to-canister discovery.
 
 ## Next steps
 
-- [Project structure](project-structure.md) — Understand how icp-cli projects are organized
-- [Choose your path](choose-your-path.md) — pick a development path based on what you want to build
-- [Concepts: Canisters](../concepts/canisters.md) — Learn what canisters are and how they work
-- [AI coding agents](../guides/tools/ai-coding-agents.md) — Use ICP skills to build on the Internet Computer with AI
-- [icp-cli documentation](https://cli.internetcomputer.org/) — Full CLI reference and guides
+- [Project structure](project-structure.md): understand how icp-cli projects are organized
+- [Choose your path](choose-your-path.md): pick a development path based on what you want to build
+- [Concepts: Canisters](../concepts/canisters.md): learn what canisters are and how they work
+- [AI coding agents](../guides/tools/ai-coding-agents.md): use ICP skills to build on the Internet Computer with AI
+- [icp-cli documentation](https://cli.internetcomputer.org/): full CLI reference and guides
 
 <!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->

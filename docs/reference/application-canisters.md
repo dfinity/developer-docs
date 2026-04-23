@@ -5,13 +5,13 @@ sidebar:
   order: 4
 ---
 
-Application canisters are well-known canisters at the application layer of the Internet Computer that developers commonly integrate into their projects. Unlike [system canisters](system-canisters.md) (which govern the network) or [protocol canisters](protocol-canisters.md) (which provide platform infrastructure), application canisters implement higher-level functionality: hosting web frontends, governing dapps via DAO, and running AI inference.
+Application canisters are well-known canisters at the application layer of the Internet Computer that developers commonly integrate into their projects. Unlike [system canisters](system-canisters.md) (which govern the network) or [protocol canisters](protocol-canisters.md) (which provide platform infrastructure), application canisters implement higher-level functionality: hosting web frontends, governing apps via DAO, and running AI inference.
 
 ## Asset canister
 
-The asset canister hosts static web assets — HTML, CSS, JavaScript, images, and other files — directly onchain. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
+The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly onchain. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
 
-Asset canisters are deployed per-project. There is no global asset canister ID — each project creates its own.
+Asset canisters are deployed per-project. There is no global asset canister ID: each project creates its own.
 
 ### Recipe (icp.yaml)
 
@@ -27,9 +27,9 @@ canisters:
           - npm run build
 ```
 
-- `recipe.type` — identifies this as an asset canister deployment
-- `dir` — the build output directory whose contents are uploaded
-- `build` — commands run automatically by `icp deploy` before uploading
+- `recipe.type`: identifies this as an asset canister deployment
+- `dir`: the build output directory whose contents are uploaded
+- `build`: commands run automatically by `icp deploy` before uploading
 
 ### Interface
 
@@ -104,9 +104,9 @@ Create `.ic-assets.json5` in your `dir` directory (or `public/`/`static/` so you
 ]
 ```
 
-- `security_policy: "standard"` — applies the default Content Security Policy and security headers
-- `allow_raw_access: false` — disables serving assets on the uncertified `raw.ic0.app` domain
-- `enable_aliasing: true` — enables SPA fallback, serving `index.html` for unmatched paths
+- `security_policy: "standard"`: applies the default Content Security Policy and security headers
+- `allow_raw_access: false`: disables serving assets on the uncertified `raw.ic0.app` domain
+- `enable_aliasing: true`: enables SPA fallback, serving `index.html` for unmatched paths
 
 ### Programmatic uploads
 
@@ -127,7 +127,7 @@ const assetManager = new AssetManager({
 });
 
 // Upload a file (files >1.9MB are chunked automatically)
-// fileBuffer: Uint8Array | ArrayBuffer | number[] — e.g. from fs.readFileSync, fetch, or the File API
+// fileBuffer: Uint8Array | ArrayBuffer | number[]: e.g. from fs.readFileSync, fetch, or the File API
 await assetManager.store(fileBuffer, {
   fileName: "photo.jpg",
   contentType: "image/jpeg",
@@ -145,7 +145,7 @@ await assetManager.delete("/uploads/old-photo.jpg");
 
 The asset canister Wasm version determines which features are available. Key versions:
 
-- `0.30.2`+ — required for the `ic_env` cookie (used by `safeGetCanisterEnv()` from `@icp-sdk/core`)
+- `0.30.2`+: required for the `ic_env` cookie (used by `safeGetCanisterEnv()` from `@icp-sdk/core`)
 - Omitting `configuration.version` in the recipe uses the latest version automatically
 
 Downgrading the Wasm version may fail if the stable memory format changed between versions. If a downgrade is necessary, use `icp deploy --mode reinstall` (wipes all stored assets).
@@ -156,7 +156,7 @@ For version history, upgrade guidance, and deployment pitfalls, see the [Asset c
 
 ## SNS canisters
 
-When an SNS (Service Nervous System) is launched for a dapp, the SNS-W canister deploys a set of governance canisters on an SNS subnet. These canisters are created per-dapp — there is no single global SNS. To find the canister IDs for a specific SNS, look up the dapp on the [ICP Dashboard](https://dashboard.internetcomputer.org/).
+When an SNS (Service Nervous System) is launched for an app, the SNS-W canister deploys a set of governance canisters on an SNS subnet. These canisters are created per-app: there is no single global SNS. To find the canister IDs for a specific SNS, look up the app on the [ICP Dashboard](https://dashboard.internetcomputer.org/).
 
 ### Canister set per SNS
 
@@ -164,7 +164,7 @@ When an SNS (Service Nervous System) is launched for a dapp, the SNS-W canister 
 |---|---|
 | **Governance** | Proposal submission, voting, neuron management |
 | **Ledger** | SNS token transfers (ICRC-1 standard) |
-| **Root** | Sole controller of all dapp canisters post-launch |
+| **Root** | Sole controller of all app canisters post-launch |
 | **Swap** | Runs the decentralization swap (ICP for SNS tokens) |
 | **Index** | Transaction indexing for the SNS ledger |
 | **Archive** | Historical transaction storage |
@@ -326,18 +326,18 @@ For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.
 | Canister | Canister ID | Purpose |
 |---|---|---|
 | Asset canister | Per-project | Static web asset hosting with HTTP certification |
-| SNS governance | Per-dapp | DAO governance for a specific dapp |
-| SNS ledger | Per-dapp | ICRC-1/ICRC-2/ICRC-3 token ledger for a specific SNS |
-| SNS root | Per-dapp | Controller of all dapp canisters in the SNS set |
-| SNS swap | Per-dapp | Decentralization swap (ICP for SNS tokens) |
+| SNS governance | Per-app | DAO governance for a specific app |
+| SNS ledger | Per-app | ICRC-1/ICRC-2/ICRC-3 token ledger for a specific SNS |
+| SNS root | Per-app | Controller of all app canisters in the SNS set |
+| SNS swap | Per-app | Decentralization swap (ICP for SNS tokens) |
 | LLM | `w36hm-eqaaa-aaaal-qr76a-cai` | Onchain AI inference (Llama 3.1 8B) |
 
 ## Next steps
 
-- [Asset canister guide](../guides/frontends/asset-canister.md) — deploying and configuring the asset canister for your project
-- [Launching an SNS](../guides/governance/launching.md) — how to decentralize a dapp with SNS
-- [Onchain AI](../guides/backends/onchain-ai.md) — building AI-powered canisters with the LLM canister
-- [System canisters](system-canisters.md) — NNS, Internet Identity, ICP ledger, and other network-level canisters
-- [Protocol canisters](protocol-canisters.md) — Bitcoin, ckBTC, EVM RPC, and other protocol-layer canisters
+- [Asset canister guide](../guides/frontends/asset-canister.md): deploying and configuring the asset canister for your project
+- [Launching an SNS](../guides/governance/launching.md): how to decentralize an app with SNS
+- [Onchain AI](../guides/backends/onchain-ai.md): building AI-powered canisters with the LLM canister
+- [System canisters](system-canisters.md): NNS, Internet Identity, ICP ledger, and other network-level canisters
+- [Protocol canisters](protocol-canisters.md): Bitcoin, ckBTC, EVM RPC, and other protocol-layer canisters
 
 <!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, skills/sns-launch/SKILL.md; dfinity/portal — docs/references/asset-canister.mdx; dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot -->

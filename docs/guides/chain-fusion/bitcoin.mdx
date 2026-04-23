@@ -7,12 +7,12 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-ICP provides a protocol-level integration with the Bitcoin network. Canisters can hold BTC, generate Bitcoin addresses, build transactions, sign them with threshold ECDSA or Schnorr signatures, and submit them to the Bitcoin network — all without bridges or oracles.
+ICP provides a protocol-level integration with the Bitcoin network. Canisters can hold BTC, generate Bitcoin addresses, build transactions, sign them with threshold ECDSA or Schnorr signatures, and submit them to the Bitcoin network: all without bridges or oracles.
 
 There are two approaches to working with Bitcoin on ICP:
 
-- **ckBTC (chain-key Bitcoin)** — a 1:1 BTC-backed token native to ICP. Transfers settle in 1-2 seconds with a 10 satoshi fee. Best for most applications that need to accept, hold, or transfer Bitcoin value.
-- **Direct Bitcoin API** — call the management canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
+- **ckBTC (chain-key Bitcoin)**: a 1:1 BTC-backed token native to ICP. Transfers settle in 1-2 seconds with a 10 satoshi fee. Best for most applications that need to accept, hold, or transfer Bitcoin value.
+- **Direct Bitcoin API**: call the management canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
 
 This guide covers both approaches.
 
@@ -27,7 +27,7 @@ ckBTC is the recommended path for most developers. The ckBTC minter canister hol
 | ckBTC Ledger | `mxzaz-hqaaa-aaaar-qaada-cai` | `mc6ru-gyaaa-aaaar-qaaaq-cai` |
 | ckBTC Minter | `mqygn-kiaaa-aaaar-qaadq-cai` | `ml52i-qqaaa-aaaar-qaaba-cai` |
 | ckBTC Index | `n5wcd-faaaa-aaaar-qaaea-cai` | `mm444-5iaaa-aaaar-qaabq-cai` |
-| ckBTC Checker | `oltsj-fqaaa-aaaar-qal5q-cai` | — |
+| ckBTC Checker | `oltsj-fqaaa-aaaar-qal5q-cai` | - |
 
 ### Deposit flow (BTC to ckBTC)
 
@@ -447,11 +447,11 @@ For use cases that require full control over Bitcoin transactions (custom script
 
 The Bitcoin canister exposes these methods:
 
-- `bitcoin_get_balance` — returns the balance of a Bitcoin address in satoshis
-- `bitcoin_get_utxos` — returns unspent transaction outputs for an address
-- `bitcoin_get_current_fee_percentiles` — returns fee percentiles from recent transactions
-- `bitcoin_get_block_headers` — returns raw block headers for a height range
-- `bitcoin_send_transaction` — submits a signed transaction to the Bitcoin network
+- `bitcoin_get_balance`: returns the balance of a Bitcoin address in satoshis
+- `bitcoin_get_utxos`: returns unspent transaction outputs for an address
+- `bitcoin_get_current_fee_percentiles`: returns fee percentiles from recent transactions
+- `bitcoin_get_block_headers`: returns raw block headers for a height range
+- `bitcoin_send_transaction`: submits a signed transaction to the Bitcoin network
 
 The `ic-cdk-bitcoin-canister` crate provides `get_blockchain_info()` for querying blockchain state (current height, chain tip hash, timestamp, etc.):
 
@@ -461,9 +461,9 @@ use ic_cdk_bitcoin_canister::get_blockchain_info;
 let info = get_blockchain_info(get_network())
     .await
     .expect("Failed to get blockchain info");
-// info.height     — current chain height
-// info.block_hash — chain tip block hash (hex)
-// info.timestamp  — tip block timestamp
+// info.height    : current chain height
+// info.block_hash: chain tip block hash (hex)
+// info.timestamp : tip block timestamp
 ```
 
 Add to `Cargo.toml` alongside `ic-cdk`:
@@ -474,8 +474,8 @@ ic-cdk-bitcoin-canister = "0.2"
 
 The threshold signature system provides:
 
-- `ecdsa_public_key` / `sign_with_ecdsa` — for standard Bitcoin (P2PKH, P2SH) addresses
-- `schnorr_public_key` / `sign_with_schnorr` — for Taproot (P2TR) addresses
+- `ecdsa_public_key` / `sign_with_ecdsa`: for standard Bitcoin (P2PKH, P2SH) addresses
+- `schnorr_public_key` / `sign_with_schnorr`: for Taproot (P2TR) addresses
 
 All Bitcoin API calls require cycles. The `ic-cdk-bitcoin-canister` crate handles cycle calculation and attachment automatically.
 
@@ -591,9 +591,9 @@ Building a full Bitcoin transaction flow involves these steps:
 
 The complete implementation for all steps (address generation, transaction construction, signing, and submission) is more than 30 lines per language. See these working examples:
 
-- [basic_bitcoin (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/basic_bitcoin) — full send/receive with ECDSA and Schnorr
-- [basic_bitcoin (Rust)](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin) — full send/receive with ECDSA and Schnorr
-- [threshold-ecdsa (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/threshold-ecdsa) — ECDSA signing
+- [basic_bitcoin (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/basic_bitcoin): full send/receive with ECDSA and Schnorr
+- [basic_bitcoin (Rust)](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin): full send/receive with ECDSA and Schnorr
+- [threshold-ecdsa (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/threshold-ecdsa): ECDSA signing
 
 ### Cycle costs
 
@@ -727,12 +727,12 @@ docker stop bitcoind && docker rm bitcoind
 
 ## Next steps
 
-- [Chain fusion overview](../../concepts/chain-fusion.md) — understand how ICP integrates with external blockchains
-- [Chain-key cryptography](../../concepts/chain-key-cryptography.md) — learn how threshold ECDSA and Schnorr signatures work
-- [Chain-key tokens](../defi/chain-key-tokens.md) — explore ckBTC, ckETH, and other chain-key tokens
-- [Ethereum integration](ethereum.md) — apply similar patterns for Ethereum
-- [Management canister reference](../../reference/management-canister.md) — full API reference for `bitcoin_get_utxos`, `sign_with_ecdsa`, and other management canister methods
-- [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md) — detailed API documentation
-- [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084) — protocol-level details of how ICP connects to Bitcoin
+- [Chain fusion overview](../../concepts/chain-fusion.md): understand how ICP integrates with external blockchains
+- [Chain-key cryptography](../../concepts/chain-key-cryptography.md): learn how threshold ECDSA and Schnorr signatures work
+- [Chain-key tokens](../defi/chain-key-tokens.md): explore ckBTC, ckETH, and other chain-key tokens
+- [Ethereum integration](ethereum.md): apply similar patterns for Ethereum
+- [Management canister reference](../../reference/management-canister.md): full API reference for `bitcoin_get_utxos`, `sign_with_ecdsa`, and other management canister methods
+- [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
+- [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
 
-{/* Upstream: informed by dfinity/portal — docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx; dfinity/icskills — skills/ckbtc/SKILL.md; dfinity/icp-cli-templates — bitcoin-starter/; dfinity/cdk-rs — ic-cdk-bitcoin-canister 0.2 */}
+{/* Upstream: informed by dfinity/portal (docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx; dfinity/icskills) skills/ckbtc/SKILL.md; dfinity/icp-cli-templates (bitcoin-starter/; dfinity/cdk-rs) ic-cdk-bitcoin-canister 0.2 */}

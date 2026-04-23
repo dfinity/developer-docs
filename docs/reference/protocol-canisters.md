@@ -33,11 +33,11 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 
 The Bitcoin canisters expose endpoints for reading UTXOs, balances, and block headers, and for submitting transactions. These mirror the management canister Bitcoin API:
 
-- `bitcoin_get_utxos` — returns UTXOs for a Bitcoin address
-- `bitcoin_get_balance` — returns the balance of a Bitcoin address in satoshi
-- `bitcoin_send_transaction` — submits a signed Bitcoin transaction
-- `bitcoin_get_current_fee_percentiles` — returns fee percentiles in millisatoshi/vbyte
-- `bitcoin_get_block_headers` — returns block headers for a range of heights
+- `bitcoin_get_utxos`: returns UTXOs for a Bitcoin address
+- `bitcoin_get_balance`: returns the balance of a Bitcoin address in satoshi
+- `bitcoin_send_transaction`: submits a signed Bitcoin transaction
+- `bitcoin_get_current_fee_percentiles`: returns fee percentiles in millisatoshi/vbyte
+- `bitcoin_get_block_headers`: returns block headers for a range of heights
 
 For integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
 
@@ -74,18 +74,18 @@ The ckBTC minter has the following key parameters:
 
 ### ckBTC minter endpoints
 
-- `get_btc_address(owner, subaccount)` — returns a unique Bitcoin deposit address for the given principal and subaccount
-- `get_known_utxos(owner, subaccount)` — returns UTXOs already processed by the minter for the given account
-- `update_balance(owner, subaccount)` — checks for new UTXOs and mints ckBTC for any newly confirmed deposits
-- `estimate_withdrawal_fee(amount)` — estimates the fee for retrieving a given BTC amount
-- `get_deposit_fee` — returns the current fee charged when minting ckBTC (currently the KYT fee)
-- `retrieve_btc_with_approval(address, amount, from_subaccount)` — burns ckBTC (using an ICRC-2 approval) and sends the equivalent BTC to the given Bitcoin address
-- `retrieve_btc(address, amount)` — alternative withdrawal flow that requires transferring ckBTC to the minter's withdrawal account first; prefer `retrieve_btc_with_approval` for new integrations
-- `get_withdrawal_account` — returns the caller's withdrawal account for use with `retrieve_btc`
-- `retrieve_btc_status_v2(block_index)` — returns the status of a previous withdrawal request
-- `retrieve_btc_status_v2_by_account(account)` — returns statuses for all recent withdrawal requests from the given account
-- `get_minter_info` — returns current minter parameters
-- `get_events(start, length)` — returns the minter's internal event log (for debugging)
+- `get_btc_address(owner, subaccount)`: returns a unique Bitcoin deposit address for the given principal and subaccount
+- `get_known_utxos(owner, subaccount)`: returns UTXOs already processed by the minter for the given account
+- `update_balance(owner, subaccount)`: checks for new UTXOs and mints ckBTC for any newly confirmed deposits
+- `estimate_withdrawal_fee(amount)`: estimates the fee for retrieving a given BTC amount
+- `get_deposit_fee`: returns the current fee charged when minting ckBTC (currently the KYT fee)
+- `retrieve_btc_with_approval(address, amount, from_subaccount)`: burns ckBTC (using an ICRC-2 approval) and sends the equivalent BTC to the given Bitcoin address
+- `retrieve_btc(address, amount)`: alternative withdrawal flow that requires transferring ckBTC to the minter's withdrawal account first; prefer `retrieve_btc_with_approval` for new integrations
+- `get_withdrawal_account`: returns the caller's withdrawal account for use with `retrieve_btc`
+- `retrieve_btc_status_v2(block_index)`: returns the status of a previous withdrawal request
+- `retrieve_btc_status_v2_by_account(account)`: returns statuses for all recent withdrawal requests from the given account
+- `get_minter_info`: returns current minter parameters
+- `get_events(start, length)`: returns the minter's internal event log (for debugging)
 
 ### Deposit and withdrawal flows
 
@@ -156,10 +156,10 @@ The following providers are available without API keys:
 | Provider | Ethereum | Sepolia | Arbitrum | Base | Optimism |
 |---|---|---|---|---|---|
 | Alchemy | yes | yes | yes | yes | yes |
-| Ankr | yes | — | yes | yes | yes |
+| Ankr | yes | - | yes | yes | yes |
 | BlockPi | yes | yes | yes | yes | yes |
-| Cloudflare | yes | — | — | — | — |
-| LlamaNodes | yes | — | yes | yes | yes |
+| Cloudflare | yes | - | - | - | - |
+| LlamaNodes | yes | - | yes | yes | yes |
 | PublicNode | yes | yes | yes | yes | yes |
 
 ### Cycle costs
@@ -170,11 +170,11 @@ Each call requires cycles attached. The cost formula is:
 (5_912_000 + 60_000 * nodes + 2400 * request_bytes + 800 * max_response_bytes) * nodes * rpc_count
 ```
 
-Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers queried. For a practical starting budget, attach 10B cycles per call — unused cycles are refunded. Use the `requestCost` method to get an exact estimate before calling.
+Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers queried. For a practical starting budget, attach 10B cycles per call: unused cycles are refunded. Use the `requestCost` method to get an exact estimate before calling.
 
 ### Consensus
 
-By default, the canister requires all providers to agree (`Equality` consensus). For calls like `eth_getBlockByNumber("latest")` where providers may be 1-2 blocks apart, use threshold consensus instead: 2-of-3 agreement. Multi-provider results are returned as `MultiRpcResult::Consistent(result)` or `MultiRpcResult::Inconsistent(results)` — always handle both variants.
+By default, the canister requires all providers to agree (`Equality` consensus). For calls like `eth_getBlockByNumber("latest")` where providers may be 1-2 blocks apart, use threshold consensus instead: 2-of-3 agreement. Multi-provider results are returned as `MultiRpcResult::Consistent(result)` or `MultiRpcResult::Inconsistent(results)`: always handle both variants.
 
 For integration examples, see the [Ethereum guide](../guides/chain-fusion/ethereum.md).
 
@@ -242,7 +242,7 @@ Unused cycles are refunded. At least 1M cycles are charged even on error, to pre
 
 ### Example call
 
-Calling the XRC requires attaching cycles, which is only possible from canister-to-canister calls. The CLI cannot attach cycles to direct calls. Call the XRC from a canister using the Candid interface — pass the required cycles in the `ic_cdk::api::call::call_with_payment128` call or equivalent.
+Calling the XRC requires attaching cycles, which is only possible from canister-to-canister calls. The CLI cannot attach cycles to direct calls. Call the XRC from a canister using the Candid interface: pass the required cycles in the `ic_cdk::api::call::call_with_payment128` call or equivalent.
 
 To query the current rate without attaching cycles (for inspection only, expect a `NotEnoughCycles` error on mainnet):
 
@@ -286,9 +286,9 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 
 ## Next steps
 
-- [Bitcoin guide](../guides/chain-fusion/bitcoin.md) — integrating Bitcoin in canisters using the Bitcoin canister and ckBTC
-- [Ethereum guide](../guides/chain-fusion/ethereum.md) — integrating Ethereum in canisters using the EVM RPC canister and ckETH
-- [System canisters](system-canisters.md) — NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
-- [Management canister](management-canister.md) — the virtual canister for canister lifecycle, signing, and platform APIs
+- [Bitcoin guide](../guides/chain-fusion/bitcoin.md): integrating Bitcoin in canisters using the Bitcoin canister and ckBTC
+- [Ethereum guide](../guides/chain-fusion/ethereum.md): integrating Ethereum in canisters using the EVM RPC canister and ckETH
+- [System canisters](system-canisters.md): NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
+- [Management canister](management-canister.md): the virtual canister for canister lifecycle, signing, and platform APIs
 
 <!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->

@@ -1,13 +1,13 @@
 ---
 title: "Verifiable Credentials"
-description: "Issue and verify credentials on ICP using Internet Identity and the VC protocol — covers issuer and relying party integration patterns."
+description: "Issue and verify credentials on ICP using Internet Identity and the VC protocol: covers issuer and relying party integration patterns."
 sidebar:
   order: 2
 ---
 
-A verifiable credential (VC) is a cryptographically signed digital attestation about a user — for example, that they are over 18, passed KYC, or are a member of an organization. On ICP, verifiable credentials are issued by canister-based issuers, mediated by Internet Identity, and consumed by relying party applications.
+A verifiable credential (VC) is a cryptographically signed digital attestation about a user: for example, that they are over 18, passed KYC, or are a member of an organization. On ICP, verifiable credentials are issued by canister-based issuers, mediated by Internet Identity, and consumed by relying party applications.
 
-This guide covers the VC architecture on ICP, how the protocol works, and how to implement both sides of the flow — issuer and relying party.
+This guide covers the VC architecture on ICP, how the protocol works, and how to implement both sides of the flow: issuer and relying party.
 
 **Choose your path:** If you are building a service that attests claims about users (age verification, KYC, membership), go to [Implementing an issuer](#implementing-an-issuer). If you are building an app that requests credentials from an issuer to gate access, go to [Implementing a relying party](#implementing-a-relying-party).
 
@@ -15,12 +15,12 @@ This guide covers the VC architecture on ICP, how the protocol works, and how to
 
 The VC protocol on ICP involves four actors:
 
-- **User** — the person who holds the credential and consents to share it.
-- **Issuer** — a canister (or service) that verifies claims about a user and issues credentials. Examples: an age verification service, an employer, a KYC provider.
-- **Relying party** — a canister or application that requests credentials from an issuer to gate access or provide personalized experiences.
-- **Identity provider** — Internet Identity, which acts as the communication bridge between the relying party and the issuer. Critically, II creates a temporary `id_alias` identifier so the issuer and relying party never learn each other's user principal — preserving unlinkability.
+- **User**: the person who holds the credential and consents to share it.
+- **Issuer**: a canister (or service) that verifies claims about a user and issues credentials. Examples: an age verification service, an employer, a KYC provider.
+- **Relying party**: a canister or application that requests credentials from an issuer to gate access or provide personalized experiences.
+- **Identity provider**: Internet Identity, which acts as the communication bridge between the relying party and the issuer. Critically, II creates a temporary `id_alias` identifier so the issuer and relying party never learn each other's user principal: preserving unlinkability.
 
-The flow always runs through Internet Identity: the relying party requests a credential, II prompts the user for consent, II contacts the issuer, and the resulting signed credential is returned to the relying party. The issuer and relying party communicate only through II — they never exchange data directly.
+The flow always runs through Internet Identity: the relying party requests a credential, II prompts the user for consent, II contacts the issuer, and the resulting signed credential is returned to the relying party. The issuer and relying party communicate only through II: they never exchange data directly.
 
 ## How the protocol works
 
@@ -29,7 +29,7 @@ The flow always runs through Internet Identity: the relying party requests a cre
 1. The user visits the relying party and triggers a credential request (for example, by trying to access a members-only feature).
 2. The relying party opens an Internet Identity window at the `/vc-flow` path.
 3. II shows the user a consent dialog that identifies the relying party, the issuer, and the requested credential type.
-4. If the user approves, II creates an `id_alias` — an opaque temporary identifier unique to this RP/issuer pair.
+4. If the user approves, II creates an `id_alias`: an opaque temporary identifier unique to this RP/issuer pair.
 5. II calls the issuer's `prepare_credential` and `get_credential` endpoints. The issuer returns a signed JWT credential bound to the `id_alias`.
 6. II returns a verifiable presentation (VP) to the relying party. The VP contains two nested JWTs:
    - An **id-alias credential** signed by II, proving that the relying party's user principal maps to the `id_alias`.
@@ -53,7 +53,7 @@ The relying party then sends a `request_credential` message (see [Relying party]
 
 ## Implementing an issuer
 
-An issuer is a canister that exposes four API endpoints. Internet Identity calls these endpoints on behalf of users during the VC flow. The issuer never opens connections itself — it responds to calls from II.
+An issuer is a canister that exposes four API endpoints. Internet Identity calls these endpoints on behalf of users during the VC flow. The issuer never opens connections itself: it responds to calls from II.
 
 ### Issuer API endpoints
 
@@ -97,7 +97,7 @@ Issues the signed credential. This endpoint:
 - Verifies that `prepared_context` is consistent with the earlier preparation step.
 - Returns the signed credential as a JWT.
 
-The credential is signed using a [canister signature](../../reference/ic-interface-spec.md) — a signature produced by the canister's key, not an ECDSA or Ed25519 key. This means the canister must update `certified_data` in `prepare_credential` before the signature becomes available in `get_credential`.
+The credential is signed using a [canister signature](../../reference/ic-interface-spec.md): a signature produced by the canister's key, not an ECDSA or Ed25519 key. This means the canister must update `certified_data` in `prepare_credential` before the signature becomes available in `get_credential`.
 
 ### Credential format convention
 
@@ -132,7 +132,7 @@ The `credentialType` value is used as the key in `credentialSubject`, and the ar
 
 A compliant issuer for age verification would implement `prepare_credential` to check whether the user has a verified date of birth on record, and `get_credential` to return a signed JWT attesting `VerifiedAdult` with `minAge: 18`.
 
-For complete Rust implementations of all four API endpoints, see the [vc-playground issuer example](https://github.com/dfinity/vc-playground/blob/main/issuer/src/main.rs). This is the primary reference implementation — the four endpoints above require careful handling of canister signatures and certified data, and the reference implementation shows the complete pattern including error handling and Candid interface definitions.
+For complete Rust implementations of all four API endpoints, see the [vc-playground issuer example](https://github.com/dfinity/vc-playground/blob/main/issuer/src/main.rs). This is the primary reference implementation. The four endpoints above require careful handling of canister signatures and certified data, and the reference implementation shows the complete pattern including error handling and Candid interface definitions.
 
 <!-- Needs human verification: exact Rust function signatures for all four issuer endpoints — vc-playground is not in .sources/ so code cannot be verified inline -->
 
@@ -146,14 +146,14 @@ A relying party requests credentials from issuers through Internet Identity. The
 
 ### Using the JavaScript SDK
 
-The [@dfinity/verifiable-credentials](https://www.npmjs.com/package/@dfinity/verifiable-credentials) package handles the window messaging protocol for you. This is a dedicated VC package — it is separate from the `@icp-sdk/*` family used for general authentication.
+The [@dfinity/verifiable-credentials](https://www.npmjs.com/package/@dfinity/verifiable-credentials) package handles the window messaging protocol for you. This is a dedicated VC package: it is separate from the `@icp-sdk/*` family used for general authentication.
 
 ```javascript
 import { requestVerifiablePresentation } from "@dfinity/verifiable-credentials/request-verifiable-presentation";
 
 requestVerifiablePresentation({
   onSuccess: async (verifiablePresentation) => {
-    // verifiablePresentation is a JWT string — validate it before trusting it
+    // verifiablePresentation is a JWT string: validate it before trusting it
     console.log("Received VP:", verifiablePresentation);
   },
   onError(err) {
@@ -184,13 +184,13 @@ The SDK:
 - Sends the `request_credential` JSON-RPC call.
 - Calls `onSuccess` with the VP JWT on success, or `onError` if the user cancels or an error occurs.
 
-**Note:** `onSuccess` fires when the VP is received — it does not mean the credential is valid. You must verify the VP before acting on it.
+**Note:** `onSuccess` fires when the VP is received: it does not mean the credential is valid. You must verify the VP before acting on it.
 
 ### Manual integration
 
 If you prefer to implement the window message protocol yourself, the three steps are:
 
-**Step 1 — Open the II window**
+**Step 1: Open the II window**
 
 Open a window to the identity provider's `/vc-flow` path:
 
@@ -200,7 +200,7 @@ const iiWindow = window.open("https://id.ai/vc-flow");
 
 Wait for the `vc-flow-ready` postMessage from II before sending a request.
 
-**Step 2 — Send the credential request**
+**Step 2: Send the credential request**
 
 Send a JSON-RPC `request_credential` message:
 
@@ -236,7 +236,7 @@ Parameters:
 | `credentialSubject` | Yes | The user's principal at the relying party |
 | `derivationOrigin` | No | Alternative derivation origin for the RP's principal |
 
-**Step 3 — Receive and handle the response**
+**Step 3: Receive and handle the response**
 
 On success, II returns:
 
@@ -289,8 +289,8 @@ The VP is a JWT with no signature in the outer layer. Decoded, it contains:
 
 The `verifiableCredential` array always contains exactly two JWTs in this order:
 
-1. **id-alias credential** — signed by Internet Identity. Proves that the relying party's user principal maps to the `id_alias`.
-2. **Issued credential** — signed by the issuer. The subject is the `id_alias`.
+1. **id-alias credential**: signed by Internet Identity. Proves that the relying party's user principal maps to the `id_alias`.
+2. **Issued credential**: signed by the issuer. The subject is the `id_alias`.
 
 **id-alias credential decoded:**
 
@@ -354,7 +354,7 @@ From the **issued credential**:
 - The arguments in `vc.credentialSubject.<credential-type>` match what was requested.
 
 Cross-credential check:
-- The `sub` of the issued credential matches `vc.credentialSubject.InternetIdentityIdAlias.hasIdAlias` from the id-alias credential. Note that this `sub` value uses the `did:` URI scheme (for example, `did:ic:...`) — it is not a bare principal text. Compare the full DID string, not just the principal portion.
+- The `sub` of the issued credential matches `vc.credentialSubject.InternetIdentityIdAlias.hasIdAlias` from the id-alias credential. Note that this `sub` value uses the `did:` URI scheme (for example, `did:ic:...`): it is not a bare principal text. Compare the full DID string, not just the principal portion.
 
 This chain confirms that the issuer attested the claim for the same `id_alias` that II linked to your user's principal.
 
@@ -389,9 +389,9 @@ The II frontend will be available at `http://id.ai.localhost:8000`. Point your `
 
 The VC protocol provides the following privacy guarantees:
 
-- **Unlinkability** — The issuer learns the user's `id_alias`, not their principal at the relying party. The relying party learns the `id_alias`, not the user's principal at the issuer. Neither party can correlate the user's identity across both services.
-- **User consent** — No credential is issued without the user explicitly approving the consent dialog shown by Internet Identity.
-- **Opaque errors** — Error responses from II do not reveal why a credential request failed, preventing information leakage about the user's status at the issuer.
+- **Unlinkability**: The issuer learns the user's `id_alias`, not their principal at the relying party. The relying party learns the `id_alias`, not the user's principal at the issuer. Neither party can correlate the user's identity across both services.
+- **User consent**: No credential is issued without the user explicitly approving the consent dialog shown by Internet Identity.
+- **Opaque errors**: Error responses from II do not reveal why a credential request failed, preventing information leakage about the user's status at the issuer.
 
 ## Next steps
 

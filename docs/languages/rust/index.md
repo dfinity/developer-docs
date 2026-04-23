@@ -13,7 +13,7 @@ The Rust CDK is split into focused crates that you pull in as needed:
 
 | Crate | Purpose |
 |-------|---------|
-| [`ic-cdk`](https://crates.io/crates/ic-cdk) | Core library — system API bindings, inter-canister calls, canister state |
+| [`ic-cdk`](https://crates.io/crates/ic-cdk) | Core library: system API bindings, inter-canister calls, canister state |
 | [`ic-cdk-macros`](https://crates.io/crates/ic-cdk-macros) | Procedural macros that register Rust functions as canister entry points (re-exported by `ic-cdk`) |
 | [`ic-cdk-timers`](https://crates.io/crates/ic-cdk-timers) | One-shot and periodic timer scheduling |
 
@@ -21,7 +21,7 @@ You will also commonly use these companion crates:
 
 | Crate | Purpose |
 |-------|---------|
-| [`candid`](https://crates.io/crates/candid) | Candid serialization — types, encoding, decoding |
+| [`candid`](https://crates.io/crates/candid) | Candid serialization: types, encoding, decoding |
 | [`ic-stable-structures`](https://crates.io/crates/ic-stable-structures) | Persistent data structures that survive canister upgrades (see [Stable Structures](stable-structures.md)) |
 
 ## Quick example
@@ -80,7 +80,7 @@ icp new my_project --subfolder rust
 
 This generates an `icp.yaml` with a Rust canister recipe and a Cargo workspace. The key files are:
 
-**icp.yaml** — declares the canister and its build recipe:
+**icp.yaml**: declares the canister and its build recipe:
 
 ```yaml
 canisters:
@@ -92,7 +92,7 @@ canisters:
         shrink: true
 ```
 
-**Cargo.toml** — must set the crate type to `cdylib` so the compiler produces a Wasm module:
+**Cargo.toml**: must set the crate type to `cdylib` so the compiler produces a Wasm module:
 
 ```toml
 [lib]
@@ -184,12 +184,12 @@ async fn fire_and_forget() {
 
 ## Data persistence
 
-Rust canisters on ICP benefit from [orthogonal persistence](../../concepts/orthogonal-persistence.md) — heap data is preserved across update calls automatically. However, heap data is **lost during canister upgrades** unless you explicitly save and restore it.
+Rust canisters on ICP benefit from [orthogonal persistence](../../concepts/orthogonal-persistence.md): heap data is preserved across update calls automatically. However, heap data is **lost during canister upgrades** unless you explicitly save and restore it.
 
 Two strategies for handling upgrades:
 
-1. **Stable structures** — use the `ic-stable-structures` crate to store data in stable memory, which survives upgrades without any serialization. This is the recommended approach. See [Stable Structures](stable-structures.md).
-2. **Pre/post upgrade hooks** — serialize heap data in `#[pre_upgrade]` and deserialize in `#[post_upgrade]`. Simpler for small state but does not scale well.
+1. **Stable structures**: use the `ic-stable-structures` crate to store data in stable memory, which survives upgrades without any serialization. This is the recommended approach. See [Stable Structures](stable-structures.md).
+2. **Pre/post upgrade hooks**: serialize heap data in `#[pre_upgrade]` and deserialize in `#[post_upgrade]`. Simpler for small state but does not scale well.
 
 For a deeper look at persistence patterns across languages, see the [Data persistence guide](../../guides/backends/data-persistence.md).
 
@@ -210,11 +210,11 @@ Most crates that target `wasm32-unknown-unknown` for browser use (via `wasm-bind
 
 ## Further reading
 
-- [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
-- [Stable Structures](stable-structures.md) — Persistent data structures for Rust canisters
-- [Testing Rust Canisters](testing.md) — Unit and integration testing strategies
-- [`ic-cdk` API docs](https://docs.rs/ic-cdk) — Complete API reference
-- [`ic-cdk-timers` API docs](https://docs.rs/ic-cdk-timers) — Timer scheduling API
-- [Motoko](../motoko/index.md) — Alternative language for ICP canister development
+- [Quickstart](../../getting-started/quickstart.md): Create and deploy your first canister
+- [Stable Structures](stable-structures.md): Persistent data structures for Rust canisters
+- [Testing Rust Canisters](testing.md): Unit and integration testing strategies
+- [`ic-cdk` API docs](https://docs.rs/ic-cdk): Complete API reference
+- [`ic-cdk-timers` API docs](https://docs.rs/ic-cdk-timers): Timer scheduling API
+- [Motoko](../motoko/index.md): Alternative language for ICP canister development
 
 <!-- Upstream: informed by dfinity/cdk-rs ic-cdk/README.md, dfinity/portal docs/building-apps/developer-tools/cdks/rust/ -->

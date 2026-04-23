@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-Canister snapshots capture the full state of a canister — its compiled Wasm module, Wasm heap memory, stable memory, certified variables, and chunk store — at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
+Canister snapshots capture the full state of a canister (its compiled Wasm module, Wasm heap memory, stable memory, certified variables, and chunk store) at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
 
 Only controllers of a canister can create or restore snapshots. Up to 10 snapshots per canister can be stored on-chain at a time.
 
@@ -13,9 +13,9 @@ Only controllers of a canister can create or restore snapshots. Up to 10 snapsho
 
 Snapshots are useful in three situations:
 
-- **Pre-upgrade backup** — Take a snapshot before deploying an upgrade. If the upgrade introduces a bug or breaks state, restore the snapshot to roll back instantly.
-- **Disaster recovery** — If a canister traps with an unrecoverable error and you have a snapshot, you can restore the canister to its last known-good state.
-- **State transfer** — Download a snapshot to disk, then upload it to another canister. This is the foundation of canister migration between subnets.
+- **Pre-upgrade backup**: Take a snapshot before deploying an upgrade. If the upgrade introduces a bug or breaks state, restore the snapshot to roll back instantly.
+- **Disaster recovery**: If a canister traps with an unrecoverable error and you have a snapshot, you can restore the canister to its last known-good state.
+- **State transfer**: Download a snapshot to disk, then upload it to another canister. This is the foundation of canister migration between subnets.
 
 ## Creating a snapshot
 
@@ -147,7 +147,7 @@ icp canister start my-canister -e ic
 
 ## Example: transferring state between canisters
 
-Download a snapshot from a source canister and upload it to a target canister. This download-then-upload workflow is the foundation of canister migration between subnets — direct restore (`load_canister_snapshot`) only works within the same subnet, so cross-subnet transfer requires downloading the snapshot locally first and uploading it to the target.
+Download a snapshot from a source canister and upload it to a target canister. This download-then-upload workflow is the foundation of canister migration between subnets: direct restore (`load_canister_snapshot`) only works within the same subnet, so cross-subnet transfer requires downloading the snapshot locally first and uploading it to the target.
 
 All snapshot commands accept either canister names (with `-e`) or canister IDs (with `-n`). Use `-n ic` when the target canister is not part of your project.
 
@@ -178,8 +178,8 @@ icp canister status my-canister -e ic
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.md) — Understand how snapshots fit into the upgrade workflow
-- [Canister upgrades security](../security/canister-upgrades.md) — Security considerations when using snapshot-based rollbacks
-- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/) — Full command reference for all snapshot subcommands
+- [Canister lifecycle](lifecycle.md): Understand how snapshots fit into the upgrade workflow
+- [Canister upgrades security](../security/canister-upgrades.md): Security considerations when using snapshot-based rollbacks
+- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/): Full command reference for all snapshot subcommands
 
 <!-- Upstream: informed by dfinity/icp-cli docs/guides/canister-snapshots.md; dfinity/portal docs/building-apps/canister-management/snapshots.mdx -->

@@ -11,13 +11,13 @@ This guide covers both implementations, focusing on what exchange operators and 
 
 ## What is Rosetta?
 
-Rosetta defines a uniform HTTP API for blockchain integrations. Clients — exchanges, custody platforms, analytics tools — interact with a Rosetta node rather than directly with chain-specific APIs. This lowers integration cost for operators already supporting other chains.
+Rosetta defines a uniform HTTP API for blockchain integrations. Clients (exchanges, custody platforms, analytics tools) interact with a Rosetta node rather than directly with chain-specific APIs. This lowers integration cost for operators already supporting other chains.
 
 ICP Rosetta exposes the standard Rosetta endpoints:
 
-- **Data API** — query balances, blocks, and transactions
-- **Construction API** — create and sign transactions offline, then submit them
-- **Network API** — network status and configuration
+- **Data API**: query balances, blocks, and transactions
+- **Construction API**: create and sign transactions offline, then submit them
+- **Network API**: network status and configuration
 
 Both ICP Rosetta and ICRC Rosetta implement the full Rosetta specification and pass all `rosetta-cli` tests.
 
@@ -43,7 +43,7 @@ Pull the official image:
 docker pull dfinity/rosetta-api
 ```
 
-**Test environment** — uses TESTICP tokens with no real value. Ideal for learning and development.
+**Test environment**: uses TESTICP tokens with no real value. Ideal for learning and development.
 
 ```bash
 docker run \
@@ -55,7 +55,7 @@ docker run \
 
 Get free TESTICP tokens from the [faucet](https://faucet.internetcomputer.org/). The test ICP ledger canister ID is `xafvr-biaaa-aaaai-aql5q-cai`.
 
-**Production with data persistence** — mount `/data` so the node does not re-sync from scratch on restart:
+**Production with data persistence**: mount `/data` so the node does not re-sync from scratch on restart:
 
 ```bash
 docker volume create rosetta
@@ -70,7 +70,7 @@ docker run \
 
 Use a specific version tag in production. Check available versions on [DockerHub](https://hub.docker.com/r/dfinity/rosetta-api/tags).
 
-**Custom canister** — connect to a specific test ledger:
+**Custom canister**: connect to a specific test ledger:
 
 ```bash
 docker run \
@@ -129,7 +129,7 @@ Pull the official image:
 docker pull dfinity/ic-icrc-rosetta-api
 ```
 
-**Quick start** — connects to the TICRC1 test token (`3jkp5-oyaaa-aaaaj-azwqa-cai`):
+**Quick start**: connects to the TICRC1 test token (`3jkp5-oyaaa-aaaaj-azwqa-cai`):
 
 ```bash
 docker run \
@@ -143,7 +143,7 @@ docker run \
 
 Get free TICRC1 test tokens from the [faucet](https://faucet.internetcomputer.org/).
 
-**Single-token production** — connects to ckBTC with data persistence:
+**Single-token production**: connects to ckBTC with data persistence:
 
 ```bash
 docker volume create ic-icrc-rosetta
@@ -159,7 +159,7 @@ docker run \
     --multi-tokens-store-dir /data
 ```
 
-**Multi-token deployment** — track ckBTC and ckETH simultaneously:
+**Multi-token deployment**: track ckBTC and ckETH simultaneously:
 
 ```bash
 docker run \
@@ -228,7 +228,7 @@ The Data API provides read-only access to chain data. This section covers: netwo
 
 ### Fetch network information
 
-Retrieve the network identifier — use this as a health check and to confirm the correct `network_identifier` for subsequent calls:
+Retrieve the network identifier: use this as a health check and to confirm the correct `network_identifier` for subsequent calls:
 
 ```bash
 curl --location 'localhost:8081/network/list' \
@@ -410,16 +410,16 @@ The Construction API enables offline transaction signing: you prepare and sign t
 
 The construction flow consists of these endpoints, called in order:
 
-1. **`construction/derive`** — derive an account identifier from a public key
-2. **`construction/preprocess`** — get parameters needed for metadata fetch
-3. **`construction/metadata`** — fetch transaction-specific metadata (e.g., nonce, fee)
-4. **`construction/payloads`** — get signable hex payloads for the requested operations
-5. **`construction/combine`** — combine signatures with the unsigned transaction
-6. **`construction/submit`** — broadcast the signed transaction
+1. **`construction/derive`**: derive an account identifier from a public key
+2. **`construction/preprocess`**: get parameters needed for metadata fetch
+3. **`construction/metadata`**: fetch transaction-specific metadata (e.g., nonce, fee)
+4. **`construction/payloads`**: get signable hex payloads for the requested operations
+5. **`construction/combine`**: combine signatures with the unsigned transaction
+6. **`construction/submit`**: broadcast the signed transaction
 
 Two additional optional endpoints are supported and used by some integrators:
-- **`construction/parse`** — parse a signed or unsigned transaction back into operations, useful for verifying intent before broadcast
-- **`construction/hash`** — compute the transaction hash from a signed transaction, useful for tracking before submission
+- **`construction/parse`**: parse a signed or unsigned transaction back into operations, useful for verifying intent before broadcast
+- **`construction/hash`**: compute the transaction hash from a signed transaction, useful for tracking before submission
 
 ### Key generation
 
@@ -446,25 +446,25 @@ openssl ec -in my_secp256k1_key.pem -pubout -conv_form compressed -outform DER |
 ICP Rosetta supports these operation types. The full list is returned by the `network/options` endpoint at runtime:
 
 **Token operations:**
-- `TRANSACTION` — token transfer
-- `MINT` — mint new tokens (minting account only)
-- `BURN` — burn tokens
-- `APPROVE` — approve a spender (ICRC-2)
-- `FEE` — explicit fee debit (used internally and in transaction representation)
+- `TRANSACTION`: token transfer
+- `MINT`: mint new tokens (minting account only)
+- `BURN`: burn tokens
+- `APPROVE`: approve a spender (ICRC-2)
+- `FEE`: explicit fee debit (used internally and in transaction representation)
 
 **Neuron and governance operations:**
-- `STAKE` — stake ICP to create a neuron
-- `START_DISSOLVING` / `STOP_DISSOLVING` — change neuron dissolve state
-- `SET_DISSOLVE_TIMESTAMP` — set a neuron's dissolve deadline
-- `CHANGE_AUTO_STAKE_MATURITY` — toggle automatic maturity restaking
-- `DISBURSE` — disburse matured neuron funds
-- `ADD_HOTKEY` / `REMOVE_HOTKEY` — manage neuron hotkeys
-- `SPAWN` — spawn a new neuron from maturity
-- `MERGE_MATURITY` / `STAKE_MATURITY` — handle accumulated maturity
-- `REGISTER_VOTE` — vote on NNS proposals
-- `FOLLOW` — configure neuron following
-- `NEURON_INFO` — retrieve neuron metadata
-- `LIST_NEURONS` — list neurons controlled by a principal
+- `STAKE`: stake ICP to create a neuron
+- `START_DISSOLVING` / `STOP_DISSOLVING`: change neuron dissolve state
+- `SET_DISSOLVE_TIMESTAMP`: set a neuron's dissolve deadline
+- `CHANGE_AUTO_STAKE_MATURITY`: toggle automatic maturity restaking
+- `DISBURSE`: disburse matured neuron funds
+- `ADD_HOTKEY` / `REMOVE_HOTKEY`: manage neuron hotkeys
+- `SPAWN`: spawn a new neuron from maturity
+- `MERGE_MATURITY` / `STAKE_MATURITY`: handle accumulated maturity
+- `REGISTER_VOTE`: vote on NNS proposals
+- `FOLLOW`: configure neuron following
+- `NEURON_INFO`: retrieve neuron metadata
+- `LIST_NEURONS`: list neurons controlled by a principal
 
 For a complete reference of the construction flow with request/response examples for each operation type, see the [ICP Rosetta construction API](https://github.com/dfinity/ic/tree/master/rs/rosetta-api) in the IC repository.
 
@@ -472,10 +472,10 @@ For a complete reference of the construction flow with request/response examples
 
 ICRC Rosetta supports two categories of construction operations:
 
-- **`TRANSFER`** — direct token transfer between accounts (ICRC-1). Two operations per request: one debit (`TRANSFER` with negative amount) and one credit (`TRANSFER` with positive amount).
-- **`APPROVE` + `SPENDER`** — authorize a spender to transfer tokens on your behalf (ICRC-2). The `APPROVE` operation sets the allowance amount; the `SPENDER` operation identifies the authorized principal.
+- **`TRANSFER`**: direct token transfer between accounts (ICRC-1). Two operations per request: one debit (`TRANSFER` with negative amount) and one credit (`TRANSFER` with positive amount).
+- **`APPROVE` + `SPENDER`**: authorize a spender to transfer tokens on your behalf (ICRC-2). The `APPROVE` operation sets the allowance amount; the `SPENDER` operation identifies the authorized principal.
 
-The construction flow is the same as for ICP. The network identifier is the ledger canister ID and the port is 8082. You do not need to include a `FEE` operation — ICRC Rosetta deducts the fee automatically, though you may include it to make the debit explicit.
+The construction flow is the same as for ICP. The network identifier is the ledger canister ID and the port is 8082. You do not need to include a `FEE` operation: ICRC Rosetta deducts the fee automatically, though you may include it to make the debit explicit.
 
 ## Requirements and limitations
 
@@ -496,20 +496,20 @@ Both implementations:
 - Pass all `rosetta-cli` tests
 - Accept any valid Rosetta request
 
-Neither implementation supports UTXO features — no UTXO messages appear in responses.
+Neither implementation supports UTXO features. No UTXO messages appear in responses.
 
 ## Example scripts
 
 The DFINITY IC repository contains Python example scripts for both implementations:
 
-- **ICP Rosetta examples**: [`rs/rosetta-api/examples/icp/python`](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/examples/icp/python) — balance queries, transfers, block reading, NNS governance interactions
-- **ICRC Rosetta examples**: [`rs/rosetta-api/examples/icrc1/python`](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/examples/icrc1/python) — ICRC-1 token operations with a `RosettaClient` library supporting automatic token discovery
+- **ICP Rosetta examples**: [`rs/rosetta-api/examples/icp/python`](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/examples/icp/python): balance queries, transfers, block reading, NNS governance interactions
+- **ICRC Rosetta examples**: [`rs/rosetta-api/examples/icrc1/python`](https://github.com/dfinity/ic/tree/master/rs/rosetta-api/examples/icrc1/python): ICRC-1 token operations with a `RosettaClient` library supporting automatic token discovery
 
 Each directory includes a `requirements.txt` and a `run_tests.sh` script for isolated test environments.
 
 ## Next steps
 
-- [Token ledgers](token-ledgers.mdx) — interact directly with ICP and ICRC-1 ledgers from canister code
-- [Token standards](../../reference/token-standards.md) — ICRC-1 and ICRC-2 specifications
+- [Token ledgers](token-ledgers.mdx): interact directly with ICP and ICRC-1 ledgers from canister code
+- [Token standards](../../reference/token-standards.md): ICRC-1 and ICRC-2 specifications
 
 <!-- Upstream: informed by dfinity/portal docs/defi/rosetta/icp_rosetta/index.mdx, docs/defi/rosetta/icp_rosetta/running-rosetta.mdx, docs/defi/rosetta/icp_rosetta/data_api/index.mdx, docs/defi/rosetta/icp_rosetta/construction_api/index.mdx, docs/defi/rosetta/icp_rosetta/examples.mdx, docs/defi/rosetta/icrc_rosetta/index.mdx, docs/defi/rosetta/icrc_rosetta/running-rosetta.mdx, docs/defi/rosetta/icrc_rosetta/examples.mdx -->

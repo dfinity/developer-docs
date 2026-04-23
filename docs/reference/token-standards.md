@@ -26,7 +26,7 @@ ICRC stands for Internet Computer Request for Comments. Standards are proposed b
 
 ## ICRC-1: Fungible tokens
 
-ICRC-1 is the base standard for fungible tokens on ICP. It defines transfer, balance, and metadata interfaces. The standard intentionally excludes certain features — transaction notifications, block structure, and pre-signed transactions — which are provided by extension standards (ICRC-2, ICRC-3).
+ICRC-1 is the base standard for fungible tokens on ICP. It defines transfer, balance, and metadata interfaces. The standard intentionally excludes certain features (transaction notifications, block structure, and pre-signed transactions) which are provided by extension standards (ICRC-2, ICRC-3).
 
 A ledger can report which extensions it supports through the `icrc1_supported_standards` endpoint.
 
@@ -34,8 +34,8 @@ A ledger can report which extensions it supports through the `icrc1_supported_st
 
 An ICRC-1 account consists of two parts:
 
-- **`owner`** — a `Principal` identifying the account holder
-- **`subaccount`** — an optional 32-byte `Blob` that defaults to all zeros when omitted
+- **`owner`**: a `Principal` identifying the account holder
+- **`subaccount`**: an optional 32-byte `Blob` that defaults to all zeros when omitted
 
 This means a single principal can control up to 2^256 distinct accounts by varying the subaccount.
 
@@ -74,7 +74,7 @@ type TransferArg = record {
 };
 ```
 
-Setting `created_at_time` enables deduplication — the ledger rejects duplicate transfers submitted within a 24-hour window. Without it, identical transfers both execute.
+Setting `created_at_time` enables deduplication. The ledger rejects duplicate transfers submitted within a 24-hour window. Without it, identical transfers both execute.
 
 ### Transfer errors
 
@@ -136,7 +136,7 @@ type ApproveArg = record {
 };
 ```
 
-The `expected_allowance` field provides protection against race conditions — the call fails if the current allowance does not match the expected value. The `expires_at` field sets a deadline (in nanoseconds since the Unix epoch) after which the approval is no longer valid.
+The `expected_allowance` field provides protection against race conditions. The call fails if the current allowance does not match the expected value. The `expires_at` field sets a deadline (in nanoseconds since the Unix epoch) after which the approval is no longer valid.
 
 ### Approve errors
 
@@ -200,9 +200,9 @@ type Allowance = record {
 
 ### Common use cases
 
-- **DEX integrations** — a DEX canister is approved to pull tokens from a user's account during a swap.
-- **Subscription payments** — a service canister is approved for recurring token withdrawals.
-- **Escrow** — an intermediary canister holds approval to release tokens when conditions are met.
+- **DEX integrations**: a DEX canister is approved to pull tokens from a user's account during a swap.
+- **Subscription payments**: a service canister is approved for recurring token withdrawals.
+- **Escrow**: an intermediary canister holds approval to release tokens when conditions are met.
 
 ICP, ckBTC, and ckETH all implement ICRC-2.
 
@@ -229,10 +229,10 @@ Ledgers store recent blocks directly and move older blocks to **archive canister
 
 ICRC-3 blocks use a generic `Value` representation that preserves all data for verification. Each block contains:
 
-- **`phash`** — hash of the previous block (absent for the genesis block)
-- **`btype`** — block type string (e.g., `"1xfer"` for ICRC-1 transfers, `"2approve"` for ICRC-2 approvals)
-- **`ts`** — timestamp in nanoseconds
-- **Transaction-specific fields** — vary by block type (e.g., `from`, `to`, `amt` for transfers)
+- **`phash`**: hash of the previous block (absent for the genesis block)
+- **`btype`**: block type string (e.g., `"1xfer"` for ICRC-1 transfers, `"2approve"` for ICRC-2 approvals)
+- **`ts`**: timestamp in nanoseconds
+- **Transaction-specific fields**: vary by block type (e.g., `from`, `to`, `amt` for transfers)
 
 ### Adopted block types
 
@@ -263,7 +263,7 @@ The following block types are currently in the ICRC proposal process and not yet
 
 ## ICRC-7: Non-fungible tokens
 
-ICRC-7 defines the base standard for non-fungible tokens (NFTs) on ICP. It can be used to create and manage NFT collections. Like ICRC-1 for fungible tokens, ICRC-7 is intentionally minimal and excludes transaction notifications, block structure, and pre-signed transactions — these can be added through extensions.
+ICRC-7 defines the base standard for non-fungible tokens (NFTs) on ICP. It can be used to create and manage NFT collections. Like ICRC-1 for fungible tokens, ICRC-7 is intentionally minimal and excludes transaction notifications, block structure, and pre-signed transactions: these can be added through extensions.
 
 ICRC-7 uses the same account model as ICRC-1 (principal + optional 32-byte subaccount).
 
@@ -326,15 +326,15 @@ A ledger that implements ICRC-37 must also implement all ICRC-7 methods. Support
 
 ## Wallet signer standards
 
-The ICRC signer standards define how wallets interact with dApps on ICP. They use a popup-based model where every action requires explicit user approval, communicated via JSON-RPC 2.0 over `window.postMessage`.
+The ICRC signer standards define how wallets interact with apps on ICP. They use a popup-based model where every action requires explicit user approval, communicated via JSON-RPC 2.0 over `window.postMessage`.
 
 | Standard | Purpose |
 |----------|---------|
-| **ICRC-21** | Canister call consent messages — enables canisters to provide human-readable descriptions of what a call will do, displayed to the user before signing |
-| **ICRC-25** | Signer interaction standard — defines the permission lifecycle (`granted`, `denied`, `ask_on_use`) for signer methods |
-| **ICRC-27** | Account discovery — allows dApps to request the list of accounts available in the wallet |
-| **ICRC-29** | Window PostMessage transport — defines the communication channel between dApp and signer using `window.postMessage` |
-| **ICRC-49** | Call canister — allows dApps to request the signer to execute a canister call on behalf of the user |
+| **ICRC-21** | Canister call consent messages: enables canisters to provide human-readable descriptions of what a call will do, displayed to the user before signing |
+| **ICRC-25** | Signer interaction standard: defines the permission lifecycle (`granted`, `denied`, `ask_on_use`) for signer methods |
+| **ICRC-27** | Account discovery: allows apps to request the list of accounts available in the wallet |
+| **ICRC-29** | Window PostMessage transport: defines the communication channel between app and signer using `window.postMessage` |
+| **ICRC-49** | Call canister: allows apps to request the signer to execute a canister call on behalf of the user |
 
 These standards are distinct from delegation-based authentication (such as Internet Identity). The signer model requires per-action user approval and does not create sessions or delegated identities.
 
@@ -342,10 +342,10 @@ For implementation details and code examples, see the [wallet integration guide]
 
 ## Next steps
 
-- [Token ledgers guide](../guides/defi/token-ledgers.md) — deploy and interact with ICRC-1/ICRC-2 ledgers
-- [Chain-key tokens guide](../guides/defi/chain-key-tokens.md) — work with ckBTC, ckETH, and other chain-key tokens
-- [Wallet integration guide](../guides/defi/wallet-integration.md) — integrate wallet signer standards into your dApp
-- [ICRC-1 standard specification](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1) — full specification on GitHub
-- [ICRC-7 standard specification](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md) — full NFT specification on GitHub
+- [Token ledgers guide](../guides/defi/token-ledgers.md): deploy and interact with ICRC-1/ICRC-2 ledgers
+- [Chain-key tokens guide](../guides/defi/chain-key-tokens.md): work with ckBTC, ckETH, and other chain-key tokens
+- [Wallet integration guide](../guides/defi/wallet-integration.md): integrate wallet signer standards into your app
+- [ICRC-1 standard specification](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1): full specification on GitHub
+- [ICRC-7 standard specification](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md): full NFT specification on GitHub
 
 <!-- Upstream: informed by dfinity/portal — docs/defi/token-standards/index.mdx, icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/icskills — skills/icrc-ledger/SKILL.md, skills/wallet-integration/SKILL.md -->

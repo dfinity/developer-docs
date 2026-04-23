@@ -29,5 +29,5 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 ## Trust and governance
 
-- **[Security Model](security.md)** -- Canister isolation, trust boundaries, and the threat model for dapp developers.
-- **[Governance](governance.md)** -- The NNS, SNS for dapp governance, neurons, and proposals.
+- **[Security Model](security.md)** -- Canister isolation, trust boundaries, and the threat model for app developers.
+- **[Governance](governance.md)** -- The NNS, SNS for app governance, neurons, and proposals.

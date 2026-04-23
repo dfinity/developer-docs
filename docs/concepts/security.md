@@ -1,11 +1,11 @@
 ---
 title: "Security Model"
-description: "The IC security model: canister isolation, trust boundaries, and the threat model for dapp developers"
+description: "The IC security model: canister isolation, trust boundaries, and the threat model for app developers"
 sidebar:
   order: 12
 ---
 
-The Internet Computer provides strong security guarantees at the protocol level — replicated execution, threshold cryptography, and deterministic state machines. But the protocol cannot prevent bugs in your code. Understanding where the platform's guarantees end and your responsibilities begin is essential for building secure dapps.
+The Internet Computer provides strong security guarantees at the protocol level: replicated execution, threshold cryptography, and deterministic state machines. But the protocol cannot prevent bugs in your code. Understanding where the platform's guarantees end and your responsibilities begin is essential for building secure apps.
 
 This page explains the IC security model from a developer's perspective: what the platform protects, what it does not, and what you need to handle yourself.
 
@@ -13,21 +13,21 @@ This page explains the IC security model from a developer's perspective: what th
 
 Canisters execute in two modes, each with different trust properties:
 
-**Update calls** go through consensus. Every node on the subnet executes the same code against the same state and must agree on the result. This makes update calls tamper-proof — a single malicious node cannot alter the outcome. The tradeoff is latency (~2 seconds).
+**Update calls** go through consensus. Every node on the subnet executes the same code against the same state and must agree on the result. This makes update calls tamper-proof: a single malicious node cannot alter the outcome. The tradeoff is latency (~2 seconds).
 
-**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree — clients then verify the subnet's signature to confirm the response hasn't been tampered with.
+**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree: clients then verify the subnet's signature to confirm the response hasn't been tampered with.
 
 This distinction is the most important security boundary on the IC. Any data returned by a query call that is not backed by a certificate should be treated as unverified.
 
 ## Canister isolation
 
-Each canister runs in its own WebAssembly sandbox with its own memory. Canisters cannot read or write each other's state — they can only communicate through explicit async messages. This isolation is enforced by the protocol, not by the canister code.
+Each canister runs in its own WebAssembly sandbox with its own memory. Canisters cannot read or write each other's state: they can only communicate through explicit async messages. This isolation is enforced by the protocol, not by the canister code.
 
-However, isolation does not mean independence. When a canister makes an inter-canister call, the call is an asynchronous message. Between sending the request and receiving the response, the canister can process other messages, and its state may change. This creates a class of vulnerabilities known as TOCTOU (time-of-check-time-of-use) — where a condition verified before an `await` is no longer true after it. See [Inter-canister call safety](../guides/security/inter-canister-calls.md) for patterns that mitigate this.
+However, isolation does not mean independence. When a canister makes an inter-canister call, the call is an asynchronous message. Between sending the request and receiving the response, the canister can process other messages, and its state may change. This creates a class of vulnerabilities known as TOCTOU (time-of-check-time-of-use): where a condition verified before an `await` is no longer true after it. See [Inter-canister call safety](../guides/security/inter-canister-calls.md) for patterns that mitigate this.
 
 ## Trust boundaries
 
-As a dapp developer, you should understand who trusts whom in the IC stack:
+As an app developer, you should understand who trusts whom in the IC stack:
 
 ### What the protocol guarantees
 
@@ -45,21 +45,21 @@ As a dapp developer, you should understand who trusts whom in the IC stack:
 
 ### Boundary nodes
 
-Boundary nodes are the HTTP entry point to the IC. They route requests to the correct subnet but are not part of the trust model for update calls — the response is verified by the client against the subnet's public key regardless of which boundary node served it.
+Boundary nodes are the HTTP entry point to the IC. They route requests to the correct subnet but are not part of the trust model for update calls. The response is verified by the client against the subnet's public key regardless of which boundary node served it.
 
 For query calls, the situation is different. A malicious boundary node could return a fabricated response to a query call. This is another reason to use certified data for any query response that users depend on for security-critical decisions.
 
 ### canister_inspect_message
 
-`canister_inspect_message` is a hook that runs on a **single replica** before an update call enters consensus. It can reject messages early to save cycles (for example, dropping calls from the anonymous principal before Candid decoding). But it is not a security boundary — a malicious boundary node can bypass it, and it is never called for inter-canister calls, query calls, or management canister calls. Always enforce access control inside each method.
+`canister_inspect_message` is a hook that runs on a **single replica** before an update call enters consensus. It can reject messages early to save cycles (for example, dropping calls from the anonymous principal before Candid decoding). But it is not a security boundary: a malicious boundary node can bypass it, and it is never called for inter-canister calls, query calls, or management canister calls. Always enforce access control inside each method.
 
-## Threat model for dapp developers
+## Threat model for app developers
 
 The following threats are your responsibility to mitigate:
 
 ### Missing access control
 
-Every update method is publicly callable. If you do not check the caller, anyone can invoke admin functions, drain funds, or corrupt state. The anonymous principal (`2vxsx-fae`) is a particularly common gap — it must be explicitly rejected in any authenticated endpoint, because otherwise it acts as a shared identity that anyone can use.
+Every update method is publicly callable. If you do not check the caller, anyone can invoke admin functions, drain funds, or corrupt state. The anonymous principal (`2vxsx-fae`) is a particularly common gap: it must be explicitly rejected in any authenticated endpoint, because otherwise it acts as a shared identity that anyone can use.
 
 See [Access management](../guides/security/access-management.md) for implementation patterns.
 
@@ -71,11 +71,11 @@ See [Inter-canister call safety](../guides/security/inter-canister-calls.md) for
 
 ### Callback traps and partial rollback
 
-If a message execution traps, all its state changes are rolled back. But for inter-canister calls, the first execution (before `await`) and the callback (after `await`) are separate messages. A trap in the callback only rolls back the callback's changes — mutations from the first execution persist. This means cleanup logic (like releasing locks or completing state transitions) must go in a cleanup context (`finally` in Motoko, `Drop` in Rust), not in regular callback code.
+If a message execution traps, all its state changes are rolled back. But for inter-canister calls, the first execution (before `await`) and the callback (after `await`) are separate messages. A trap in the callback only rolls back the callback's changes: mutations from the first execution persist. This means cleanup logic (like releasing locks or completing state transitions) must go in a cleanup context (`finally` in Motoko, `Drop` in Rust), not in regular callback code.
 
 ### Cycle drain attacks
 
-Anyone on the internet can send update calls to your canister, and each call consumes cycles for Candid decoding and execution — even if the call is ultimately rejected by your code. An attacker can drain your cycles by flooding the canister with messages. Mitigations include using `canister_inspect_message` as a first-pass filter (cheap rejection before decoding), monitoring cycle balances, and setting a conservative freezing threshold.
+Anyone on the internet can send update calls to your canister, and each call consumes cycles for Candid decoding and execution: even if the call is ultimately rejected by your code. An attacker can drain your cycles by flooding the canister with messages. Mitigations include using `canister_inspect_message` as a first-pass filter (cheap rejection before decoding), monitoring cycle balances, and setting a conservative freezing threshold.
 
 See [DoS prevention](../guides/security/dos-prevention.md) for mitigation strategies.
 
@@ -97,11 +97,11 @@ Users have no way to verify that a canister's running code matches its published
 
 ## What's next
 
-- [Access management](../guides/security/access-management.md) — caller checks, guards, and role-based access control
-- [Upgrade safety](../guides/security/canister-upgrades.md) — safe upgrade patterns
-- [Inter-canister call safety](../guides/security/inter-canister-calls.md) — async pitfalls and mitigations
-- [DoS prevention](../guides/security/dos-prevention.md) — cycle drain protection
-- [Data integrity](../guides/security/data-integrity.md) — input validation and storage safety
-- [Response certification](../guides/frontends/certification.md) — certified variables for query responses
+- [Access management](../guides/security/access-management.md): caller checks, guards, and role-based access control
+- [Upgrade safety](../guides/security/canister-upgrades.md): safe upgrade patterns
+- [Inter-canister call safety](../guides/security/inter-canister-calls.md): async pitfalls and mitigations
+- [DoS prevention](../guides/security/dos-prevention.md): cycle drain protection
+- [Data integrity](../guides/security/data-integrity.md): input validation and storage safety
+- [Response certification](../guides/frontends/certification.md): certified variables for query responses
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/trust-in-canisters.mdx, docs/building-apps/best-practices/general.mdx; icskills: canister-security -->

@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-ICP canisters can interact directly with the Solana network: read account balances, query transaction history, and sign and submit transactions — all without bridges, oracles, or external signers. This guide covers the SOL RPC canister for querying Solana and threshold Ed25519 signatures for signing Solana transactions.
+ICP canisters can interact directly with the Solana network: read account balances, query transaction history, and sign and submit transactions: all without bridges, oracles, or external signers. This guide covers the SOL RPC canister for querying Solana and threshold Ed25519 signatures for signing Solana transactions.
 
 For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion.md).
 
@@ -15,8 +15,8 @@ For a conceptual overview of how ICP connects to other blockchains, see [Chain F
 
 Two ICP features enable Solana integration:
 
-- **[HTTPS outcalls](../backends/https-outcalls.md)** — canisters can make HTTP requests to external services. The SOL RPC canister uses HTTPS outcalls to reach Solana JSON-RPC providers and aggregates their responses for consensus.
-- **Threshold Ed25519** — Solana uses Ed25519 signatures for authorizing transactions. ICP provides a threshold signature scheme where a canister can sign messages using a key that no single node holds outright. This lets canisters sign valid Solana transactions without ever exposing a private key.
+- **[HTTPS outcalls](../backends/https-outcalls.md)**: canisters can make HTTP requests to external services. The SOL RPC canister uses HTTPS outcalls to reach Solana JSON-RPC providers and aggregates their responses for consensus.
+- **Threshold Ed25519**: Solana uses Ed25519 signatures for authorizing transactions. ICP provides a threshold signature scheme where a canister can sign messages using a key that no single node holds outright. This lets canisters sign valid Solana transactions without ever exposing a private key.
 
 ## SOL RPC canister
 
@@ -24,7 +24,7 @@ The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet 
 
 1. Your canister sends a JSON-RPC request with cycles attached.
 2. The SOL RPC canister fans the request out to multiple Solana RPC providers via HTTPS outcalls.
-3. Responses are aggregated — the canister returns the result once providers agree.
+3. Responses are aggregated. The canister returns the result once providers agree.
 4. Unused cycles are refunded.
 
 No API keys are required. The SOL RPC canister is controlled by the [Network Nervous System](../../concepts/governance.md), so any change to it requires an NNS proposal.
@@ -119,7 +119,7 @@ The response is the raw JSON-RPC response string. The `getBalance` result contai
 
 ### Other common queries
 
-Any Solana JSON-RPC method works the same way — pass the JSON payload as the first argument to `request` and set the second argument (`max_response_bytes`) to the expected response size. Larger values cost more cycles; set it to the minimum needed:
+Any Solana JSON-RPC method works the same way: pass the JSON payload as the first argument to `request` and set the second argument (`max_response_bytes`) to the expected response size. Larger values cost more cycles; set it to the minimum needed:
 
 ```rust
 // Get latest slot
@@ -144,7 +144,7 @@ For the full list of supported methods, see the [Solana JSON-RPC documentation](
 
 ## Signing Solana transactions
 
-Solana uses Ed25519 signatures for all transactions. ICP supports threshold Ed25519 via the management canister's `sign_with_schnorr` method (using the `ed25519` algorithm variant). The key is distributed across ICP subnet nodes — no single node ever holds the full private key.
+Solana uses Ed25519 signatures for all transactions. ICP supports threshold Ed25519 via the management canister's `sign_with_schnorr` method (using the `ed25519` algorithm variant). The key is distributed across ICP subnet nodes. No single node ever holds the full private key.
 
 The signing flow for a Solana transaction:
 1. Get your canister's Ed25519 public key from the management canister.
@@ -223,7 +223,7 @@ The returned `public_key` is the raw 32-byte Ed25519 public key. To use it as a 
 
 ### Sign a transaction message
 
-`sign_with_schnorr` takes the full message bytes — not a hash. For Solana transactions, pass the serialized transaction message bytes directly.
+`sign_with_schnorr` takes the full message bytes: not a hash. For Solana transactions, pass the serialized transaction message bytes directly.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -301,10 +301,10 @@ The returned 64-byte signature is a valid Ed25519 signature that Solana accepts 
 
 | Key ID | Environment |
 |---|---|
-| `test_key_1` | ICP mainnet — test key, reduced security. Use for development and testing only. |
-| `key_1` | ICP mainnet — production key. Use for production deployments. |
+| `test_key_1` | ICP mainnet: test key, reduced security. Use for development and testing only. |
+| `key_1` | ICP mainnet: production key. Use for production deployments. |
 
-Ed25519 does not have a local development key — unlike ECDSA (which has `dfx_test_key` for local replica testing), there is no Ed25519 equivalent. All Ed25519 signing must be tested on ICP mainnet using `test_key_1`. Plan your test workflow accordingly: local replica development is not possible for the signing steps.
+Ed25519 does not have a local development key: unlike ECDSA (which has `dfx_test_key` for local replica testing), there is no Ed25519 equivalent. All Ed25519 signing must be tested on ICP mainnet using `test_key_1`. Plan your test workflow accordingly: local replica development is not possible for the signing steps.
 
 ## Complete transaction example
 
@@ -326,26 +326,26 @@ Every SOL RPC call requires cycles to cover HTTPS outcall costs. The `sign_with_
 | SOL RPC `request` (small response, 1–2 providers) | ~1–5B cycles |
 | `sign_with_schnorr` (Ed25519, Rust cdk auto-attached) | ~26.15B cycles |
 
-Send 10B cycles per RPC call as a starting budget — unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
+Send 10B cycles per RPC call as a starting budget: unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
 
 ## Current status and limitations
 
 The Solana integration is newer than the Bitcoin and Ethereum integrations:
 
-- **SOL RPC canister is live on mainnet** — deployed and functional, with the API surface still evolving.
-- **Threshold Ed25519 is available** — both test (`test_key_1`) and production (`key_1`) keys are live on ICP mainnet.
-- **No SPL token helpers** — SPL token operations (reading token accounts, transferring tokens) require constructing JSON-RPC calls and transaction instructions manually.
-- **No ckSOL token** — unlike Bitcoin (ckBTC) and Ethereum (ckETH), there is no chain-key SOL token yet.
-- **Transaction construction is manual** — there is no official ICP library for building Solana transactions. See the [basic_solana example](https://github.com/dfinity/sol-rpc-canister/tree/main/examples/basic_solana) for a reference implementation.
+- **SOL RPC canister is live on mainnet**: deployed and functional, with the API surface still evolving.
+- **Threshold Ed25519 is available**: both test (`test_key_1`) and production (`key_1`) keys are live on ICP mainnet.
+- **No SPL token helpers**: SPL token operations (reading token accounts, transferring tokens) require constructing JSON-RPC calls and transaction instructions manually.
+- **No ckSOL token**: unlike Bitcoin (ckBTC) and Ethereum (ckETH), there is no chain-key SOL token yet.
+- **Transaction construction is manual**: there is no official ICP library for building Solana transactions. See the [basic_solana example](https://github.com/dfinity/sol-rpc-canister/tree/main/examples/basic_solana) for a reference implementation.
 
 Follow the [SOL RPC canister repository](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md) for the latest updates.
 
 ## Next steps
 
-- [SOL RPC canister README](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md) — full documentation and the `basic_solana` end-to-end example
-- [Bitcoin integration](bitcoin.md) — direct protocol-level BTC integration
-- [Ethereum integration](ethereum.md) — EVM RPC canister, similar JSON-RPC pattern
-- [HTTPS outcalls](../backends/https-outcalls.md) — the mechanism underlying the SOL RPC canister
-- [Chain Fusion concepts](../../concepts/chain-fusion.md) — how ICP connects to other blockchains
+- [SOL RPC canister README](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md): full documentation and the `basic_solana` end-to-end example
+- [Bitcoin integration](bitcoin.md): direct protocol-level BTC integration
+- [Ethereum integration](ethereum.md): EVM RPC canister, similar JSON-RPC pattern
+- [HTTPS outcalls](../backends/https-outcalls.md): the mechanism underlying the SOL RPC canister
+- [Chain Fusion concepts](../../concepts/chain-fusion.md): how ICP connects to other blockchains
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/solana/overview.mdx; dfinity/cdk-rs — ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/examples — rust/basic_solana/README.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/chain-fusion/solana/overview.mdx; dfinity/cdk-rs) ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/examples: rust/basic_solana/README.md */}

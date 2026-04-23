@@ -5,13 +5,13 @@ sidebar:
   order: 3
 ---
 
-Canister logs help you understand what your canister is doing at runtime, including during traps. The Internet Computer captures log output from update calls, timers, heartbeats, and lifecycle hooks — even when the canister traps mid-execution. Logs are retrievable by canister controllers and optionally by other principals.
+Canister logs help you understand what your canister is doing at runtime, including during traps. The Internet Computer captures log output from update calls, timers, heartbeats, and lifecycle hooks: even when the canister traps mid-execution. Logs are retrievable by canister controllers and optionally by other principals.
 
 ## Writing log messages
 
 Both Rust and Motoko support printing messages to the canister log.
 
-**Rust** — use `ic_cdk::println!`:
+**Rust**: use `ic_cdk::println!`:
 
 ```rust
 use ic_cdk::{init, update};
@@ -30,7 +30,7 @@ fn process(value: u64) -> u64 {
 
 The `ic_cdk::println!` macro formats a string and writes it to the canister log on the IC. Outside of Wasm (for example in unit tests), it falls back to `std::println!`.
 
-**Motoko** — use `Debug.print` from `mo:core/Debug`:
+**Motoko**: use `Debug.print` from `mo:core/Debug`:
 
 ```motoko
 import Debug "mo:core/Debug";
@@ -189,7 +189,7 @@ Supported suffixes: `kb` (1,000 bytes), `kib` (1,024 bytes), `mb` (1,000,000 byt
 
 ## Backtrace debugging
 
-When a canister traps, ICP records a **backtrace** — the function call stack at the point of the trap — and appends it to the canister logs. If the caller has [log access](#log-visibility), the backtrace also appears in the error response they receive.
+When a canister traps, ICP records a **backtrace**: the function call stack at the point of the trap: and appends it to the canister logs. If the caller has [log access](#log-visibility), the backtrace also appears in the error response they receive.
 
 For example, if a Rust canister performs an out-of-bounds stable memory write:
 
@@ -258,7 +258,7 @@ The statistics are cumulative since the canister was created. They are updated a
 <!-- TODO: verify whether query stats reset on reinstall/upgrade — per IC spec, query_stats is only initialized on canister creation; no reset occurs on reinstall or upgrade -->
 <!-- TODO: verify epoch duration for query stats -->
 
-**Rust** — read query stats from `canister_status`:
+**Rust**: read query stats from `canister_status`:
 
 ```rust
 use ic_cdk::{management_canister, update};
@@ -283,7 +283,7 @@ async fn print_query_stats() -> String {
 }
 ```
 
-**Motoko** — call `canister_status` on the management canister:
+**Motoko**: call `canister_status` on the management canister:
 
 ```motoko
 import Principal "mo:core/Principal";
@@ -371,7 +371,7 @@ API BNs expose access logs over WebSocket. The URL format is:
 wss://{api_bn_domain}/logs/canister/{canister_id}
 ```
 
-For full coverage, connect to **all** API BNs — each node only streams the requests it handles, and traffic is distributed across nodes.
+For full coverage, connect to **all** API BNs: each node only streams the requests it handles, and traffic is distributed across nodes.
 
 To discover the current list of API BN domains, fetch them from the IC's certified state using `agent-rs`:
 
@@ -403,8 +403,8 @@ async fn main() -> Result<()> {
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.md) — configure log visibility and memory limits when creating or deploying a canister
-- [Testing strategies](../testing/strategies.md) — use canister logs as part of your debugging workflow
-- [CLI reference](https://cli.internetcomputer.org/) — full documentation for `icp canister logs` and `icp canister settings update`
+- [Canister lifecycle](lifecycle.md): configure log visibility and memory limits when creating or deploying a canister
+- [Testing strategies](../testing/strategies.md): use canister logs as part of your debugging workflow
+- [CLI reference](https://cli.internetcomputer.org/): full documentation for `icp canister logs` and `icp canister settings update`
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/logs.mdx, docs/building-apps/canister-management/backtraces.mdx, docs/building-apps/advanced/canister-access-logs.mdx; dfinity/examples — rust/canister_logs, motoko/canister_logs, rust/query_stats, motoko/query_stats; dfinity/cdk-rs — ic-cdk/src/api.rs, ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/icp-cli — docs/reference/cli.md, docs/reference/canister-settings.md -->

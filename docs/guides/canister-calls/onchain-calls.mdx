@@ -106,7 +106,7 @@ In Motoko, `public shared ({ caller })` binds the original caller at method entr
 
 **Cleanup with `finally`**
 
-Use `try/finally` (with or without `catch`) to guarantee cleanup code runs — even if code after an `await` traps. This is useful for releasing locks or rolling back temporary state:
+Use `try/finally` (with or without `catch`) to guarantee cleanup code runs: even if code after an `await` traps. This is useful for releasing locks or rolling back temporary state:
 
 ```motoko
 var locked = false;
@@ -123,7 +123,7 @@ public shared func guarded() : async () {
 };
 ```
 
-The `finally` block must be effect-free: no `await`, no `throw`, no async calls. It must return `()` and should not trap — a trapping `finally` block can prevent future upgrades.
+The `finally` block must be effect-free: no `await`, no `throw`, no async calls. It must return `()` and should not trap: a trapping `finally` block can prevent future upgrades.
 
 </TabItem>
 <TabItem label="Rust">
@@ -192,9 +192,9 @@ let counter_id = Principal::from_text(
 </TabItem>
 </Tabs>
 
-Deployment order does not matter — `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
+Deployment order does not matter: `icp deploy` creates all canisters first, then injects variables, then installs code. Variables are only updated for the canisters being deployed, so run `icp deploy` (without arguments) when adding new canisters to update all of them.
 
-> **Tip:** For Rust canisters that make inter-canister calls, [`ic-cdk-bindgen`](candid.md#binding-generation) can generate type-safe call stubs from `.did` files — so you call typed functions instead of manually constructing `Call::unbounded_wait` with string method names. See [Binding generation](candid.md#binding-generation) for details.
+> **Tip:** For Rust canisters that make inter-canister calls, [`ic-cdk-bindgen`](candid.md#binding-generation) can generate type-safe call stubs from `.did` files: so you call typed functions instead of manually constructing `Call::unbounded_wait` with string method names. See [Binding generation](candid.md#binding-generation) for details.
 
 ### Alternative approaches
 
@@ -212,7 +212,7 @@ icp deploy my_canister --argument "(principal \"$TARGET_ID\")"
 
 ## Bounded vs unbounded wait
 
-Every inter-canister call must choose a wait strategy. By default, calls use **unbounded wait** — the caller waits indefinitely until the callee responds. **Bounded wait** (also called best-effort messaging) adds a timeout: if the callee hasn't responded by the deadline, the system returns a `SYS_UNKNOWN` response.
+Every inter-canister call must choose a wait strategy. By default, calls use **unbounded wait**: the caller waits indefinitely until the callee responds. **Bounded wait** (also called best-effort messaging) adds a timeout: if the callee hasn't responded by the deadline, the system returns a `SYS_UNKNOWN` response.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -220,10 +220,10 @@ Every inter-canister call must choose a wait strategy. By default, calls use **u
 By default, `await` uses unbounded wait. Add a `timeout` parenthetical (in seconds) to use bounded wait:
 
 ```motoko
-// Unbounded wait (default) — guaranteed response
+// Unbounded wait (default): guaranteed response
 let result = await Counter.get();
 
-// Bounded wait — best-effort response with 25-second deadline
+// Bounded wait: best-effort response with 25-second deadline
 let result = await (with timeout = 25) Counter.get();
 
 // Reusable timeout configuration
@@ -242,11 +242,11 @@ The Rust CDK provides separate constructors for each strategy:
 ```rust
 use ic_cdk::call::Call;
 
-// Unbounded wait — guaranteed response
+// Unbounded wait: guaranteed response
 Call::unbounded_wait(callee, "method")
     .await
 
-// Bounded wait — best-effort response with 5-second timeout
+// Bounded wait: best-effort response with 5-second timeout
 Call::bounded_wait(callee, "method")
     .change_timeout(5) // timeout in seconds
     .await
@@ -257,8 +257,8 @@ Call::bounded_wait(callee, "method")
 
 **When to use each:**
 
-- **Unbounded wait** — the callee is guaranteed to respond (including rejects). Use for calls to canisters you control and trust to respond promptly.
-- **Bounded wait** — the caller may receive `SYS_UNKNOWN` after the timeout or if the subnet runs low on resources. Use for calls to third-party or untrusted canisters.
+- **Unbounded wait**: the callee is guaranteed to respond (including rejects). Use for calls to canisters you control and trust to respond promptly.
+- **Bounded wait**: the caller may receive `SYS_UNKNOWN` after the timeout or if the subnet runs low on resources. Use for calls to third-party or untrusted canisters.
 
 **Upgrade safety:** unbounded wait calls may prevent your canister from upgrading until the callee responds. If the callee is unresponsive or malicious, your canister could be stuck indefinitely. Prefer bounded wait when calling canisters you do not control.
 
@@ -340,7 +340,7 @@ The key mechanism is passing a **shared function reference** (`callback`) across
 
 The same pattern works in Rust using Candid's `Func` type to pass callback references between canisters. The publisher stores `candid::Func` values and invokes them with `Call::unbounded_wait`; the subscriber registers its own method as a callback.
 
-A Rust pub/sub example is not yet available in the [examples repo](https://github.com/dfinity/examples). See the Motoko tab for the full pattern — the architecture is identical.
+A Rust pub/sub example is not yet available in the [examples repo](https://github.com/dfinity/examples). See the Motoko tab for the full pattern. The architecture is identical.
 {/* TODO: Create a Rust pub/sub example in dfinity/examples */}
 
 </TabItem>

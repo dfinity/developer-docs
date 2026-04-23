@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-System canisters are canisters that provide necessary functions to the ICP network. They are controlled by the NNS (Network Nervous System) and upgraded via NNS proposals. Each system canister runs on a system subnet, which has special parameters — including no cycles costs — to guarantee uninterrupted operation. System canisters have static canister IDs that any project can call.
+System canisters are canisters that provide necessary functions to the ICP network. They are controlled by the NNS (Network Nervous System) and upgraded via NNS proposals. Each system canister runs on a system subnet, which has special parameters (including no cycles costs) to guarantee uninterrupted operation. System canisters have static canister IDs that any project can call.
 
 This page lists every system canister with its canister ID, hosting subnet, purpose, and interface reference.
 
@@ -52,7 +52,7 @@ The registry is the source of truth for network topology and is consulted by eve
 
 **Canister ID:** [`rrkah-fqaaa-aaaaa-aaaaq-cai`](https://dashboard.internetcomputer.org/canister/rrkah-fqaaa-aaaaa-aaaaq-cai)
 
-The governance canister implements the NNS voting mechanism. ICP holders stake ICP in **neurons** to gain voting power, vote on **proposals**, and earn voting rewards. Proposals that pass are executed automatically — for example, a "Upgrade Subnet" proposal causes the governance canister to call the root canister, which upgrades the affected subnet canisters.
+The governance canister implements the NNS voting mechanism. ICP holders stake ICP in **neurons** to gain voting power, vote on **proposals**, and earn voting rewards. Proposals that pass are executed automatically: for example, a "Upgrade Subnet" proposal causes the governance canister to call the root canister, which upgrades the affected subnet canisters.
 
 For a conceptual overview of how NNS governance works, see [Governance](../concepts/governance.md).
 
@@ -72,7 +72,7 @@ The lifeline canister is responsible for upgrading the NNS root canister itself.
 
 **Canister ID:** [`qoctq-giaaa-aaaaa-aaaea-cai`](https://dashboard.internetcomputer.org/canister/qoctq-giaaa-aaaaa-aaaea-cai)
 
-The NNS UI canister hosts the NNS dapp frontend at [nns.ic0.app](https://nns.ic0.app). It provides a browser-based interface for staking neurons, voting on proposals, managing ICP tokens, and participating in SNS launches.
+The NNS UI canister hosts the NNS app frontend at [nns.ic0.app](https://nns.ic0.app). It provides a browser-based interface for staking neurons, voting on proposals, managing ICP tokens, and participating in SNS launches.
 
 ## Cycles minting canister (CMC)
 
@@ -86,14 +86,14 @@ The cycles minting canister converts ICP tokens into cycles by burning ICP and m
 
 Minting cycles requires two steps: sending ICP to the CMC and then notifying the CMC of the transfer.
 
-**Step 1 — Send ICP to the CMC with a subaccount that encodes the recipient principal.**
+**Step 1: Send ICP to the CMC with a subaccount that encodes the recipient principal.**
 
 The subaccount is constructed from the recipient principal as a 32-byte array:
 - Byte 0: length of the principal blob (as a single byte)
 - Bytes 1–N: the principal bytes
 - Remaining bytes: `0x00`
 
-**Step 2 — Call `notify_mint_cycles` on the CMC with the block index returned by the transfer.**
+**Step 2: Call `notify_mint_cycles` on the CMC with the block index returned by the transfer.**
 
 ```
 notify_mint_cycles: (record { block_index: nat64 }) -> (Result)
@@ -165,9 +165,9 @@ Key method:
 
 **Subnet:** uzr34 (`uzr34-…-oqe`)
 
-Internet Identity (II) is ICP's built-in authentication system. It allows users to authenticate to dapps using device credentials (passkeys, security keys, biometrics) without exposing a persistent identity across applications. Each dapp receives a distinct principal for the same user, preventing cross-site tracking.
+Internet Identity (II) is ICP's built-in authentication system. It allows users to authenticate to apps using device credentials (passkeys, security keys, biometrics) without exposing a persistent identity across applications. Each app receives a distinct principal for the same user, preventing cross-site tracking.
 
-Internet Identity is the most commonly integrated system canister in dapp development. It is available in local development environments by setting `ii: true` in your network configuration (see [Using system canisters in local development](#using-system-canisters-in-local-development)).
+Internet Identity is the most commonly integrated system canister in app development. It is available in local development environments by setting `ii: true` in your network configuration (see [Using system canisters in local development](#using-system-canisters-in-local-development)).
 
 For the full specification, see [Internet Identity Specification](internet-identity-spec.md).
 
@@ -181,7 +181,7 @@ For integration guides, see the guides under [Authentication](../guides/authenti
 
 The SNS Wasm canister stores the canonical Wasm modules for SNS (Service Nervous System) canisters. When an SNS is launched, SNS-W deploys and initializes the SNS governance, ledger, swap, and root canisters. When an SNS upgrade proposal passes, SNS-W supplies the new Wasm module.
 
-Developers launching an SNS interact with SNS-W indirectly — the SNS launch tooling calls it on their behalf. For SNS launch guides, see [Governance guides](../guides/governance/).
+Developers launching an SNS interact with SNS-W indirectly. The SNS launch tooling calls it on their behalf. For SNS launch guides, see [Governance guides](../guides/governance/).
 
 ## Cycles ledger
 
@@ -267,9 +267,9 @@ The IC Dashboard API provides REST endpoints for querying canister metadata, tra
 
 ## Next steps
 
-- [Management Canister](management-canister.md) — the `aaaaa-aa` pseudo-canister for canister lifecycle and platform features
-- [Protocol Canisters](protocol-canisters.md) — Bitcoin canister, ckBTC minter, EVM RPC, and exchange rate canister
-- [Governance](../concepts/governance.md) — how the NNS and SNS governance models work
-- [Authentication guides](../guides/authentication/) — integrating Internet Identity into your dapp
+- [Management Canister](management-canister.md): the `aaaaa-aa` pseudo-canister for canister lifecycle and platform features
+- [Protocol Canisters](protocol-canisters.md): Bitcoin canister, ckBTC minter, EVM RPC, and exchange rate canister
+- [Governance](../concepts/governance.md): how the NNS and SNS governance models work
+- [Authentication guides](../guides/authentication/): integrating Internet Identity into your app
 
 <!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx; docs/references/system-canisters/xrc.mdx -->

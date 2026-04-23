@@ -77,7 +77,7 @@ hosted on this subnet. These blockchains interact using [chain-key cryptography]
 #### boundary nodes
 
 **Boundary nodes** are gateways to the Internet Computer. These nodes
-allow users to seamlessly access the [canister](#c) smart contracts
+allow users to access the [canister](#c) smart contracts
 running on ICP.
 The boundary nodes have several purposes: they aid in discover-ability (the
 `icp0.io` domain name points to a set of boundary nodes), they are

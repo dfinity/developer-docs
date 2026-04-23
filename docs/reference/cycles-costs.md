@@ -5,9 +5,9 @@ sidebar:
   order: 5
 ---
 
-Canisters pay for the resources they consume and operations they perform using **cycles**. The price of cycles is pegged to [XDR](glossary.md) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. As of May 22, 2025, 1 XDR ≈ $1.35 USD — this rate fluctuates; see the [IMF's XDR exchange data](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) for the current rate.
+Canisters pay for the resources they consume and operations they perform using **cycles**. The price of cycles is pegged to [XDR](glossary.md) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. As of May 22, 2025, 1 XDR ≈ $1.35 USD: this rate fluctuates; see the [IMF's XDR exchange data](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) for the current rate.
 
-You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io/) to estimate the cost for your dapp.
+You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io/) to estimate the cost for your app.
 
 ## Cycles units
 
@@ -22,14 +22,14 @@ You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io
 
 Costs scale with the number of nodes in the subnet. The base cost tables below assume a **13-node application subnet**. For a 34-node (fiduciary) subnet, costs scale as `34 * (cost / 13)`:
 
-- **13-node subnet**: Standard application subnets. No scaling needed — costs are as listed.
+- **13-node subnet**: Standard application subnets. No scaling needed: costs are as listed.
 - **34-node subnet**: Fiduciary subnets (higher security for DeFi). Costs are approximately **2.6×** the 13-node cost.
 
 See [Subnet types](subnet-types.md) for subnet-specific details.
 
 ## Cost table
 
-USD values are approximate and based on the May 2025 XDR rate (1 XDR ≈ $1.35). The XDR rate fluctuates — use cycle counts for precise budgeting.
+USD values are approximate and based on the May 2025 XDR rate (1 XDR ≈ $1.35). The XDR rate fluctuates: use cycle counts for precise budgeting.
 
 <!-- Needs human verification: cloud pricing comparison requested in content brief — no upstream source found in .sources/ for ICP vs. cloud provider cost comparison. -->
 
@@ -87,11 +87,11 @@ Current values (13-node subnet):
 
 By default canisters are scheduled best-effort. Setting `compute_allocation` guarantees execution slots:
 
-- **1%** — Scheduled every 100 rounds
-- **2%** — Scheduled every 50 rounds
-- **100%** — Scheduled every round
+- **1%**: Scheduled every 100 rounds
+- **2%**: Scheduled every 50 rounds
+- **100%**: Scheduled every round
 
-Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet — see the *Compute allocation* row in the Cost table above for exact figures.
+Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet: see the *Compute allocation* row in the Cost table above for exact figures.
 
 ## Storage reservation
 
@@ -127,17 +127,17 @@ Reserved cycles are non-transferable. Controllers can disable reservation by set
 
 Certain ICP features have additional cycle costs beyond the base execution and messaging fees:
 
-- **HTTPS outcalls** — See the [HTTPS outcalls cost formula](#https-outcalls) above.
-- **EVM RPC canister** — Costs depend on the underlying RPC call and the HTTPS outcall fees above.
-- **Threshold ECDSA / Schnorr signing** — Charged per signing request. Exact cost tables are not yet included on this page.
-- **Bitcoin integration API** — Per-call fees apply. Exact cost tables are not yet included on this page.
+- **HTTPS outcalls**: See the [HTTPS outcalls cost formula](#https-outcalls) above.
+- **EVM RPC canister**: Costs depend on the underlying RPC call and the HTTPS outcall fees above.
+- **Threshold ECDSA / Schnorr signing**: Charged per signing request. Exact cost tables are not yet included on this page.
+- **Bitcoin integration API**: Per-call fees apply. Exact cost tables are not yet included on this page.
 
 <!-- TODO: add cost tables for threshold signing and Bitcoin API once figures are verified against the IC interface spec or management canister docs. -->
 
 ## Related pages
 
-- [Cycles management](../guides/canister-management/cycles-management.md) — Topping up and monitoring canister balances
-- [Reverse gas model](../concepts/reverse-gas-model.md) — Why canisters (not users) pay for execution
-- [Subnet types](subnet-types.md) — Cost multipliers per subnet type
+- [Cycles management](../guides/canister-management/cycles-management.md): Topping up and monitoring canister balances
+- [Reverse gas model](../concepts/reverse-gas-model.md): Why canisters (not users) pay for execution
+- [Subnet types](subnet-types.md): Cost multipliers per subnet type
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx, docs/building-apps/canister-management/resource-limits.mdx -->

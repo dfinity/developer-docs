@@ -94,7 +94,7 @@ Like compute allocation, memory allocation incurs a rental fee based on time and
 
 ### Freezing threshold
 
-The minimum time the canister should be able to survive on its current cycle balance. Survival is estimated based on the canister's memory usage and the subnet's current storage cost — a canister with large stable memory freezes sooner than execution rate alone would suggest. If the balance drops below what is needed to sustain this duration, the canister freezes.
+The minimum time the canister should be able to survive on its current cycle balance. Survival is estimated based on the canister's memory usage and the subnet's current storage cost: a canister with large stable memory freezes sooner than execution rate alone would suggest. If the balance drops below what is needed to sustain this duration, the canister freezes.
 
 | Property | Value |
 |----------|-------|
@@ -197,7 +197,7 @@ settings:
 
 ### Log memory limit
 
-{/* Needs human verification: log_memory_limit is exposed by icp-cli but is absent from the canonical ic.did — verify whether this is a management canister setting or an icp-cli layer setting */}
+{/* Needs human verification: log_memory_limit is exposed by icp-cli but is absent from the canonical ic.did: verify whether this is a management canister setting or an icp-cli layer setting */}
 
 Maximum memory for storing canister logs. Oldest logs are purged when usage exceeds this value.
 
@@ -229,7 +229,7 @@ Controls who can list and read canister snapshots through the management caniste
 | `allowed_viewers` | Specific principals can list and read snapshots |
 
 :::note
-Configuring `snapshot_visibility` via `icp.yaml` or CLI flags is not yet supported in icp-cli. Set it programmatically via the management canister — see [Updating settings programmatically](#updating-settings-programmatically).
+Configuring `snapshot_visibility` via `icp.yaml` or CLI flags is not yet supported in icp-cli. Set it programmatically via the management canister: see [Updating settings programmatically](#updating-settings-programmatically).
 :::
 
 ### Environment variables
@@ -346,7 +346,7 @@ import Principal "mo:core/Principal";
 
 persistent actor Self {
 
-  // All fields are optional — only include those you want to change
+  // All fields are optional: only include those you want to change
   type CanisterSettings = {
     controllers : ?[Principal];
     compute_allocation : ?Nat;
@@ -457,4 +457,4 @@ How you configure controllers depends on the trust model for your canister:
 - [Cycles costs reference](../../reference/cycles-costs.md) -- Pricing for compute and memory allocation.
 - [Management canister reference](../../reference/management-canister.md) -- Full interface specification.
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli — docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli) docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

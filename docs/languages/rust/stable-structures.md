@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Stable structures are data structures that read and write directly to stable memory, bypassing the heap entirely. Unlike heap data, stable memory survives canister upgrades — no `pre_upgrade`/`post_upgrade` serialization hooks required.
+Stable structures are data structures that read and write directly to stable memory, bypassing the heap entirely. Unlike heap data, stable memory survives canister upgrades. No `pre_upgrade`/`post_upgrade` serialization hooks required.
 
 The [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) crate provides the building blocks. This page covers how to use them in Rust canisters.
 
@@ -17,7 +17,7 @@ The two approaches to persistence across upgrades are:
 
 | Approach | When to use |
 |----------|-------------|
-| **Stable structures** | Recommended for all new canisters. Data lives in stable memory directly — no serialization step, no instruction-limit risk. |
+| **Stable structures** | Recommended for all new canisters. Data lives in stable memory directly: no serialization step, no instruction-limit risk. |
 | **Pre/post upgrade hooks** | Simple to add to existing code, but does not scale. Serializing large datasets in `pre_upgrade` can hit the instruction limit and brick the canister. |
 
 Stable structures eliminate the upgrade risk entirely. The `MemoryManager` partitions stable memory (which can grow to hundreds of GB) into independent virtual regions, one per data structure.
@@ -43,7 +43,7 @@ serde = { version = "1", features = ["derive"] }
 ciborium = "0.2"
 ```
 
-`ciborium` provides CBOR serialization for custom types stored in stable memory. CBOR is compact and fast — preferred over Candid for this use case.
+`ciborium` provides CBOR serialization for custom types stored in stable memory. CBOR is compact and fast: preferred over Candid for this use case.
 
 ## Available structures
 
@@ -52,11 +52,11 @@ The crate provides several persistent data structures. See the [full API referen
 | Type | Use case |
 |------|----------|
 | `StableBTreeMap` | Key-value store. Keys must implement `Storable + Ord`. |
-| `StableCell` | Single persistent value — counters, configuration, state flags. |
+| `StableCell` | Single persistent value: counters, configuration, state flags. |
 | `StableLog` | Append-only log. Efficient for event streams and audit trails. |
 | `StableVec` | Ordered sequence. Efficient indexed access. |
 | `StableBTreeSet` | Set of unique keys. Efficient membership tests and range queries. |
-| `StableMinHeap` | Priority queue — smallest element dequeued first. |
+| `StableMinHeap` | Priority queue: smallest element dequeued first. |
 
 ## Implement Storable for custom types
 
@@ -79,7 +79,7 @@ struct User {
 
 impl Storable for User {
     // Use Unbounded to avoid compatibility issues when adding new fields.
-    // Bound::Bounded requires a fixed max_size — exceeding it after a
+    // Bound::Bounded requires a fixed max_size: exceeding it after a
     // schema change breaks deserialization of existing data.
     const BOUND: Bound = Bound::Unbounded;
 
@@ -90,7 +90,7 @@ impl Storable for User {
     }
 
     // `into_bytes` was added in ic-stable-structures 0.7. If you are upgrading
-    // from 0.6.x, add this method — it is not required in 0.6.
+    // from 0.6.x, add this method: it is not required in 0.6.
     fn into_bytes(self) -> Vec<u8> {
         let mut buf = vec![];
         ciborium::into_writer(&self, &mut buf).expect("failed to encode User");
@@ -105,7 +105,7 @@ impl Storable for User {
 
 ## MemoryManager and MemoryId
 
-The `MemoryManager` partitions a single stable memory region into virtual regions. Each data structure is allocated its own `MemoryId`. Two structures that share a `MemoryId` corrupt each other's data — always use distinct IDs.
+The `MemoryManager` partitions a single stable memory region into virtual regions. Each data structure is allocated its own `MemoryId`. Two structures that share a `MemoryId` corrupt each other's data: always use distinct IDs.
 
 ```rust
 use ic_stable_structures::{
@@ -122,7 +122,7 @@ const LOG_INDEX_MEM_ID: MemoryId = MemoryId::new(2);
 const LOG_DATA_MEM_ID:  MemoryId = MemoryId::new(3);
 ```
 
-`StableLog` requires two separate memory regions — one for the index and one for the data.
+`StableLog` requires two separate memory regions: one for the index and one for the data.
 
 ## Canister wiring example
 
@@ -162,7 +162,7 @@ fn init() {}
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Stable data auto-restores — re-initialize timers or transient state here.
+    // Stable data auto-restores: re-initialize timers or transient state here.
 }
 ```
 
@@ -176,7 +176,7 @@ For a fully runnable canister with canister methods and `ic_cdk::export_candid!(
 
 ## Multiple data structures
 
-When a canister needs more than one stable structure, allocate a unique `MemoryId` for each. `StableLog` requires two IDs — one for its index and one for its data:
+When a canister needs more than one stable structure, allocate a unique `MemoryId` for each. `StableLog` requires two IDs: one for its index and one for its data:
 
 ```rust
 // Declare all IDs as named constants to prevent accidental reuse.
@@ -190,7 +190,7 @@ const LOG_DATA_MEM_ID:  MemoryId = MemoryId::new(3);
 // StableLog::init(index_memory, data_memory).expect("failed to init LOG")
 ```
 
-IDs are stable across upgrades — never renumber them. Adding a new structure always gets the next available integer.
+IDs are stable across upgrades. Never renumber them. Adding a new structure always gets the next available integer.
 
 ## StableVec usage
 
@@ -230,7 +230,7 @@ fn get_item(index: u64) -> Option<u64> {
 | Scenario | Use |
 |----------|-----|
 | Data that must survive upgrades (user records, balances, settings) | Stable structures |
-| Large datasets that could grow beyond a few MB | Stable structures — stable memory can grow to hundreds of GB |
+| Large datasets that could grow beyond a few MB | Stable structures: stable memory can grow to hundreds of GB |
 | Temporary computation state within a single call | Heap (`Vec`, `HashMap`) |
 | Caches that can be rebuilt after an upgrade | Heap (`Vec`, `HashMap`) reconstructed in `#[post_upgrade]` |
 | Small configuration that changes rarely | `StableCell` |
@@ -262,7 +262,7 @@ icp canister call backend get_user_count '()'
 # Redeploy (simulates a code update + upgrade)
 icp deploy backend
 
-# Count must still be 2 — not 0
+# Count must still be 2: not 0
 icp canister call backend get_user_count '()'
 # Expected: (2 : nat64)
 
@@ -281,33 +281,33 @@ If the count drops to 0 after redeployment, the data is not in stable memory. Ch
 
 **Using `Bound::Bounded` with a `max_size` that is too small.** If you add a field to a struct later, existing records that fit the old `max_size` may still encode larger than expected, or the new layout may exceed the bound and break deserialization. Prefer `Bound::Unbounded` unless you have a specific reason to bound the size.
 
-**Omitting `#[post_upgrade]` when you have timers or transient state.** Stable data is safe without a `#[post_upgrade]` hook — the structures read from stable memory automatically on first access. The real reason to define the hook is to re-initialize timers and other transient heap state that is lost on upgrade. If your canister uses timers, omitting `#[post_upgrade]` means timers silently stop firing after an upgrade.
+**Omitting `#[post_upgrade]` when you have timers or transient state.** Stable data is safe without a `#[post_upgrade]` hook. The structures read from stable memory automatically on first access. The real reason to define the hook is to re-initialize timers and other transient heap state that is lost on upgrade. If your canister uses timers, omitting `#[post_upgrade]` means timers silently stop firing after an upgrade.
 
 **Serializing heap data in `pre_upgrade` as the sole persistence strategy.** This does not scale. For canisters with user-facing data, use stable structures from the start.
 
 ## Schema evolution
 
-Stable memory is persistent — once you deploy a canister, existing serialized bytes must remain readable after you add or change fields. `Bound::Unbounded` is the safe default because it allows the encoded size to grow without constraint, so adding a new field to a CBOR-serialized struct does not break reads of old records.
+Stable memory is persistent: once you deploy a canister, existing serialized bytes must remain readable after you add or change fields. `Bound::Unbounded` is the safe default because it allows the encoded size to grow without constraint, so adding a new field to a CBOR-serialized struct does not break reads of old records.
 
-**Adding a field:** Use `Option<T>` for new fields so old records (which have no bytes for the field) deserialize correctly as `None`. CBOR skips unknown fields on deserialization, so a plain new field also works — but `Option<T>` makes the intent explicit.
+**Adding a field:** Use `Option<T>` for new fields so old records (which have no bytes for the field) deserialize correctly as `None`. CBOR skips unknown fields on deserialization, so a plain new field also works: but `Option<T>` makes the intent explicit.
 
 ```rust
 // Before upgrade:
 struct User { id: u64, name: String }
 
-// After upgrade — old records deserialize with email = None:
+// After upgrade: old records deserialize with email = None:
 struct User { id: u64, name: String, email: Option<String> }
 ```
 
-**Changing a key type:** Changing the key type of a `StableBTreeMap` (for example, from `u32` to `u64`) is a breaking change — all existing keys are stored as the old type and the new type will not read them. To migrate, allocate a new `MemoryId` for a new map, copy data from the old map in `#[post_upgrade]`, then remove the old `MemoryId` in a subsequent upgrade once migration is complete.
+**Changing a key type:** Changing the key type of a `StableBTreeMap` (for example, from `u32` to `u64`) is a breaking change: all existing keys are stored as the old type and the new type will not read them. To migrate, allocate a new `MemoryId` for a new map, copy data from the old map in `#[post_upgrade]`, then remove the old `MemoryId` in a subsequent upgrade once migration is complete.
 
 **Never change `Bound::Bounded` max_size for live data.** Lowering it truncates existing records. Raising it is safe but may require a separate migration if old records are smaller than the new bound expects.
 
 ## Next steps
 
-- [`ic-stable-structures` API reference](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) — complete trait and type documentation
-- [Data persistence guide](../../guides/backends/data-persistence.md) — cross-language comparison of persistence patterns
-- [Orthogonal persistence](../../concepts/orthogonal-persistence.md) — how ICP manages canister state
-- [Canister lifecycle](../../guides/canister-management/lifecycle.md) — upgrades, snapshots, and state management
+- [`ic-stable-structures` API reference](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/): complete trait and type documentation
+- [Data persistence guide](../../guides/backends/data-persistence.md): cross-language comparison of persistence patterns
+- [Orthogonal persistence](../../concepts/orthogonal-persistence.md): how ICP manages canister state
+- [Canister lifecycle](../../guides/canister-management/lifecycle.md): upgrades, snapshots, and state management
 
 <!-- Upstream: informed by dfinity/icskills skills/stable-memory/SKILL.md; dfinity/portal docs/building-apps/developer-tools/cdks/rust/stable-structures.mdx; dfinity/examples rust/unit_testable_rust_canister -->

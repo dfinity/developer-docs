@@ -17,7 +17,7 @@ When a user authenticates through Internet Identity, the following happens:
 
 1. Your frontend opens an II popup window.
 2. The user authenticates with a passkey or OpenID provider.
-3. II creates a **delegation identity** — a temporary key pair that can sign messages on behalf of the user's master key.
+3. II creates a **delegation identity**: a temporary key pair that can sign messages on behalf of the user's master key.
 4. Your frontend receives this delegation and uses it to sign canister calls.
 5. The backend canister sees the user's **principal** (derived from the delegation chain) as `msg.caller`.
 
@@ -58,7 +58,7 @@ import { HttpAgent, Actor } from "@icp-sdk/core/agent";
 import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
 // Read the ic_env cookie set by the asset canister or Vite dev server.
-// Contains IC_ROOT_KEY and canister IDs — works in both local and production without
+// Contains IC_ROOT_KEY and canister IDs: works in both local and production without
 // environment branching. Available in browser contexts only; see note below for Node.js.
 const canisterEnv = safeGetCanisterEnv();
 
@@ -89,7 +89,7 @@ const authClient = await AuthClient.create();
 const isAuthenticated = await authClient.isAuthenticated();
 if (isAuthenticated) {
   const identity = authClient.getIdentity();
-  // Restore session — create agent and actor with this identity
+  // Restore session: create agent and actor with this identity
 }
 
 // Login
@@ -135,12 +135,12 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
 ```
 
 :::note[Node.js environments]
-`safeGetCanisterEnv()` reads the `ic_env` cookie set by the asset canister or Vite dev server — it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint — on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
+`safeGetCanisterEnv()` reads the `ic_env` cookie set by the asset canister or Vite dev server (it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint) on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
 :::
 
 ## Backend authentication
 
-Your backend canister receives the caller's principal automatically through the IC protocol. You do not pass the principal as a function argument — use `msg.caller` (Motoko) or `ic_cdk::api::msg_caller()` (Rust) to read it.
+Your backend canister receives the caller's principal automatically through the IC protocol. You do not pass the principal as a function argument: use `msg.caller` (Motoko) or `ic_cdk::api::msg_caller()` (Rust) to read it.
 
 ### Reject anonymous callers
 
@@ -246,7 +246,7 @@ icp canister call backend protectedAction --identity anonymous
 # Expected: Error containing "Anonymous principal not allowed"
 ```
 
-For mainnet deployment, Internet Identity is already running — backend canister `rdmx6-jaaaa-aaaaa-aaadq-cai` and frontend canister `uqzsh-gqaaa-aaaaq-qaada-cai` (served at `https://id.ai`). Both IDs are identical on local replicas when `ii: true` is configured. Deploy only your own canisters:
+For mainnet deployment, Internet Identity is already running: backend canister `rdmx6-jaaaa-aaaaa-aaadq-cai` and frontend canister `uqzsh-gqaaa-aaaaq-qaada-cai` (served at `https://id.ai`). Both IDs are identical on local replicas when `ii: true` is configured. Deploy only your own canisters:
 
 ```bash
 icp deploy -e ic
@@ -257,7 +257,7 @@ icp deploy -e ic
 By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp0.io` to a custom domain), users would get different principals on each domain.
 
 :::note
-II now automatically handles the `icp0.io` vs `ic0.app` domain difference — you do **not** need to use `derivationOrigin` or `ii-alternative-origins` for that case. Use alternative origins only when you have two genuinely distinct custom domains that should share the same user principal.
+II now automatically handles the `icp0.io` vs `ic0.app` domain difference: you do **not** need to use `derivationOrigin` or `ii-alternative-origins` for that case. Use alternative origins only when you have two genuinely distinct custom domains that should share the same user principal.
 :::
 
 To keep principals consistent across your own custom domains, configure **alternative origins**:
@@ -301,19 +301,19 @@ To keep principals consistent across your own custom domains, configure **altern
    });
    ```
 
-   The primary origin (A) does not need `derivationOrigin` — it is only required on alternative origins.
+   The primary origin (A) does not need `derivationOrigin`: it is only required on alternative origins.
 
 For full details, see the [Internet Identity specification](../../reference/internet-identity-spec.md).
 
 ## Common mistakes
 
-- **Using the wrong II URL per environment** — local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
-- **`fetch` "Illegal invocation" in bundled builds** — always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
-- **Missing `onSuccess`/`onError` callbacks** — `authClient.login()` requires both. Without them, login failures are silently swallowed.
-- **Delegation expiry too long** — the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
-- **Passing principal as a string argument** — the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
-- **Using `shouldFetchRootKey: true` in browser code** — pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable — but never on mainnet.
-- **Creating multiple `AuthClient` instances** — create one on page load and reuse it. Multiple instances cause race conditions with session storage.
+- **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
+- **`fetch` "Illegal invocation" in bundled builds**: always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
+- **Missing `onSuccess`/`onError` callbacks**: `authClient.login()` requires both. Without them, login failures are silently swallowed.
+- **Delegation expiry too long**: the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
+- **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
+- **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
+- **Creating multiple `AuthClient` instances**: create one on page load and reuse it. Multiple instances cause race conditions with session storage.
 
 ## Next steps
 
@@ -323,6 +323,6 @@ For full details, see the [Internet Identity specification](../../reference/inte
 - [Security best practices](../../concepts/security.md) for identity and trust fundamentals
 - [AuthClient API reference](https://js.icp.build) for the full `@icp-sdk/auth` API
 
-{/* TODO: Add Unity native app integration via deep links — see portal native-apps/unity_ii_* */}
+{/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx; dfinity/icskills — skills/internet-identity/SKILL.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx; dfinity/icskills) skills/internet-identity/SKILL.md */}

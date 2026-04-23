@@ -7,14 +7,14 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-The LLM canister is an onchain service that gives ICP canisters access to large language models without relying on HTTPS outcalls to external AI APIs. Your canister calls a shared system canister, which routes inference requests to nodes running model weights onchain. No API keys, no off-chain dependencies — AI inference becomes a native part of your canister logic.
+The LLM canister is an onchain service that gives ICP canisters access to large language models without relying on HTTPS outcalls to external AI APIs. Your canister calls a shared system canister, which routes inference requests to nodes running model weights onchain. No API keys, no off-chain dependencies: AI inference becomes a native part of your canister logic.
 
 ## What the LLM canister provides
 
 The LLM canister (canister ID: `w36hm-eqaaa-aaaal-qr76a-cai`) exposes two APIs:
 
-- **Prompt API** — send a single text prompt and receive a text response. Best for one-shot interactions.
-- **Chat API** — send a sequence of messages with roles (`system`, `user`, `assistant`) and receive the next assistant turn. Best for multi-turn conversations.
+- **Prompt API**: send a single text prompt and receive a text response. Best for one-shot interactions.
+- **Chat API**: send a sequence of messages with roles (`system`, `user`, `assistant`) and receive the next assistant turn. Best for multi-turn conversations.
 
 Currently supported models:
 
@@ -245,9 +245,9 @@ During the initial rollout, the LLM canister enforces the following limits:
 | Max output tokens | 1000 |
 | Streaming | Not supported |
 
-Requests that exceed these limits return an error. Design your application to stay within these bounds — for example, by trimming old messages from conversation history before each call.
+Requests that exceed these limits return an error. Design your application to stay within these bounds: for example, by trimming old messages from conversation history before each call.
 
-Streaming is not currently supported — the LLM canister returns the complete response when inference finishes.
+Streaming is not currently supported. The LLM canister returns the complete response when inference finishes.
 
 ## Deploy and test
 
@@ -256,7 +256,7 @@ Streaming is not currently supported — the LLM canister returns the complete r
 The LLM canister is not available in a local replica. To develop locally, mock the LLM canister behind a canister interface:
 
 ```motoko
-// mock_llm.mo — local test stub
+// mock_llm.mo: local test stub
 import LLM "mo:llm";
 
 persistent actor {
@@ -282,7 +282,7 @@ icp canister call -e ic <your-canister-id> prompt '("What is the Internet Comput
 
 ## Full example
 
-The complete chatbot example — with frontend — is available in the `dfinity/examples` repository:
+The complete chatbot example (with frontend) is available in the `dfinity/examples` repository:
 
 - [Rust LLM chatbot](https://github.com/dfinity/examples/tree/master/rust/llm_chatbot)
 - [Motoko LLM chatbot](https://github.com/dfinity/examples/tree/master/motoko/llm_chatbot)
@@ -291,8 +291,8 @@ Both examples include a browser UI and can be deployed to mainnet in a single co
 
 ## Next steps
 
-- [HTTPS outcalls](https-outcalls.md) — call external AI APIs when you need more model options or larger context windows
-- [Data persistence](data-persistence.md) — persist conversation history across canister upgrades using stable memory
-- [App architecture](../../concepts/app-architecture.md) — understand where AI inference fits in a multi-canister application
+- [HTTPS outcalls](https-outcalls.md): call external AI APIs when you need more model options or larger context windows
+- [Data persistence](data-persistence.md): persist conversation history across canister upgrades using stable memory
+- [App architecture](../../concepts/app-architecture.md): understand where AI inference fits in a multi-canister application
 
-{/* Upstream: informed by dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot; limits verified against dfinity/llm */}
+{/* Upstream: informed by dfinity/examples: rust/llm_chatbot, motoko/llm_chatbot; limits verified against dfinity/llm */}

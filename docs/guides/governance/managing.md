@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-After an SNS launch succeeds, no single entity controls the dapp or its governance canisters — the community does. Every upgrade, parameter change, treasury transfer, and asset update must go through an SNS proposal and be approved by token holder vote. This guide covers the day-to-day operations of a live SNS: submitting and understanding proposals, keeping canisters funded with cycles, updating asset canisters via governance, and participating as a neuron holder.
+After an SNS launch succeeds, no single entity controls the app or its governance canisters. The community does. Every upgrade, parameter change, treasury transfer, and asset update must go through an SNS proposal and be approved by token holder vote. This guide covers the day-to-day operations of a live SNS: submitting and understanding proposals, keeping canisters funded with cycles, updating asset canisters via governance, and participating as a neuron holder.
 
 For background on how SNS DAOs work, see [SNS governance concepts](../../concepts/governance.md). For the launch process itself, see [Launching an SNS](launching.md).
 
@@ -14,7 +14,7 @@ For background on how SNS DAOs work, see [SNS governance concepts](../../concept
 An SNS proposal is a call to a method on a specific canister, executed fully onchain if the DAO adopts the proposal. Any eligible neuron (one meeting the minimum stake and dissolve delay requirements set in the nervous system parameters) can submit a proposal. The submitter pays a rejection fee if the proposal is rejected.
 
 Proposals are adopted or rejected based on these rules:
-- A proposal is **adopted immediately** if more than half of all available voting power votes yes — the result cannot be reversed, so waiting is pointless.
+- A proposal is **adopted immediately** if more than half of all available voting power votes yes. The result cannot be reversed, so waiting is pointless.
 - A proposal is **rejected immediately** if at least half of all available voting power votes no.
 - If the voting deadline is reached, the proposal is adopted if there are more yes votes than no votes and the used voting power exceeds the minimum threshold (currently set to 3% of total available voting power).
 
@@ -58,7 +58,7 @@ quill sns \
 quill send message.json
 ```
 
-The `sns_canister_ids.json` file lists all canister IDs for your SNS — see the [quill example file](https://github.com/dfinity/quill/blob/master/e2e/assets/sns_canister_ids.json) for the format.
+The `sns_canister_ids.json` file lists all canister IDs for your SNS: see the [quill example file](https://github.com/dfinity/quill/blob/master/e2e/assets/sns_canister_ids.json) for the format.
 
 Community-built tools like [ic-toolkit.app/sns-management](https://ic-toolkit.app/sns-management) provide a web interface for submitting proposals without using the CLI directly.
 
@@ -68,7 +68,7 @@ SNS governance comes with built-in proposal types. Below are the most common one
 
 ### Motion
 
-A motion proposal has no on-chain effect — it does not call any method. Use it for opinion polls, governance signaling, or gathering community consensus before a technical proposal.
+A motion proposal has no on-chain effect: it does not call any method. Use it for opinion polls, governance signaling, or gathering community consensus before a technical proposal.
 
 ```bash
 quill sns \
@@ -93,7 +93,7 @@ quill send message.json
 
 ### ManageNervousSystemParameters
 
-Each SNS can be customized through its nervous system parameters, which configure voting mechanics, staking requirements, reward rates, and more. Any parameter can be updated by proposal — set `null` for fields you do not want to change.
+Each SNS can be customized through its nervous system parameters, which configure voting mechanics, staking requirements, reward rates, and more. Any parameter can be updated by proposal: set `null` for fields you do not want to change.
 
 ```candid
 type NervousSystemParameters = record {
@@ -180,7 +180,7 @@ quill send message.json
 
 ### UpgradeSnsControlledCanister
 
-Upgrades a dapp canister controlled by the SNS to a new Wasm. Because Wasm binaries are large and awkward to pass as CLI arguments, use `quill sns make-upgrade-canister-proposal` instead of `make-proposal`:
+Upgrades an app canister controlled by the SNS to a new Wasm. Because Wasm binaries are large and awkward to pass as CLI arguments, use `quill sns make-upgrade-canister-proposal` instead of `make-proposal`:
 
 ```bash
 export WASM_PATH="/home/user/my_backend.wasm.gz"
@@ -317,7 +317,7 @@ quill send message.json
 
 ### MintSnsTokens
 
-Mints new SNS tokens to a specific account. Use sparingly — unexpected minting dilutes existing token holders and can erode community trust.
+Mints new SNS tokens to a specific account. Use sparingly: unexpected minting dilutes existing token holders and can erode community trust.
 
 ```bash
 quill sns \
@@ -344,19 +344,19 @@ quill send message.json
 
 ## Custom proposals (generic nervous system functions)
 
-Custom proposals let SNS communities define their own governance-gated operations beyond what the native proposal types provide. A custom proposal calls a specific method on a specific canister when adopted — any behavior your dapp needs can be made governable this way.
+Custom proposals let SNS communities define their own governance-gated operations beyond what the native proposal types provide. A custom proposal calls a specific method on a specific canister when adopted: any behavior your app needs can be made governable this way.
 
 Each custom proposal has two parts:
 - **Target**: the canister and method that execute the action when the proposal is adopted
-- **Validator**: the canister and method that validate the payload when the proposal is submitted (not at execution time — validate again in the target method)
+- **Validator**: the canister and method that validate the payload when the proposal is submitted (not at execution time: validate again in the target method)
 
 ### Security considerations
 
 Before registering a custom proposal:
 - The target and validator canisters should be controlled by the SNS DAO, not by individual principals
 - The target method must verify that only the SNS governance canister is the caller
-- Both methods must always return a response — if the governance canister has an open call context it cannot be stopped, which blocks urgent upgrades
-- Validate inputs again in the target method at execution time, not just in the validator — conditions can change during the multi-day voting period
+- Both methods must always return a response: if the governance canister has an open call context it cannot be stopped, which blocks urgent upgrades
+- Validate inputs again in the target method at execution time, not just in the validator: conditions can change during the multi-day voting period
 - Avoid inter-canister calls in both methods to minimize re-entrancy risk
 
 ### AddGenericNervousSystemFunction
@@ -396,7 +396,7 @@ quill send message.json
 
 IDs 0–999 are reserved for native proposal types. Use IDs 1000+ for custom proposals.
 
-The SNS governance interface also accepts an optional `topic` field in `GenericNervousSystemFunction` to categorize the proposal under a governance topic. The `topic` field is `opt Topic` — omitting it is valid, but setting an appropriate topic helps token holders filter and follow proposals by category.
+The SNS governance interface also accepts an optional `topic` field in `GenericNervousSystemFunction` to categorize the proposal under a governance topic. The `topic` field is `opt Topic`: omitting it is valid, but setting an appropriate topic helps token holders filter and follow proposals by category.
 
 ### ExecuteGenericNervousSystemFunction
 
@@ -451,10 +451,10 @@ quill send message.json
 
 ## Cycles management
 
-SNS communities are fully responsible for keeping all SNS canisters and governed dapp canisters funded with cycles. The NNS maintains the code but not the cycle balances. If any canister runs out of cycles and is deleted, it is gone permanently.
+SNS communities are fully responsible for keeping all SNS canisters and governed app canisters funded with cycles. The NNS maintains the code but not the cycle balances. If any canister runs out of cycles and is deleted, it is gone permanently.
 
 :::caution[Archive canisters]
-The SNS ledger automatically spawns archive canisters as blocks accumulate. When a new archive is spawned, the ledger transfers a portion of its cycles to fund the archive. **Monitor archive canisters separately** — if an archive runs out of cycles, ledger block history is lost. SNS canisters start with 180T cycles; the ledger starts with 60T (allocated as 30T for itself and 30T per archive).
+The SNS ledger automatically spawns archive canisters as blocks accumulate. When a new archive is spawned, the ledger transfers a portion of its cycles to fund the archive. **Monitor archive canisters separately**: if an archive runs out of cycles, ledger block history is lost. SNS canisters start with 180T cycles; the ledger starts with 60T (allocated as 30T for itself and 30T per archive).
 :::
 
 ### Find all canisters and their cycle balances
@@ -467,7 +467,7 @@ icp canister call SNS_ROOT_CANISTER_ID get_sns_canisters_summary '(record { upda
 
 <!-- Needs human verification: verify the argument format `record { update_canister_list = opt false }` against the SNS root canister's published Candid interface -->
 
-This returns a list of all SNS framework canisters and registered dapp canisters with their current cycle balances.
+This returns a list of all SNS framework canisters and registered app canisters with their current cycle balances.
 
 ### Top up a canister
 
@@ -489,7 +489,7 @@ For a broader guide on cycles management strategies, see [Cycles management](../
 
 ## Asset canister updates
 
-A dapp controlled by an SNS often includes an asset canister that serves the frontend. Once the SNS launches, the governance canister holds `Commit` permissions on the asset canister — no one can update assets without a successful governance vote.
+An app controlled by an SNS often includes an asset canister that serves the frontend. Once the SNS launches, the governance canister holds `Commit` permissions on the asset canister. No one can update assets without a successful governance vote.
 
 The update process uses a custom proposal (generic nervous system function):
 1. A principal with `Prepare` permissions stages the new assets
@@ -552,7 +552,7 @@ icp canister call YOUR_ASSET_CANISTER_ID create_asset \
 icp canister call YOUR_ASSET_CANISTER_ID set_asset_content \
   '(record { key = "/index.html"; sha256 = null; chunk_ids = vec { 1 : nat }; content_encoding = "identity" })' -e ic
 
-# 4. Propose committing the batch — this locks the batch for proposal and returns the evidence hash
+# 4. Propose committing the batch: this locks the batch for proposal and returns the evidence hash
 icp canister call YOUR_ASSET_CANISTER_ID propose_commit_batch \
   '(record { batch_id = 2 : nat; operations = vec {} })' -e ic
 # Returns: (record { evidence = blob "..." })
@@ -613,7 +613,7 @@ icp canister call YOUR_ASSET_CANISTER_ID delete_batch \
 
 ## Neuron management
 
-Neurons are the staking units that give token holders voting power and a share of governance rewards. To create an SNS neuron, stake SNS tokens to the SNS governance canister using the NNS dapp or a compatible wallet. The SNS governance canister derives your neuron's subaccount from your principal and a nonce using a domain-separated hash.
+Neurons are the staking units that give token holders voting power and a share of governance rewards. To create an SNS neuron, stake SNS tokens to the SNS governance canister using the NNS app or a compatible wallet. The SNS governance canister derives your neuron's subaccount from your principal and a nonce using a domain-separated hash.
 
 The SNS neuron staking flow is a two-step process: first transfer SNS tokens to the governance canister using the derived subaccount, then call `claim_or_refresh_neuron_from_account` on the SNS governance canister to claim the neuron. Note that this is distinct from NNS neuron staking, which uses NNS governance and the ICP ledger.
 
@@ -637,17 +637,17 @@ icp canister status SNS_GOVERNANCE_CANISTER_ID -e ic
 
 **Not monitoring archive canister cycles.** The SNS ledger spawns archive canisters automatically. These are easy to miss since they are not in the original canister list. If an archive runs out of cycles, the ledger's transaction history is permanently lost.
 
-**Submitting a proposal before community discussion.** The rejection fee is paid even if the proposal passes — but a surprise proposal with no prior discussion often gets rejected, wasting the fee and damaging community trust. Always post in the DAO forum before submitting a proposal.
+**Submitting a proposal before community discussion.** The rejection fee is paid even if the proposal passes: but a surprise proposal with no prior discussion often gets rejected, wasting the fee and damaging community trust. Always post in the DAO forum before submitting a proposal.
 
 **Forgetting to validate at execution time in custom proposals.** The validator method runs when the proposal is submitted; conditions can change over the voting period (often multiple days). Your target method must re-validate any invariants it relies on.
 
-**Allowing asset canister permissions to remain with individual principals.** After SNS launch, developers should hold only `Prepare` permissions on the asset canister — not `Commit`. If a developer retains `Commit` permission, they can bypass governance and update the frontend unilaterally.
+**Allowing asset canister permissions to remain with individual principals.** After SNS launch, developers should hold only `Prepare` permissions on the asset canister: not `Commit`. If a developer retains `Commit` permission, they can bypass governance and update the frontend unilaterally.
 
 **Treasury transfers without a clear spending plan.** `TransferSnsTreasuryFunds` proposals without a detailed explanation of how funds will be used frequently get rejected. Include the full budget breakdown, expected deliverables, and timeline in the proposal summary.
 
 ## Next steps
 
-- [Testing an SNS](testing.md) — test SNS governance flows locally before committing to mainnet changes
-- [Launching an SNS](launching.md) — the complete launch process reference
+- [Testing an SNS](testing.md): test SNS governance flows locally before committing to mainnet changes
+- [Launching an SNS](launching.md): the complete launch process reference
 
 <!-- Upstream: informed by dfinity/portal — building-apps/governing-apps/managing/manage-sns-intro.mdx, making-proposals.mdx, cycles-usage.mdx, sns-asset-canister.mdx; dfinity/icskills — skills/sns-launch/SKILL.md; dfinity/icp-cli — docs/reference/cli.md -->
