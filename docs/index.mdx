@@ -1,10 +1,10 @@
 ---
 title: Build on the Internet Computer
-description: "Build tamperproof full-stack applications on the Internet Computer -- no cloud, no bridges, no external dependencies"
+description: "Build tamperproof full-stack applications on the Internet Computer — no cloud vendor, no server patching, no security team required"
 template: splash
 hero:
   title: "The Network is The Cloud.<br/>Agents Build."
-  tagline: "Build full-stack apps on a secure public network that processes digital assets natively and runs entirely without cloud dependencies. Tamperproof. Unstoppable. Sovereign."
+  tagline: "Build full-stack apps on a public network where security is enforced by the protocol. No cloud vendor, no server patching, no security team. Tamperproof. Sovereign."
   actions:
     - text: Get started
       link: /getting-started/quickstart/
@@ -21,11 +21,18 @@ hero:
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-<div class="skills-banner">
+## Start building
+
+<CardGrid>
+  <LinkCard title="Quickstart" description="Install the icp CLI, create a project, and deploy your first canister in under 5 minutes." href="/getting-started/quickstart/" />
+  <LinkCard title="Choose your path" description="Rust, Motoko, or frontend — pick the right starting point for your background." href="/getting-started/choose-your-path/" />
+</CardGrid>
+
+<div class="skills-banner" style="margin-top: 3rem">
 
 ## ICP skills for agents that write code
 
-Teach your AI agent canister patterns, token standards, CLI commands, and deployment workflows so it ships working code instead of guessing.
+Teach your AI agent canister patterns, API integrations, CLI commands, and deployment workflows so it ships working code instead of guessing.
 
 <div class="skills-actions">
 <button class="skills-primary" id="skills-give-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span id="skills-give-label">Give your agent ICP skills</span></button>
@@ -34,43 +41,42 @@ Teach your AI agent canister patterns, token standards, CLI commands, and deploy
 
 </div>
 
-## What makes ICP different
+## The frontier cloud for your apps
 
 <CardGrid>
-  <Card title="Chain-key cryptography" icon="setting">
-    Canisters sign transactions for Bitcoin, Ethereum, and other chains using threshold signatures. No bridges or oracles required.
-    [Learn more](concepts/chain-key-cryptography.md)
+  <Card title="Tamperproof by the network" icon="approve-check-circle">
+    Security is enforced by the protocol across every node. No security team, no server patching, no compliance dashboard required.
+    [Learn more](concepts/canisters.md)
   </Card>
-  <Card title="Orthogonal persistence" icon="document">
-    Canister memory survives across executions and upgrades. No databases, no serialization: just use variables.
-    [Learn more](concepts/orthogonal-persistence.md)
-  </Card>
-  <Card title="Reverse gas model" icon="star">
-    Users never pay gas. Canisters pay for their own compute, storage, and bandwidth using **cycles**.
-    [Learn more](concepts/reverse-gas-model.md)
-  </Card>
-  <Card title="Onchain web apps" icon="laptop">
-    Canisters serve HTTP responses directly. Host full web applications (frontend and backend) entirely onchain.
+  <Card title="Full-stack on the network" icon="laptop">
+    Frontend, backend, and data all run on the network. No cloud vendor, no CDN, no separate database.
     [Learn more](concepts/app-architecture.md)
   </Card>
+  <Card title="Sovereign by design" icon="star">
+    Apps run across independent nodes and are portable across hardware providers. No vendor lock-in.
+    [Learn more](concepts/network-overview.md)
+  </Card>
+  <Card title="Data survives upgrades" icon="document">
+    Canister memory persists automatically across executions and upgrades. No serialization, no migration scripts.
+    [Learn more](concepts/orthogonal-persistence.md)
+  </Card>
   <Card title="Autonomous execution" icon="rocket">
-    Canisters schedule their own execution with timers. No external cron jobs, keepers, or off-chain bots.
+    Canisters schedule their own execution with timers. No external cron jobs, background workers, or separate infrastructure to maintain.
     [Learn more](concepts/timers.md)
   </Card>
-  <Card title="Chain Fusion" icon="puzzle">
-    Natively interact with Bitcoin, Ethereum, Solana, and other blockchains from ICP canisters.
-    [Learn more](concepts/chain-fusion.md)
+  <Card title="Canisters fund themselves" icon="setting">
+    Pre-load a canister with cycles and it pays for its own compute, storage, and bandwidth. No usage-based billing to pass on, no per-user pricing logic to build.
+    [Learn more](concepts/reverse-gas-model.md)
   </Card>
 </CardGrid>
 
 ## Documentation
 
 <CardGrid>
-  <LinkCard title="Getting Started" description="Install tools, create your first project, and deploy a canister." href="/getting-started/quickstart/" />
-  <LinkCard title="Guides" description="How-to guides for backends, frontends, auth, testing, deployment, chain fusion, DeFi, and more." href="/guides/" />
+  <LinkCard title="Guides" description="How-to guides for backends, frontends, auth, testing, deployment, and more." href="/guides/" />
   <LinkCard title="Concepts" description="Developer-focused explanations of ICP architecture and design decisions." href="/concepts/" />
   <LinkCard title="Languages" description="Language-specific guides for Rust and Motoko." href="/languages/" />
-  <LinkCard title="Reference" description="Specifications, canister IDs, token standards, cycle costs, and glossary." href="/reference/" />
+  <LinkCard title="Reference" description="Specifications, canister IDs, cycle costs, and glossary." href="/reference/" />
 </CardGrid>
 
 ## External resources
