@@ -1,37 +1,37 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
 
-  <!-- Background: parchment -->
-  <rect width="1200" height="630" fill="#f8f5ef"/>
+  <!-- Background: deep bark -->
+  <rect width="1200" height="630" fill="#14110d"/>
 
   <!-- Outer border card -->
   <rect x="40" y="40" width="1120" height="550" rx="8" fill="none"
-    stroke="#e5ddcf" stroke-width="1"/>
+    stroke="#2d2820" stroke-width="1"/>
 
-  <!-- Terracotta accent rule -->
-  <rect x="80" y="108" width="48" height="4" rx="2" fill="#cc5a2b"/>
+  <!-- Ember accent rule -->
+  <rect x="80" y="108" width="48" height="4" rx="2" fill="#ff7a4d"/>
 
   <!-- "INTERNET COMPUTER" label -->
   <text x="80" y="176"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="15" font-weight="500" letter-spacing="3.5" fill="#cc5a2b">INTERNET COMPUTER</text>
+    font-size="15" font-weight="500" letter-spacing="3.5" fill="#ff7a4d">INTERNET COMPUTER</text>
 
   <!-- Main headline -->
   <text x="80" y="296"
     font-family="Georgia,'Times New Roman',ui-serif,serif"
-    font-size="86" font-weight="400" fill="#1a1714">Developer Docs</text>
+    font-size="86" font-weight="400" fill="#f0ebe0">Developer Docs</text>
 
   <!-- Tagline -->
   <text x="80" y="354"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="26" font-weight="400" fill="#6b6660">Build tamperproof full-stack applications on the Internet Computer.</text>
+    font-size="26" font-weight="400" fill="#a29a8d">Build tamperproof full-stack applications on the Internet Computer.</text>
 
   <!-- Divider -->
-  <line x1="80" y1="512" x2="1120" y2="512" stroke="#e5ddcf" stroke-width="1"/>
+  <line x1="80" y1="512" x2="1120" y2="512" stroke="#2d2820" stroke-width="1"/>
 
-  <!-- Footer: terracotta dot + URL -->
-  <circle cx="80" cy="560" r="5" fill="#cc5a2b"/>
+  <!-- Footer: ember dot + URL -->
+  <circle cx="80" cy="560" r="5" fill="#ff7a4d"/>
   <text x="96" y="566"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="17" font-weight="400" fill="#9a9490">DFINITY Foundation  ·  beta-docs.internetcomputer.org</text>
+    font-size="17" font-weight="400" fill="#6e6660">DFINITY Foundation  ·  beta-docs.internetcomputer.org</text>
 
 </svg>
