@@ -9,6 +9,7 @@ import remarkHeadingId from "./plugins/remark-heading-id.mjs";
 import remarkPlantUML from "./plugins/remark-plantuml.mjs";
 import agentDocs from "./plugins/astro-agent-docs.mjs";
 import { sidebar } from "./sidebar.mjs";
+import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,7 +22,7 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: "ICP Developer Docs",
+      title: TITLE,
       components: {
         EditLink: "./src/components/EditLink.astro",
         Footer: "./src/components/Footer.astro",
@@ -42,7 +43,7 @@ export default defineConfig({
           attrs: {
             rel: "alternate",
             type: "application/rss+xml",
-            title: "ICP Developer Docs",
+            title: TITLE,
             href: "/feed.xml",
           },
         },
@@ -52,7 +53,7 @@ export default defineConfig({
         },
         {
           tag: "meta",
-          attrs: { name: "author", content: "DFINITY Foundation" },
+          attrs: { name: "author", content: PUBLISHER },
         },
         {
           tag: "meta",
@@ -60,7 +61,7 @@ export default defineConfig({
         },
         {
           tag: "meta",
-          attrs: { property: "og:image:alt", content: "ICP Developer Docs — Build on Internet Computer" },
+          attrs: { property: "og:image:alt", content: OG_ALT },
         },
         {
           tag: "meta",
@@ -75,15 +76,15 @@ export default defineConfig({
               {
                 "@type": "WebSite",
                 "@id": "https://beta-docs.internetcomputer.org/#website",
-                "name": "ICP Developer Docs",
-                "description": "Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.",
+                "name": TITLE,
+                "description": DESCRIPTION,
                 "url": "https://beta-docs.internetcomputer.org",
                 "publisher": { "@id": "https://beta-docs.internetcomputer.org/#organization" },
               },
               {
                 "@type": "Organization",
                 "@id": "https://beta-docs.internetcomputer.org/#organization",
-                "name": "DFINITY Foundation",
+                "name": PUBLISHER,
                 "url": "https://dfinity.org",
               },
             ],
