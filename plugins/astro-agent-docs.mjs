@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 import matter from "gray-matter";
 import { sidebar } from "../sidebar.mjs";
+import { TITLE, DESCRIPTION, PUBLISHER } from "../src/branding.mjs";
 import { extractSnippet } from "./remark-snippet.mjs";
 
 /**
@@ -360,9 +361,9 @@ function generateLlmsTxt(pages, siteUrl) {
     "https://skills.internetcomputer.org/.well-known/skills";
 
   const lines = [
-    "# ICP Developer Docs",
+    `# ${TITLE}`,
     "",
-    "> Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.",
+    `> ${DESCRIPTION}`,
     "",
     "## Agent skills",
     "",
@@ -552,11 +553,11 @@ export default function agentDocs() {
           '<?xml version="1.0" encoding="UTF-8"?>',
           '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">',
           "  <channel>",
-          "    <title>ICP Developer Docs</title>",
+          `    <title>${escapeXml(TITLE)}</title>`,
           `    <link>${base}/</link>`,
-          "    <description>Developer documentation for building full-stack web applications, DeFi protocols, and cross-chain integrations on the Internet Computer.</description>",
+          `    <description>${escapeXml(DESCRIPTION)}</description>`,
           "    <language>en-us</language>",
-          "    <copyright>DFINITY Foundation</copyright>",
+          `    <copyright>${escapeXml(PUBLISHER)}</copyright>`,
           `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
           channelPubDate
             ? `    <pubDate>${new Date(channelPubDate.date).toUTCString()}</pubDate>`
@@ -574,7 +575,7 @@ export default function agentDocs() {
                 ? `      <pubDate>${new Date(item.date).toUTCString()}</pubDate>`
                 : "",
               `      <guid isPermaLink="true">${item.url}</guid>`,
-              "      <dc:creator>DFINITY Foundation</dc:creator>",
+              `      <dc:creator>${escapeXml(PUBLISHER)}</dc:creator>`,
               "    </item>",
             ]
               .filter(Boolean)
