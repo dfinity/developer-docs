@@ -267,7 +267,7 @@ Verify registration succeeded:
 
 ```bash
 icp canister call sns_root list_sns_canisters '(record {})' -e ic
-# Expected: your dapp canisters listed under "dapps"
+# Expected: your app canisters listed under "dapps"
 ```
 
 ### Step 5: Test canister upgrades via SNS proposals
