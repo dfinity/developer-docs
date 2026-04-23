@@ -108,7 +108,7 @@ git checkout main
 ## Always (do these without asking)
 
 - Read `.docs-plan/decisions.md` before proposing structural changes
-- **Load skills before writing** — `technical-documentation` + the relevant icskill. Run `git submodule update --init --depth 1` if skills appear as broken symlinks.
+- **Load skills before writing** — `technical-documentation` + the relevant icskill + `icp-brand-guidelines`. Run `git submodule update --init --depth 1` if skills appear as broken symlinks.
 - Use `icp` CLI commands in all examples — never `dfx`
 - Use `mo:core` for all Motoko standard library imports — never `mo:base`. See `.sources/motoko/doc/md/12-base-core-migration.md` for the full mapping.
 - Use `.md` by default; `.mdx` only for interactive components (e.g. `<Tabs syncKey="lang">`). Tab order: Motoko → Rust → others.
@@ -145,6 +145,8 @@ git checkout main
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
 - Link externally when an internal page exists — check `docs/` before using an external URL
 - Offer, suggest, or perform PR reviews unless a human explicitly asks
+- Write em-dashes (`—`) anywhere — including inside code string literals, comments, or log messages. Use a colon, period, or parentheses instead
+- Rename Candid field names, management canister API identifiers, or example/repository names to satisfy jargon rules — these are protocol-level identifiers that must match the actual interface (e.g. `dapps`, `RegisterDappCanisters`, `encrypted-notes-dapp-vetkd`)
 
 ## Key directories
 
@@ -350,7 +352,7 @@ ls .agents/skills/icp-cli/SKILL.md .agents/skills/technical-documentation/SKILL.
 
 If no skill matches, use `technical-documentation` only. Topics with no dedicated icskill yet: on-chain AI, randomness/VRF, timers, Candid, chain-key tokens.
 
-**For design and brand work** (CSS, copy, UI components, docs styling, marketing copy) — load `icp-brand-guidelines` instead of or in addition to the above. This skill is not an icskill; it covers visual tokens, typography, voice, and component patterns for all surfaces under the DFINITY / Internet Computer mark.
+**For all content writing** — load `icp-brand-guidelines` alongside `technical-documentation`. It is the authoritative source for banned jargon, preferred framing, and voice rules. For design work (CSS, copy, UI components, docs styling, marketing copy), it is the primary skill.
 
 ## Frontmatter schema
 
