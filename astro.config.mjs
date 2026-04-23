@@ -25,6 +25,7 @@ export default defineConfig({
       components: {
         EditLink: "./src/components/EditLink.astro",
         Footer: "./src/components/Footer.astro",
+        ThemeProvider: "./src/components/ThemeProvider.astro",
       },
       head: [
         {
@@ -98,6 +99,10 @@ export default defineConfig({
         "@fontsource/inter/500.css",
         "@fontsource/inter/600.css",
         "@fontsource/inter/700.css",
+        "@fontsource/newsreader/400.css",
+        "@fontsource/newsreader/400-italic.css",
+        "@fontsource/newsreader/500.css",
+        "@fontsource/newsreader/500-italic.css",
         "./src/styles/custom.css",
       ],
       social: [
