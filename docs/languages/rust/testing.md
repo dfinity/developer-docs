@@ -5,15 +5,15 @@ sidebar:
   order: 3
 ---
 
-Testing Rust canisters requires a different mindset from ordinary Rust testing because most IC-specific APIs —
-`ic_cdk::caller()`, `ic_cdk::api::time()`, inter-canister calls — are only available inside a live IC execution
+Testing Rust canisters requires a different mindset from ordinary Rust testing because most IC-specific APIs
+(`ic_cdk::caller()`, `ic_cdk::api::time()`, inter-canister calls) are only available inside a live IC execution
 environment. The key is to isolate those dependencies behind traits so your business logic can be tested in plain
 Rust without any IC infrastructure.
 
 This page covers the two main testing layers for Rust:
 
-- **Unit tests** — pure Rust with mocked IC dependencies; milliseconds per test
-- **Integration tests** — deploy your canister WASM into PocketIC and make real calls
+- **Unit tests**: pure Rust with mocked IC dependencies; milliseconds per test
+- **Integration tests**: deploy your canister WASM into PocketIC and make real calls
 
 For a general overview of the testing pyramid and guidance on Motoko testing, see
 [Testing strategies](../../guides/testing/strategies.md). For advanced PocketIC features (multi-subnet, time travel,
@@ -91,7 +91,7 @@ impl CanisterApi {
 }
 ```
 
-Business logic functions take `&CanisterApi` directly — no nested generics required.
+Business logic functions take `&CanisterApi` directly. No nested generics required.
 
 ### Initialize with production dependencies
 
@@ -121,7 +121,7 @@ fn increment_count(_: IncrementCountRequest) -> IncrementCountResponse {
 }
 ```
 
-### Production implementation — stable memory counter
+### Production implementation: stable memory counter
 
 The production `Counter` reads and writes stable memory via `ic-stable-structures`:
 
@@ -142,7 +142,7 @@ impl Counter for StableMemoryCounter {
 }
 ```
 
-### Test implementation — in-memory counter
+### Test implementation: in-memory counter
 
 The test `Counter` uses a plain `Mutex<u64>` and works in any Rust test runner:
 
@@ -295,7 +295,7 @@ tokio = { version = "1.0", features = ["macros", "rt"] }
 ```
 
 ```rust
-// Async unit test — no IC runtime needed
+// Async unit test: no IC runtime needed
 thread_local! {
     static TEST_API: RefCell<CanisterApi> = RefCell::new({
         let governance = Arc::new(MockGovernanceApi::new());
@@ -399,7 +399,7 @@ Add `candid_parser` to dev dependencies:
 candid_parser = "0.2"
 ```
 
-This test fails if you add, remove, or change a method signature without updating the `.did` file — catching
+This test fails if you add, remove, or change a method signature without updating the `.did` file: catching
 the mismatch before deployment.
 
 ## Integration testing with PocketIC
@@ -619,9 +619,9 @@ file for integration tests and deployment.
 
 | Test type | Typical duration | Parallelism |
 |---|---|---|
-| Unit tests (`cargo test --lib`) | ~1ms per test | Full — each test runs in its own thread |
-| Integration tests with PocketIC | 1–5s per test | Full — each test creates its own `PocketIc` instance |
-| Integration tests with NNS setup | 10–30s per test | Full — but slow enough to run in a dedicated test binary |
+| Unit tests (`cargo test --lib`) | ~1ms per test | Full: each test runs in its own thread |
+| Integration tests with PocketIC | 1–5s per test | Full: each test creates its own `PocketIc` instance |
+| Integration tests with NNS setup | 10–30s per test | Full: but slow enough to run in a dedicated test binary |
 
 The goal is to maximize coverage in unit tests so only a small number of integration tests are needed. A ratio of
 90% unit tests to 10% integration tests is a reasonable target for most canisters.
@@ -669,12 +669,12 @@ jobs:
 ```
 
 Key points:
-- **Cache the `target/` directory** — Rust compilation is the dominant cost. Caching on `Cargo.lock` gives a
+- **Cache the `target/` directory**: Rust compilation is the dominant cost. Caching on `Cargo.lock` gives a
   deterministic cache key.
-- **Build the WASM before running integration tests** — the test binary reads the WASM from `target/` at runtime.
+- **Build the WASM before running integration tests**: the test binary reads the WASM from `target/` at runtime.
   Unit tests (`--lib`) do not need the WASM, so you can run them in parallel with the WASM build if your CI
   system supports it.
-- **PocketIC server binary** — the `pocket-ic` Rust crate downloads the server binary automatically on first use.
+- **PocketIC server binary**: the `pocket-ic` Rust crate downloads the server binary automatically on first use.
   To cache it across runs, set `POCKET_IC_BIN` to a path in your cache and check whether the binary already exists
   before running tests. Alternatively, pin the download script from your CDK version (see
   [`scripts/download_pocket_ic_server.sh`](https://github.com/dfinity/cdk-rs/blob/main/scripts/download_pocket_ic_server.sh)
@@ -701,10 +701,10 @@ This keeps fast unit tests in every PR while reserving the heavier NNS integrati
 
 ## Next steps
 
-- [Testing strategies](../../guides/testing/strategies.md) — Motoko testing, benchmarking with `canbench`, and containerized network tests
-- [PocketIC](../../guides/testing/pocket-ic.md) — Multi-subnet topologies, time travel, and JavaScript testing with Pic JS
-- [Stable Structures](stable-structures.md) — Understand what data survives upgrades
-- [`ic-cdk` API reference](https://docs.rs/ic-cdk/latest/ic_cdk/) — Complete CDK API documentation
-- [unit_testable_rust_canister example](https://github.com/dfinity/examples/tree/master/rust/unit_testable_rust_canister) — Complete working example with mocked governance and stable memory
+- [Testing strategies](../../guides/testing/strategies.md): Motoko testing, benchmarking with `canbench`, and containerized network tests
+- [PocketIC](../../guides/testing/pocket-ic.md): Multi-subnet topologies, time travel, and JavaScript testing with Pic JS
+- [Stable Structures](stable-structures.md): Understand what data survives upgrades
+- [`ic-cdk` API reference](https://docs.rs/ic-cdk/latest/ic_cdk/): Complete CDK API documentation
+- [unit_testable_rust_canister example](https://github.com/dfinity/examples/tree/master/rust/unit_testable_rust_canister): Complete working example with mocked governance and stable memory
 
 <!-- Upstream: informed by dfinity/examples rust/unit_testable_rust_canister; dfinity/cdk-rs e2e-tests -->

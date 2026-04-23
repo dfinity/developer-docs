@@ -43,7 +43,7 @@ Some registrars omit the main domain suffix when entering records. For `app.exam
 - `_canister-id.app` instead of `_canister-id.app.example.com`
 - `_acme-challenge.app` instead of `_acme-challenge.app.example.com`
 
-**Apex domains:** Many registrars do not allow a `CNAME` on the apex (e.g., `example.com` without a subdomain). Use your provider's `ANAME` or `ALIAS` record type if available — these work like CNAME flattening and point to `CUSTOM_DOMAIN.icp1.io`. For GoDaddy apex domains, use Cloudflare or another provider that supports apex CNAME flattening.
+**Apex domains:** Many registrars do not allow a `CNAME` on the apex (e.g., `example.com` without a subdomain). Use your provider's `ANAME` or `ALIAS` record type if available: these work like CNAME flattening and point to `CUSTOM_DOMAIN.icp1.io`. For GoDaddy apex domains, use Cloudflare or another provider that supports apex CNAME flattening.
 
 **Cloudflare users (if you already use Cloudflare as your DNS provider):** Disable Universal SSL under SSL/TLS > Edge Certificates before registering. Cloudflare's Universal SSL interferes with the ACME certificate challenge used by ICP. Also set DNS mode to "DNS only" (not proxied). If you are on Namecheap, GoDaddy, or Route 53 without Cloudflare, this note does not apply to you.
 
@@ -129,7 +129,7 @@ If validation fails, the response indicates what is wrong:
 | Missing DNS CNAME record | Add the `_acme-challenge` CNAME pointing to `_acme-challenge.CUSTOM_DOMAIN.icp2.io` |
 | Missing DNS TXT record | Add the `_canister-id` TXT record with your canister ID |
 | Invalid DNS TXT record | Ensure the TXT value is a valid canister ID (no extra spaces or quotes) |
-| More than one DNS TXT record | Remove duplicate `_canister-id` TXT records — keep exactly one |
+| More than one DNS TXT record | Remove duplicate `_canister-id` TXT records: keep exactly one |
 | Failed to retrieve known domains | Ensure `.well-known/ic-domains` is deployed and served (`ignore: false` in `.ic-assets.json5`) |
 | Domain missing from list | Add the domain to the `ic-domains` file and redeploy |
 
@@ -154,9 +154,9 @@ A successful response:
 
 Common registration errors:
 
-- **bad_request** — Invalid domain format, missing DNS records, or validation errors. Run the validate endpoint first.
-- **conflict** — A certificate already exists for this domain, or another registration task is in progress. Retry after a few minutes.
-- **internal_server_error** — An unexpected error occurred. Retry later.
+- **bad_request**: Invalid domain format, missing DNS records, or validation errors. Run the validate endpoint first.
+- **conflict**: A certificate already exists for this domain, or another registration task is in progress. Retry after a few minutes.
+- **internal_server_error**: An unexpected error occurred. Retry later.
 
 ## Step 6: Wait for certificate provisioning
 
@@ -172,8 +172,8 @@ The `registration_status` field progresses from `registering` → `registered`:
 |---|---|
 | `registering` | Request accepted, certificate provisioning in progress |
 | `registered` | Certificate issued, domain is live |
-| `expired` | Certificate has expired — re-register with a `POST` request to trigger a new provisioning cycle |
-| `failed` | Registration failed — check the error message in the response |
+| `expired` | Certificate has expired: re-register with a `POST` request to trigger a new provisioning cycle |
+| `failed` | Registration failed: check the error message in the response |
 
 Once `registered`, wait a few more minutes for propagation to all HTTP gateways before testing in a browser.
 
@@ -220,7 +220,7 @@ const host = isProduction ? "https://icp-api.io" : undefined;
 const agent = await HttpAgent.create({ host });
 ```
 
-Without this, `HttpAgent` falls back to using the page origin as the API host — which will fail on custom domains since they do not proxy IC API traffic.
+Without this, `HttpAgent` falls back to using the page origin as the API host: which will fail on custom domains since they do not proxy IC API traffic.
 
 For local development, you also need to pass `shouldFetchRootKey: true` so the agent can fetch the replica's root key. See [Asset canister](asset-canister.md) for a complete local + mainnet agent setup example.
 
@@ -252,7 +252,7 @@ To point an existing custom domain at a different canister:
    curl -sL -X DELETE "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
    ```
 
-3. Confirm deletion — the status endpoint should return 404:
+3. Confirm deletion. The status endpoint should return 404:
 
    ```bash
    curl -sL -X GET "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
@@ -359,8 +359,8 @@ Remove any duplicates and keep exactly one record containing your canister ID.
 
 ## Next steps
 
-- [Certification](certification.md) — Enable certified asset responses for your custom domain
-- [Cycles management](../canister-management/cycles-management.md) — Ensure your canister has sufficient cycles for production traffic
-- [Internet Identity](../authentication/internet-identity.md) — Configure alternative origins if your users authenticate with II
+- [Certification](certification.md): Enable certified asset responses for your custom domain
+- [Cycles management](../canister-management/cycles-management.md): Ensure your canister has sufficient cycles for production traffic
+- [Internet Identity](../authentication/internet-identity.md): Configure alternative origins if your users authenticate with II
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/frontends/custom-domains/using-custom-domains.mdx, docs/building-apps/frontends/custom-domains/dns-setup.mdx; dfinity/icskills — skills/custom-domains/SKILL.md -->

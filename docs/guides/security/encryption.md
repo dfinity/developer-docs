@@ -13,7 +13,7 @@ How to encrypt data on ICP using VetKeys. Cover the end-to-end flow: setting up 
 <!-- Source Material -->
 - Portal: building-apps/network-features/vetkeys/ (9 files: intro, API, BLS-signatures, DKMS, encrypted-storage, IBE, timelock, VRF, demos)
 - icskills: vetkd
-- Examples: vetkd (both), vetkeys (both), encrypted-notes-dapp-vetkd (both), filevault (Motoko)
+- Examples: vetkd (both), vetkeys (both), encrypted-notes-app-vetkd (both), filevault (Motoko)
 - Learn Hub: check for VetKeys articles
 
 <!-- Cross-Links -->

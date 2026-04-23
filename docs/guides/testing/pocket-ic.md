@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-PocketIC is a lightweight, deterministic testing library for canister integration tests. Unlike the full local network started by `icp network start`, PocketIC runs entirely inside your test process — no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible.
+PocketIC is a lightweight, deterministic testing library for canister integration tests. Unlike the full local network started by `icp network start`, PocketIC runs entirely inside your test process. No daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible.
 
 The `icp-cli` local development network also uses PocketIC under the hood, so behavior you observe in tests closely matches what you see during development.
 
@@ -18,9 +18,9 @@ A PocketIC instance is an in-process IC replica. It supports:
 - Creating and installing canisters (from compiled `.wasm` files)
 - Making update and query calls
 - Multiple subnets (NNS, application, system)
-- Time control — advance the clock without waiting
-- Deterministic execution — the same test always produces the same result
-- Parallel execution — each test gets its own `PocketIc` instance
+- Time control: advance the clock without waiting
+- Deterministic execution. The same test always produces the same result
+- Parallel execution: each test gets its own `PocketIc` instance
 
 PocketIC strips the consensus and networking layers from the IC replica, keeping only the execution environment. This makes it orders of magnitude faster than running a full local network.
 
@@ -236,7 +236,7 @@ fn test_timer_fires() {
 
 ### Multi-subnet testing
 
-Test canister interactions that span subnets — for example, cross-subnet calls or NNS integration:
+Test canister interactions that span subnets: for example, cross-subnet calls or NNS integration:
 
 ```rust title=tests/multi_subnet.rs
 use pocket_ic::{PocketIc, PocketIcBuilder};
@@ -280,7 +280,7 @@ Pic JS (`@dfinity/pic`) is the JavaScript/TypeScript client for PocketIC, design
 npm install --save-dev @dfinity/pic
 ```
 
-Pic JS manages the PocketIC server process for you via `PocketIcServer`. <!-- Needs human verification: POCKET_IC_SERVER_PATH env var name for @dfinity/pic — not in StartServerOptions API docs; may be read directly by the server binary outside the options object -->
+Pic JS manages the PocketIC server process for you via `PocketIcServer`. <!-- Needs human verification: POCKET_IC_SERVER_PATH env var name for @dfinity/pic: not in StartServerOptions API docs; may be read directly by the server binary outside the options object -->
 
 ### Write a basic test
 
@@ -330,11 +330,11 @@ describe('Counter canister', () => {
 });
 ```
 
-Pic JS generates typed actors from Candid declarations automatically when you use `setupCanister`. The `idlFactory` is generated from your canister's `.did` file by `icp-cli` — it lives in the `declarations/` directory alongside the TypeScript types. See the [Pic JS documentation](https://js.icp.build/pic-js) for the full API, including typed actor generation and subnet configuration.
+Pic JS generates typed actors from Candid declarations automatically when you use `setupCanister`. The `idlFactory` is generated from your canister's `.did` file by `icp-cli`: it lives in the `declarations/` directory alongside the TypeScript types. See the [Pic JS documentation](https://js.icp.build/pic-js) for the full API, including typed actor generation and subnet configuration.
 
 ### Advance time in JavaScript tests
 
-This example uses inline setup for brevity. For test suites with multiple tests, the `beforeAll`/`afterAll` pattern from the basic example above is preferred — it avoids restarting the server for each test.
+This example uses inline setup for brevity. For test suites with multiple tests, the `beforeAll`/`afterAll` pattern from the basic example above is preferred: it avoids restarting the server for each test.
 
 ```typescript title=src/__tests__/timer.test.ts
 import { PocketIc, PocketIcServer } from '@dfinity/pic';
@@ -393,8 +393,8 @@ PocketIC is appropriate when:
 
 ## Next steps
 
-- [Testing strategies](strategies.md) — overview of unit, integration, and end-to-end testing
-- [Governance testing](../governance/testing.md) — SNS testflight with PocketIC
-- [Rust testing patterns](../../languages/rust/testing.md) — Rust-specific patterns including unit testing with mocks
+- [Testing strategies](strategies.md): overview of unit, integration, and end-to-end testing
+- [Governance testing](../governance/testing.md): SNS testflight with PocketIC
+- [Rust testing patterns](../../languages/rust/testing.md): Rust-specific patterns including unit testing with mocks
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/test/pocket-ic.mdx; dfinity/examples rust/unit_testable_rust_canister rust/guards; dfinity/icp-cli docs/guides/containerized-networks.md; dfinity/icp-js-sdk-docs public/pic-js/latest.zip -->

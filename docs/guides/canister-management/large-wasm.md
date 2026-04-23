@@ -13,10 +13,10 @@ This guide covers both approaches, explains Wasm64 for canisters that need exten
 
 A compiled Wasm binary grows for several reasons:
 
-- **Dense dependency trees** — Rust canisters that pull in many crates accumulate dead code that the compiler cannot always eliminate.
-- **Embedded data** — ML model weights, large lookup tables, or static assets compiled into the binary.
-- **Complex business logic** — feature-rich canisters with many update and query methods.
-- **Debug symbols** — by default, Rust release builds include name sections and other debug metadata.
+- **Dense dependency trees**: Rust canisters that pull in many crates accumulate dead code that the compiler cannot always eliminate.
+- **Embedded data**: ML model weights, large lookup tables, or static assets compiled into the binary.
+- **Complex business logic**: feature-rich canisters with many update and query methods.
+- **Debug symbols**: by default, Rust release builds include name sections and other debug metadata.
 
 Before reaching for the chunk store, consider whether [canister optimization](optimization.md) can reduce the binary enough to fit under 2 MiB.
 
@@ -69,14 +69,14 @@ When compression alone is not enough, the Wasm chunk store lets you upload modul
 
 ### How the chunk store works
 
-1. **Upload chunks** — Call `upload_chunk` on the management canister to store up to 1 MiB chunks in the target canister's chunk store. Each call returns the SHA-256 hash of the stored chunk.
-2. **Assemble and install** — Call `install_chunked_code` with the ordered list of chunk hashes. The system concatenates the chunks, verifies the aggregate hash matches `wasm_module_hash`, and installs the result as if you had called `install_code` directly.
+1. **Upload chunks**: Call `upload_chunk` on the management canister to store up to 1 MiB chunks in the target canister's chunk store. Each call returns the SHA-256 hash of the stored chunk.
+2. **Assemble and install**: Call `install_chunked_code` with the ordered list of chunk hashes. The system concatenates the chunks, verifies the aggregate hash matches `wasm_module_hash`, and installs the result as if you had called `install_code` directly.
 
-The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE`, defined in the IC interface spec — see the [management canister reference](../../reference/management-canister.md) for the exact value). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
+The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE`, defined in the IC interface spec: see the [management canister reference](../../reference/management-canister.md) for the exact value). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
 
 ### icp-cli handles this automatically
 
-When you run `icp deploy` or `icp canister install` with a Wasm module larger than 2 MiB, icp-cli automatically uses the chunk store — no configuration required. The tool splits the module, uploads each chunk, and calls `install_chunked_code` behind the scenes. <!-- TODO: verify automatic chunking behavior against icp-cli release notes -->
+When you run `icp deploy` or `icp canister install` with a Wasm module larger than 2 MiB, icp-cli automatically uses the chunk store. No configuration required. The tool splits the module, uploads each chunk, and calls `install_chunked_code` behind the scenes. <!-- TODO: verify automatic chunking behavior against icp-cli release notes -->
 
 ```bash
 icp deploy
@@ -84,7 +84,7 @@ icp deploy
 
 ### Combining compression with the chunk store
 
-You can combine gzip compression with the chunk store. A compressed module that is still larger than 2 MiB will still be split into chunks, but fewer chunks are needed — which means fewer upload calls and lower cycle costs. Enable both `shrink` and `compress` in your recipe, and let icp-cli decide whether chunking is needed.
+You can combine gzip compression with the chunk store. A compressed module that is still larger than 2 MiB will still be split into chunks, but fewer chunks are needed: which means fewer upload calls and lower cycle costs. Enable both `shrink` and `compress` in your recipe, and let icp-cli decide whether chunking is needed.
 
 ### Cycle costs
 
@@ -92,7 +92,7 @@ Storing each chunk costs cycles proportional to 1 MiB of storage (even if the ch
 
 ## Wasm64: 64-bit memory addressing
 
-Standard ICP canisters use the `wasm32-unknown-unknown` target, which limits addressable memory to 4 GiB. For canisters that need more — for example, those holding large in-memory datasets or running inference on large models — ICP supports the `wasm64-unknown-unknown` target with up to 6 GiB of addressable heap memory (an ICP platform limit).
+Standard ICP canisters use the `wasm32-unknown-unknown` target, which limits addressable memory to 4 GiB. For canisters that need more (for example, those holding large in-memory datasets or running inference on large models) ICP supports the `wasm64-unknown-unknown` target with up to 6 GiB of addressable heap memory (an ICP platform limit).
 
 Wasm64 is a separate concern from the chunk store. You might use one, the other, or both: the chunk store addresses the 2 MiB upload limit, while Wasm64 addresses the runtime memory limit.
 
@@ -134,7 +134,7 @@ canisters:
             - ic-wasm "$ICP_WASM_OUTPUT_PATH" -o "${ICP_WASM_OUTPUT_PATH}" metadata "candid:service" -f 'backend/backend.did' -v public --keep-name-section
 ```
 
-The canister code itself does not require changes — the same Rust CDK code works on both `wasm32` and `wasm64`:
+The canister code itself does not require changes. The same Rust CDK code works on both `wasm32` and `wasm64`:
 
 ```rust
 #[ic_cdk::query]
@@ -174,12 +174,12 @@ SIMD is available on every ICP node and does not require any special canister co
 
 SIMD provides the largest gains for workloads with regular, data-parallel structure:
 
-- **AI/ML inference** — matrix multiplications, activation functions, convolutions
-- **Image processing** — pixel transforms, filtering, encoding/decoding
-- **Cryptographic operations** — hash computation, field arithmetic
-- **Scientific computing** — numerical simulations, signal processing
+- **AI/ML inference**: matrix multiplications, activation functions, convolutions
+- **Image processing**: pixel transforms, filtering, encoding/decoding
+- **Cryptographic operations**: hash computation, field arithmetic
+- **Scientific computing**: numerical simulations, signal processing
 
-For "classical" canister operations — reward distribution, token accounting, query logic — the gains are smaller but still measurable.
+For "classical" canister operations: reward distribution, token accounting, query logic. The gains are smaller but still measurable.
 
 ### Loop auto-vectorization
 
@@ -232,23 +232,23 @@ Compare instruction counts with and without SIMD to measure the speedup. Lower i
 
 ## Troubleshooting
 
-**"Wasm module too large" error during install** — The module exceeds 2 MiB. Verify that icp-cli is up to date (automatic chunk store support was added in v0.2.x). If using a manual install flow, switch to the `install_chunked_code` management canister API.
+**"Wasm module too large" error during install**: The module exceeds 2 MiB. Verify that icp-cli is up to date (automatic chunk store support was added in v0.2.x). If using a manual install flow, switch to the `install_chunked_code` management canister API.
 
-**"Wasm chunk store error" during install** — The canister may lack sufficient cycles to store chunks (each 1 MiB chunk incurs a storage cost). Top up the canister's cycles balance before retrying. If chunks from a previous failed attempt are occupying the store, call `clear_chunk_store` first.
+**"Wasm chunk store error" during install**: The canister may lack sufficient cycles to store chunks (each 1 MiB chunk incurs a storage cost). Top up the canister's cycles balance before retrying. If chunks from a previous failed attempt are occupying the store, call `clear_chunk_store` first.
 
-**Wasm64 build fails with missing target** — The `nightly` toolchain and `rust-src` component must both be installed. Run:
+**Wasm64 build fails with missing target**: The `nightly` toolchain and `rust-src` component must both be installed. Run:
 
 ```bash
 rustup toolchain install nightly
 rustup component add rust-src --toolchain nightly
 ```
 
-**SIMD instructions have no measurable effect** — Some loops cannot be auto-vectorized. Check that the loop body is tight, operates on a contiguous slice, and does not contain branches or function calls that prevent vectorization. Profile with `ic_cdk::api::instruction_counter` to confirm the function is a bottleneck before investing in SIMD intrinsics.
+**SIMD instructions have no measurable effect**: Some loops cannot be auto-vectorized. Check that the loop body is tight, operates on a contiguous slice, and does not contain branches or function calls that prevent vectorization. Profile with `ic_cdk::api::instruction_counter` to confirm the function is a bottleneck before investing in SIMD intrinsics.
 
 ## Next steps
 
-- [Canister optimization](optimization.md) — reduce Wasm size before reaching for the chunk store
-- [Execution errors reference](../../reference/execution-errors.md) — Wasm size and chunk store error codes
-- [Canister lifecycle](lifecycle.md) — deployment modes and install options
+- [Canister optimization](optimization.md): reduce Wasm size before reaching for the chunk store
+- [Execution errors reference](../../reference/execution-errors.md): Wasm size and chunk store error codes
+- [Canister lifecycle](lifecycle.md): deployment modes and install options
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/compile.mdx; dfinity/portal docs/building-apps/network-features/simd.mdx; dfinity/examples rust/backend_wasm64; dfinity/portal docs/references/ic-interface-spec.md -->

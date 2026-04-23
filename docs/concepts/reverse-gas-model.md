@@ -7,22 +7,22 @@ sidebar:
 
 On most blockchains, users pay a gas fee every time they interact with a smart contract. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing. This is the **reverse gas model**.
 
-The result is a Web2-like user experience. Users can interact with any dapp on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management — and the responsibility that comes with it.
+The result is a Web2-like user experience. Users can interact with any app on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management: and the responsibility that comes with it.
 
 ## What are cycles?
 
 Cycles are the unit of payment for resources on ICP. Every canister operation that consumes resources burns cycles from the canister's balance:
 
-- **Compute** — executing instructions (update calls, timers, heartbeats)
-- **Storage** — Wasm heap memory and stable memory, charged per byte per second
-- **Messaging** — ingress messages from users, inter-canister calls, responses
-- **Special features** — HTTPS outcalls, threshold signatures, Bitcoin integration, EVM RPC
+- **Compute**: executing instructions (update calls, timers, heartbeats)
+- **Storage**: Wasm heap memory and stable memory, charged per byte per second
+- **Messaging**: ingress messages from users, inter-canister calls, responses
+- **Special features**: HTTPS outcalls, threshold signatures, Bitcoin integration, EVM RPC
 
-Query calls are free — they run on a single node, do not go through consensus, and are not charged.
+Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
 ### Cycles are pegged to XDR
 
-Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) — a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
+Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
 
 ## ICP tokens and cycles
 
@@ -34,7 +34,7 @@ Once minted, cycles are held by principals via the **cycles ledger** (`um5iw-rqa
 
 ### Compute
 
-By default, canisters are scheduled for execution on a best-effort basis — the subnet schedules them when capacity is available. Canisters that need guaranteed execution can set a `compute_allocation` in their settings, expressed as a percentage of one execution core:
+By default, canisters are scheduled for execution on a best-effort basis. The subnet schedules them when capacity is available. Canisters that need guaranteed execution can set a `compute_allocation` in their settings, expressed as a percentage of one execution core:
 
 | Allocation | Guarantee |
 |---|---|
@@ -67,11 +67,11 @@ Every canister is replicated across all nodes on its subnet. Costs scale with su
 
 The reverse gas model shifts payment from users to developers. This comes with ongoing obligations:
 
-**Topping up** — canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
+**Topping up**: canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
 
-**Freezing threshold** — each canister has a configurable freezing threshold (default: 30 days of idle burn). If the cycle balance falls below this threshold, the canister is frozen before it can be deleted, giving developers time to top up. Increase this threshold for production canisters as a safety buffer.
+**Freezing threshold**: each canister has a configurable freezing threshold (default: 30 days of idle burn). If the cycle balance falls below this threshold, the canister is frozen before it can be deleted, giving developers time to top up. Increase this threshold for production canisters as a safety buffer.
 
-**Deletion** — a frozen canister that is not topped up within the threshold window is eventually deleted by the network, along with all its data. Deletion is permanent and irreversible.
+**Deletion**: a frozen canister that is not topped up within the threshold window is eventually deleted by the network, along with all its data. Deletion is permanent and irreversible.
 
 These responsibilities can be automated. Tools like [CycleOps](https://cycleops.dev/) monitor balances and top up canisters automatically.
 
@@ -79,16 +79,16 @@ These responsibilities can be automated. Tools like [CycleOps](https://cycleops.
 
 The XDR peg and flat per-resource pricing make ICP costs predictable in a way that transaction-fee blockchains are not:
 
-- **No gas auctions** — there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
-- **No per-transaction fees for users** — apps absorb all costs, like SaaS businesses absorb server bills.
-- **Stable unit economics** — because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
+- **No gas auctions**: there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
+- **No per-transaction fees for users**: apps absorb all costs, like SaaS businesses absorb server bills.
+- **Stable unit economics**: because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
 
 The tradeoff is that developers must forecast and fund usage upfront rather than letting users pay as they go.
 
 ## Related
 
-- [Cycles Management](../guides/canister-management/cycles-management.md) — how to check balances, top up canisters, and set freezing thresholds
-- [Cycles Costs Reference](../reference/cycles-costs.md) — exact cost tables for all operations
-- [Canisters](./canisters.md) — canisters as the paying entity in the reverse gas model
+- [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
+- [Cycles Costs Reference](../reference/cycles-costs.md): exact cost tables for all operations
+- [Canisters](./canisters.md): canisters as the paying entity in the reverse gas model
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx -->

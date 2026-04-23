@@ -11,9 +11,9 @@ For how ICP produces unpredictable randomness without any trusted party, see [On
 
 ## Why blockchain randomness is different
 
-Most blockchains execute transactions deterministically — every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
+Most blockchains execute transactions deterministically: every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
 
-ICP solves this with a threshold Verifiable Random Function (VRF). The result of `raw_rand` is produced collaboratively by the subnet's nodes using a random beacon that no single node can predict or bias. Every node independently verifies the output is correct, and the same 32 bytes are delivered to all replicas — satisfying both unpredictability and consensus.
+ICP solves this with a threshold Verifiable Random Function (VRF). The result of `raw_rand` is produced collaboratively by the subnet's nodes using a random beacon that no single node can predict or bias. Every node independently verifies the output is correct, and the same 32 bytes are delivered to all replicas: satisfying both unpredictability and consensus.
 
 ## The `raw_rand` API
 
@@ -21,9 +21,9 @@ The management canister (`aaaaa-aa`) exposes `raw_rand`, which returns 32 bytes 
 
 - **Caller:** Canisters only (not callable via ingress messages / external clients)
 - **Parameters:** None
-- **Returns:** `blob` — 32 bytes
+- **Returns:** `blob`: 32 bytes
 
-Because `raw_rand` is an update call to the management canister, it can only be invoked from an update context in your canister. **Randomness is not available in query calls** — a query executes on a single replica and cannot access the subnet-level random beacon. Attempting to call `raw_rand` from a query will trap.
+Because `raw_rand` is an update call to the management canister, it can only be invoked from an update context in your canister. **Randomness is not available in query calls**: a query executes on a single replica and cannot access the subnet-level random beacon. Attempting to call `raw_rand` from a query will trap.
 
 See the [Management Canister reference](../../reference/management-canister.md#raw_rand) for the full API specification.
 
@@ -58,7 +58,7 @@ async fn get_random_bytes() -> Vec<u8> {
 }
 ```
 
-`raw_rand` is an async call — it must be awaited from an `async` function marked `#[ic_cdk::update]`.
+`raw_rand` is an async call: it must be awaited from an `async` function marked `#[ic_cdk::update]`.
 
 ## Generating a random number in a range
 
@@ -78,7 +78,7 @@ public shared func rollDie(sides : Nat) : async Nat {
 };
 ```
 
-For multiple random values in a single call, convert the 32-byte blob to an array and index directly — no additional `raw_rand` calls needed:
+For multiple random values in a single call, convert the 32-byte blob to an array and index directly. No additional `raw_rand` calls needed:
 
 ```motoko
 import Random "mo:core/Random";
@@ -137,7 +137,7 @@ async fn roll_multiple_dice(count: usize, sides: u64) -> Vec<u64> {
 
 ## Choosing winners from a list
 
-A common use case is selecting one or more random elements from a list — for example, choosing a lottery winner or assigning roles in a game.
+A common use case is selecting one or more random elements from a list: for example, choosing a lottery winner or assigning roles in a game.
 
 **Motoko**
 
@@ -207,9 +207,9 @@ The `std_rng` feature compiles `StdRng` without requiring OS entropy, which is c
 
 **Always use randomness in update calls, never in queries.** Query calls execute on a single replica and cannot access the random beacon. The `raw_rand` API will trap if called from a query context.
 
-**One call per decision round.** Each call to `raw_rand` costs cycles and involves an inter-canister call to the management canister. Batch your entropy needs: a single 32-byte blob provides 256 bits of entropy — enough for 4 independent `u64` values, 32 independent byte selections, or one `StdRng` seed for unlimited draws.
+**One call per decision round.** Each call to `raw_rand` costs cycles and involves an inter-canister call to the management canister. Batch your entropy needs: a single 32-byte blob provides 256 bits of entropy: enough for 4 independent `u64` values, 32 independent byte selections, or one `StdRng` seed for unlimited draws.
 
-**Understand the timing guarantee.** The value returned by `raw_rand` is determined during the round in which the management canister processes the call, not when your canister submits it. Subnet nodes collaborate to produce the value under the consensus protocol — no individual node can predict or bias the output. This is appropriate for games, lotteries, and fair selection. For use cases requiring verifiable fairness to external observers who do not trust the subnet operator, combine `raw_rand` with a commit-reveal scheme.
+**Understand the timing guarantee.** The value returned by `raw_rand` is determined during the round in which the management canister processes the call, not when your canister submits it. Subnet nodes collaborate to produce the value under the consensus protocol. No individual node can predict or bias the output. This is appropriate for games, lotteries, and fair selection. For use cases requiring verifiable fairness to external observers who do not trust the subnet operator, combine `raw_rand` with a commit-reveal scheme.
 
 **Reentrancy caution.** Because `raw_rand` is an async call, your canister's execution can be interleaved with other messages at the `await` point. If you check state before the `await` and rely on that state after, another message may have modified it in between. See [Canister security](../security/inter-canister-calls.md) for reentrancy patterns.
 
@@ -223,9 +223,9 @@ Note: this example predates `mo:core` and uses `mo:base/Random.Finite`. The patt
 
 ## Next steps
 
-- [Onchain Randomness (concept)](../../concepts/onchain-randomness.md) — how the IC's threshold VRF works
-- [Management Canister](../../reference/management-canister.md) — `raw_rand` API reference
-- [Data Integrity](../security/data-integrity.md) — using randomness in a secure application design
-- [Inter-canister calls](../canister-calls/onchain-calls.md) — async patterns and reentrancy
+- [Onchain Randomness (concept)](../../concepts/onchain-randomness.md): how the IC's threshold VRF works
+- [Management Canister](../../reference/management-canister.md): `raw_rand` API reference
+- [Data Integrity](../security/data-integrity.md): using randomness in a secure application design
+- [Inter-canister calls](../canister-calls/onchain-calls.md): async patterns and reentrancy
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/integrations/randomness.mdx; dfinity/icskills — skills/canister-security/SKILL.md; dfinity/examples — motoko/random_maze; caffeinelabs/motoko-core — src/Random.mo -->

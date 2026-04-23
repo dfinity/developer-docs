@@ -15,12 +15,12 @@ This guide walks through each phase with practical icp-cli commands and explains
 
 A canister progresses through these phases:
 
-1. **Create** — register an empty canister on the network, receiving a unique canister ID
-2. **Install** — load compiled WebAssembly code into the canister
-3. **Run** — the canister processes messages and serves requests
-4. **Upgrade** — replace the code while preserving stable state
-5. **Stop** — pause message processing (required before deletion)
-6. **Delete** — permanently remove the canister and reclaim cycles
+1. **Create**: register an empty canister on the network, receiving a unique canister ID
+2. **Install**: load compiled WebAssembly code into the canister
+3. **Run**: the canister processes messages and serves requests
+4. **Upgrade**: replace the code while preserving stable state
+5. **Stop**: pause message processing (required before deletion)
+6. **Delete**: permanently remove the canister and reclaim cycles
 
 In practice, `icp deploy` handles steps 1–3 automatically. You interact with individual steps when you need finer control.
 
@@ -46,7 +46,7 @@ When you run `icp deploy`, canister creation happens automatically for any canis
 
 ### Build
 
-Building compiles your source code to a WebAssembly (Wasm) module. icp-cli delegates to the language toolchain — Cargo for Rust, moc for Motoko:
+Building compiles your source code to a WebAssembly (Wasm) module. icp-cli delegates to the language toolchain: Cargo for Rust, moc for Motoko:
 
 ```bash
 icp build
@@ -86,10 +86,10 @@ icp deploy -e ic        # deploy to mainnet
 
 What `icp deploy` does:
 
-1. **Build** — compile all target canisters to Wasm
-2. **Create** — create canisters on the network (if they don't already exist)
-3. **Install or upgrade** — install code on new canisters, upgrade existing ones
-4. **Sync** — run post-deployment steps (such as uploading frontend assets)
+1. **Build**: compile all target canisters to Wasm
+2. **Create**: create canisters on the network (if they don't already exist)
+3. **Install or upgrade**: install code on new canisters, upgrade existing ones
+4. **Sync**: run post-deployment steps (such as uploading frontend assets)
 
 ## Canister states
 
@@ -160,7 +160,7 @@ When you run `icp deploy` on an existing canister, icp-cli automatically:
 
 Stopping before the upgrade prevents data inconsistencies from messages being processed during the code swap.
 
-> **Note:** `--mode upgrade` is rarely needed explicitly — `auto` mode (the default) already upgrades existing canisters. Use `--mode upgrade` in CI pipelines where you want the command to fail if the canister doesn't already exist.
+> **Note:** `--mode upgrade` is rarely needed explicitly: `auto` mode (the default) already upgrades existing canisters. Use `--mode upgrade` in CI pipelines where you want the command to fail if the canister doesn't already exist.
 
 ### Preserving state across upgrades
 
@@ -184,7 +184,7 @@ persistent actor Counter {
 };
 ```
 
-All `var` declarations in a `persistent actor` are automatically stable — they survive upgrades without any additional code. Use `transient var` for values that should reset on each upgrade (such as caches):
+All `var` declarations in a `persistent actor` are automatically stable: they survive upgrades without any additional code. Use `transient var` for values that should reset on each upgrade (such as caches):
 
 ```motoko
 import Map "mo:core/Map";
@@ -195,7 +195,7 @@ persistent actor Cache {
 };
 ```
 
-> **Tip:** `persistent actor` is the recommended pattern. Avoid `pre_upgrade`/`post_upgrade` hooks in Motoko when possible — if `pre_upgrade` traps, the canister becomes permanently non-upgradeable.
+> **Tip:** `persistent actor` is the recommended pattern. Avoid `pre_upgrade`/`post_upgrade` hooks in Motoko when possible: if `pre_upgrade` traps, the canister becomes permanently non-upgradeable.
 
 </TabItem>
 <TabItem label="Rust">
@@ -282,23 +282,23 @@ Remaining cycles are refunded to the controller who made the delete request.
 
 Sometimes you need to move a canister to a different subnet. Common reasons include:
 
-- **Wrong subnet** — the canister was deployed to an unintended subnet
-- **Geographic requirements** — data residency rules require a specific region
-- **Replication needs** — moving to a larger subnet for higher fault tolerance
-- **Colocation** — consolidating canisters onto the same subnet for efficient inter-canister calls
+- **Wrong subnet**: the canister was deployed to an unintended subnet
+- **Geographic requirements**: data residency rules require a specific region
+- **Replication needs**: moving to a larger subnet for higher fault tolerance
+- **Colocation**: consolidating canisters onto the same subnet for efficient inter-canister calls
 
 There are two approaches, depending on whether you need to keep the canister ID:
 
 | Approach | State | Canister ID | When to use |
 |----------|-------|-------------|-------------|
-| **Snapshot transfer** | Preserved | New ID | Default — simpler and safer |
+| **Snapshot transfer** | Preserved | New ID | Default: simpler and safer |
 | **Full migration** | Preserved | Preserved | When the canister ID is load-bearing |
 
 Preserving the canister ID matters when:
 
-- **Threshold signatures (tECDSA/tSchnorr)** — signing keys are cryptographically bound to the canister's principal. A new ID means losing access to derived keys and any assets they control on other blockchains.
-- **VetKeys** — decryption keys are derived from the canister ID. A new ID makes previously encrypted data inaccessible.
-- **External references** — other canisters, frontends, or off-chain systems reference the canister by ID. This includes Internet Identity sessions tied to a canister-ID-based domain.
+- **Threshold signatures (tECDSA/tSchnorr)**: signing keys are cryptographically bound to the canister's principal. A new ID means losing access to derived keys and any assets they control on other blockchains.
+- **VetKeys**: decryption keys are derived from the canister ID. A new ID makes previously encrypted data inaccessible.
+- **External references**: other canisters, frontends, or off-chain systems reference the canister by ID. This includes Internet Identity sessions tied to a canister-ID-based domain.
 
 Both approaches use [canister snapshots](snapshots.md) to transfer state. For the complete step-by-step procedure, see the [icp-cli canister migration guide](https://github.com/dfinity/icp-cli/blob/main/docs/guides/canister-migration.md).
 
@@ -370,7 +370,7 @@ For a complete canister factory example, see the [canister factory example](http
 
 ## Canister history
 
-Every canister maintains a history of at least its most recent 20 changes — including creation, code installations, upgrades, reinstalls, and controller changes. Older entries may be dropped, but the 20 most recent are always retained. This is useful for security audits and verifying code integrity.
+Every canister maintains a history of at least its most recent 20 changes: including creation, code installations, upgrades, reinstalls, and controller changes. Older entries may be dropped, but the 20 most recent are always retained. This is useful for security audits and verifying code integrity.
 
 ### Query history from Rust
 
@@ -402,11 +402,11 @@ The status output includes the module hash and controller list. For full change 
 
 ## Trapping and error handling
 
-A **trap** is an unrecoverable error during WebAssembly execution — caused by panics, division by zero, out-of-bounds memory access, or explicit trap calls. When a canister traps:
+A **trap** is an unrecoverable error during WebAssembly execution: caused by panics, division by zero, out-of-bounds memory access, or explicit trap calls. When a canister traps:
 
 - The current message execution ends with an error
 - All state changes from the current message are rolled back
-- For inter-canister calls, only the callback's state changes roll back — state changes made before the `await` persist
+- For inter-canister calls, only the callback's state changes roll back: state changes made before the `await` persist
 
 ### Traps during upgrades
 
@@ -434,11 +434,11 @@ The IC decompresses the module automatically during installation. For strategies
 
 ## Next steps
 
-- [Canister settings](settings.md) — configure controllers, memory allocation, and freezing thresholds
-- [Cycles management](cycles-management.md) — fund canisters and monitor cycle consumption
-- [Data persistence](../backends/data-persistence.md) — deep dive into stable memory and persistence strategies
-- [Canister snapshots](snapshots.md) — create backups before risky upgrades
-- [Upgrade safety](../security/canister-upgrades.md) — security considerations for safe upgrades
-- [Testing strategies](../testing/strategies.md) — test lifecycle operations locally
+- [Canister settings](settings.md): configure controllers, memory allocation, and freezing thresholds
+- [Cycles management](cycles-management.md): fund canisters and monitor cycle consumption
+- [Data persistence](../backends/data-persistence.md): deep dive into stable memory and persistence strategies
+- [Canister snapshots](snapshots.md): create backups before risky upgrades
+- [Upgrade safety](../security/canister-upgrades.md): security considerations for safe upgrades
+- [Testing strategies](../testing/strategies.md): test lifecycle operations locally
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/, docs/building-apps/developing-canisters/ — dfinity/icp-cli — docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/, docs/building-apps/developing-canisters/) dfinity/icp-cli: docs/concepts/build-deploy-sync.md, docs/guides/canister-migration.md */}

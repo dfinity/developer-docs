@@ -5,13 +5,13 @@ sidebar:
   order: 6
 ---
 
-A reproducible build produces the same WebAssembly module byte-for-byte whenever anyone compiles the same source code in the same documented environment. For canisters, this matters because ICP lets anyone query a canister's Wasm hash — but only a reproducible build makes that hash meaningful. Without it, a published hash cannot be linked to readable source code.
+A reproducible build produces the same WebAssembly module byte-for-byte whenever anyone compiles the same source code in the same documented environment. For canisters, this matters because ICP lets anyone query a canister's Wasm hash: but only a reproducible build makes that hash meaningful. Without it, a published hash cannot be linked to readable source code.
 
 This guide explains how to structure your canister project for reproducibility, how to use Docker to standardize build environments, and how users can verify a deployed canister using `icp canister status`.
 
 ## Why reproducibility matters
 
-ICP does not expose a canister's Wasm module directly — only its SHA-256 hash. This is a deliberate privacy measure: developers may want to keep source code private. However, if you do publish your source code, a reproducible build lets users confirm that the hash matches what they compiled themselves.
+ICP does not expose a canister's Wasm module directly. Only its SHA-256 hash. This is a deliberate privacy measure: developers may want to keep source code private. However, if you do publish your source code, a reproducible build lets users confirm that the hash matches what they compiled themselves.
 
 This is most important for canisters that hold other users' funds or execute critical operations. Before interacting with such a canister, a cautious user can:
 
@@ -31,7 +31,7 @@ Use `icp canister status` with the canister ID to retrieve the current module ha
 icp canister status rdmx6-jaaaa-aaaaa-aaadq-cai -n ic
 ```
 
-The output includes the module hash alongside cycle balance, controller list, and other status fields. Anyone can query this hash — no controller access is required. Use `-p` / `--public` to explicitly read only public information from the state tree:
+The output includes the module hash alongside cycle balance, controller list, and other status fields. Anyone can query this hash. No controller access is required. Use `-p` / `--public` to explicitly read only public information from the state tree:
 
 ```bash
 icp canister status rdmx6-jaaaa-aaaaa-aaadq-cai -n ic --public
@@ -51,9 +51,9 @@ If the canister's controller list is empty, or the only controller is a blackhol
 
 To allow users to reproduce your build, you must publish:
 
-1. **The exact source code** used to build the deployed Wasm — typically a tagged commit in a public repository, or an archived source package
-2. **A complete description of the build environment** — operating system, compiler versions, toolchain versions, and any relevant environment variables
-3. **Deterministic build instructions** — a script or `Dockerfile` that produces the same output when run in the described environment
+1. **The exact source code** used to build the deployed Wasm: typically a tagged commit in a public repository, or an archived source package
+2. **A complete description of the build environment**: operating system, compiler versions, toolchain versions, and any relevant environment variables
+3. **Deterministic build instructions**: a script or `Dockerfile` that produces the same output when run in the described environment
 
 ### Pinning dependencies
 
@@ -103,7 +103,7 @@ cargo build --locked --target wasm32-unknown-unknown --release
 Docker is the standard approach for distributing reproducible build environments. A `Dockerfile` pins the operating system and toolchain versions so anyone building your canister works in an identical environment.
 
 :::caution
-Pin your Docker builds to `x86_64`. Builds are generally not reproducible across CPU architectures. If you develop on Apple Silicon (M-series), use [lima](https://github.com/lima-vm/lima) to run an x86_64 Linux VM — lima is more stable than Docker Desktop or Docker Machine for this use case on macOS.
+Pin your Docker builds to `x86_64`. Builds are generally not reproducible across CPU architectures. If you develop on Apple Silicon (M-series), use [lima](https://github.com/lima-vm/lima) to run an x86_64 Linux VM: lima is more stable than Docker Desktop or Docker Machine for this use case on macOS.
 :::
 
 ### Example Dockerfile for a Rust canister
@@ -147,9 +147,9 @@ WORKDIR /canister
 
 Key design choices in this `Dockerfile`:
 
-- **Official base image** — starting from `ubuntu:22.04` gives users a trusted, unmodified foundation
-- **Direct installation, not package managers** — package managers do not pin transitive dependencies reliably; installing tools directly with fixed version numbers ensures everyone gets the same binary
-- **`ic-wasm` included** — required for Wasm shrinking, which strips debug info and reduces file size
+- **Official base image**: starting from `ubuntu:22.04` gives users a trusted, unmodified foundation
+- **Direct installation, not package managers**: package managers do not pin transitive dependencies reliably; installing tools directly with fixed version numbers ensures everyone gets the same binary
+- **`ic-wasm` included**: required for Wasm shrinking, which strips debug info and reduces file size
 
 Place this `Dockerfile` in your canister project directory. Build the container image:
 
@@ -199,14 +199,14 @@ Compute the hash for your Wasm file with `sha256sum`:
 sha256sum dist/my-canister.wasm
 ```
 
-The recipe will fail with a hash mismatch error if the Wasm file does not match the declared `sha256`. This makes it safe to check the hash into version control alongside the path — users and CI pipelines can reproduce the deployment exactly.
+The recipe will fail with a hash mismatch error if the Wasm file does not match the declared `sha256`. This makes it safe to check the hash into version control alongside the path: users and CI pipelines can reproduce the deployment exactly.
 
 Optional recipe parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `path` | string | required | Local path to the prebuilt Wasm |
-| `sha256` | string | — | SHA-256 hash for integrity verification |
+| `sha256` | string | - | SHA-256 hash for integrity verification |
 | `shrink` | boolean | `false` | Remove unused functions and debug info |
 | `compress` | boolean | `false` | Gzip compress the Wasm |
 | `metadata` | array | `[]` | Custom metadata key-value pairs to inject |
@@ -261,8 +261,8 @@ Maintaining a reproducible build over years requires more than getting it workin
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.md) — deploy and upgrade workflow
-- [Canister settings](settings.md) — configure controllers and make canisters immutable
-- [Cycles management](cycles-management.md) — top up canisters before long-term deployment
+- [Canister lifecycle](lifecycle.md): deploy and upgrade workflow
+- [Canister settings](settings.md): configure controllers and make canisters immutable
+- [Cycles management](cycles-management.md): top up canisters before long-term deployment
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/best-practices/reproducible-builds.mdx; dfinity/icp-cli-recipes — recipes/prebuilt/README.md, recipe.hbs; dfinity/icp-cli — docs/guides/using-recipes.md -->

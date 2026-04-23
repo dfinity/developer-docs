@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canisters on ICP pay for compute and storage using **cycles**. Unlike gas on Ethereum, cycles are paid by the canister — not the caller. This is ICP's [reverse gas model](../../concepts/reverse-gas-model.md): developers fund their own canisters, and users interact for free.
+Canisters on ICP pay for compute and storage using **cycles**. Unlike gas on Ethereum, cycles are paid by the canister: not the caller. This is ICP's [reverse gas model](../../concepts/reverse-gas-model.md): developers fund their own canisters, and users interact for free.
 
 This guide covers everything you need to manage cycles in production: acquiring them, monitoring balances, setting thresholds, and deploying to mainnet.
 
@@ -16,16 +16,16 @@ This guide covers everything you need to manage cycles in production: acquiring 
 Cycles are priced in XDR (Special Drawing Rights), a stable international reserve asset. **1 trillion cycles (1T) costs approximately 1 XDR**, which is roughly 1.3 USD as of 2025. This pricing is enforced by the Cycles Minting Canister (CMC) and updated via NNS governance proposals, so the cycle cost of a given operation stays stable even as ICP's price fluctuates.
 
 Canisters are charged continuously for:
-- **Storage** — bytes held in stable memory and heap
-- **Compute** — CPU cycles consumed by update and query calls
-- **Messages** — ingress and inter-canister calls
-- **Special operations** — HTTPS outcalls, threshold signatures, Bitcoin API calls
+- **Storage**: bytes held in stable memory and heap
+- **Compute**: CPU cycles consumed by update and query calls
+- **Messages**: ingress and inter-canister calls
+- **Special operations**: HTTPS outcalls, threshold signatures, Bitcoin API calls
 
 See [Cycles costs reference](../../reference/cycles-costs.md) for exact cost tables by subnet size.
 
 ### Local vs mainnet cycles
 
-Local development uses fabricated cycles — canisters on a local network start with a large balance and never actually run out. Code that works locally can fail on mainnet if the canister is underfunded. Always test with realistic cycle amounts before deploying.
+Local development uses fabricated cycles: canisters on a local network start with a large balance and never actually run out. Code that works locally can fail on mainnet if the canister is underfunded. Always test with realistic cycle amounts before deploying.
 
 ## Acquiring cycles
 
@@ -40,7 +40,7 @@ icp identity principal
 # Output: xxxxx-xxxxx-xxxxx-xxxxx-xxx
 ```
 
-Save your seed phrase — it is shown only once. Without it, you permanently lose access to the identity and any funds it controls.
+Save your seed phrase: it is shown only once. Without it, you permanently lose access to the identity and any funds it controls.
 
 ### Step 2: Get ICP tokens
 
@@ -133,7 +133,7 @@ fn get_balance() -> Nat {
 
 ## Topping up canisters
 
-Anyone can top up any canister — you do not need to be its controller.
+Anyone can top up any canister: you do not need to be its controller.
 
 ```bash
 # Top up by canister name (in your project environment)
@@ -225,7 +225,7 @@ See [Canister settings](settings.md) for all available settings and their syntax
 **When a canister is frozen:**
 - Update calls return an error immediately
 - Query calls still succeed (read-only)
-- The canister is not deleted yet — top it up to unfreeze
+- The canister is not deleted yet: top it up to unfreeze
 
 **When a frozen canister runs out of cycles entirely:**
 - The canister is deleted along with all its state
@@ -366,66 +366,66 @@ Each environment maintains separate canister IDs. Mainnet IDs are stored in `.ic
 
 Before deploying to mainnet, verify each of the following:
 
-- **Fund canisters** — Top up all canisters with at least 2–5T cycles each before deploying
-- **Set a freezing threshold** — Use 90 days (`7776000` seconds) or more for production
-- **Add a backup controller** — Without a backup, losing your identity means losing the canister permanently:
+- **Fund canisters**: Top up all canisters with at least 2–5T cycles each before deploying
+- **Set a freezing threshold**: Use 90 days (`7776000` seconds) or more for production
+- **Add a backup controller**: Without a backup, losing your identity means losing the canister permanently:
   ```bash
   icp canister settings update backend --add-controller BACKUP_PRINCIPAL -e ic
   ```
-- **Verify cycle balance after deploy** — Check immediately after `icp deploy -e ic`:
+- **Verify cycle balance after deploy**: Check immediately after `icp deploy -e ic`:
   ```bash
   icp canister status backend -e ic
   ```
-- **Enable reproducible builds** — See [Reproducible builds](reproducible-builds.md) to ensure your WASM is verifiable
-- **Review canister settings** — See [Canister settings](settings.md) for memory allocation, compute allocation, and access controls
-- **Review security** — See [Canister upgrades security](../security/canister-upgrades.md) for safe upgrade patterns
+- **Enable reproducible builds**: See [Reproducible builds](reproducible-builds.md) to ensure your WASM is verifiable
+- **Review canister settings**: See [Canister settings](settings.md) for memory allocation, compute allocation, and access controls
+- **Review security**: See [Canister upgrades security](../security/canister-upgrades.md) for safe upgrade patterns
 
 ## Monitoring cycle balances
 
-There is no built-in alerting for low balances — monitoring is your responsibility. Options:
+There is no built-in alerting for low balances: monitoring is your responsibility. Options:
 
-**Manual monitoring** — Check regularly via icp-cli:
+**Manual monitoring**: Check regularly via icp-cli:
 
 ```bash
 # Check all canisters in an environment at once
 icp canister status -e ic
 ```
 
-**Automated monitoring services** — Third-party services can monitor balances and alert or auto-top-up:
-- [CycleOps](https://cycleops.dev) — Onchain monitoring with automated top-ups and email notifications
-- [Canistergeek](https://cusyh-iyaaa-aaaah-qcpba-cai.raw.icp0.io/) — Cycles, memory, and log monitoring in one place
+**Automated monitoring services**: Third-party services can monitor balances and alert or auto-top-up:
+- [CycleOps](https://cycleops.dev): Onchain monitoring with automated top-ups and email notifications
+- [Canistergeek](https://cusyh-iyaaa-aaaah-qcpba-cai.raw.icp0.io/): Cycles, memory, and log monitoring in one place
 
 **Automated top-up libraries:**
-- Rust: [canfund](https://github.com/dfinity/canfund) — DFINITY-maintained library for automated canister funding
-- Motoko: [cycles-manager](https://github.com/CycleOperators/cycles-manager) — Permissioned multi-canister cycles management
+- Rust: [canfund](https://github.com/dfinity/canfund): DFINITY-maintained library for automated canister funding
+- Motoko: [cycles-manager](https://github.com/CycleOperators/cycles-manager): Permissioned multi-canister cycles management
 
 ## Common mistakes
 
-**Sending cycles to the wrong canister** — Cycles transferred to the wrong principal cannot be recovered. Double-check canister IDs before topping up.
+**Sending cycles to the wrong canister**: Cycles transferred to the wrong principal cannot be recovered. Double-check canister IDs before topping up.
 
-**Using the wrong flag (`-n` vs `-e`)** — Use `-e ic` for canister operations by name; use `-n ic` for token/cycles operations and canister IDs:
+**Using the wrong flag (`-n` vs `-e`)**: Use `-e ic` for canister operations by name; use `-n ic` for token/cycles operations and canister IDs:
 ```bash
 # Correct
 icp canister top-up backend --amount 1T -e ic
 icp cycles balance -n ic
 
-# Incorrect (fails — canister name requires -e)
+# Incorrect (fails: canister name requires -e)
 icp canister top-up backend --amount 1T -n ic
 ```
 
-**Forgetting to add a backup controller** — Your identity is the only controller by default. If you lose access to it, the canister cannot be managed, upgraded, or deleted.
+**Forgetting to add a backup controller**: Your identity is the only controller by default. If you lose access to it, the canister cannot be managed, upgraded, or deleted.
 
-**Confusing local and mainnet cycles** — Local deployments use fabricated cycles and never freeze. Test with realistic amounts on a staging environment before going to production.
+**Confusing local and mainnet cycles**: Local deployments use fabricated cycles and never freeze. Test with realistic amounts on a staging environment before going to production.
 
-**Using `ExperimentalCycles` in Motoko** — In `mo:core`, the module is `Cycles`, not `ExperimentalCycles`. `import ExperimentalCycles "mo:base/ExperimentalCycles"` will fail with `mo:core`. Use `import Cycles "mo:core/Cycles"`.
+**Using `ExperimentalCycles` in Motoko**: In `mo:core`, the module is `Cycles`, not `ExperimentalCycles`. `import ExperimentalCycles "mo:base/ExperimentalCycles"` will fail with `mo:core`. Use `import Cycles "mo:core/Cycles"`.
 
 ## Next steps
 
-- [Canister settings](settings.md) — Freezing threshold, memory allocation, compute allocation
-- [Canister lifecycle](lifecycle.md) — Create, install, upgrade, and delete canisters
-- [Cycles costs reference](../../reference/cycles-costs.md) — Exact cost tables per operation
-- [Reverse gas model](../../concepts/reverse-gas-model.md) — Why canisters pay for execution
-- [Reproducible builds](reproducible-builds.md) — Verify your WASM is trustworthy before deploying
-- [icp-cli docs](https://cli.internetcomputer.org/) — Full command reference
+- [Canister settings](settings.md): Freezing threshold, memory allocation, compute allocation
+- [Canister lifecycle](lifecycle.md): Create, install, upgrade, and delete canisters
+- [Cycles costs reference](../../reference/cycles-costs.md): Exact cost tables per operation
+- [Reverse gas model](../../concepts/reverse-gas-model.md): Why canisters pay for execution
+- [Reproducible builds](reproducible-builds.md): Verify your WASM is trustworthy before deploying
+- [icp-cli docs](https://cli.internetcomputer.org/): Full command reference
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/canister-management/topping-up.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; dfinity/icp-cli — docs/guides/deploying-to-mainnet.md, docs/guides/tokens-and-cycles.md, docs/guides/managing-environments.md; dfinity/icskills — skills/cycles-management/SKILL.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/topping-up.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; dfinity/icp-cli) docs/guides/deploying-to-mainnet.md, docs/guides/tokens-and-cycles.md, docs/guides/managing-environments.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

@@ -1,6 +1,6 @@
 ---
 title: "Offline public key derivation"
-description: "Derive canister threshold public keys and blockchain addresses offline — no management canister call or cycles required."
+description: "Derive canister threshold public keys and blockchain addresses offline. No management canister call or cycles required."
 sidebar:
   order: 6
 ---
@@ -75,18 +75,18 @@ npx @dfinity/ic-pub-key derive ecdsa secp256k1 \
   --chaincode <parent-chain-code-hex> \
   --derivationpath <candid-blob-path>
 
-# Schnorr Ed25519 (mainnet key_1 is the default — no flags needed for the master key)
+# Schnorr Ed25519 (mainnet key_1 is the default: no flags needed for the master key)
 npx @dfinity/ic-pub-key derive schnorr ed25519 \
   --derivationpath <candid-blob-path>
 ```
 
-For deriving Chain Fusion Signer addresses specifically (ETH/BTC for a given principal), use the `signer` commands instead — see the [Chain Fusion Signer guide](chain-fusion-signer.md#derive-offline-no-cycles).
+For deriving Chain Fusion Signer addresses specifically (ETH/BTC for a given principal), use the `signer` commands instead: see the [Chain Fusion Signer guide](chain-fusion-signer.md#derive-offline-no-cycles).
 
 ## Next steps
 
-- [Chain Fusion Signer](chain-fusion-signer.md) — sign transactions for Bitcoin and Ethereum from web apps and CLI
-- [Management canister reference](../../reference/management-canister.md#chain-key-signing) — the on-chain `ecdsa_public_key` and `schnorr_public_key` methods
-- [Chain-key cryptography](../../concepts/chain-key-cryptography.md) — how threshold key derivation works
+- [Chain Fusion Signer](chain-fusion-signer.md): sign transactions for Bitcoin and Ethereum from web apps and CLI
+- [Management canister reference](../../reference/management-canister.md#chain-key-signing): the on-chain `ecdsa_public_key` and `schnorr_public_key` methods
+- [Chain-key cryptography](../../concepts/chain-key-cryptography.md): how threshold key derivation works
 
 <!-- ic-pub-key: known issue — @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release — update all references when that happens. -->
 

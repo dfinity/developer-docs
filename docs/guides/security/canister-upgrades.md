@@ -14,9 +14,9 @@ Use this before every production upgrade:
 - [ ] Take a snapshot immediately before upgrading
 - [ ] Run the upgrade locally first with `icp deploy`
 - [ ] Verify data survives: write → upgrade → read
-- [ ] Check Candid interface compatibility — no removed methods, no breaking type changes
+- [ ] Check Candid interface compatibility. No removed methods, no breaking type changes
 - [ ] Avoid `pre_upgrade` hooks that serialize large state (use stable structures instead)
-- [ ] In Motoko, use `persistent actor` (which eliminates the need for pre_upgrade hooks) — avoid manual `pre_upgrade`/`post_upgrade`
+- [ ] In Motoko, use `persistent actor` (which eliminates the need for pre_upgrade hooks): avoid manual `pre_upgrade`/`post_upgrade`
 - [ ] Confirm you have a backup controller (cannot recover from a trapped `post_upgrade` without one)
 - [ ] Add a rollback plan: snapshot ID recorded, restore procedure tested
 
@@ -56,21 +56,21 @@ persistent actor Counter {
 
   public query func get() : async Nat { count };
 
-  // transient: resets to [] on each upgrade — correct for caches, transient logs, and reset-on-upgrade counters
+  // transient: resets to [] on each upgrade: correct for caches, transient logs, and reset-on-upgrade counters
   transient var recentCallers : [Principal] = [];
 };
 ```
 
 **Key rules:**
 
-- All `let`/`var` fields persist automatically — no `stable` keyword needed
+- All `let`/`var` fields persist automatically. No `stable` keyword needed
 - `transient var` for caches or counters that should reset on upgrade
-- Do not write manual `pre_upgrade`/`post_upgrade` hooks — the runtime handles everything
+- Do not write manual `pre_upgrade`/`post_upgrade` hooks. The runtime handles everything
 - If a persistent field's type changes incompatibly, the upgrade traps. See [Schema evolution](#schema-evolution).
 
 ### Rust: use stable structures
 
-In Rust, use [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) to store data directly in stable memory. Data lives there from the start — no serialization step on upgrade.
+In Rust, use [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) to store data directly in stable memory. Data lives there from the start. No serialization step on upgrade.
 
 ```rust
 use ic_stable_structures::{
@@ -81,7 +81,7 @@ use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
-// Each structure must have its own unique MemoryId — never reuse IDs
+// Each structure must have its own unique MemoryId: never reuse IDs
 const USERS_MEM_ID: MemoryId = MemoryId::new(0);
 const COUNTER_MEM_ID: MemoryId = MemoryId::new(1);
 
@@ -103,7 +103,7 @@ thread_local! {
 
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
-    // Stable structures auto-restore — no deserialization needed.
+    // Stable structures auto-restore: no deserialization needed.
     // Re-initialize timers or transient state here if required.
 }
 ```
@@ -119,12 +119,12 @@ The serialization-based upgrade pattern is common in older Rust code but is fund
 #[ic_cdk::pre_upgrade]
 fn pre_upgrade() {
     // If STATE is large, this hits the instruction limit and traps.
-    // A trapped pre_upgrade prevents the upgrade — canister stays on old code.
+    // A trapped pre_upgrade prevents the upgrade: canister stays on old code.
     ic_cdk::storage::stable_save((STATE.with(|s| s.borrow().clone()),)).unwrap();
 }
 ```
 
-When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API — see [Management canister reference](../../reference/management-canister.md)) bypasses the hook — but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
+When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API (see [Management canister reference](../../reference/management-canister.md)) bypasses the hook) but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
 
 ## Candid interface compatibility
 
@@ -149,7 +149,7 @@ The IC checks your new Wasm module's Candid interface against the old one before
 | Add a required (non-optional) parameter | Old clients don't send it |
 | Change a parameter type to an incompatible type | Old clients send invalid values |
 
-**Example — safe evolution:**
+**Example: safe evolution:**
 
 ```candid
 // Before
@@ -158,7 +158,7 @@ service counter : {
   get : () -> (int) query;
 }
 
-// After — safe: optional param added, new return value, new method
+// After: safe: optional param added, new return value, new method
 service counter : {
   add : (nat, label : opt text) -> (new_val : nat);
   get : () -> (nat, last_change : nat) query;
@@ -212,7 +212,7 @@ When upgrading a `persistent actor`, the runtime checks that every persistent fi
 
 **Safe changes:**
 
-- Add new `let` or `var` fields with initial values — the runtime initializes them on upgrade
+- Add new `let` or `var` fields with initial values. The runtime initializes them on upgrade
 - Add optional record fields (e.g., change `{ name : Text }` to `{ name : Text; email : ?Text }`)
 - Widen a field's type (e.g., `Nat` → `Int`)
 
@@ -240,7 +240,7 @@ struct UserV2 {
     id: u64,
     name: String,
     created: u64,
-    // New optional field — safe to add: old records deserialize with None
+    // New optional field: safe to add: old records deserialize with None
     email: Option<String>,
 }
 
@@ -262,9 +262,9 @@ impl Storable for UserV2 {
 
 **Rules:**
 
-- Use `Option<T>` for new fields — Candid deserializes absent fields as `None`, so old records remain readable after the upgrade
+- Use `Option<T>` for new fields: Candid deserializes absent fields as `None`, so old records remain readable after the upgrade
 - Use `Bound::Unbounded` unless you have a strict size requirement
-- Never reorder `MemoryId` allocations across upgrades — same effect as changing a field type
+- Never reorder `MemoryId` allocations across upgrades: same effect as changing a field type
 - For breaking schema changes, use a versioned enum and migrate records lazily on read
 
 ## Testing upgrades locally
@@ -316,13 +316,13 @@ icp canister call backend get_user_count '()'
 # Must still return: (1 : nat64)
 ```
 
-If the count drops to zero after upgrade, your data is not in stable memory — review your storage declarations before touching mainnet.
+If the count drops to zero after upgrade, your data is not in stable memory: review your storage declarations before touching mainnet.
 
 For advanced scenarios (upgrade rollbacks, schema migrations, concurrent call safety), use [PocketIC](../testing/pocket-ic.md) to script multi-step upgrade scenarios in a controlled environment.
 
 ## Controller safety
 
-You cannot upgrade a canister without a valid controller. Losing all controller keys leaves the canister permanently frozen at its current code — there is no recovery path on the IC.
+You cannot upgrade a canister without a valid controller. Losing all controller keys leaves the canister permanently frozen at its current code: there is no recovery path on the IC.
 
 ```bash
 # Check current controllers
@@ -341,10 +341,10 @@ See [Access management](access-management.md) for detailed controller management
 
 ## Next steps
 
-- [Data persistence](../backends/data-persistence.md) — stable structures and upgrade patterns in depth
-- [Canister lifecycle](../canister-management/lifecycle.md) — the full upgrade sequence and install modes
-- [Canister snapshots](../canister-management/snapshots.md) — create and restore snapshots
-- [Testing strategies](../testing/strategies.md) — test upgrade scenarios before deploying to mainnet
-- [Access management](access-management.md) — manage controllers and prevent lock-out
+- [Data persistence](../backends/data-persistence.md): stable structures and upgrade patterns in depth
+- [Canister lifecycle](../canister-management/lifecycle.md): the full upgrade sequence and install modes
+- [Canister snapshots](../canister-management/snapshots.md): create and restore snapshots
+- [Testing strategies](../testing/strategies.md): test upgrade scenarios before deploying to mainnet
+- [Access management](access-management.md): manage controllers and prevent lock-out
 
 <!-- Upstream: informed by dfinity/icskills — skills/canister-security/SKILL.md; dfinity/portal — docs/building-apps/canister-management/upgrade.mdx, docs/building-apps/interact-with-canisters/candid/using-candid.mdx; dfinity/icp-cli — docs/guides/canister-snapshots.md; dfinity/cdk-rs — ic-cdk/src/api/management_canister/main/types.rs; dfinity/examples — rust/tokenmania/backend/types.rs -->

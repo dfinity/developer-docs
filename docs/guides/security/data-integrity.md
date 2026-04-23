@@ -11,7 +11,7 @@ For a conceptual overview of how these fit into the IC security model, see [Secu
 
 ## Onchain encryption with vetKeys
 
-Canister state on standard application subnets is readable by node operators. If your application stores private data (notes, messages, files), you must encrypt it before storing. vetKeys (verifiably encrypted threshold keys) give canisters access to cryptographic key material derived by a threshold quorum of subnet nodes — no single node ever holds the raw key.
+Canister state on standard application subnets is readable by node operators. If your application stores private data (notes, messages, files), you must encrypt it before storing. vetKeys (verifiably encrypted threshold keys) give canisters access to cryptographic key material derived by a threshold quorum of subnet nodes. No single node ever holds the raw key.
 
 The core workflow:
 
@@ -97,7 +97,7 @@ fn init() {
 }
 ```
 
-Expose the two endpoints callers need — one to retrieve an encrypted key, one to retrieve the verification key:
+Expose the two endpoints callers need: one to retrieve an encrypted key, one to retrieve the verification key:
 
 ```rust
 use candid::Principal;
@@ -233,7 +233,7 @@ Generate a fresh transport key pair each session, then request and decrypt the v
 ```typescript
 import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey } from "@dfinity/vetkeys";
 
-// 1. Generate an ephemeral transport key — new one each session
+// 1. Generate an ephemeral transport key: new one each session
 const transportSecretKey = TransportSecretKey.fromSeed(crypto.getRandomValues(new Uint8Array(32)));
 const transportPublicKey = transportSecretKey.publicKey();
 
@@ -279,7 +279,7 @@ const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, c
 ### Common mistakes
 
 - **Reusing transport keys across sessions.** Generate a fresh transport key pair for each session. If an attacker ever learns the transport secret, they can decrypt all keys derived while that secret was in use.
-- **Using derived key bytes directly as an AES key.** The `encrypted_key` field from `vetkd_derive_key` is an encrypted blob. After decryption, call `toDerivedKeyMaterial()` before using for AES — do not use the raw bytes directly.
+- **Using derived key bytes directly as an AES key.** The `encrypted_key` field from `vetkd_derive_key` is an encrypted blob. After decryption, call `toDerivedKeyMaterial()` before using for AES: do not use the raw bytes directly.
 - **Putting secret data in the `input` field.** The `input` field is sent to the management canister in plaintext and serves as a key identifier (e.g., a user principal or document ID). Never use it for actual secret data.
 - **Inconsistent context values.** The `context` field on the canister and on the frontend must match exactly. A mismatch causes silent decryption failure.
 
@@ -291,7 +291,7 @@ This is useful for private messaging, sealed auctions, and any case where you wa
 
 > **Access control:** If you implement IBE without using `KeyManager` or `EncryptedMaps`, your canister must verify that `caller == recipient_principal` before calling `vetkd_derive_key`. Without this check, any caller can request any derived key and decrypt messages meant for someone else. The `ic-vetkeys` library handles this automatically.
 
-**TypeScript IBE example — encrypt (sender side):**
+**TypeScript IBE example: encrypt (sender side):**
 
 ```typescript
 import { IbeCiphertext, IbeIdentity, IbeSeed } from "@dfinity/vetkeys";
@@ -306,7 +306,7 @@ const ciphertext = IbeCiphertext.encrypt(
 const serialized = ciphertext.serialize(); // store this onchain (ciphertext, not plaintext)
 ```
 
-**TypeScript IBE example — decrypt (recipient side):**
+**TypeScript IBE example: decrypt (recipient side):**
 
 ```typescript
 import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey, IbeCiphertext } from "@dfinity/vetkeys";
@@ -345,9 +345,9 @@ const derivedKey: DerivedPublicKey = canisterKey.deriveSubKey(
 ```
 
 For complete IBE and encrypted storage examples, see:
-- [Password manager example](https://github.com/dfinity/vetkeys/tree/main/examples/password_manager) — encrypted key-value storage with `EncryptedMaps`
-- [Encrypted notes dapp](https://github.com/dfinity/vetkeys/tree/main/examples/encrypted_notes_dapp_vetkd) — per-user encrypted note storage
-- [IBE example](https://github.com/dfinity/vetkeys/tree/main/examples/basic_ibe) — identity-based encryption with Internet Identity principals
+- [Password manager example](https://github.com/dfinity/vetkeys/tree/main/examples/password_manager): encrypted key-value storage with `EncryptedMaps`
+- [Encrypted notes app](https://github.com/dfinity/vetkeys/tree/main/examples/encrypted_notes_dapp_vetkd): per-user encrypted note storage
+- [IBE example](https://github.com/dfinity/vetkeys/tree/main/examples/basic_ibe): identity-based encryption with Internet Identity principals
 
 ## Certified variables for data authenticity
 
@@ -362,29 +362,29 @@ For the full implementation guide, including Merkle tree construction, witness g
 
 **Key rules:**
 - `certified_data_set` may only be called during update calls (not query calls)
-- You can only certify 32 bytes — build a Merkle tree and certify the root hash
-- Re-certify data in `post_upgrade` — certified data is cleared on upgrade
+- You can only certify 32 bytes: build a Merkle tree and certify the root hash
+- Re-certify data in `post_upgrade`: certified data is cleared on upgrade
 - Clients must verify certificate freshness (the certificate embeds a timestamp; reject certificates older than ~5 minutes)
 
 ## Signature verification for external data
 
-When your canister receives data from external parties — signed messages, X.509 CSRs, or HTTP request signatures — it must verify the cryptographic signature before trusting the data. ICP verifies signatures on ingress messages automatically, but canister-to-canister or external data flows require manual verification.
+When your canister receives data from external parties (signed messages, X.509 CSRs, or HTTP request signatures) it must verify the cryptographic signature before trusting the data. ICP verifies signatures on ingress messages automatically, but canister-to-canister or external data flows require manual verification.
 
 ### IC ingress message signatures
 
-Every ingress call to a canister is signed by the caller's identity. The IC verifies these signatures automatically before the message reaches your canister — you do not need to verify them yourself. The `caller` principal in your canister method is already authenticated.
+Every ingress call to a canister is signed by the caller's identity. The IC verifies these signatures automatically before the message reaches your canister: you do not need to verify them yourself. The `caller` principal in your canister method is already authenticated.
 
 For workflows that require additional independent verification (such as verifying a message offline or in a different context), the IC uses the following signature schemes:
 
-- **Ed25519** — used by Internet Identity and many wallet implementations
-- **ECDSA on secp256r1 (P-256)** — used by some hardware authenticators  
-- **ECDSA on secp256k1** — used by Bitcoin-compatible wallets
+- **Ed25519**: used by Internet Identity and many wallet implementations
+- **ECDSA on secp256r1 (P-256)**: used by some hardware authenticators  
+- **ECDSA on secp256k1**: used by Bitcoin-compatible wallets
 
 To verify IC signatures independently (outside the IC, or as a second layer of validation), use the `ic-validator-ingress-message` Rust crate or the `@dfinity/standalone-sig-verifier-web` JavaScript library. See the [independently verifying IC signatures (Rust)](https://github.com/dfinity/ic/tree/master/rs/validator) documentation, or the [`@dfinity/standalone-sig-verifier-web` npm package](https://www.npmjs.com/package/@dfinity/standalone-sig-verifier-web) for the JavaScript path.
 
 ### X.509 certificate handling
 
-Canisters can act as certificate authorities using threshold signing keys. Because no single node ever holds the threshold private key, only the canister (via consensus) can sign certificates — this gives you a CA whose private key cannot be exfiltrated.
+Canisters can act as certificate authorities using threshold signing keys. Because no single node ever holds the threshold private key, only the canister (via consensus) can sign certificates: this gives you a CA whose private key cannot be exfiltrated.
 
 The pattern: a canister generates a root CA certificate signed with its threshold Ed25519 or ECDSA key, then issues child certificates for CSRs submitted by external parties. Certificates can be verified by any standard X.509 tool.
 
@@ -414,7 +414,7 @@ This approach is used when you need to issue certificates to external systems th
 ### Local development
 
 ```bash
-# Start a local network — test_key_1 and key_1 are provisioned automatically
+# Start a local network: test_key_1 and key_1 are provisioned automatically
 icp network start -d
 
 # Deploy your canister
@@ -422,12 +422,12 @@ icp deploy backend
 
 # Test public key retrieval
 icp canister call backend getPublicKey '()'
-# Returns: (blob "...") — the vetKD public key for your canister
+# Returns: (blob "..."): the vetKD public key for your canister
 
 # Test key derivation (requires a 48-byte transport public key blob)
 # In practice, the frontend generates this using TransportSecretKey.fromSeed()
 icp canister call backend deriveKey '(blob "\00\01\02...")'
-# Returns: (blob "...") — the encrypted derived key
+# Returns: (blob "..."): the encrypted derived key
 ```
 
 ### Mainnet deployment
@@ -447,9 +447,9 @@ Confirm that:
 
 ## Next steps
 
-- [vetKeys concept guide](../../concepts/vetkeys.md) — how the threshold key derivation protocol works
-- [Encryption guide](./encryption.md) — vetKeys encryption patterns including EncryptedMaps (coming soon)
-- [Certified variables](../backends/certified-variables.md) — full certified data implementation
-- [Security model](../../concepts/security.md) — IC security guarantees and threat model
+- [vetKeys concept guide](../../concepts/vetkeys.md): how the threshold key derivation protocol works
+- [Encryption guide](./encryption.md): vetKeys encryption patterns including EncryptedMaps (coming soon)
+- [Certified variables](../backends/certified-variables.md): full certified data implementation
+- [Security model](../../concepts/security.md): IC security guarantees and threat model
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/authentication/independently-verifying-ic-signatures.mdx; dfinity/icskills — canister-security, vetkd, certified-variables; dfinity/examples — rust/vetkd, motoko/vetkd, rust/x509 -->

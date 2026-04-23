@@ -1,15 +1,15 @@
 ---
 title: "Chain-Key Tokens"
-description: "Work with ckBTC and ckETH — ICP-native representations of Bitcoin and Ether with 1-2 second finality and no custodians"
+description: "Work with ckBTC and ckETH: ICP-native representations of Bitcoin and Ether with 1-2 second finality and no custodians"
 sidebar:
   order: 2
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Chain-key tokens are ICP-native tokens that represent assets from other blockchains. Each one is backed 1:1 by the original asset and is controlled entirely by ICP smart contracts — no bridges, no wrapped tokens, no third-party custodians.
+Chain-key tokens are ICP-native tokens that represent assets from other blockchains. Each one is backed 1:1 by the original asset and is controlled entirely by ICP canisters. No bridges, no wrapped tokens, no third-party custodians.
 
-**ckBTC** (chain-key Bitcoin) is backed by real BTC held by the ckBTC minter canister. **ckETH** (chain-key Ether) is backed by real ETH held by the ckETH minter canister. Both are ICRC-1 tokens, so any code that works with the ICP ledger also works with ckBTC and ckETH — you only swap the canister ID.
+**ckBTC** (chain-key Bitcoin) is backed by real BTC held by the ckBTC minter canister. **ckETH** (chain-key Ether) is backed by real ETH held by the ckETH minter canister. Both are ICRC-1 tokens, so any code that works with the ICP ledger also works with ckBTC and ckETH: you only swap the canister ID.
 
 This guide covers: the minting and redemption flows, how to call the minter and ledger from a canister, subaccount derivation for per-user deposit addresses, and the trust model that keeps the peg.
 
@@ -17,7 +17,7 @@ For plain ICRC-1/ICRC-2 transfers without the minting/withdrawal flows, see [Tok
 
 ## How chain-key tokens maintain their peg
 
-The ckBTC and ckETH minter canisters are ICP smart contracts that hold real BTC and ETH in addresses they control through [chain-key cryptography](../../concepts/chain-key-cryptography.md). The minters use threshold signatures to sign Bitcoin and Ethereum transactions — no private key exists anywhere; signing requires cooperation from the subnet's nodes.
+The ckBTC and ckETH minter canisters hold real BTC and ETH in addresses they control through [chain-key cryptography](../../concepts/chain-key-cryptography.md). The minters use threshold signatures to sign Bitcoin and Ethereum transactions. No private key exists anywhere; signing requires cooperation from the subnet's nodes.
 
 When a user deposits BTC, the minter mints exactly the same amount of ckBTC. When a user withdraws ckBTC, the minter burns the tokens and sends BTC on-chain. The peg holds by design: every ckBTC in circulation corresponds to exactly one satoshi of BTC held by the minter. The ckBTC checker canister publishes a public audit of reserves.
 
@@ -56,10 +56,10 @@ This means ckBTC and ckETH are not wrapped tokens in the traditional sense. They
 
 The deposit flow has two steps:
 
-1. **Get a deposit address** — call `get_btc_address` on the ckBTC minter with the user's principal and an optional subaccount. The minter returns a unique Bitcoin address.
-2. **Mint ckBTC** — after the user sends BTC to that address, call `update_balance` on the minter. The minter checks for new UTXOs and mints ckBTC to the corresponding ICRC-1 account.
+1. **Get a deposit address**: call `get_btc_address` on the ckBTC minter with the user's principal and an optional subaccount. The minter returns a unique Bitcoin address.
+2. **Mint ckBTC**: after the user sends BTC to that address, call `update_balance` on the minter. The minter checks for new UTXOs and mints ckBTC to the corresponding ICRC-1 account.
 
-The minter requires a minimum number of Bitcoin confirmations before minting (currently 6 on mainnet). `update_balance` returns `NoNewUtxos` if confirmations have not yet been reached — your app should poll or prompt the user to wait.
+The minter requires a minimum number of Bitcoin confirmations before minting (currently 6 on mainnet). `update_balance` returns `NoNewUtxos` if confirmations have not yet been reached: your app should poll or prompt the user to wait.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -103,7 +103,7 @@ persistent actor Self {
     #GenericError : { error_code : Nat64; error_message : Text };
   };
 
-  // ckBTC minter — mainnet
+  // ckBTC minter: mainnet
   transient let ckbtcMinter : actor {
     get_btc_address : shared ({ owner : ?Principal; subaccount : ?Blob }) -> async Text;
     update_balance : shared ({ owner : ?Principal; subaccount : ?Blob }) -> async UpdateBalanceResult;
@@ -208,8 +208,8 @@ async fn get_deposit_address() -> String {
 
 To convert ckBTC back to BTC, your canister must:
 
-1. **Approve the minter** — call `icrc2_approve` on the ckBTC ledger, granting the minter canister an allowance to burn ckBTC from the user's account. The amount must include the transfer fee.
-2. **Request withdrawal** — call `retrieve_btc_with_approval` on the minter with the destination Bitcoin address and the amount in satoshis. The minimum withdrawal amount is 50,000 satoshis (0.0005 BTC).
+1. **Approve the minter**: call `icrc2_approve` on the ckBTC ledger, granting the minter canister an allowance to burn ckBTC from the user's account. The amount must include the transfer fee.
+2. **Request withdrawal**: call `retrieve_btc_with_approval` on the minter with the destination Bitcoin address and the amount in satoshis. The minimum withdrawal amount is 50,000 satoshis (0.0005 BTC).
 
 The minter burns the ckBTC and submits a Bitcoin transaction. BTC arrives at the destination address after Bitcoin confirmations (typically 1-2 hours on mainnet).
 
@@ -434,7 +434,7 @@ async fn withdraw_to_btc(btc_address: String, amount: u64) -> RetrieveBtcResult 
 
 ## ckETH: deposit and withdrawal
 
-The ckETH minter works similarly to ckBTC but targets Ethereum. Deposits are detected via HTTPS outcalls to Ethereum RPC nodes — the minter monitors a helper contract for ETH transfers and mints ckETH when it detects them.
+The ckETH minter works similarly to ckBTC but targets Ethereum. Deposits are detected via HTTPS outcalls to Ethereum RPC nodes. The minter monitors a helper contract for ETH transfers and mints ckETH when it detects them.
 
 ### Depositing ETH to get ckETH
 
@@ -468,11 +468,11 @@ icp canister call ss2fx-dyaaa-aaaar-qacoq-cai icrc1_transfer \
   })' -e ic
 ```
 
-> Query `icrc1_fee` on the ckETH ledger before transferring — the fee is denominated in wei and can change.
+> Query `icrc1_fee` on the ckETH ledger before transferring. The fee is denominated in wei and can change.
 
 ## Transferring chain-key tokens
 
-ckBTC and ckETH are ICRC-1 tokens. Transfers work the same as any ICRC-1 transfer — call `icrc1_transfer` on the respective ledger. The only difference is the canister ID and the fee.
+ckBTC and ckETH are ICRC-1 tokens. Transfers work the same as any ICRC-1 transfer: call `icrc1_transfer` on the respective ledger. The only difference is the canister ID and the fee.
 
 ```bash
 # Check ckBTC balance (amount in satoshis)
@@ -495,7 +495,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
   })' -e ic
 ```
 
-For Motoko and Rust transfer examples, see [Token ledgers](token-ledgers.md) — the code is identical to ICRC-1 transfers, just with the ckBTC or ckETH ledger canister ID and the correct fee.
+For Motoko and Rust transfer examples, see [Token ledgers](token-ledgers.md): the code is identical to ICRC-1 transfers, just with the ckBTC or ckETH ledger canister ID and the correct fee.
 
 ## Subaccount derivation for deposit flows
 
@@ -613,17 +613,17 @@ Chain-key tokens and native chain integration serve different use cases:
 |-|-------|----------------|
 | Settlement | 1–2 seconds | Minutes (Bitcoin confirmations) |
 | Use case | Token transfers, DeFi, payments | Direct UTXO access, custom signing |
-| Custody | Minter canister (ICP smart contract) | Your canister directly |
+| Custody | Minter canister | Your canister directly |
 | Fee | 10 satoshis per ckBTC transfer | Bitcoin network fees |
 
-If you need direct control over Bitcoin UTXOs or want to construct custom Bitcoin transactions, see [Bitcoin integration](../chain-fusion/bitcoin.md). If you need fast, low-fee token transfers within ICP dapps, ckBTC is the simpler choice.
+If you need direct control over Bitcoin UTXOs or want to construct custom Bitcoin transactions, see [Bitcoin integration](../chain-fusion/bitcoin.md). If you need fast, low-fee token transfers within ICP apps, ckBTC is the simpler choice.
 
 ## Next steps
 
-- [Token ledgers](token-ledgers.md) — ICRC-1/ICRC-2 transfer patterns for all tokens, including ckBTC and ckETH
-- [Bitcoin integration](../chain-fusion/bitcoin.md) — native BTC UTXO access and threshold signing
-- [Ethereum integration](../chain-fusion/ethereum.md) — calling Ethereum contracts from ICP canisters
-- [Wallet integration](wallet-integration.md) — connecting wallets for token flows
-- [Token standards](../../reference/token-standards.md) — ICRC-1 and ICRC-2 formal specifications
+- [Token ledgers](token-ledgers.md): ICRC-1/ICRC-2 transfer patterns for all tokens, including ckBTC and ckETH
+- [Bitcoin integration](../chain-fusion/bitcoin.md): native BTC UTXO access and threshold signing
+- [Ethereum integration](../chain-fusion/ethereum.md): calling Ethereum contracts from ICP canisters
+- [Wallet integration](wallet-integration.md): connecting wallets for token flows
+- [Token standards](../../reference/token-standards.md): ICRC-1 and ICRC-2 formal specifications
 
 {/* Upstream: informed by dfinity/icskills skills/ckbtc/SKILL.md; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/portal docs/defi/chain-key-tokens/cketh/overview.mdx */}

@@ -6,7 +6,7 @@ sidebar:
 ---
 
 Testing canisters on ICP deserves particular attention for two reasons. First, canister upgrades are irreversible in
-practice — once a buggy upgrade runs `pre_upgrade`, your stable memory may be corrupted before you can roll back.
+practice: once a buggy upgrade runs `pre_upgrade`, your stable memory may be corrupted before you can roll back.
 Second, cycles cost real money: a performance regression that doubles your instruction count doubles your operating
 cost. Catching these problems in tests before deployment avoids both classes of harm.
 
@@ -14,12 +14,12 @@ cost. Catching these problems in tests before deployment avoids both classes of 
 
 Effective canister testing uses three layers, from fastest to slowest:
 
-1. **Unit tests** — Pure Rust or Motoko tests with mocked IC dependencies. Milliseconds per test, no WASM
+1. **Unit tests**: Pure Rust or Motoko tests with mocked IC dependencies. Milliseconds per test, no WASM
    compilation, run in parallel. Cover 90%+ of your business logic here.
-2. **PocketIC integration tests** — Deploy your canister WASM into a lightweight in-process IC replica. Seconds per
+2. **PocketIC integration tests**: Deploy your canister WASM into a lightweight in-process IC replica. Seconds per
    test, but test actual IC behavior: canister calls, upgrade hooks, stable memory, multi-canister interactions, and
    time-based logic.
-3. **Deployed testing** — Test against a real network (local or mainnet) via the CLI or scripts. Slowest, but
+3. **Deployed testing**: Test against a real network (local or mainnet) via the CLI or scripts. Slowest, but
    validates deployment configuration, cycles top-up, and inter-canister call routing.
 
 Most projects need all three layers. The key insight is to push as much logic as possible into unit tests, then use
@@ -73,7 +73,7 @@ thread_local! {
 
 ### Writing unit tests
 
-With this structure, unit tests run entirely in pure Rust — no WASM, no PocketIC, no network:
+With this structure, unit tests run entirely in pure Rust. No WASM, no PocketIC, no network:
 
 ```rust
 #[cfg(test)]
@@ -202,14 +202,14 @@ cargo build --target wasm32-unknown-unknown --release
 cargo test
 ```
 
-For advanced PocketIC usage — multi-subnet topologies, time travel, NNS subnet setup, and JavaScript/TypeScript
-testing with Pic JS — see [PocketIC](pocket-ic.md).
+For advanced PocketIC usage: multi-subnet topologies, time travel, NNS subnet setup, and JavaScript/TypeScript
+testing with Pic JS: see [PocketIC](pocket-ic.md).
 
 ## Performance benchmarking
 
 ICP canisters run inside a deterministic virtual machine where every instruction is counted. Each update call is
 limited to 40 billion instructions. `canbench` measures your canister's instruction count, heap memory, and stable
-memory usage — and detects regressions by comparing against saved baselines.
+memory usage: and detects regressions by comparing against saved baselines.
 
 ### Setup
 
@@ -272,7 +272,7 @@ Benchmark: fibonacci_20 (new)
 Executed 1 of 1 benchmarks.
 ```
 
-Run `canbench` a second time after saving results — it compares against the baseline and reports regressions. Commit
+Run `canbench` a second time after saving results: it compares against the baseline and reports regressions. Commit
 the `canbench_results.yml` file to your repository so CI can catch regressions automatically.
 
 For full crate documentation, see [canbench-rs on docs.rs](https://docs.rs/canbench-rs/latest/canbench_rs/).
@@ -328,8 +328,8 @@ port with:
 icp network status docker-test --json
 ```
 
-For the full containerized network configuration reference — including environment variables, volume mounts, and
-custom images — see the
+For the full containerized network configuration reference: including environment variables, volume mounts, and
+custom images: see the
 [icp-cli containerized networks guide](https://cli.internetcomputer.org/guides/containerized-networks).
 
 ## Choosing the right approach
@@ -345,8 +345,8 @@ custom images — see the
 
 ## Next steps
 
-- [PocketIC](pocket-ic.md) — Advanced integration testing: multi-subnet, time travel, Pic JS for TypeScript
-- [Canister management: lifecycle](../canister-management/lifecycle.md) — Test upgrade paths before deploying
-- [Canister management: logs](../canister-management/logs.md) — Add observability for debugging test failures
+- [PocketIC](pocket-ic.md): Advanced integration testing: multi-subnet, time travel, Pic JS for TypeScript
+- [Canister management: lifecycle](../canister-management/lifecycle.md): Test upgrade paths before deploying
+- [Canister management: logs](../canister-management/logs.md): Add observability for debugging test failures
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/advanced/benchmarking.mdx; dfinity/icp-cli docs/guides/containerized-networks.md; dfinity/examples rust/unit_testable_rust_canister -->

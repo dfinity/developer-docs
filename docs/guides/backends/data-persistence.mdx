@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canister state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade — any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.
+Canister state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade: any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.
 
 This guide shows how to store data durably in both Motoko and Rust. For a conceptual explanation of why stable memory works this way, see [Orthogonal Persistence](../../concepts/orthogonal-persistence.md).
 
@@ -16,7 +16,7 @@ This guide shows how to store data durably in both Motoko and Rust. For a concep
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-Use `persistent actor`. All `let` and `var` declarations inside the actor body are automatically persisted across upgrades — no `stable` keyword, no upgrade hooks.
+Use `persistent actor`. All `let` and `var` declarations inside the actor body are automatically persisted across upgrades. No `stable` keyword, no upgrade hooks.
 
 ```motoko
 import Map "mo:core/Map";
@@ -26,18 +26,18 @@ import Time "mo:core/Time";
 
 persistent actor {
 
-  // Custom type — defined inside the actor body
+  // Custom type: defined inside the actor body
   type User = {
     id : Nat;
     name : Text;
     created : Int;
   };
 
-  // Automatically persisted across upgrades — no "stable" keyword needed
+  // Automatically persisted across upgrades: no "stable" keyword needed
   let users = Map.empty<Nat, User>();
   var userCounter : Nat = 0;
 
-  // Transient data — resets to 0 on every upgrade
+  // Transient data: resets to 0 on every upgrade
   transient var requestCount : Nat = 0;
 
   public func addUser(name : Text) : async Nat {
@@ -60,7 +60,7 @@ persistent actor {
     Map.size(users)
   };
 
-  // Resets to 0 after every upgrade — use transient for ephemeral state
+  // Resets to 0 after every upgrade: use transient for ephemeral state
   public query func getRequestCount() : async Nat {
     requestCount
   };
@@ -69,11 +69,11 @@ persistent actor {
 
 **Key rules:**
 
-- `let` for collections (`Map`, `List`, `Set`) — auto-persisted, no serialization needed
-- `var` for simple values (`Nat`, `Text`, `Bool`) — auto-persisted
+- `let` for collections (`Map`, `List`, `Set`): auto-persisted, no serialization needed
+- `var` for simple values (`Nat`, `Text`, `Bool`): auto-persisted
 - `transient var` for caches or counters that should reset on upgrade
-- No `pre_upgrade` / `post_upgrade` hooks needed — the runtime handles persistence
-- Do not write `stable let` or `stable var` — redundant in `persistent actor` and produces compiler warnings
+- No `pre_upgrade` / `post_upgrade` hooks needed. The runtime handles persistence
+- Do not write `stable let` or `stable var`: redundant in `persistent actor` and produces compiler warnings
 
 **mops.toml:**
 
@@ -89,7 +89,7 @@ core = "2.0.0"
 </TabItem>
 <TabItem label="Rust">
 
-Rust canisters use [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) for persistent storage. The `MemoryManager` partitions stable memory into virtual memories, each backing a separate data structure. Data lives in stable memory from the start — no serialization on upgrade.
+Rust canisters use [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) for persistent storage. The `MemoryManager` partitions stable memory into virtual memories, each backing a separate data structure. Data lives in stable memory from the start. No serialization on upgrade.
 
 **Cargo.toml:**
 
@@ -128,7 +128,7 @@ struct User {
 }
 
 impl Storable for User {
-    // Prefer Unbounded — avoids breakage when adding new fields.
+    // Prefer Unbounded: avoids breakage when adding new fields.
     // Bounded requires a fixed max_size; if the encoded size of a value
     // exceeds max_size after a schema change, writes will trap.
     // Existing stored data is unaffected, but no new or updated records
@@ -163,7 +163,7 @@ use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
-// Each structure gets its own MemoryId — NEVER reuse IDs across structures
+// Each structure gets its own MemoryId: NEVER reuse IDs across structures
 const USERS_MEM_ID: MemoryId = MemoryId::new(0);
 const COUNTER_MEM_ID: MemoryId = MemoryId::new(1);
 
@@ -186,12 +186,12 @@ thread_local! {
 
 #[init]
 fn init() {
-    // One-time initialization — stable structures auto-initialize from above
+    // One-time initialization: stable structures auto-initialize from above
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Stable structures auto-restore — no deserialization needed here.
+    // Stable structures auto-restore: no deserialization needed here.
     // Re-initialize timers or other transient state if needed.
 }
 
@@ -230,12 +230,12 @@ ic_cdk::export_candid!();
 
 **Key rules:**
 
-- Each structure gets a unique `MemoryId` — reusing IDs corrupts both structures
+- Each structure gets a unique `MemoryId`: reusing IDs corrupts both structures
 - `StableBTreeMap` for keyed collections; keys need `Storable + Ord`
 - `StableCell` for single values (counters, config flags)
-- `StableLog` for append-only logs — requires two `MemoryId`s (index + data)
-- `thread_local! { RefCell<StableBTreeMap<...>> }` is the correct pattern — `RefCell` wraps the stable structure, not a heap `HashMap`
-- No `pre_upgrade`/`post_upgrade` serialization needed — data is already in stable memory
+- `StableLog` for append-only logs: requires two `MemoryId`s (index + data)
+- `thread_local! { RefCell<StableBTreeMap<...>> }` is the correct pattern: `RefCell` wraps the stable structure, not a heap `HashMap`
+- No `pre_upgrade`/`post_upgrade` serialization needed: data is already in stable memory
 
 </TabItem>
 </Tabs>
@@ -245,7 +245,7 @@ ic_cdk::export_candid!();
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-When upgrading a Motoko canister, the type of every persistent field must be compatible with its stored value. Violating this causes the upgrade to trap — the canister continues running on the old Wasm with its data intact, but cannot be upgraded until the type conflict is resolved.
+When upgrading a Motoko canister, the type of every persistent field must be compatible with its stored value. Violating this causes the upgrade to trap. The canister continues running on the old Wasm with its data intact, but cannot be upgraded until the type conflict is resolved.
 
 **Safe changes (always OK):**
 - Add new `let` or `var` fields with initial values
@@ -261,7 +261,7 @@ When upgrading a Motoko canister, the type of every persistent field must be com
 
 When using more than one stable structure, give each a unique `MemoryId`. `StableLog` requires two memory regions (index + data).
 
-This example extends the snippet above — it reuses the same `Memory` type alias, `MemoryManager`, `DefaultMemoryImpl`, `RefCell`, and `User` struct, and adds `Post` and `AUDIT_LOG`:
+This example extends the snippet above: it reuses the same `Memory` type alias, `MemoryManager`, `DefaultMemoryImpl`, `RefCell`, and `User` struct, and adds `Post` and `AUDIT_LOG`:
 
 ```rust
 use ic_stable_structures::{
@@ -280,7 +280,7 @@ struct Post {
     content: String,
 }
 
-// Assign one MemoryId per structure — never reuse
+// Assign one MemoryId per structure: never reuse
 const USERS_MEM_ID: MemoryId = MemoryId::new(0);
 const POSTS_MEM_ID: MemoryId = MemoryId::new(1);
 const COUNTER_MEM_ID: MemoryId = MemoryId::new(2);
@@ -324,7 +324,7 @@ Avoid serializing heap data to stable memory in `pre_upgrade` hooks. This patter
 #[pre_upgrade]
 fn pre_upgrade() {
     // If STATE is large, this hits the instruction limit and traps.
-    // A trapped pre_upgrade prevents the upgrade from completing —
+    // A trapped pre_upgrade prevents the upgrade from completing:
     // the canister is stuck on the old code. Recovery is possible via
     // the skip_pre_upgrade flag (which bypasses the hook at the cost of
     // losing any state it would have serialized), but it's an emergency
@@ -500,7 +500,7 @@ fn transfer_with_id(amount: u64, idempotency_key: String) -> bool {
 </TabItem>
 </Tabs>
 
-Supports higher throughput and concurrent callers. Requires bounded storage — expire entries after the deduplication window.
+Supports higher throughput and concurrent callers. Requires bounded storage: expire entries after the deduplication window.
 
 ## Verify persistence across upgrades
 
@@ -535,7 +535,7 @@ icp canister call backend getUser '(0)'
 
 # Transient state resets
 icp canister call backend getRequestCount '()'
-# Returns: (0 : nat) — expected, transient var resets on upgrade
+# Returns: (0 : nat): expected, transient var resets on upgrade
 ```
 
 </TabItem>
@@ -573,9 +573,9 @@ If the count drops to 0 after upgrade, the data is not in stable memory. Review 
 
 ## Related
 
-- [Orthogonal Persistence](../../concepts/orthogonal-persistence.md) — conceptual explanation of heap vs. stable memory
-- [Canister Lifecycle](../canister-management/lifecycle.md) — upgrade hooks and canister lifecycle
-- [Stable Structures (Rust)](../../languages/rust/stable-structures.md) — deep dive into `ic-stable-structures`
-- [Motoko](../../languages/motoko/index.md) — Motoko language overview and persistence model
+- [Orthogonal Persistence](../../concepts/orthogonal-persistence.md): conceptual explanation of heap vs. stable memory
+- [Canister Lifecycle](../canister-management/lifecycle.md): upgrade hooks and canister lifecycle
+- [Stable Structures (Rust)](../../languages/rust/stable-structures.md): deep dive into `ic-stable-structures`
+- [Motoko](../../languages/motoko/index.md): Motoko language overview and persistence model
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/canister-management/storage.mdx, docs/building-apps/best-practices/storage.mdx, docs/building-apps/best-practices/idempotency.mdx */}

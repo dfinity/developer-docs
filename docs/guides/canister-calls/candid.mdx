@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Candid is the interface description language for the Internet Computer. Every canister exposes its public API through a Candid `.did` file that describes which methods it offers, what arguments they accept, and what they return. Because Candid is language-agnostic, a Motoko canister, a Rust canister, and a JavaScript frontend can all communicate through the same interface without any manual serialization code.
 
-Candid handles the binary encoding and decoding transparently. You work with native types in your language — `String` in Rust, `Text` in Motoko, `string` in JavaScript — and Candid maps them to a common type system for transport.
+Candid handles the binary encoding and decoding transparently. You work with native types in your language (`String` in Rust, `Text` in Motoko, `string` in JavaScript) and Candid maps them to a common type system for transport.
 
 ## The `.did` file
 
@@ -21,7 +21,7 @@ service : {
 }
 ```
 
-This declares a service with one method, `greet`, that takes a `text` argument, returns `text`, and can be called as a query (no consensus required). The `query` annotation tells the network this method only reads state — see [Canisters: Query calls](../../concepts/canisters.md#query-calls) for details.
+This declares a service with one method, `greet`, that takes a `text` argument, returns `text`, and can be called as a query (no consensus required). The `query` annotation tells the network this method only reads state: see [Canisters: Query calls](../../concepts/canisters.md#query-calls) for details.
 
 A more complete example with multiple methods:
 
@@ -51,7 +51,7 @@ service address_book : {
 }
 ```
 
-Candid uses **structural typing** — two type definitions with different names but the same structure are interchangeable. The named alias is purely for readability.
+Candid uses **structural typing**: two type definitions with different names but the same structure are interchangeable. The named alias is purely for readability.
 
 ### Init arguments
 
@@ -101,7 +101,7 @@ For the complete type reference, including subtyping rules, see the [Candid spec
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-The Motoko compiler generates Candid descriptions automatically from your actor's type signature. When you build with icp-cli, the `.did` file is placed in the build output directory — no manual authoring needed.
+The Motoko compiler generates Candid descriptions automatically from your actor's type signature. When you build with icp-cli, the `.did` file is placed in the build output directory. No manual authoring needed.
 
 You can also provide a hand-written `.did` file by setting the `candid` field in `icp.yaml`. This is useful when you want an explicit API contract that is versioned independently of the implementation:
 
@@ -112,7 +112,7 @@ canisters:
       type: "@dfinity/motoko@v4.1.0"
       configuration:
         main: backend/app.mo
-        candid: backend/backend.did  # Optional — overrides auto-generation
+        candid: backend/backend.did  # Optional: overrides auto-generation
 ```
 
 If `candid` is omitted, the Motoko recipe auto-generates the interface from the source.
@@ -275,7 +275,7 @@ icp canister call my_canister set_address '("Alice", record { street = "123 Main
 
 ### From JavaScript
 
-The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types into native JavaScript values. To call a canister from JavaScript, you need typed declarations generated from the `.did` file — see [Binding generation](#binding-generation) below for how to set this up.
+The [JS SDK](https://js.icp.build) (`@icp-sdk/core`) translates Candid types into native JavaScript values. To call a canister from JavaScript, you need typed declarations generated from the `.did` file: see [Binding generation](#binding-generation) below for how to set this up.
 
 The generated declarations export a `createActor` function and an `idlFactory` that describes the interface:
 
@@ -284,7 +284,7 @@ import { createActor } from "./declarations/my_canister";
 
 const canister = createActor(canisterId, { agentOptions: { host } });
 
-// Call a method — arguments and return values are native JS types
+// Call a method: arguments and return values are native JS types
 const greeting = await canister.greet("World");
 console.log(greeting); // "Hello, World!"
 ```
@@ -298,9 +298,9 @@ When one canister calls another, Candid handles the argument encoding and respon
 Candid defines subtyping rules that let you evolve a service's interface without breaking existing clients. The safe changes are:
 
 - **Add new methods.** Existing clients simply don't call them.
-- **Add return values.** Extend the result sequence — old clients ignore the extra values.
-- **Remove trailing parameters.** Shorten the parameter list — old clients still send the extra arguments, which are silently ignored.
-- **Add optional parameters.** Extend the parameter list with `opt` types — old clients that don't send them get `null` by default.
+- **Add return values.** Extend the result sequence: old clients ignore the extra values.
+- **Remove trailing parameters.** Shorten the parameter list: old clients still send the extra arguments, which are silently ignored.
+- **Add optional parameters.** Extend the parameter list with `opt` types: old clients that don't send them get `null` by default.
 - **Widen parameter types.** Change a parameter to a supertype of its previous type (for example, `nat` to `int`).
 - **Narrow return types.** Change a result to a subtype of its previous type (for example, `int` to `nat`).
 
@@ -343,7 +343,7 @@ To deprecate a record field without breaking existing clients, change its type t
 ```candid
 type UserProfile = record {
   name : text;
-  middle_name : reserved;  // Deprecated — ignored by current code
+  middle_name : reserved;  // Deprecated: ignored by current code
   email : text;
 };
 ```
@@ -420,7 +420,7 @@ async fn invoke_callee() {
 }
 ```
 
-The `.dynamic_callee("PUBLIC_CANISTER_ID:callee")` mode reads the canister ID from a canister environment variable at runtime — the same `PUBLIC_CANISTER_ID:<name>` variables that `icp deploy` injects (see [canister discovery](onchain-calls.md#canister-discovery)). For canisters with fixed IDs, use `.static_callee(principal)` instead.
+The `.dynamic_callee("PUBLIC_CANISTER_ID:callee")` mode reads the canister ID from a canister environment variable at runtime. The same `PUBLIC_CANISTER_ID:<name>` variables that `icp deploy` injects (see [canister discovery](onchain-calls.md#canister-discovery)). For canisters with fixed IDs, use `.static_callee(principal)` instead.
 {/* Needs human verification: the upstream ic-cdk-bindgen README uses ICP_CANISTER_ID: in its example, but icp-cli sets PUBLIC_CANISTER_ID:. We use PUBLIC_CANISTER_ID: here to match icp-cli. An issue has been filed on dfinity/cdk-rs to align the upstream README. */}
 
 For type selector configuration and advanced options, see the [`ic-cdk-bindgen` documentation](https://crates.io/crates/ic-cdk-bindgen).
@@ -430,7 +430,7 @@ For type selector configuration and advanced options, see the [`ic-cdk-bindgen` 
 
 ## Candid tools
 
-**`didc`** — the Candid CLI for checking `.did` files, encoding/decoding values, and testing subtype compatibility. Download from the [Candid releases page](https://github.com/dfinity/candid/releases).
+**`didc`**: the Candid CLI for checking `.did` files, encoding/decoding values, and testing subtype compatibility. Download from the [Candid releases page](https://github.com/dfinity/candid/releases).
 
 | Command | What it does |
 |---------|-------------|
@@ -439,12 +439,12 @@ For type selector configuration and advanced options, see the [`ic-cdk-bindgen` 
 | `didc decode <hex>` | Decode binary Candid back to text |
 | `didc subtype new.did old.did` | Check that `new` is a safe upgrade from `old` |
 
-**Candid UI** — a web interface for calling canister methods directly from a browser, generated automatically for every deployed canister. Useful for testing and debugging without writing frontend code. Access it at `https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp0.io/?id=<canister-id>` for mainnet canisters.
+**Candid UI**: a web interface for calling canister methods directly from a browser, generated automatically for every deployed canister. Useful for testing and debugging without writing frontend code. Access it at `https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp0.io/?id=<canister-id>` for mainnet canisters.
 
 ## Next steps
 
-- [Onchain calls](onchain-calls.md) — make inter-canister calls using Candid interfaces
-- [Offchain calls](offchain-calls.md) — call canisters from JavaScript frontends and agents
-- [Candid specification](../../reference/candid-spec.md) — full type reference and subtyping rules
+- [Onchain calls](onchain-calls.md): make inter-canister calls using Candid interfaces
+- [Offchain calls](offchain-calls.md): call canisters from JavaScript frontends and agents
+- [Candid specification](../../reference/candid-spec.md): full type reference and subtyping rules
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files), docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx, icp-cli concepts/binding-generation.md, ic-cdk-bindgen README, and @icp-sdk/bindgen. Type mappings verified against .sources/candid (spec), .sources/motoko (IDL-Motoko.md), and .sources/cdk-rs. */}

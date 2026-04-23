@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-The Internet Computer is composed of independent **subnets** — each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, cycle costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
+The Internet Computer is composed of independent **subnets**: each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, cycle costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
 
 For guidance on choosing a subnet for deployment, see [Subnet selection](../guides/canister-management/subnet-selection.md). For per-operation cycle costs, see [Cycles costs](cycles-costs.md).
 
@@ -33,15 +33,15 @@ Each application subnet operates independently. Canisters on different applicati
 
 You may want to deploy to a specific application subnet for:
 
-- **Colocation** — Keep related canisters on the same subnet to minimize Xnet call overhead
-- **Resource availability** — Prefer subnets with lower utilization if storage is a concern (each application subnet has a 2 TiB storage capacity)
-- **Specific features** — Some application subnets have features enabled or disabled by NNS governance
+- **Colocation**: Keep related canisters on the same subnet to minimize Xnet call overhead
+- **Resource availability**: Prefer subnets with lower utilization if storage is a concern (each application subnet has a 2 TiB storage capacity)
+- **Specific features**: Some application subnets have features enabled or disabled by NNS governance
 
 Browse available application subnets on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). Filter by type to find "Application" subnets and view their current load and node locations.
 
 ## System subnets
 
-System subnets host ICP's core infrastructure canisters. They have special configurations — including no cycle charges for their canisters — to ensure continuous availability. **User canisters cannot be created on system subnets.**
+System subnets host ICP's core infrastructure canisters. They have special configurations (including no cycle charges for their canisters) to ensure continuous availability. **User canisters cannot be created on system subnets.**
 
 System subnets also have more generous execution limits: a higher per-call instruction limit and a larger maximum Wasm module size.
 
@@ -59,7 +59,7 @@ For a complete list of the canisters running on these subnets, see [System canis
 
 ## Fiduciary subnet
 
-The fiduciary subnet is a single large application subnet with more nodes than the standard 13-node application subnet. The larger committee size provides a higher security threshold — useful for DeFi applications that require stronger guarantees. Cycle costs scale linearly with node count.
+The fiduciary subnet is a single large application subnet with more nodes than the standard 13-node application subnet. The larger committee size provides a higher security threshold: useful for DeFi applications that require stronger guarantees. Cycle costs scale linearly with node count.
 
 | Property | Value |
 |----------|-------|
@@ -119,7 +119,7 @@ Cycle costs scale linearly with node count. The baseline is a 13-node applicatio
 cost_on_n_node_subnet = base_cost × n / 13
 ```
 
-For a fiduciary subnet, the multiplier depends on the current node count — verify on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). For example, at 34 nodes: `34 / 13 ≈ 2.615`.
+For a fiduciary subnet, the multiplier depends on the current node count: verify on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). For example, at 34 nodes: `34 / 13 ≈ 2.615`.
 
 **Example: canister creation cost**
 
@@ -140,11 +140,11 @@ Use the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) to:
 - See which canisters are running on a subnet
 - Check subnet utilization (relevant for storage-heavy deployments)
 
-To find which subnet an existing canister is on, search for the canister ID on the dashboard — the canister detail page shows its subnet.
+To find which subnet an existing canister is on, search for the canister ID on the dashboard. The canister detail page shows its subnet.
 
 ## Next steps
 
-- [Subnet selection](../guides/canister-management/subnet-selection.md) — How to choose a subnet for your deployment
-- [Cycles costs](cycles-costs.md) — Full cost tables and per-operation pricing
+- [Subnet selection](../guides/canister-management/subnet-selection.md): How to choose a subnet for your deployment
+- [Cycles costs](cycles-costs.md): Full cost tables and per-operation pricing
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/deploy-specific-subnet.mdx; dfinity/icp-cli docs/guides/deploying-to-specific-subnets.md -->

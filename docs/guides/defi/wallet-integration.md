@@ -1,11 +1,11 @@
 ---
 title: "Wallet Integration"
-description: "Integrate ICRC signer-standard wallets with your dapp using explicit per-action user approval."
+description: "Integrate ICRC signer-standard wallets with your app using explicit per-action user approval."
 sidebar:
   order: 4
 ---
 
-Wallet integration on the Internet Computer uses a popup-based signer model where every meaningful action requires explicit user approval. The dapp opens a wallet popup, requests permission, and the wallet shows a human-readable consent message before executing each canister call.
+Wallet integration on the Internet Computer uses a popup-based signer model where every meaningful action requires explicit user approval. The app opens a wallet popup, requests permission, and the wallet shows a human-readable consent message before executing each canister call.
 
 This guide covers integration using `@icp-sdk/signer`, the signer library in the ICP JavaScript SDK.
 
@@ -20,7 +20,7 @@ Internet Identity and wallet signers serve different purposes:
 | **After approval** | Session delegation (sign-once, act-many) | Single call executed |
 | **Use when** | Read data, frequent writes, session-based UX | Token transfers, approvals, high-value one-off actions |
 
-Use Internet Identity for login. Use a wallet signer when your dapp needs users to explicitly approve individual transactions — token transfers, NFT operations, or any action where a per-operation confirmation dialog is appropriate.
+Use Internet Identity for login. Use a wallet signer when your app needs users to explicitly approve individual transactions: token transfers, NFT operations, or any action where a per-operation confirmation dialog is appropriate.
 
 ## ICRC signer standards
 
@@ -28,11 +28,11 @@ The signer model is defined by a set of ICRC standards:
 
 | Standard | What it covers |
 |---|---|
-| ICRC-21 | Canister call consent messages — human-readable summaries |
-| ICRC-25 | Signer interaction standard — permission lifecycle |
-| ICRC-27 | Accounts — requesting the user's principal |
-| ICRC-29 | Window PostMessage transport — popup communication |
-| ICRC-49 | Call canister — routing calls through the signer |
+| ICRC-21 | Canister call consent messages: human-readable summaries |
+| ICRC-25 | Signer interaction standard: permission lifecycle |
+| ICRC-27 | Accounts: requesting the user's principal |
+| ICRC-29 | Window PostMessage transport: popup communication |
+| ICRC-49 | Call canister: routing calls through the signer |
 
 A compliant wallet (such as [OISY](https://oisy.com)) implements all five standards.
 
@@ -40,10 +40,10 @@ A compliant wallet (such as [OISY](https://oisy.com)) implements all five standa
 
 The lifecycle of a wallet-initiated call:
 
-1. Your dapp creates a `Signer` pointing to the wallet's signer URL
-2. Call `getAccounts()` — the wallet popup opens and prompts the user to share their account
+1. Your app creates a `Signer` pointing to the wallet's signer URL
+2. Call `getAccounts()`: the wallet popup opens and prompts the user to share their account
 3. Construct a `SignerAgent` using the returned principal
-4. Use the agent with any canister actor — the wallet intercepts every call, fetches an ICRC-21 consent message from the target canister, shows it to the user, and only executes if the user approves
+4. Use the agent with any canister actor. The wallet intercepts every call, fetches an ICRC-21 consent message from the target canister, shows it to the user, and only executes if the user approves
 
 The key insight: a `SignerAgent` is a drop-in replacement for `HttpAgent`. Code that creates actors with `HttpAgent` can switch to `SignerAgent` to add wallet approval to every call.
 
@@ -86,7 +86,7 @@ await signer.requestPermissions([{ method: 'icrc27_accounts' }]);
 const accounts = await signer.getAccounts();
 ```
 
-If you skip this step, the signer handles permissions per-method — the user sees a permissions prompt the first time each method is called.
+If you skip this step, the signer handles permissions per-method. The user sees a permissions prompt the first time each method is called.
 
 ## Create a SignerAgent
 
@@ -154,7 +154,7 @@ await signer.closeChannel();
 
 ## Session persistence
 
-The signer session is tied to the browser tab. After a page reload, the user's principal is no longer available from the signer. To avoid opening the popup again immediately, store the principal in `sessionStorage` and restore it on mount — then re-establish the signer session lazily when the user initiates a transfer:
+The signer session is tied to the browser tab. After a page reload, the user's principal is no longer available from the signer. To avoid opening the popup again immediately, store the principal in `sessionStorage` and restore it on mount: then re-establish the signer session lazily when the user initiates a transfer:
 
 ```javascript
 import { Principal } from '@icp-sdk/core/principal';
@@ -186,9 +186,9 @@ try {
 } catch (err) {
   if (err instanceof SignerError) {
     switch (err.code) {
-      case 3001: // ACTION_ABORTED — user closed the popup or rejected the prompt
+      case 3001: // ACTION_ABORTED: user closed the popup or rejected the prompt
         break;
-      case 3000: // PERMISSION_NOT_GRANTED — permission was denied
+      case 3000: // PERMISSION_NOT_GRANTED: permission was denied
         break;
       default:
         console.error('Signer error', err.code, err.message);
@@ -202,8 +202,8 @@ Common `err.code` values from the ICRC-25 standard:
 | Code | Meaning |
 |------|---------|
 | `3000` | Permission not granted |
-| `3001` | Action aborted — user closed the popup or rejected |
-| `4000` | Network error — IC call failed |
+| `3001` | Action aborted: user closed the popup or rejected |
+| `4000` | Network error: IC call failed |
 
 ## Local development
 
@@ -217,13 +217,13 @@ const signer = new Signer({
 const readAgent = await HttpAgent.create({ host: 'http://localhost:8000' });
 ```
 
-For a test signer target, you can use any ICRC-25-compliant wallet running locally that exposes a `/sign` endpoint — for example, a local instance of [OISY](https://github.com/dfinity/oisy-wallet) or a custom signer built with `@icp-sdk/signer`.
+For a test signer target, you can use any ICRC-25-compliant wallet running locally that exposes a `/sign` endpoint: for example, a local instance of [OISY](https://github.com/dfinity/oisy-wallet) or a custom signer built with `@icp-sdk/signer`.
 
-On mainnet, omit `host` from `HttpAgent.create()` — it defaults to `https://icp0.io`.
+On mainnet, omit `host` from `HttpAgent.create()`: it defaults to `https://icp0.io`.
 
 ## Working example
 
-The [oisy-signer-demo](https://github.com/dfinity/examples/tree/master/hosting/oisy-signer-demo) example shows a complete dapp that:
+The [oisy-signer-demo](https://github.com/dfinity/examples/tree/master/hosting/oisy-signer-demo) example shows a complete app that:
 
 1. Connects to OISY and fetches the user's accounts
 2. Queries ICRC-1 token balances using a read-only agent
@@ -243,15 +243,15 @@ icp deploy
 
 Two additional libraries are available for more advanced wallet integration scenarios:
 
-- [`@dfinity/ledger-wallet-identity`](https://www.npmjs.com/package/@dfinity/ledger-wallet-identity) — hardware wallet identity support
-- [`@dfinity/icrc21-agent`](https://www.npmjs.com/package/@dfinity/icrc21-agent) — standalone ICRC-21 consent message agent
+- [`@dfinity/ledger-wallet-identity`](https://www.npmjs.com/package/@dfinity/ledger-wallet-identity): hardware wallet identity support
+- [`@dfinity/icrc21-agent`](https://www.npmjs.com/package/@dfinity/icrc21-agent): standalone ICRC-21 consent message agent
 
 Both libraries are expected to move to the `@icp-sdk` namespace on npm and will likely be covered in the wallet-integration skill going forward. They are not documented in detail here.
 
 ## Next steps
 
-- [Internet Identity integration](../authentication/internet-identity.md) — add authentication alongside wallet signing
-- [Token ledgers](token-ledgers.md) — work with ICRC-1 and ICRC-2 token standards
-- [Token standards reference](../../reference/token-standards.md) — ICRC-1, ICRC-2, and related standards
+- [Internet Identity integration](../authentication/internet-identity.md): add authentication alongside wallet signing
+- [Token ledgers](token-ledgers.md): work with ICRC-1 and ICRC-2 token standards
+- [Token standards reference](../../reference/token-standards.md): ICRC-1, ICRC-2, and related standards
 
 <!-- Upstream: informed by dfinity/icskills — skills/wallet-integration/SKILL.md; dfinity/examples — hosting/oisy-signer-demo; dfinity/icp-js-sdk-docs — signer/latest.zip -->

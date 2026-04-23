@@ -24,8 +24,8 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 
 - **[Chain Fusion](chain-fusion/bitcoin.md)** -- Native Bitcoin, Ethereum, Solana, and Dogecoin integration.
 - **[DeFi](defi/token-ledgers.md)** -- Token ledgers, chain-key tokens, and the Rosetta API.
-- **[Governance](governance/launching.md)** -- Launch and manage an SNS DAO for your dapp.
+- **[Governance](governance/launching.md)** -- Launch and manage an SNS DAO for your app.
 
 ## Developer tools
 
-- **[Tools](tools/ai-coding-agents.md)** — AI coding agents with ICP skills, developer tools, and migrating from dfx.
+- **[Tools](tools/ai-coding-agents.md)**: AI coding agents with ICP skills, developer tools, and migrating from dfx.

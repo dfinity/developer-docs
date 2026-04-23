@@ -9,18 +9,18 @@ Canister Wasm binaries compiled from Rust or Motoko are often larger than necess
 
 This guide covers the main tools and techniques available:
 
-- **`ic-wasm shrink`** — strip unused functions and debug info from the compiled Wasm
-- **Rust `Cargo.toml` profile settings** — link-time optimization and compiler tuning
-- **Motoko GC configuration** — selecting the right garbage collector for your workload
-- **WebAssembly SIMD** — accelerate compute-heavy workloads (Rust only)
-- **Performance counters** — measure actual instruction usage to find bottlenecks
-- **Low Wasm memory hook** — react before the canister runs out of Wasm memory
+- **`ic-wasm shrink`**: strip unused functions and debug info from the compiled Wasm
+- **Rust `Cargo.toml` profile settings**: link-time optimization and compiler tuning
+- **Motoko GC configuration**: selecting the right garbage collector for your workload
+- **WebAssembly SIMD**: accelerate compute-heavy workloads (Rust only)
+- **Performance counters**: measure actual instruction usage to find bottlenecks
+- **Low Wasm memory hook**: react before the canister runs out of Wasm memory
 
 ## Reducing binary size with `ic-wasm shrink`
 
 `ic-wasm` is included when you install `icp-cli`. Its `shrink` command removes unreachable functions, dead code, and debug sections from your compiled Wasm module.
 
-**Using the official Rust recipe** — enable the `shrink` option in `icp.yaml`:
+**Using the official Rust recipe**: enable the `shrink` option in `icp.yaml`:
 
 ```yaml
 canisters:
@@ -44,7 +44,7 @@ canisters:
         shrink: true
 ```
 
-**Running `ic-wasm` directly** — if you have a custom build pipeline:
+**Running `ic-wasm` directly**: if you have a custom build pipeline:
 
 ```bash
 ic-wasm backend.wasm -o backend.wasm shrink --keep-name-section
@@ -60,7 +60,7 @@ In addition to `ic-wasm`, Rust offers compiler-level optimizations through the `
 
 ```toml
 [profile.release]
-lto = true           # Link-time optimization — merges crates for better dead code removal
+lto = true           # Link-time optimization: merges crates for better dead code removal
 opt-level = 3        # Maximum optimization (default is 3 for release)
 codegen-units = 1    # Single codegen unit enables more aggressive cross-function optimization
 ```
@@ -71,7 +71,7 @@ For binary size over speed, use `opt-level = "z"` (optimize for size, disabling 
 
 ## Motoko: Garbage collector options
 
-The Motoko compiler uses the **incremental GC** by default starting with Motoko 0.15 and enhanced orthogonal persistence. You cannot choose a different GC when enhanced orthogonal persistence is active — the GC is fixed.
+The Motoko compiler uses the **incremental GC** by default starting with Motoko 0.15 and enhanced orthogonal persistence. You cannot choose a different GC when enhanced orthogonal persistence is active. The GC is fixed.
 
 For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler arguments through the Motoko recipe:
 
@@ -85,7 +85,7 @@ canisters:
         args: --incremental-gc
 ```
 
-> **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed — the incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.
+> **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed. The incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.
 
 The incremental GC is designed to scale for large heap sizes and is more efficient on average than the older copying or compacting collectors. It is the recommended choice for most workloads.
 
@@ -95,7 +95,7 @@ For legacy-persistence projects: if `--legacy-persistence` is specified, you can
 
 ICP supports WebAssembly SIMD (Single Instruction, Multiple Data) instructions, which allow a single instruction to operate on multiple data values simultaneously. This is useful for numeric-heavy workloads like image processing, matrix multiplication, and machine learning inference.
 
-SIMD is a **Rust-only feature** — the Motoko compiler does not expose SIMD controls.
+SIMD is a **Rust-only feature**: the Motoko compiler does not expose SIMD controls.
 
 ### Enabling SIMD globally
 
@@ -129,9 +129,9 @@ The `dfinity/examples` repository contains a complete SIMD benchmarking example 
 
 Before optimizing, measure where cycles are actually spent. ICP exposes two performance counters via `ic_cdk::api`:
 
-**`instruction_counter()`** — instructions executed since the last entry point. Resets at each `await` point (each `await` creates a new entry point).
+**`instruction_counter()`**: instructions executed since the last entry point. Resets at each `await` point (each `await` creates a new entry point).
 
-**`call_context_instruction_counter()`** — cumulative instructions across the entire call context, including across `await` points. Use this to measure the total cost of an async flow.
+**`call_context_instruction_counter()`**: cumulative instructions across the entire call context, including across `await` points. Use this to measure the total cost of an async flow.
 
 ```rust
 use ic_cdk::api::{instruction_counter, call_context_instruction_counter};
@@ -192,7 +192,7 @@ use ic_cdk::on_low_wasm_memory;
 fn handle_low_memory() {
     // Shed cached state, emit a log entry, or set a flag
     // to reject new requests until memory is reclaimed
-    ic_cdk::println!("Low Wasm memory — shedding cache");
+    ic_cdk::println!("Low Wasm memory: shedding cache");
     with_state_mut(|s| {
         s.cache.clear();
         s.low_memory_triggered = true;
@@ -217,22 +217,22 @@ persistent actor {
 
 The `lowmemory` hook is an `async*` function, so it can perform async operations.
 
-A complete Rust example is available at `rust/low_wasm_memory` in `dfinity/examples`. It demonstrates the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire. A `motoko/low_wasm_memory` example also exists, but note that it currently uses the legacy `mo:base` library — use the inline snippet above as the reference for `mo:core`-compatible code.
+A complete Rust example is available at `rust/low_wasm_memory` in `dfinity/examples`. It demonstrates the full lifecycle: setting memory limits via canister settings, watching memory grow through the heartbeat, and observing the hook fire. A `motoko/low_wasm_memory` example also exists, but note that it currently uses the legacy `mo:base` library: use the inline snippet above as the reference for `mo:core`-compatible code.
 
 ## Combining techniques
 
 Most production canisters benefit from combining several techniques:
 
-1. **Always enable `shrink`** in your recipe — it is low-effort and typically reduces binary size by removing dead code. Pairs well with `lto = true` in Rust.
+1. **Always enable `shrink`** in your recipe: it is low-effort and typically reduces binary size by removing dead code. Pairs well with `lto = true` in Rust.
 2. **Set `wasm_memory_limit` and `wasm_memory_threshold`** on any canister that holds large amounts of heap data, and implement the low memory hook.
-3. **Profile before optimizing** — use `instruction_counter()` in a staging environment to identify which endpoints are expensive before spending time on SIMD or algorithmic changes.
-4. **Consider SIMD for ML/compute workloads** — if you are running inference, image processing, or signal processing in Rust, enabling `simd128` globally is often worth the build-time cost.
+3. **Profile before optimizing**: use `instruction_counter()` in a staging environment to identify which endpoints are expensive before spending time on SIMD or algorithmic changes.
+4. **Consider SIMD for ML/compute workloads**: if you are running inference, image processing, or signal processing in Rust, enabling `simd128` globally is often worth the build-time cost.
 
 ## Next steps
 
-- [Large Wasm](large-wasm.md) — when binary size exceeds the upload limit
-- [Cycles costs](../../reference/cycles-costs.md) — how Wasm size and instruction count map to cycle charges
-- [Canister lifecycle](lifecycle.md) — how optimized builds integrate with the icp-cli deploy workflow
+- [Large Wasm](large-wasm.md): when binary size exceeds the upload limit
+- [Cycles costs](../../reference/cycles-costs.md): how Wasm size and instruction count map to cycle charges
+- [Canister lifecycle](lifecycle.md): how optimized builds integrate with the icp-cli deploy workflow
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/advanced/optimize/rust.mdx; docs/building-apps/advanced/optimize/motoko.mdx -->
 <!-- Upstream: informed by dfinity/examples — rust/performance_counters; rust/low_wasm_memory; motoko/low_wasm_memory; rust/simd -->

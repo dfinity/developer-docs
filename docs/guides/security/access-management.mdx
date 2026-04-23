@@ -14,14 +14,14 @@ Every canister method is callable by anyone on the internet. Without explicit ac
 Use this as a quick reference when securing your canister:
 
 - [ ] Reject the anonymous principal (`2vxsx-fae`) in every authenticated endpoint
-- [ ] Check the caller inside each update method — not just in `canister_inspect_message`
+- [ ] Check the caller inside each update method: not just in `canister_inspect_message`
 - [ ] Use the `guard` attribute (Rust) or guard functions (Motoko) to enforce access rules
 - [ ] Add a backup controller so you never lose canister access
 - [ ] Use `canister_inspect_message` only as a cycle-saving optimization, never as a security boundary
 
 ## How caller identity works
 
-When a canister receives a message, the network includes the caller's principal. This identity is provided by the system — it cannot be forged or spoofed. You access it with:
+When a canister receives a message, the network includes the caller's principal. This identity is provided by the system: it cannot be forged or spoofed. You access it with:
 
 - **Motoko:** `shared({ caller })` pattern on public functions
 - **Rust:** `ic_cdk::api::msg_caller()`
@@ -32,7 +32,7 @@ Every principal is one of these types:
 |------|--------|---------|---------|
 | User | Varies (self-authenticating) | `wo5qg-ysjaa-aaaaa-...` | Human with a cryptographic identity |
 | Canister | 10 bytes, ends in `-cai` | `rrkah-fqaaa-aaaaa-aaaaq-cai` | Another canister making an inter-canister call |
-| Anonymous | Fixed | `2vxsx-fae` | Unauthenticated caller — no identity |
+| Anonymous | Fixed | `2vxsx-fae` | Unauthenticated caller: no identity |
 | Management | Fixed | `aaaaa-aa` | IC management canister (system calls) |
 
 ## Reject anonymous callers
@@ -81,7 +81,7 @@ fn protected_action() -> String {
 }
 ```
 
-The Rust `guard` attribute runs the check before the method body executes. If the guard returns `Err`, the call is rejected. This is more robust than calling guard functions inside the method — you cannot forget to add it. Multiple guards can be chained:
+The Rust `guard` attribute runs the check before the method body executes. If the guard returns `Err`, the call is rejected. This is more robust than calling guard functions inside the method: you cannot forget to add it. Multiple guards can be chained:
 
 ```rust
 #[update(guard = "require_authenticated", guard = "require_admin")]
@@ -100,7 +100,7 @@ There is no built-in role system on ICP. You implement it yourself by tracking p
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-The `shared(msg)` pattern on an actor class captures the deployer's principal atomically — no separate init call, no front-running risk. Use `transient` for the owner since it gets recomputed from `msg.caller` on each install/upgrade.
+The `shared(msg)` pattern on an actor class captures the deployer's principal atomically. No separate init call, no front-running risk. Use `transient` for the owner since it gets recomputed from `msg.caller` on each install/upgrade.
 
 ```motoko
 import Principal "mo:core/Principal";
@@ -209,14 +209,14 @@ fn remove_admin(admin: Principal) {
 
 #[update(guard = "require_admin")]
 fn admin_action() {
-    // ... protected logic — guard already validated caller
+    // ... protected logic: guard already validated caller
 }
 ```
 
 </TabItem>
 </Tabs>
 
-Always include admin revocation (`removeAdmin`). Missing revocation is a common source of bugs — once granted, admin access should be removable.
+Always include admin revocation (`removeAdmin`). Missing revocation is a common source of bugs: once granted, admin access should be removable.
 
 ## Controller checks
 
@@ -244,7 +244,7 @@ import Runtime "mo:core/Runtime";
 </TabItem>
 <TabItem label="Rust">
 
-In Rust, there is no built-in `is_controller` function — checking controllers requires an async call to the management canister. See [onchain calls](../canister-calls/onchain-calls.md) for inter-canister call patterns.
+In Rust, there is no built-in `is_controller` function: checking controllers requires an async call to the management canister. See [onchain calls](../canister-calls/onchain-calls.md) for inter-canister call patterns.
 
 </TabItem>
 </Tabs>
@@ -262,13 +262,13 @@ icp canister settings update backend --add-controller <backup-principal> -e ic
 icp canister settings update backend --remove-controller <principal> -e ic
 ```
 
-Always add a backup controller. If you lose the private key of the only controller, the canister becomes permanently unupgradeable — there is no recovery mechanism.
+Always add a backup controller. If you lose the private key of the only controller, the canister becomes permanently unupgradeable: there is no recovery mechanism.
 
-## `canister_inspect_message` — cycle optimization only
+## `canister_inspect_message`: cycle optimization only
 
 `canister_inspect_message` is a hook that runs on a single replica before consensus. It can reject ingress messages early to save cycles on Candid decoding and execution. However, it is **not a security boundary**:
 
-- It runs on one node without consensus — a malicious boundary node can bypass it
+- It runs on one node without consensus: a malicious boundary node can bypass it
 - It is never called for inter-canister calls, query calls, or management canister calls
 
 Always duplicate real access checks inside each method. Use `inspect_message` only to reduce cycle waste from spam.
@@ -318,7 +318,7 @@ fn inspect_message() {
             if msg_caller() != Principal::anonymous() {
                 accept_message();
             }
-            // Silently reject anonymous — saves cycles
+            // Silently reject anonymous: saves cycles
         }
         _ => accept_message(),
     }
@@ -368,8 +368,8 @@ icp canister call backend whoami
 
 ## Next steps
 
-- [Security concepts](../../concepts/security.md) — understand the IC security model
-- [Canister settings](../canister-management/settings.md) — configure controllers and freezing thresholds
-- [DoS prevention](dos-prevention.md) — rate limiting as an access control mechanism
+- [Security concepts](../../concepts/security.md): understand the IC security model
+- [Canister settings](../canister-management/settings.md): configure controllers and freezing thresholds
+- [DoS prevention](dos-prevention.md): rate limiting as an access control mechanism
 
-{/* Upstream: informed by dfinity/icskills — skills/canister-security/SKILL.md, dfinity/portal — docs/building-apps/best-practices/general.mdx */}
+{/* Upstream: informed by dfinity/icskills (skills/canister-security/SKILL.md, dfinity/portal) docs/building-apps/best-practices/general.mdx */}

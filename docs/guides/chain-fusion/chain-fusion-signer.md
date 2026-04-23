@@ -1,6 +1,6 @@
 ---
 title: "Chain Fusion Signer"
-description: "Use the Chain Fusion Signer canister to sign transactions for Bitcoin, Ethereum, and other chains from web apps and the command line — no backend canister required."
+description: "Use the Chain Fusion Signer canister to sign transactions for Bitcoin, Ethereum, and other chains from web apps and the command line. No backend canister required."
 sidebar:
   order: 5
 ---
@@ -25,7 +25,7 @@ Every signer API call deducts cycles from your cycles ledger account. Before cal
 SIGNER="grghe-syaaa-aaaar-qabyq-cai"
 CYCLES_LEDGER="um5iw-rqaaa-aaaaq-qaaba-cai"
 
-# Approve 1 trillion cycles — enough for ~27 signing operations
+# Approve 1 trillion cycles: enough for ~27 signing operations
 icp canister call "$CYCLES_LEDGER" icrc2_approve \
   "(record {
     amount = 1_000_000_000_000 : nat;
@@ -229,7 +229,7 @@ async function approveAndSign(identity: Identity, messageHash: string) {
 
 <!-- Needs human verification: TypeScript actor creation pattern — verify against generated bindings for the actual signer IDL -->
 
-OISY Wallet uses the Chain Fusion Signer as its production signing backend and serves as a reference implementation. OISY uses `PatronPaysIcrc2Cycles` — the OISY backend canister pre-approves cycles on each user's behalf, so individual users pay no cycles directly.
+OISY Wallet uses the Chain Fusion Signer as its production signing backend and serves as a reference implementation. OISY uses `PatronPaysIcrc2Cycles`: the OISY backend canister pre-approves cycles on each user's behalf, so individual users pay no cycles directly.
 
 ## API fees
 
@@ -261,16 +261,16 @@ The `opt PaymentType` argument accepts these variants:
 
 Pass `null` instead of a payment type to use the canister's default, which is `CallerPaysIcrc2Cycles`.
 
-**Note on token variants:** `CallerPaysIcrc2Tokens` and `PatronPaysIcrc2Tokens` are supported by this canister, but the ledger is hardcoded to the Cycles Ledger — they do not accept arbitrary tokens such as ckBTC or ckETH. All five variants settle in cycles.
+**Note on token variants:** `CallerPaysIcrc2Tokens` and `PatronPaysIcrc2Tokens` are supported by this canister, but the ledger is hardcoded to the Cycles Ledger: they do not accept arbitrary tokens such as ckBTC or ckETH. All five variants settle in cycles.
 
-These variants are defined by [papi](https://github.com/dfinity/papi), an open-source Rust library for adding payment gateways to ICP canisters. The Chain Fusion Signer uses papi internally to handle fee collection. If you want to charge callers in your own canister — using the same `CallerPaysIcrc2Cycles` or `PatronPaysIcrc2Cycles` patterns — papi provides the implementation.
+These variants are defined by [papi](https://github.com/dfinity/papi), an open-source Rust library for adding payment gateways to ICP canisters. The Chain Fusion Signer uses papi internally to handle fee collection. If you want to charge callers in your own canister (using the same `CallerPaysIcrc2Cycles` or `PatronPaysIcrc2Cycles` patterns) papi provides the implementation.
 
 ## Next steps
 
-- [Bitcoin integration guide](bitcoin.md) — build a full Bitcoin dapp with your own signing backend
-- [Ethereum integration guide](ethereum.md) — EVM RPC canister for reading Ethereum state
-- [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger) — fund your account with cycles
-- [Offline key derivation](offline-key-derivation.md) — derive ETH/BTC addresses for any canister principal without a management canister call
-- [papi](https://github.com/dfinity/papi) — add the same `CallerPaysIcrc2Cycles` / `PatronPaysIcrc2Cycles` payment pattern to your own canister
+- [Bitcoin integration guide](bitcoin.md): build a full Bitcoin app with your own signing backend
+- [Ethereum integration guide](ethereum.md): EVM RPC canister for reading Ethereum state
+- [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger): fund your account with cycles
+- [Offline key derivation](offline-key-derivation.md): derive ETH/BTC addresses for any canister principal without a management canister call
+- [papi](https://github.com/dfinity/papi): add the same `CallerPaysIcrc2Cycles` / `PatronPaysIcrc2Cycles` payment pattern to your own canister
 
 <!-- Upstream: informed by dfinity/chain-fusion-signer — src/signer/canister/signer.did, src/signer/api/src/methods.rs, README.md, check-pricing.report.md; dfinity/papi — README.md (payment variants and patron pattern); dfinity/ic-pub-key — README.md, src/cli.ts -->

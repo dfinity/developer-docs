@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-ICP's [reverse gas model](../../concepts/reverse-gas-model.md) means your canister pays for every message it processes — including messages from attackers. Anyone on the internet can send update calls to your canister, and each call burns cycles even if your code ultimately rejects it. Left unmitigated, this lets an attacker drain your cycle balance by flooding your canister with messages.
+ICP's [reverse gas model](../../concepts/reverse-gas-model.md) means your canister pays for every message it processes: including messages from attackers. Anyone on the internet can send update calls to your canister, and each call burns cycles even if your code ultimately rejects it. Left unmitigated, this lets an attacker drain your cycle balance by flooding your canister with messages.
 
 This guide covers the patterns that protect against denial-of-service (DoS) attacks: early message filtering, rate limiting, resource allocation, and cycle monitoring.
 
@@ -28,17 +28,17 @@ Every ingress message (external call to your canister) costs cycles. The cost in
 - Per-instruction fees for all code executed before a trap or rejection
 - Candid decoding, which runs before your method body
 
-This means an attacker can drain your cycles simply by sending many messages — the canister pays for Candid decoding and early checks even when it rejects the call. See [Cycles costs](../../reference/cycles-costs.md) for exact figures.
+This means an attacker can drain your cycles simply by sending many messages. The canister pays for Candid decoding and early checks even when it rejects the call. See [Cycles costs](../../reference/cycles-costs.md) for exact figures.
 
 ### Use inspect_message as a first-pass filter
 
-`canister_inspect_message` runs on a **single replica** before a message enters consensus. Code in this hook does not burn cycles, so it is an efficient place to drop messages that are obviously invalid — for example, calls from the anonymous principal to authenticated endpoints.
+`canister_inspect_message` runs on a **single replica** before a message enters consensus. Code in this hook does not burn cycles, so it is an efficient place to drop messages that are obviously invalid: for example, calls from the anonymous principal to authenticated endpoints.
 
 **Critical limitation:** `canister_inspect_message` is not a security boundary. It runs on one node and can be bypassed by a malicious boundary node. It is also never called for inter-canister calls, query calls, or management canister calls. Always duplicate real access control inside each update method. See [Access management](access-management.md) for the full access control pattern.
 
-`inspect_message` has a budget of **200 million instructions** — do not perform expensive work here. Use it only to short-circuit calls that are structurally invalid (wrong caller type, missing required data).
+`inspect_message` has a budget of **200 million instructions**: do not perform expensive work here. Use it only to short-circuit calls that are structurally invalid (wrong caller type, missing required data).
 
-**Motoko — inspect_message:**
+**Motoko: inspect_message:**
 
 ```motoko
 import Principal "mo:core/Principal";
@@ -65,7 +65,7 @@ system func inspect(
 };
 ```
 
-**Rust — inspect_message:**
+**Rust: inspect_message:**
 
 ```rust
 use ic_cdk::api::{accept_message, msg_caller, msg_method_name};
@@ -83,7 +83,7 @@ fn inspect_message() {
             if msg_caller() != Principal::anonymous() {
                 accept_message();
             }
-            // Silently reject anonymous — saves cycles on Candid decoding
+            // Silently reject anonymous: saves cycles on Candid decoding
         }
         // Public methods: accept all
         _ => accept_message(),
@@ -95,9 +95,9 @@ fn inspect_message() {
 
 For expensive operations (chain-key signing, HTTPS outcalls, large state writes), enforce per-caller concurrency limits. Allowing the same caller to queue up many concurrent requests multiplies the cost of any single caller's flood.
 
-The CallerGuard pattern prevents concurrent calls from the same principal. While the guard is held, any second call from the same caller is rejected immediately — before any expensive work runs.
+The CallerGuard pattern prevents concurrent calls from the same principal. While the guard is held, any second call from the same caller is rejected immediately: before any expensive work runs.
 
-**Motoko — per-caller concurrency lock:**
+**Motoko: per-caller concurrency lock:**
 
 ```motoko
 import Map "mo:core/Map";
@@ -126,7 +126,7 @@ public shared ({ caller }) func expensiveOperation() : async Result.Result<Text,
     return #err("anonymous principal not allowed");
   };
 
-  // 2. Acquire per-caller lock — rejects concurrent calls from same principal
+  // 2. Acquire per-caller lock: rejects concurrent calls from same principal
   switch (acquireGuard(caller)) {
     case (#err(msg)) { return #err(msg) };
     case (#ok) {};
@@ -139,13 +139,13 @@ public shared ({ caller }) func expensiveOperation() : async Result.Result<Text,
   } catch _ {
     #err("operation failed")
   } finally {
-    // Released in cleanup context — runs even if the callback traps
+    // Released in cleanup context: runs even if the callback traps
     releaseGuard(caller);
   };
 };
 ```
 
-**Rust — per-caller concurrency lock (CallerGuard):**
+**Rust: per-caller concurrency lock (CallerGuard):**
 
 ```rust
 use std::cell::RefCell;
@@ -188,10 +188,10 @@ async fn expensive_operation() -> Result<String, String> {
         return Err("anonymous principal not allowed".to_string());
     }
 
-    // Acquire per-caller lock — Drop releases it even if the callback traps
+    // Acquire per-caller lock: Drop releases it even if the callback traps
     let _guard = CallerGuard::new(caller)?;
 
-    // Do expensive work — use Call::bounded_wait for inter-canister calls
+    // Do expensive work: use Call::bounded_wait for inter-canister calls
     // to avoid unbounded waits that would block canister upgrades
     let result = do_expensive_work().await?;
     Ok(result)
@@ -199,11 +199,11 @@ async fn expensive_operation() -> Result<String, String> {
 }
 ```
 
-The guard releases automatically when it goes out of scope — including when an inter-canister call callback traps. Never use `let _ = CallerGuard::new(caller)?` (this drops the guard immediately, making locking ineffective). Always bind to a named variable (`let _guard`).
+The guard releases automatically when it goes out of scope: including when an inter-canister call callback traps. Never use `let _ = CallerGuard::new(caller)?` (this drops the guard immediately, making locking ineffective). Always bind to a named variable (`let _guard`).
 
 ### Proof-of-work and captchas for public endpoints
 
-For endpoints that must accept anonymous or unauthenticated callers — for example, a public registration flow — the per-caller lock pattern cannot apply. Instead, require the caller to prove they spent computational resources:
+For endpoints that must accept anonymous or unauthenticated callers: for example, a public registration flow. The per-caller lock pattern cannot apply. Instead, require the caller to prove they spent computational resources:
 
 - **Captcha:** Require solving a captcha before calling an expensive endpoint. Use a library-based captcha (not a cloud service) to keep the solution onchain and avoid HTTPS outcalls.
 - **Proof of work:** Require the client to include a nonce that satisfies a hash challenge. The canister verifies the nonce in `inspect_message` before accepting the message. This imposes CPU cost on the caller proportional to the difficulty parameter.
@@ -229,12 +229,12 @@ Source: [Cycles costs reference](../../reference/cycles-costs.md).
 
 If users can store data without limits, an attacker can fill the 4 GiB Wasm heap or stable memory, causing allocation failures that corrupt canister state. Mitigations:
 
-- **Enforce per-user storage quotas** — track bytes stored per principal and reject requests that exceed the limit.
-- **Validate input sizes** — check the size of user-provided blobs, text, or arrays before storing them.
-- **Set a `wasm_memory_limit`** — configures a soft ceiling below the 4 GiB hard limit. When exceeded, new update calls trap instead of corrupting state. See [Canister settings](../canister-management/settings.md).
+- **Enforce per-user storage quotas**: track bytes stored per principal and reject requests that exceed the limit.
+- **Validate input sizes**: check the size of user-provided blobs, text, or arrays before storing them.
+- **Set a `wasm_memory_limit`**: configures a soft ceiling below the 4 GiB hard limit. When exceeded, new update calls trap instead of corrupting state. See [Canister settings](../canister-management/settings.md).
 
 ```yaml
-# icp.yaml — memory protection (settings nested under canister name)
+# icp.yaml: memory protection (settings nested under canister name)
 canisters:
   - name: backend
     settings:
@@ -246,12 +246,12 @@ canisters:
 
 Data queries that return unbounded result sets can exhaust the instruction limit for a single call. An attacker can exploit this by requesting a query that processes all stored data:
 
-- **Always paginate** — accept an optional cursor or offset and return at most a fixed number of results per call.
-- **Avoid unbounded iteration** — do not iterate entire data structures in a single call unless the data set is provably bounded.
+- **Always paginate**: accept an optional cursor or offset and return at most a fixed number of results per call.
+- **Avoid unbounded iteration**: do not iterate entire data structures in a single call unless the data set is provably bounded.
 
 ## Freezing threshold as a safety net
 
-The `freezing_threshold` setting defines the minimum number of seconds the canister should be able to survive on its current cycle balance. When the balance drops below this reserve, the canister **freezes** — update calls are rejected. A frozen canister does not execute code, but it continues to pay for storage and compute allocation.
+The `freezing_threshold` setting defines the minimum number of seconds the canister should be able to survive on its current cycle balance. When the balance drops below this reserve, the canister **freezes**: update calls are rejected. A frozen canister does not execute code, but it continues to pay for storage and compute allocation.
 
 The default threshold is 30 days. For production canisters holding valuable state, increase it to 90–180 days:
 
@@ -263,7 +263,7 @@ icp canister settings update backend --freezing-threshold 7776000 -e ic
 Or via `icp.yaml`:
 
 ```yaml
-# icp.yaml — settings nested under canister name
+# icp.yaml: settings nested under canister name
 canisters:
   - name: backend
     settings:
@@ -281,21 +281,21 @@ Multiple canisters share the same subnet. If a neighboring canister consumes exc
 Setting `compute_allocation` guarantees your canister a percentage of an execution core and ensures scheduled execution even when the subnet is busy:
 
 ```yaml
-# icp.yaml — settings nested under canister name
+# icp.yaml: settings nested under canister name
 canisters:
   - name: backend
     settings:
       compute_allocation: 10  # Guaranteed 10% of one execution core
 ```
 
-A value of `10` means the canister is scheduled at least every 10 consensus rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet) — only set it if you need guaranteed throughput under load. See [Cycles costs](../../reference/cycles-costs.md).
+A value of `10` means the canister is scheduled at least every 10 consensus rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet). Only set it if you need guaranteed throughput under load. See [Cycles costs](../../reference/cycles-costs.md).
 
 ### Memory allocation
 
 Setting `memory_allocation` reserves a fixed pool of memory for your canister, preventing other canisters from consuming the subnet's available memory:
 
 ```yaml
-# icp.yaml — settings nested under canister name
+# icp.yaml: settings nested under canister name
 canisters:
   - name: backend
     settings:
@@ -318,9 +318,9 @@ icp canister status <canister-id> -e ic
 
 Key metrics to monitor:
 
-- **Balance** — alert when balance drops below a safe threshold (e.g., 2x the freezing threshold reserve)
-- **Burn rate** — track cycles per day; a sudden spike indicates unexpected activity
-- **Memory usage** — track growth over time; sudden jumps suggest user-driven data accumulation
+- **Balance**: alert when balance drops below a safe threshold (e.g., 2x the freezing threshold reserve)
+- **Burn rate**: track cycles per day; a sudden spike indicates unexpected activity
+- **Memory usage**: track growth over time; sudden jumps suggest user-driven data accumulation
 
 For production canister monitoring, consider automating balance checks with a heartbeat or timer canister that sends an alert notification when the balance approaches the freezing threshold.
 
@@ -328,17 +328,17 @@ For production canister monitoring, consider automating balance checks with a he
 
 Chain-key signing (threshold ECDSA/Schnorr), HTTPS outcalls, and Bitcoin API calls are significantly more expensive than standard update calls. These make attractive targets for attackers:
 
-- **Require authentication** — never allow anonymous callers to trigger expensive operations.
-- **Apply per-caller locking** — use the CallerGuard pattern to prevent the same caller from queuing multiple expensive calls.
-- **Charge callers** — for canister-to-canister calls, require the calling canister to attach cycles to cover the cost. The called canister accepts the cycles using `ic0.msg_cycles_accept` (Rust: `ic_cdk::api::msg_cycles_accept(max_amount: u128)`).
-- **Differentiate update vs. query** — move expensive computations to update calls and use query calls for cheap reads. Check whether a method is running as a query or update with `ic0.in_replicated_execution()` (Rust: `ic_cdk::api::in_replicated_execution()`).
+- **Require authentication**: never allow anonymous callers to trigger expensive operations.
+- **Apply per-caller locking**: use the CallerGuard pattern to prevent the same caller from queuing multiple expensive calls.
+- **Charge callers**: for canister-to-canister calls, require the calling canister to attach cycles to cover the cost. The called canister accepts the cycles using `ic0.msg_cycles_accept` (Rust: `ic_cdk::api::msg_cycles_accept(max_amount: u128)`).
+- **Differentiate update vs. query**: move expensive computations to update calls and use query calls for cheap reads. Check whether a method is running as a query or update with `ic0.in_replicated_execution()` (Rust: `ic_cdk::api::in_replicated_execution()`).
 
 ## Next steps
 
-- [Access management](access-management.md) — caller checks, anonymous principal rejection, and role-based guards
-- [Inter-canister call safety](inter-canister-calls.md) — TOCTOU vulnerabilities and the CallerGuard pattern
-- [Canister settings](../canister-management/settings.md) — freezing threshold, memory allocation, and compute allocation
-- [Cycles costs](../../reference/cycles-costs.md) — exact cost tables and resource limits
-- [Security model](../../concepts/security.md) — IC trust boundaries and threat model overview
+- [Access management](access-management.md): caller checks, anonymous principal rejection, and role-based guards
+- [Inter-canister call safety](inter-canister-calls.md): TOCTOU vulnerabilities and the CallerGuard pattern
+- [Canister settings](../canister-management/settings.md): freezing threshold, memory allocation, and compute allocation
+- [Cycles costs](../../reference/cycles-costs.md): exact cost tables and resource limits
+- [Security model](../../concepts/security.md): IC trust boundaries and threat model overview
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/security/dos.mdx; icskills: canister-security -->

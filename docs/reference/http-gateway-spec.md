@@ -364,9 +364,9 @@ The value of the `upgrade` field returned from `http_request_update` is ignored.
 
 Version 1 response verification only supports verifying a request path and response body pair with only one response per request path. This is quite restrictive in the number of scenarios it can support. For example, redirection or client-side caching is not safe since the status code and headers required to verify responses of that nature are not included in the certification. Upon a query call to a canister’s `http_request` method, a single malicious node or boundary node can modify these parts of the HTTP response, leading to the following issues:
 
-- dApps cannot load the service worker when embedded within iFrames.
+- apps cannot load the service worker when embedded within iFrames.
 - The use of redirects and cookies is unsafe as they can be manipulated by malicious nodes.
-- This is unexpected for developers and will lead to vulnerabilities in dApps sooner or later.
+- This is unexpected for developers and will lead to vulnerabilities in apps sooner or later.
 - The effectiveness of security headers (such as Content Security Policy) is diminished as they can be omitted or modified by malicious nodes.
 
 [Response Verification version 2](#response-verification) overcomes these issues.

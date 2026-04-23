@@ -13,11 +13,11 @@ For a conceptual overview of why query integrity matters, see [Security concepts
 
 The mechanism relies on three coordinated steps:
 
-1. **Update call** — the canister modifies data, builds or updates a Merkle tree over that data, and calls `certified_data_set` (Rust) or `CertifiedData.set` (Motoko) with the tree's 32-byte root hash. The subnet includes this hash in its certified state tree each consensus round.
+1. **Update call**: the canister modifies data, builds or updates a Merkle tree over that data, and calls `certified_data_set` (Rust) or `CertifiedData.set` (Motoko) with the tree's 32-byte root hash. The subnet includes this hash in its certified state tree each consensus round.
 
-2. **Query call** — the canister calls `data_certificate()` / `CertifiedData.getCertificate()` to retrieve the subnet BLS certificate, builds a witness (Merkle proof) for the requested key, and returns `(data, certificate, witness)` to the caller.
+2. **Query call**: the canister calls `data_certificate()` / `CertifiedData.getCertificate()` to retrieve the subnet BLS certificate, builds a witness (Merkle proof) for the requested key, and returns `(data, certificate, witness)` to the caller.
 
-3. **Client verification** — the client verifies the certificate signature against the IC root public key, extracts the root hash from the certificate's state tree, then confirms the witness proves the data is included under that root hash.
+3. **Client verification**: the client verifies the certificate signature against the IC root public key, extracts the root hash from the certificate's state tree, then confirms the witness proves the data is included under that root hash.
 
 ```
 UPDATE CALL (goes through consensus):
@@ -41,7 +41,7 @@ CLIENT:
 
 - `certified_data_set` accepts **at most 32 bytes**. You cannot certify arbitrary data directly. Build a Merkle tree over your data and certify only the 32-byte root hash. The tree provides proofs for individual values.
 - `certified_data_set` **must be called in update calls only**. Calling it in a query call traps.
-- `data_certificate()` returns `None` in update calls — certificates are only available during query calls.
+- `data_certificate()` returns `None` in update calls: certificates are only available during query calls.
 - After a canister upgrade, the certified data is cleared. Re-establish certification in both `#[init]` and `#[post_upgrade]` (Rust), or in `system func postupgrade` (Motoko).
 
 ## Rust implementation
@@ -86,7 +86,7 @@ fn init() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Certified data is cleared on upgrade — must be re-established.
+    // Certified data is cleared on upgrade: must be re-established.
     // Assumes tree data has already been loaded from stable memory.
     update_certified_data();
 }
@@ -209,7 +209,7 @@ import Text "mo:core/Text";
 
 persistent actor {
 
-  // CertTree.Store is stable — persists across upgrades.
+  // CertTree.Store is stable: persists across upgrades.
   let certStore : CertTree.Store = CertTree.newStore();
   let ct = CertTree.Ops(certStore);
 
@@ -254,7 +254,7 @@ persistent actor {
 The client must verify the certificate before trusting the data. The `@dfinity/certificate-verification` package handles the full verification flow:
 
 1. Verify the certificate BLS signature against the IC root public key
-2. Check certificate freshness — the `/time` field must be within an acceptable window (recommended: 5 minutes)
+2. Check certificate freshness. The `/time` field must be within an acceptable window (recommended: 5 minutes)
 3. CBOR-decode the witness into a hash tree
 4. Reconstruct the witness root hash
 5. Compare it with the `certified_data` path in the certificate
@@ -304,7 +304,7 @@ async function getVerifiedValue(
   // Confirm the canister-returned value matches what the witness proves.
   if (response.value !== null && response.value !== verifiedValue) {
     throw new Error(
-      "Response value does not match witness — canister returned tampered data"
+      "Response value does not match witness: canister returned tampered data"
     );
   }
 
@@ -320,7 +320,7 @@ The JS SDK documentation covers the full `verifyCertification` API at [js.icp.bu
 # Deploy the canister
 icp deploy backend
 
-# Set a certified value (update call — goes through consensus)
+# Set a certified value (update call: goes through consensus)
 icp canister call backend set '("greeting", "hello world")'
 
 # Query the certified value
@@ -339,17 +339,17 @@ icp canister call backend get '("key")'
 
 ## Common mistakes
 
-**Calling `certified_data_set` in a query call** — this traps immediately. The pattern is: set the hash during update calls, retrieve the certificate during query calls.
+**Calling `certified_data_set` in a query call**: this traps immediately. The pattern is: set the hash during update calls, retrieve the certificate during query calls.
 
-**Not updating the hash after data changes** — if you modify the tree but forget to call `certified_data_set`, query responses will fail client verification because the certificate proves a stale hash.
+**Not updating the hash after data changes**: if you modify the tree but forget to call `certified_data_set`, query responses will fail client verification because the certificate proves a stale hash.
 
-**Forgetting to re-certify after upgrade** — certified data is cleared on upgrade. Both `#[init]` and `#[post_upgrade]` (Rust) or `system func postupgrade` (Motoko) must call the certification function.
+**Forgetting to re-certify after upgrade**: certified data is cleared on upgrade. Both `#[init]` and `#[post_upgrade]` (Rust) or `system func postupgrade` (Motoko) must call the certification function.
 
-**Building the witness for the wrong key** — the Merkle proof must correspond to the exact key being queried. A witness for `users/alice` will not verify `users/bob`.
+**Building the witness for the wrong key**: the Merkle proof must correspond to the exact key being queried. A witness for `users/alice` will not verify `users/bob`.
 
-**Skipping certificate freshness checks on the client** — the certificate's `/time` field contains the subnet timestamp. Without a freshness check, an attacker could replay a stale certificate with outdated data. Always check that `certificate_time` is within an acceptable delta (5 minutes is recommended).
+**Skipping certificate freshness checks on the client**: the certificate's `/time` field contains the subnet timestamp. Without a freshness check, an attacker could replay a stale certificate with outdated data. Always check that `certificate_time` is within an acceptable delta (5 minutes is recommended).
 
-**Assuming `data_certificate()` is available in update calls** — it returns `None` / `null` in update calls. Only query calls can access the certificate.
+**Assuming `data_certificate()` is available in update calls**: it returns `None` / `null` in update calls. Only query calls can access the certificate.
 
 ## HTTP asset certification
 
@@ -359,8 +359,8 @@ See [Frontend certification](../../guides/frontends/certification.md) for the as
 
 ## Next steps
 
-- [Security concepts](../../concepts/security.md) — why query integrity matters and when to use certified variables vs replicated queries
-- [Frontend certification](../../guides/frontends/certification.md) — HTTP asset certification for the asset canister
-- [IC Interface Specification](../../reference/ic-interface-spec.md) — the certified data system API and certificate format
+- [Security concepts](../../concepts/security.md): why query integrity matters and when to use certified variables vs replicated queries
+- [Frontend certification](../../guides/frontends/certification.md): HTTP asset certification for the asset canister
+- [IC Interface Specification](../../reference/ic-interface-spec.md): the certified data system API and certificate format
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/security/data-integrity-and-authenticity.mdx; dfinity/icskills — skills/certified-variables/SKILL.md; dfinity/cdk-rs — library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs; caffeinelabs/motoko-core — src/CertifiedData.mo; dfinity/examples — motoko/cert-var; dfinity/response-verification — README.md -->

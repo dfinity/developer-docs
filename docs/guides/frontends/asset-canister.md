@@ -154,7 +154,7 @@ npm run build
 icp deploy frontend
 ```
 
-If only static assets changed (no WASM update needed), use `icp sync` instead of a full redeploy — it skips canister reinstallation and only uploads changed files:
+If only static assets changed (no WASM update needed), use `icp sync` instead of a full redeploy: it skips canister reinstallation and only uploads changed files:
 
 ```bash
 icp sync frontend

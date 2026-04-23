@@ -30,7 +30,7 @@ Parallel calls are most beneficial when the caller and callee are on **different
 
 ## How parallel calls work
 
-In Motoko, futures are first-class values. You can start a call by evaluating `c.method()` without immediately awaiting it — this sends the request message and returns an `async T` handle. Collecting all handles before awaiting lets all calls run concurrently.
+In Motoko, futures are first-class values. You can start a call by evaluating `c.method()` without immediately awaiting it: this sends the request message and returns an `async T` handle. Collecting all handles before awaiting lets all calls run concurrently.
 
 In Rust, you can collect calls into a `Vec` by calling `.into_future()` on each [`Call::bounded_wait(...)`](https://docs.rs/ic-cdk/latest/ic_cdk/call/struct.Call.html) expression (since `Call` implements `IntoFuture`), then pass them to [`futures::future::join_all`](https://docs.rs/futures/latest/futures/future/fn.join_all.html), which awaits all of them together.
 
@@ -38,7 +38,7 @@ In Rust, you can collect calls into a `Vec` by calling `.into_future()` on each 
 
 The following example shows a `caller` canister that issues `n` calls to a `callee` canister's `ping` method, either sequentially or in parallel.
 
-**Sequential version** — each call is awaited before the next is sent:
+**Sequential version**: each call is awaited before the next is sent:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -110,7 +110,7 @@ pub async fn sequential_calls(n: u64) -> u64 {
 </TabItem>
 </Tabs>
 
-**Parallel version** — all requests are dispatched before any response is awaited:
+**Parallel version**: all requests are dispatched before any response is awaited:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -137,7 +137,7 @@ persistent actor {
       case (?c)  { c };
     };
 
-    // Evaluate c.ping() without awaiting — sends the request and returns a
+    // Evaluate c.ping() without awaiting: sends the request and returns a
     // future. Collecting futures before any await dispatches all requests
     // concurrently.
     var futures = List.empty<async ()>();
@@ -181,7 +181,7 @@ pub async fn parallel_calls(n: u64) -> u64 {
     let callee = CALLEE.with(|c| c.borrow().unwrap());
 
     // Build all futures before awaiting any of them. All requests are
-    // dispatched when join_all polls each future — all fire before any
+    // dispatched when join_all polls each future: all fire before any
     // response is awaited.
     // Box::pin erases the lifetime parameters so futures can be collected
     // into a homogeneous Vec.
@@ -204,9 +204,9 @@ The full working example is available in [`dfinity/examples`](https://github.com
 
 ## In-flight call limit
 
-The IC enforces a limit on the number of in-flight calls a canister can have outstanding to any other single canister — approximately 500 per canister pair. Dispatching more calls than this limit causes the excess to be rejected immediately. Sequential calls stay within the limit because only one call is in-flight at a time. Parallel calls can exceed it when `n` is large.
+The IC enforces a limit on the number of in-flight calls a canister can have outstanding to any other single canister: approximately 500 per canister pair. Dispatching more calls than this limit causes the excess to be rejected immediately. Sequential calls stay within the limit because only one call is in-flight at a time. Parallel calls can exceed it when `n` is large.
 
-If calls fail due to the in-flight limit, do not retry immediately — the limit will still be full right after the failure. Instead, retry from a [timer](../backends/timers.md) or heartbeat after a delay.
+If calls fail due to the in-flight limit, do not retry immediately. The limit will still be full right after the failure. Instead, retry from a [timer](../backends/timers.md) or heartbeat after a delay.
 
 ## Handling partial failures
 
@@ -245,7 +245,7 @@ Because each inter-canister call is a separate async boundary, a failure in one 
 
 ## Composite queries
 
-A **composite query** is a query method that can call other query and composite query methods. Unlike update calls, composite queries are read-only, run without consensus, and complete without going through the full consensus pipeline — making them far lower latency than update-based parallel calls.
+A **composite query** is a query method that can call other query and composite query methods. Unlike update calls, composite queries are read-only, run without consensus, and complete without going through the full consensus pipeline: making them far lower latency than update-based parallel calls.
 
 Use composite queries when all the data you need can be read from query endpoints and you do not need to modify state.
 
@@ -269,7 +269,7 @@ Use composite queries when all the data you need can be read from query endpoint
 ```motoko
 import Array "mo:core/Array";
 
-// Bucket canister — regular query
+// Bucket canister: regular query
 persistent actor class Bucket(n : Nat, i : Nat) {
 
   // ...state omitted...
@@ -280,7 +280,7 @@ persistent actor class Bucket(n : Nat, i : Nat) {
   };
 };
 
-// Map canister — composite query calling into Bucket
+// Map canister: composite query calling into Bucket
 persistent actor Map {
   let n = 4;
   type Bucket = actor { get : Nat -> async ?Text };
@@ -355,8 +355,8 @@ Parallel and composite calls carry the same atomicity properties as any inter-ca
 
 ## Next steps
 
-- [Onchain calls](onchain-calls.md) — making basic inter-canister calls
-- [Canister optimization](../canister-management/optimization.md) — profiling and improving throughput
-- [Inter-canister call security](../security/inter-canister-calls.md) — atomicity, reentrancy, and call safety
+- [Onchain calls](onchain-calls.md): making basic inter-canister calls
+- [Canister optimization](../canister-management/optimization.md): profiling and improving throughput
+- [Inter-canister call security](../security/inter-canister-calls.md): atomicity, reentrancy, and call safety
 
-{/* Upstream: informed by dfinity/portal — docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/interact-with-canisters/query-calls.mdx; dfinity/examples — motoko/parallel_calls, rust/parallel_calls, motoko/composite_query, rust/composite_query; dfinity/cdk-rs — ic-cdk/src/call.rs, ic-cdk/src/futures.rs */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/interact-with-canisters/query-calls.mdx; dfinity/examples) motoko/parallel_calls, rust/parallel_calls, motoko/composite_query, rust/composite_query; dfinity/cdk-rs: ic-cdk/src/call.rs, ic-cdk/src/futures.rs */}
