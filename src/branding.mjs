@@ -3,6 +3,6 @@
 
 export const TITLE = "ICP Developer Docs";
 export const DESCRIPTION =
-  "Developer documentation for the Internet Computer: the frontier cloud for agents building apps, services, and systems.";
+  "Developer documentation for building full-stack web applications, digital assets and payments, and cross-chain integrations on the Internet Computer.";
 export const PUBLISHER = "DFINITY Foundation";
 export const OG_ALT = "ICP Developer Docs: build on the Internet Computer";
