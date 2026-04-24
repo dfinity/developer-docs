@@ -9,7 +9,7 @@ sidebar:
 
 For how ICP produces unpredictable randomness without any trusted party, see [Onchain Randomness](../../concepts/onchain-randomness.md).
 
-## Why blockchain randomness is different
+## Why onchain randomness is different
 
 Most blockchains execute transactions deterministically: every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
 

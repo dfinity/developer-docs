@@ -1,6 +1,6 @@
 ---
 title: "Chain Fusion"
-description: "How ICP connects to Bitcoin, Ethereum, Solana, and other blockchains natively"
+description: "How ICP connects to Bitcoin, Ethereum, Solana, and other networks natively"
 sidebar:
   order: 10
 ---

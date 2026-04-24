@@ -32,7 +32,7 @@ The fiduciary subnet also hosts the threshold signature signing keys (t-ECDSA an
 
 ### European subnet
 
-The European subnet (`bkfrj`) restricts all node machines to the European geographic region. This allows developers and enterprises to build applications that combine blockchain decentralization with regional data residency. The European subnet is one option for applications targeting GDPR-aligned infrastructure.
+The European subnet (`bkfrj`) restricts all node machines to the European geographic region. This allows developers and enterprises to build applications that combine network-level tamperproofing with regional data residency. The European subnet is one option for applications targeting GDPR-aligned infrastructure.
 
 Note that deploying to the European subnet is a necessary but not sufficient condition for GDPR compliance: developers must evaluate their full application architecture against applicable requirements.
 
