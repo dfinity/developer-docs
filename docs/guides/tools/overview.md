@@ -11,7 +11,7 @@ Developer tools are used to create, manage, and interact with canisters. ICP pro
 
 ### icp-cli
 
-`icp-cli` is the primary tool for building and deploying applications on the Internet Computer. It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens.
+`icp-cli` is the primary tool for building and deploying applications on the Internet Computer ([full documentation](https://cli.internetcomputer.org/)). It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens.
 
 Key features:
 - **Recipes**: reusable, versioned build templates for Rust, Motoko, and asset canisters
@@ -37,13 +37,11 @@ Verify:
 icp --version
 ```
 
-Full documentation: [cli.internetcomputer.org](https://cli.internetcomputer.org/)
-
 For advanced users, icp-cli supports authoring custom recipes and project templates:
 - [Creating recipes](https://cli.internetcomputer.org/guides/creating-recipes): encode build conventions as reusable Handlebars templates
 - [Creating templates](https://cli.internetcomputer.org/guides/creating-templates): scaffold new projects with `icp new`
 
-Coming from dfx? See the [migration guide](migrating-from-dfx.md) for a command mapping and configuration conversion reference.
+Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/migration/from-dfx) on the CLI docs.
 
 #### Telemetry opt-out
 
