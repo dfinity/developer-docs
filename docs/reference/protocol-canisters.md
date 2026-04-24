@@ -216,7 +216,7 @@ type GetExchangeRateRequest = record {
 };
 ```
 
-`Asset` is a record with a `symbol` (e.g., `"BTC"`) and `class` (`Cryptocurrency` or `FiatCurrency`). Any combination of crypto and fiat is supported (e.g., ICP/USD, BTC/ICP, USD/EUR). If `timestamp` is omitted, the current rate is returned.
+`Asset` is a record with a `symbol` (e.g., `"BTC"`) and `class` (`Cryptocurrency` or `FiatCurrency`). Any combination of digital asset and fiat is supported (e.g., ICP/USD, BTC/ICP, USD/EUR). If `timestamp` is omitted, the current rate is returned.
 
 **Response:**
 
