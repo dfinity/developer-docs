@@ -77,7 +77,7 @@ These responsibilities can be automated. Tools like [CycleOps](https://cycleops.
 
 The XDR peg and flat per-resource pricing make ICP costs predictable:
 
-- **No fee auctions**: there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
+- **No surge pricing**: cycle prices are set by the [NNS](../concepts/governance.md) (ICP's on-chain governance system) and change infrequently. There are no congestion fees.
 - **No per-transaction fees for users**: apps absorb all costs, like SaaS businesses absorb server bills.
 - **Stable unit economics**: because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
 
