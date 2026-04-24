@@ -5,11 +5,9 @@ sidebar:
   order: 4
 ---
 
-Every canister runs on real hardware: nodes operated by independent node providers distributed across the world. Unlike a traditional cloud, there is no single company to bill: no AWS account, no credit card, no monthly invoice. Instead, the network handles payment at the protocol level. **Canisters pay for their own compute, storage, and bandwidth using cycles**, a unit of compute loaded into a canister in advance. The network deducts cycles automatically as the canister runs. Anyone can top up a canister: the developer, another canister, a user, or an automated service. Users interact with apps for free, the same way they use any web service.
+Every canister runs on real hardware: nodes operated by independent node providers distributed across the world. Unlike a traditional cloud, there is no single company to bill: no AWS account, no credit card, no monthly invoice. Instead, the network handles payment at the protocol level. **Canisters pay for their own compute, storage, and bandwidth using cycles.** The network deducts cycles automatically as the canister runs. Anyone can top up a canister: the developer, another canister, a user, or an automated service. Users interact with apps for free, the same way they use any web service.
 
-## What are cycles?
-
-Cycles are the unit of payment for resources on ICP. Every canister operation that consumes resources burns cycles from the canister's balance:
+Cycles cover four resource categories:
 
 - **Compute**: executing instructions (update calls, timers, heartbeats)
 - **Storage**: Wasm heap memory and stable memory, charged per byte per second
@@ -28,7 +26,7 @@ Once minted, cycles are held by principals via the **cycles ledger** (`um5iw-rqa
 
 Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
 
-## What canisters pay for
+## Pricing
 
 ### Compute
 
@@ -63,8 +61,6 @@ Every canister is replicated across all nodes on its subnet. Costs scale with su
 
 ## Developer responsibility
 
-Canisters pay for their own resources, which comes with ongoing obligations:
-
 **Topping up**: canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
 
 **Freezing threshold**: each canister has a configurable freezing threshold (default: 30 days of idle burn). If the cycle balance falls below this threshold, the canister is frozen before it can be deleted, giving developers time to top up. Increase this threshold for production canisters as a safety buffer.
@@ -79,7 +75,6 @@ The XDR peg and flat per-resource pricing make ICP costs predictable:
 
 - **No surge pricing**: cycle prices are set by the [NNS](../concepts/governance.md) (ICP's on-chain governance system) and change infrequently. There are no congestion fees.
 - **No per-transaction fees for users**: apps absorb all costs, like SaaS businesses absorb server bills.
-- **Stable unit economics**: because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
 
 The tradeoff is that developers must forecast and fund usage upfront rather than letting users pay as they go.
 
