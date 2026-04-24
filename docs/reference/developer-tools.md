@@ -52,6 +52,8 @@ A canister development kit (CDK) provides a programming language with the librar
 
 Motoko is ICP's native programming language, designed around the actor model, orthogonal persistence, and asynchronous message passing. It compiles directly to WebAssembly and includes a standard library (`mo:core`) with modules for common data structures, cryptography, and system interaction.
 
+Third-party Motoko libraries are distributed through [Mops](https://mops.one), the Motoko package manager. Use `mops add <package>` to add a dependency. The full package registry is at [mops.one](https://mops.one).
+
 For language documentation, see [languages/motoko](../languages/motoko/index.md).
 
 ### Rust CDK (`ic-cdk`)
