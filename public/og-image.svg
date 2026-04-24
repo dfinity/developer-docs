@@ -13,7 +13,7 @@
   <!-- "INTERNET COMPUTER" label -->
   <text x="80" y="176"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="15" font-weight="500" letter-spacing="3.5" fill="#ff7a4d">INTERNET COMPUTER</text>
+    font-size="19" font-weight="500" letter-spacing="3.5" fill="#ff7a4d">INTERNET COMPUTER</text>
 
   <!-- Main headline -->
   <text x="80" y="296"
@@ -21,9 +21,12 @@
     font-size="86" font-weight="400" fill="#f0ebe0">Developer Docs</text>
 
   <!-- Tagline -->
-  <text x="80" y="354"
+  <text x="80" y="358"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="26" font-weight="400" fill="#a29a8d">Build tamperproof full-stack applications on the Internet Computer.</text>
+    font-size="32" font-weight="400" fill="#a29a8d">Build tamperproof full-stack applications</text>
+  <text x="80" y="402"
+    font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+    font-size="32" font-weight="400" fill="#a29a8d">on the Internet Computer.</text>
 
   <!-- Divider -->
   <line x1="80" y1="512" x2="1120" y2="512" stroke="#2d2820" stroke-width="1"/>
