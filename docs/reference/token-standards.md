@@ -13,16 +13,16 @@ ICRC stands for Internet Computer Request for Comments. Standards are proposed b
 
 | Standard | Purpose | Extends | Status |
 |----------|---------|---------|--------|
-| [ICRC-1](#icrc-1-fungible-tokens) | Fungible token base standard | -- | Adopted |
+| [ICRC-1](#icrc-1-fungible-tokens) | Fungible token base standard | none | Adopted |
 | [ICRC-2](#icrc-2-approve-and-transfer-from) | Approve and transfer-from for fungible tokens | ICRC-1 | Adopted |
 | [ICRC-3](#icrc-3-transaction-log) | Transaction log and block archive | ICRC-1 | Adopted |
-| [ICRC-7](#icrc-7-non-fungible-tokens) | Non-fungible token (NFT) base standard | -- | Adopted |
+| [ICRC-7](#icrc-7-non-fungible-tokens) | Non-fungible token (NFT) base standard | none | Adopted |
 | [ICRC-37](#icrc-37-nft-approvals) | Approve and transfer-from for NFTs | ICRC-7 | Adopted |
-| [ICRC-21](#wallet-signer-standards) | Canister call consent messages | -- | Adopted |
-| [ICRC-25](#wallet-signer-standards) | Signer interaction (permissions) | -- | Adopted |
-| [ICRC-27](#wallet-signer-standards) | Account discovery | -- | Adopted |
-| [ICRC-29](#wallet-signer-standards) | Window PostMessage transport | -- | Adopted |
-| [ICRC-49](#wallet-signer-standards) | Call canister via signer | -- | Adopted |
+| [ICRC-21](#wallet-signer-standards) | Canister call consent messages | none | Adopted |
+| [ICRC-25](#wallet-signer-standards) | Signer interaction (permissions) | none | Adopted |
+| [ICRC-27](#wallet-signer-standards) | Account discovery | none | Adopted |
+| [ICRC-29](#wallet-signer-standards) | Window PostMessage transport | none | Adopted |
+| [ICRC-49](#wallet-signer-standards) | Call canister via signer | none | Adopted |
 
 ## ICRC-1: Fungible tokens
 

@@ -48,6 +48,26 @@ const FORBIDDEN = [
   { re: /docs\.internetcomputer\.org/, msg: 'docs.internetcomputer.org URLs will break — link internally or inline' },
 ];
 
+function checkEmdash(file, content) {
+  if (isSynced(file) || isStub(content)) return [];
+  const errors = [];
+  const lines = content.split('\n');
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^```/.test(line.trimStart())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    if (/^\s*<!--/.test(line)) continue;
+    if (line.includes('—')) {
+      errors.push(`line ${i + 1}: em-dash (—) in prose — use a colon, semicolon, comma, or parentheses`);
+    }
+    if (/ -- /.test(line)) {
+      errors.push(`line ${i + 1}: " -- " used as em-dash substitute — use a colon, semicolon, comma, or parentheses`);
+    }
+  }
+  return errors;
+}
+
 function checkForbiddenPatterns(file, content) {
   if (isSynced(file)) return [];
   const errors = [];
@@ -87,6 +107,7 @@ function validate(file) {
     ...checkUpstream(file, content),
     ...checkFrontmatter(file, content),
     ...checkForbiddenPatterns(file, content),
+    ...checkEmdash(file, content),
     ...checkInternalLinks(file, content),
   ];
 }
