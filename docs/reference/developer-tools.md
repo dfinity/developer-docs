@@ -11,51 +11,18 @@ Developer tools are used to create, manage, and interact with canisters. ICP pro
 
 ### icp-cli
 
-`icp-cli` is the primary tool for building and deploying applications on the Internet Computer ([full documentation](https://cli.internetcomputer.org/)). It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens.
+`icp-cli` is the primary tool for building and deploying applications on the Internet Computer. It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens. It also installs `ic-wasm`, a Wasm optimizer that the official Rust and Motoko recipes run automatically.
 
 Key features:
 - **Recipes**: reusable, versioned build templates for Rust, Motoko, and asset canisters
 - **Environments**: named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
 - **Project scaffolding**: `icp new` bootstraps new projects from official templates
 
-Install via npm (requires Node.js LTS):
+For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/).
 
-```bash
-npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
-```
+For advanced users: [creating recipes](https://cli.internetcomputer.org/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/guides/creating-templates) are documented on the CLI docs site. icp-cli collects anonymous usage telemetry; opt out with `icp settings telemetry false` or `DO_NOT_TRACK=1`.
 
-Or via Homebrew:
-
-```bash
-brew install icp-cli
-brew install ic-wasm
-```
-
-Both install `ic-wasm` alongside `icp-cli`. `ic-wasm` optimizes and annotates Wasm modules: it shrinks binary size, embeds Candid metadata, and strips unused sections. The official Rust and Motoko recipes run it automatically — you only need to invoke it directly when writing custom build steps.
-
-Verify:
-
-```bash
-icp --version
-```
-
-For advanced users, icp-cli supports authoring custom recipes and project templates:
-- [Creating recipes](https://cli.internetcomputer.org/guides/creating-recipes): encode build conventions as reusable Handlebars templates
-- [Creating templates](https://cli.internetcomputer.org/guides/creating-templates): scaffold new projects with `icp new`
-
-Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/migration/from-dfx) on the CLI docs.
-
-#### Telemetry opt-out
-
-`icp` collects anonymous usage data (command names, platform, version, success/failure) to help prioritize features. No personally identifiable information, project names, file paths, or canister IDs are collected.
-
-To opt out:
-
-```bash
-icp settings telemetry false
-```
-
-Or set `DO_NOT_TRACK=1` in your environment. Telemetry is automatically disabled in CI when the `CI` environment variable is set.
+Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/migration/from-dfx).
 
 ### Quill
 
