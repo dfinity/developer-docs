@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-Canisters can generate cryptographically secure random numbers directly from canister code. This guide shows how to call the `raw_rand` method, derive typed values from the returned bytes, and use randomness safely.
+[Canisters](../../concepts/canisters.md) can generate cryptographically secure random numbers directly from canister code. This guide shows how to call the `raw_rand` method, derive typed values from the returned bytes, and use randomness safely.
 
 For how ICP produces unpredictable randomness without any trusted party, see [Onchain Randomness](../../concepts/onchain-randomness.md).
 

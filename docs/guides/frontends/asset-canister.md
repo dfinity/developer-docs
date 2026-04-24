@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-The asset canister hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the subnet so that HTTP gateways and browsers can verify that content was served by the blockchain rather than a centralized server.
+The asset [canister](../../concepts/canisters.md) hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that HTTP gateways and browsers can verify that content was served by the blockchain rather than a centralized server.
 
 This guide covers configuring the asset canister recipe in `icp.yaml`, deploying frontends, configuring SPA routing with `.ic-assets.json5`, connecting frontends to backend canisters, and uploading assets programmatically.
 

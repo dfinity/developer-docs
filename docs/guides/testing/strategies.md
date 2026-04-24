@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Testing canisters on ICP deserves particular attention for two reasons. First, canister upgrades are irreversible in
+Testing [canisters](../../concepts/canisters.md) on ICP deserves particular attention for two reasons. First, canister upgrades are irreversible in
 practice: once a buggy upgrade runs `pre_upgrade`, your stable memory may be corrupted before you can roll back.
 Second, cycles cost real money: a performance regression that doubles your instruction count doubles your operating
 cost. Catching these problems in tests before deployment avoids both classes of harm.

@@ -5,7 +5,7 @@ sidebar:
   order: 8
 ---
 
-The Internet Computer is composed of independent subnets: each a blockchain that hosts canisters and runs its own consensus. By default, icp-cli selects a subnet automatically when you deploy. This guide explains when and how to target a specific subnet.
+The Internet Computer is composed of independent [subnets](../../concepts/network-overview.md#subnets): each a blockchain that hosts [canisters](../../concepts/canisters.md) and runs its own consensus. By default, icp-cli selects a subnet automatically when you deploy. This guide explains when and how to target a specific subnet.
 
 ## When to choose a subnet
 

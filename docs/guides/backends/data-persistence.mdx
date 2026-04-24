@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canister state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade: any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.
+[Canister](../../concepts/canisters.md) state lives in two places: **heap memory** and **stable memory** (persistent, survives upgrades). In Rust and most languages, heap memory is wiped on upgrade: any data you care about must be stored in stable memory. In Motoko, the `persistent actor` pattern automatically preserves all actor state across upgrades without any additional work.
 
 This guide shows how to store data durably in both Motoko and Rust. For a conceptual explanation of why stable memory works this way, see [Orthogonal Persistence](../../concepts/orthogonal-persistence.md).
 

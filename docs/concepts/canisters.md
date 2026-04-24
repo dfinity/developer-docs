@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Canisters are the compute units of the Internet Computer. Each canister bundles compiled WebAssembly code with its own persistent state into a single unit that the network executes, replicates, and secures. You deploy code to a canister, send it messages, and the network guarantees that every honest node in the subnet reaches the same result.
+Canisters are the compute units of the Internet Computer. Each canister bundles compiled WebAssembly code with its own persistent state into a single unit that the network executes, replicates, and secures. You deploy code to a canister, send it messages, and the network guarantees that every honest node in the [subnet](network-overview.md#subnets) reaches the same result.
 
 Unlike programs on most other blockchains, canisters can serve web pages over HTTP, store gigabytes of data, make calls to external APIs, sign transactions on other chains, and run scheduled tasks autonomously, all without external infrastructure.
 

@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-PocketIC is a lightweight, deterministic testing library for canister integration tests. Unlike the full local network started by `icp network start`, PocketIC runs entirely inside your test process. No daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible.
+PocketIC is a lightweight, deterministic testing library for [canister](../../concepts/canisters.md) integration tests. Unlike the full local network started by `icp network start`, PocketIC runs entirely inside your test process. No daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible.
 
 The `icp-cli` local development network also uses PocketIC under the hood, so behavior you observe in tests closely matches what you see during development.
 

@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-Query calls on ICP are answered by a single replica without going through consensus. This means a malicious or faulty replica could return fabricated data. **Certified variables** solve this: the canister stores a hash in the subnet's certified state during an update call, and query responses include a certificate signed by the subnet's threshold BLS key, proving the data is authentic. The result is responses that are both fast (no consensus delay) and cryptographically verified.
+Query calls on ICP are answered by a single replica without going through consensus. This means a malicious or faulty replica could return fabricated data. **Certified variables** solve this: the [canister](../../concepts/canisters.md) stores a hash in the [subnet's](../../concepts/network-overview.md#subnets) certified state during an update call, and query responses include a certificate signed by the subnet's threshold BLS key, proving the data is authentic. The result is responses that are both fast (no consensus delay) and cryptographically verified.
 
 For a conceptual overview of why query integrity matters, see [Security concepts](../../concepts/security.md).
 
