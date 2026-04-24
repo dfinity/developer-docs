@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Choose your next step based on what you want to build. Each path links to the first guide you should read, with a suggested progression from there. Not sure where to start? Most developers begin with [backend development](#backend-development).
+Choose your next step based on what you want to build. Each path links to the first guide you should read, with a suggested progression from there.
 
 ## Understand the platform first
 
@@ -16,6 +16,14 @@ If you prefer to learn the concepts before diving into guides, the [Concepts](..
 - [Orthogonal persistence](../concepts/orthogonal-persistence.md): how data survives canister upgrades
 - [Cycles](../concepts/cycles.md): why users don't pay to interact with apps
 - [Chain-key cryptography](../concepts/chain-key-cryptography.md): the cryptographic foundation enabling chain fusion
+
+## Coding with agents
+
+**You want to:** Use AI coding agents to build on ICP.
+
+ICP has a set of [ICP skills](https://skills.internetcomputer.org): structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
+
+**Learn more:** [AI coding agents](../guides/tools/ai-coding-agents.md)
 
 ## Backend development
 
@@ -86,13 +94,5 @@ The Service Nervous System (SNS) lets you tokenize your application and create a
 
 - [Managing an SNS](../guides/governance/managing.md): submit proposals and manage governance
 - [Testing an SNS](../guides/governance/testing.md): validate your SNS configuration before launch
-
-## AI-assisted development
-
-**You want to:** Use AI coding agents to build on ICP.
-
-ICP has a set of [ICP skills](https://skills.internetcomputer.org): structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
-
-**Learn more:** [AI coding agents](../guides/tools/ai-coding-agents.md)
 
 <!-- Upstream: hand-written -->
