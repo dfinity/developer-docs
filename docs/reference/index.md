@@ -7,6 +7,10 @@ sidebar:
 
 Technical reference material for ICP development. These pages cover exact specifications, canister IDs, costs, and error codes.
 
+## Tools
+
+- **[Developer Tools](developer-tools.md)**: icp-cli, CDKs, JS SDK, PocketIC, ICP Ninja, and other toolchain components.
+
 ## Canisters
 
 - **[Management Canister](management-canister.md)**: API reference for the IC management canister (`aaaaa-aa`): canister lifecycle, signing, randomness, and more.

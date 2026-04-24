@@ -2,7 +2,7 @@
 title: "Developer Tools"
 description: "Overview of the ICP developer toolchain: icp-cli, CDKs, JS SDK, PocketIC, and more"
 sidebar:
-  order: 1
+  order: 0
 ---
 
 Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
@@ -76,7 +76,7 @@ A canister development kit (CDK) provides a programming language with the librar
 
 Motoko is ICP's native programming language, designed around the actor model, orthogonal persistence, and asynchronous message passing. It compiles directly to WebAssembly and includes a standard library (`mo:core`) with modules for common data structures, cryptography, and system interaction.
 
-For language documentation, see [languages/motoko](../../languages/motoko/index.md).
+For language documentation, see [languages/motoko](../languages/motoko/index.md).
 
 ### Rust CDK (`ic-cdk`)
 
@@ -87,7 +87,7 @@ The Rust CDK (`ic-cdk`) is the official DFINITY-maintained library for building 
 
 API reference: [docs.rs/ic-cdk](https://docs.rs/ic-cdk/latest/ic_cdk/)
 
-For Rust-specific guides, see [languages/rust](../../languages/rust/index.md).
+For Rust-specific guides, see [languages/rust](../languages/rust/index.md).
 
 ### Community CDKs
 
@@ -127,7 +127,7 @@ npm install @icp-sdk/core
 
 ### PocketIC
 
-[PocketIC](../testing/pocket-ic.md) is a lightweight, deterministic testing library for canister integration tests. It runs an in-process IC replica: no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible. The `icp-cli` local development network uses PocketIC under the hood.
+[PocketIC](../guides/testing/pocket-ic.md) is a lightweight, deterministic testing library for canister integration tests. It runs an in-process IC replica: no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible. The `icp-cli` local development network uses PocketIC under the hood.
 
 Client libraries:
 
@@ -137,7 +137,7 @@ Client libraries:
 | JavaScript / TypeScript | [`@dfinity/pic`](https://www.npmjs.com/package/@dfinity/pic) | `npm install --save-dev @dfinity/pic` |
 | Python | [`pocket-ic`](https://pypi.org/project/pocket-ic/) | `pip install pocket-ic` |
 
-For usage patterns and examples, see the [PocketIC guide](../testing/pocket-ic.md).
+For usage patterns and examples, see the [PocketIC guide](../guides/testing/pocket-ic.md).
 
 ## Browser-based IDE
 
@@ -169,12 +169,12 @@ Install: download a prebuilt binary from the [releases page](https://github.com/
 
 Resources:
 - [Candid GitHub repo](https://github.com/dfinity/candid)
-- Candid specification: [reference/candid-spec.md](../../reference/candid-spec.md)
+- Candid specification: [candid-spec.md](candid-spec.md)
 
 ## Next steps
 
-- **Start building:** [Quickstart](../../getting-started/quickstart.md): deploy your first canister with icp-cli
-- **Rust development:** [Rust language guide](../../languages/rust/index.md)
-- **Motoko development:** [Motoko language guide](../../languages/motoko/index.md)
+- **Start building:** [Quickstart](../getting-started/quickstart.md): deploy your first canister with icp-cli
+- **Rust development:** [Rust language guide](../languages/rust/index.md)
+- **Motoko development:** [Motoko language guide](../languages/motoko/index.md)
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip -->

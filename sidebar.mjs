@@ -17,6 +17,7 @@ export const sidebar = [
   {
     label: "Guides",
     items: [
+      { slug: "guides/ai-coding-agents", label: "AI Coding Agents" },
       // Build: core development
       {
         label: "Backends",
@@ -69,11 +70,6 @@ export const sidebar = [
         label: "Governance",
         collapsed: true,
         autogenerate: { directory: "guides/governance" },
-      },
-      {
-        label: "Tools",
-        collapsed: true,
-        autogenerate: { directory: "guides/tools" },
       },
     ],
   },
