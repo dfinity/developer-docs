@@ -26,7 +26,7 @@ Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/
 
 ### ic-wasm
 
-`ic-wasm` is a Wasm post-processing tool required by the official Rust and Motoko recipes. It shrinks binary size, embeds Candid metadata, and strips unused sections. Install it alongside icp-cli — see the [Quickstart](../getting-started/quickstart.md) for setup. You only need to invoke it directly when writing custom build steps.
+`ic-wasm` is a Wasm post-processing tool required by the official Rust and Motoko recipes. It shrinks binary size, embeds Candid metadata, and strips unused sections. Install it alongside icp-cli. See the [Quickstart](../getting-started/quickstart.md) for setup. You only need to invoke it directly when writing custom build steps.
 
 Resources:
 - [ic-wasm GitHub repo](https://github.com/dfinity/ic-wasm)
