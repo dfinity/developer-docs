@@ -145,7 +145,7 @@ git checkout main
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
 - Link externally when an internal page exists — check `docs/` before using an external URL
 - Offer, suggest, or perform PR reviews unless a human explicitly asks
-- Write em-dashes (`—`) anywhere — including inside code string literals, comments, or log messages. Use a colon, period, or parentheses instead
+- Write em-dashes (`—`) or use `--` as an em-dash substitute in prose. These are banned in all content: body text, bullet descriptions, "Further reading" links, and inline comments. Use a colon, semicolon, period, comma, or parentheses instead. (`--` is only acceptable inside fenced code blocks as a code comment or CLI flag.)
 - Rename Candid field names, management canister API identifiers, or example/repository names to satisfy jargon rules — these are protocol-level identifiers that must match the actual interface (e.g. `dapps`, `RegisterDappCanisters`, `encrypted-notes-dapp-vetkd`)
 - Remove domain-specific technical terms that are standard vocabulary in their context: "DeFi" and "smart contract" in DeFi/token guides, "DAO" and "decentralized autonomous organization" in governance guides, "smart contracts on other chains" in chain fusion guides. These terms must stay because the target audience uses them and alternatives would be less precise.
 
