@@ -11,7 +11,7 @@ Developer tools are used to create, manage, and interact with canisters. ICP pro
 
 ### icp-cli
 
-`icp-cli` is the primary tool for building and deploying applications on the Internet Computer. It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens. The official Rust and Motoko recipes require `ic-wasm` (a separate package) to optimize and annotate Wasm modules.
+`icp-cli` is the primary tool for building and deploying applications on the Internet Computer. It manages the full development lifecycle: creating projects, building canisters, deploying to local or mainnet environments, managing identities, and handling cycles and ICP tokens.
 
 Key features:
 - **Recipes**: reusable, versioned build templates for Rust, Motoko, and asset canisters
@@ -20,7 +20,9 @@ Key features:
 
 For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/).
 
-For advanced users: [creating recipes](https://cli.internetcomputer.org/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/guides/creating-templates) are documented on the CLI docs site. icp-cli collects anonymous usage telemetry; opt out with `icp settings telemetry false` or `DO_NOT_TRACK=1`.
+Advanced: [creating recipes](https://cli.internetcomputer.org/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/guides/creating-templates) are documented on the CLI docs site.
+
+icp-cli collects anonymous usage telemetry. Opt out with `icp settings telemetry false` or `DO_NOT_TRACK=1`.
 
 Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/migration/from-dfx).
 
@@ -119,8 +121,6 @@ Community libraries are maintained independently of DFINITY. Check each reposito
 ### PocketIC
 
 [PocketIC](../guides/testing/pocket-ic.md) is a lightweight, deterministic testing library for canister integration tests. It runs an in-process IC replica: no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible. The `icp-cli` local development network uses PocketIC under the hood.
-
-Client libraries:
 
 | Language | Package | Install |
 |----------|---------|---------|

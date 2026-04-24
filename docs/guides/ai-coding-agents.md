@@ -1,8 +1,6 @@
 ---
 title: "AI Coding Agents"
 description: "ICP skills are agent-readable instruction files that teach AI coding agents how to build correctly on the Internet Computer."
-sidebar:
-  order: 1
 ---
 
 AI coding agents frequently hallucinate canister IDs, use deprecated APIs, and miss ICP-specific constraints. ICP skills solve this: structured markdown files containing accurate canister IDs, tested code patterns, and documented pitfalls: so your agent writes correct ICP code on the first attempt.
@@ -47,7 +45,7 @@ Each ICP skill covers one capability area and includes:
 
 Skills are maintained by DFINITY and updated frequently. The full list is at [skills.internetcomputer.org](https://skills.internetcomputer.org).
 
-ICP skills follow the [Agent Skills](https://agentskills.io/specification) open standard: [published by Anthropic](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) in December 2025 to define a portable SKILL.md format that works across coding agents. The registry uses the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) so agents can auto-discover and load skills without manual configuration.
+ICP skills follow the [Agent Skills open standard](https://agentskills.io/specification). Anthropic [published the SKILL.md format](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) in December 2025 to define a portable format that works across coding agents. The registry uses the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) so agents can auto-discover and load skills without manual configuration.
 
 ## How discovery works
 
@@ -95,12 +93,10 @@ ICP skills are available without authentication:
 | Skill zip bundle | `https://skills.internetcomputer.org/.well-known/skills/{name}/SKILL.zip` |
 | Skills discovery index | `https://skills.internetcomputer.org/llms.txt` |
 
-
 ## Next steps
 
 - [skills.internetcomputer.org](https://skills.internetcomputer.org): browse all available ICP skills
 - [Developer tools](../reference/developer-tools.md): icp-cli, CDKs, and other tools in the ICP toolchain
 - [Quickstart](../getting-started/quickstart.md): deploy your first canister with icp-cli
-
 
 <!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md -->
