@@ -24,6 +24,13 @@ For advanced users: [creating recipes](https://cli.internetcomputer.org/guides/c
 
 Coming from dfx? See the [migration guide](https://cli.internetcomputer.org/0.2/migration/from-dfx).
 
+### ic-wasm
+
+`ic-wasm` is a Wasm post-processing tool required by the official Rust and Motoko recipes. It shrinks binary size, embeds Candid metadata, and strips unused sections. Install it alongside icp-cli — see the [Quickstart](../getting-started/quickstart.md) for setup. You only need to invoke it directly when writing custom build steps.
+
+Resources:
+- [ic-wasm GitHub repo](https://github.com/dfinity/ic-wasm)
+
 ### Quill
 
 Quill is a minimalistic, offline-first CLI for signing and sending governance messages (NNS and SNS proposals, neuron management) from air-gapped machines. Unlike `icp-cli`, Quill is designed for cold wallet workflows: you generate signed messages on an offline device, then submit them from a networked machine.
