@@ -70,7 +70,7 @@ Here is how Ethereum concepts map to ICP:
 | Fee (user pays) | [Cycles](../concepts/cycles.md) (canister pays) | Users interact for free; developers fund computation |
 | No HTTP serving | Built-in HTTP serving | Canisters serve web pages directly |
 | Offchain storage (IPFS, etc.) | Onchain stable memory | Up to 500 GiB per canister, no external storage needed |
-| Bridges / oracles | [Chain-key signing](../concepts/chain-fusion.md) | Canisters sign transactions on other chains natively |
+| Bridges / oracles | [Chain-key signing](../concepts/chain-fusion.md), [HTTPS outcalls](../guides/backends/https-outcalls.md) | Canisters sign transactions on other chains natively; HTTPS outcalls fetch external data without oracles |
 | Immutable by default | Upgradeable by default | Canisters can be upgraded while preserving state |
 
 The biggest shift: on Ethereum, smart contracts are minimal programs that rely on offchain infrastructure. On ICP, a canister can be an entire application (frontend, backend, database, and scheduled jobs) all onchain.
