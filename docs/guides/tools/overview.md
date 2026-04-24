@@ -1,11 +1,11 @@
 ---
 title: "Developer Tools"
-description: "Overview of the ICP developer toolchain: icp-cli, CDKs, icp.ninja, and more"
+description: "Overview of the ICP developer toolchain: icp-cli, CDKs, JS SDK, PocketIC, and more"
 sidebar:
   order: 1
 ---
 
-Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, canister development kits (CDKs), browser-based IDEs, Wasm optimization utilities, and Candid tooling.
+Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
 
 ## Command-line tools
 
@@ -31,6 +31,8 @@ brew install icp-cli
 brew install ic-wasm
 ```
 
+Both install `ic-wasm` alongside `icp-cli`. `ic-wasm` optimizes and annotates Wasm modules: it shrinks binary size, embeds Candid metadata, and strips unused sections. The official Rust and Motoko recipes run it automatically — you only need to invoke it directly when writing custom build steps.
+
 Verify:
 
 ```bash
@@ -54,18 +56,6 @@ icp settings telemetry false
 ```
 
 Or set `DO_NOT_TRACK=1` in your environment. Telemetry is automatically disabled in CI when the `CI` environment variable is set.
-
-### ic-wasm
-
-`ic-wasm` is a utility for optimizing and annotating WebAssembly modules for the Internet Computer. It shrinks Wasm binary size, embeds Candid metadata, and strips unused sections. The official Rust and Motoko recipes use `ic-wasm` automatically: you only need to call it directly when using custom build steps.
-
-Install:
-
-```bash
-npm install -g @icp-sdk/ic-wasm
-# or
-brew install ic-wasm
-```
 
 ### Quill
 
@@ -112,6 +102,43 @@ Several community-maintained CDKs extend ICP to other languages:
 
 Community CDKs are maintained independently of DFINITY. Check each project's documentation for current support status.
 
+## Client libraries
+
+The ICP JavaScript SDK (`@icp-sdk`) provides TypeScript and JavaScript libraries for building frontends and scripts that interact with canisters. Full documentation is at [js.icp.build](https://js.icp.build).
+
+| Package | Purpose |
+|---------|---------|
+| `@icp-sdk/core/agent` | Send update and query calls to canisters; manage actors |
+| `@icp-sdk/core/candid` | Encode and decode Candid values |
+| `@icp-sdk/core/principal` | Work with canister and user principal identifiers |
+| `@icp-sdk/core/identity` | Manage signing identities |
+| `@icp-sdk/auth` | Authentication client for Internet Identity |
+| `@icp-sdk/bindgen` | Generate TypeScript bindings from a Candid interface file |
+
+Install:
+
+```bash
+npm install @icp-sdk/core
+```
+
+`@icp-sdk/bindgen` is also available as a Vite plugin and a standalone CLI tool. The official project templates wire it up automatically: generated bindings appear in `src/declarations/` after each build.
+
+## Testing tools
+
+### PocketIC
+
+[PocketIC](../testing/pocket-ic.md) is a lightweight, deterministic testing library for canister integration tests. It runs an in-process IC replica: no daemon, no ports, no Docker required. Tests execute synchronously, making them fast and fully reproducible. The `icp-cli` local development network uses PocketIC under the hood.
+
+Client libraries:
+
+| Language | Package | Install |
+|----------|---------|---------|
+| Rust | [`pocket-ic`](https://crates.io/crates/pocket-ic) | Add to `[dev-dependencies]` in `Cargo.toml` |
+| JavaScript / TypeScript | [`@dfinity/pic`](https://www.npmjs.com/package/@dfinity/pic) | `npm install --save-dev @dfinity/pic` |
+| Python | [`pocket-ic`](https://pypi.org/project/pocket-ic/) | `pip install pocket-ic` |
+
+For usage patterns and examples, see the [PocketIC guide](../testing/pocket-ic.md).
+
 ## Browser-based IDE
 
 ### ICP Ninja
@@ -150,4 +177,4 @@ Resources:
 - **Rust development:** [Rust language guide](../../languages/rust/index.md)
 - **Motoko development:** [Motoko language guide](../../languages/motoko/index.md)
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip -->
