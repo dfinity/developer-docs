@@ -5,9 +5,7 @@ sidebar:
   order: 4
 ---
 
-On most networks, users pay a fee every time they interact with an app. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing.
-
-The result is a familiar user experience. Users can interact with any app on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management: and the responsibility that comes with it.
+Every canister runs on real hardware — nodes operated by independent node providers distributed across the world. Unlike a traditional cloud, there is no single company to bill: no AWS account, no credit card, no monthly invoice. Instead, the network handles payment at the protocol level. **Canisters pay for their own compute, storage, and bandwidth using cycles** — a unit of compute loaded into a canister in advance. The network deducts cycles automatically as the canister runs. Anyone can top up a canister: the developer, another canister, a user, or an automated service. Users interact with apps for free, the same way they use any web service.
 
 ## What are cycles?
 
