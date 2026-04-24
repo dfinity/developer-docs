@@ -78,6 +78,7 @@ export const sidebar = [
     collapsed: true,
     autogenerate: { directory: "concepts" },
   },
+  { slug: "reference/developer-tools", label: "Developer Tools" },
   {
     label: "Languages",
     items: [
@@ -114,7 +115,6 @@ export const sidebar = [
       },
     ],
   },
-  { slug: "reference/developer-tools", label: "Developer Tools" },
   {
     label: "Reference",
     collapsed: true,
