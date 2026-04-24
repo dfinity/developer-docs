@@ -18,15 +18,15 @@ Cycles are the unit of payment for resources on ICP. Every canister operation th
 
 Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
-### Cycles are pegged to XDR
-
-Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
-
 ## ICP tokens and cycles
 
 Cycles are obtained by converting ICP tokens. The conversion happens through the **Cycles Minting Canister (CMC)** (`rkp4c-7iaaa-aaaaa-aaaca-cai`), a system canister that accepts ICP and mints the equivalent value in cycles at the current XDR exchange rate.
 
 Once minted, cycles are held by principals via the **cycles ledger** (`um5iw-rqaaa-aaaaq-qaaba-cai`) and transferred to canisters to fund their operation. Cycles flow in one direction: they can only be burned (consumed by canisters), never converted back to ICP tokens.
+
+### Cycles are pegged to XDR
+
+Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
 
 ## What canisters pay for
 
