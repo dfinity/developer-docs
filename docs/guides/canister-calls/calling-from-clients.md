@@ -61,7 +61,7 @@ Crate documentation: [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent
 
 ### Community agents
 
-Community-maintained agents are available for Go, Java/Android, Dart/Flutter, .NET, Elixir, and C. See [Developer Tools](../../reference/developer-tools.md#community-agents) for the full list.
+Community-maintained agents are available for Go, Java/Android, Dart/Flutter, .NET, Elixir, and C. See [Developer Tools](../../reference/developer-tools.md#other-languages) for the full list.
 
 ## JavaScript / TypeScript: using the agent
 
@@ -297,7 +297,7 @@ Anonymous calls work without any setup. The sender principal is `"2vxsx-fae"`. C
 
 ### Authenticated calls with Internet Identity
 
-To associate calls with a user's Internet Identity, use `@icp-sdk/auth` to complete the delegation flow and get an `Identity` object, then pass it to the agent. See [Internet Identity](../authentication/internet-identity.md) for the full integration guide.
+To associate calls with a user's Internet Identity, use `@icp-sdk/auth` to complete the delegation flow and get an `Identity` object, then pass it to the agent. See [Internet Identity](../authentication/internet-identity.md#create-an-authenticated-agent) for the full integration guide.
 
 Once you have an authenticated identity, pass it to the agent at creation time:
 
