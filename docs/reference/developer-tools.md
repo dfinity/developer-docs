@@ -104,15 +104,21 @@ Community CDKs are maintained independently of DFINITY. Check each project's doc
 
 ## Client libraries
 
-Agent libraries handle the protocol details of calling canisters from outside the network: constructing and signing ingress messages, encoding and decoding Candid, and verifying responses.
+### Agents
 
-### Official agents
+Agents handle the protocol details of calling canisters from outside the network: constructing and signing ingress messages, encoding Candid, and verifying responses. Two official agents are available:
 
-**JavaScript / TypeScript: `@icp-sdk/core`** — the primary agent for browser and Node.js applications. Full documentation at [js.icp.build](https://js.icp.build).
+- **`@icp-sdk/core/agent`** (JavaScript / TypeScript) — for browser and Node.js applications. Full documentation at [js.icp.build](https://js.icp.build).
+- **`ic-agent`** (Rust) — a low-level library for scripts and backend services. API reference at [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent/).
+
+For setup and usage patterns, see [Offchain calls](../guides/canister-calls/offchain-calls.md).
+
+### JavaScript / TypeScript SDK
+
+The `@icp-sdk` package provides companion libraries for working with ICP from JavaScript and TypeScript:
 
 | Package | Purpose |
 |---------|---------|
-| `@icp-sdk/core/agent` | Send update and query calls to canisters; manage actors |
 | `@icp-sdk/core/candid` | Encode and decode Candid values |
 | `@icp-sdk/core/principal` | Work with canister and user principal identifiers |
 | `@icp-sdk/core/identity` | Manage signing identities |
@@ -120,10 +126,6 @@ Agent libraries handle the protocol details of calling canisters from outside th
 | `@icp-sdk/bindgen` | Generate TypeScript bindings from a Candid interface file |
 
 `@icp-sdk/bindgen` is also available as a Vite plugin and a standalone CLI tool. The official project templates wire it up automatically: generated bindings appear in `src/declarations/` after each build.
-
-**Rust: `ic-agent`** — a low-level Rust library for building applications that interact with ICP. API reference at [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent/).
-
-For setup and usage patterns for both agents, see [Offchain calls](../guides/canister-calls/offchain-calls.md).
 
 ### Community agents
 
