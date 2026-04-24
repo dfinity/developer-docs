@@ -98,15 +98,15 @@ Key improvements in `core` over `base`:
 - Hash-based collections removed in favor of ordered maps and sets (better security against collision attacks)
 - Consistent naming: `values()` instead of `vals()`, `Cycles` instead of `ExperimentalCycles`
 
-If you have an existing project using `base`, you can migrate incrementally — both libraries can coexist in the same project. See the [base to core migration guide](base-core-migration.md) for detailed instructions.
+If you have an existing project using `base`, you can migrate incrementally; both libraries can coexist in the same project. See the [base to core migration guide](base-core-migration.md) for detailed instructions.
 
 `core` and all other Motoko packages are managed with [Mops](https://mops.one), which handles dependency resolution, compiler toolchain management, and publishing. Browse community packages at [mops.one](https://mops.one).
 
 ## Further reading
 
-- [Quickstart](../../getting-started/quickstart.md) — Create and deploy your first canister
-- [core library API docs](https://mops.one/core/docs) — Standard library reference
-- [Orthogonal persistence](../../concepts/orthogonal-persistence.md) — How persistent memory works at the platform level
-- [Motoko GitHub](https://github.com/caffeinelabs/motoko) — Compiler source and issue tracker
+- [Quickstart](../../getting-started/quickstart.md): create and deploy your first canister
+- [core library API docs](https://mops.one/core/docs): standard library reference
+- [Orthogonal persistence](../../concepts/orthogonal-persistence.md): how persistent memory works at the platform level
+- [Motoko GitHub](https://github.com/caffeinelabs/motoko): compiler source and issue tracker
 
 <!-- Upstream: hand-written -->

@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-Every canister runs on real hardware — nodes operated by independent node providers distributed across the world. Unlike a traditional cloud, there is no single company to bill: no AWS account, no credit card, no monthly invoice. Instead, the network handles payment at the protocol level. **Canisters pay for their own compute, storage, and bandwidth using cycles** — a unit of compute loaded into a canister in advance. The network deducts cycles automatically as the canister runs. Anyone can top up a canister: the developer, another canister, a user, or an automated service. Users interact with apps for free, the same way they use any web service.
+Every canister runs on real hardware: nodes operated by independent node providers distributed across the world. Unlike a traditional cloud, there is no single company to bill: no AWS account, no credit card, no monthly invoice. Instead, the network handles payment at the protocol level. **Canisters pay for their own compute, storage, and bandwidth using cycles**, a unit of compute loaded into a canister in advance. The network deducts cycles automatically as the canister runs. Anyone can top up a canister: the developer, another canister, a user, or an automated service. Users interact with apps for free, the same way they use any web service.
 
 ## What are cycles?
 
