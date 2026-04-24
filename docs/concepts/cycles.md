@@ -16,7 +16,7 @@ Cycles cover four resource categories:
 
 Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
-## ICP tokens and cycles
+## Acquiring cycles
 
 Cycles are obtained by converting ICP tokens. The conversion happens through the **Cycles Minting Canister (CMC)** (`rkp4c-7iaaa-aaaaa-aaaca-cai`), a system canister that accepts ICP and mints the equivalent value in cycles at the current XDR exchange rate.
 
