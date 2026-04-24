@@ -1,8 +1,6 @@
 ---
 title: "AI Coding Agents"
 description: "ICP skills are agent-readable instruction files that teach AI coding agents how to build correctly on the Internet Computer."
-sidebar:
-  order: 3
 ---
 
 AI coding agents frequently hallucinate canister IDs, use deprecated APIs, and miss ICP-specific constraints. ICP skills solve this: structured markdown files containing accurate canister IDs, tested code patterns, and documented pitfalls: so your agent writes correct ICP code on the first attempt.
@@ -47,7 +45,7 @@ Each ICP skill covers one capability area and includes:
 
 Skills are maintained by DFINITY and updated frequently. The full list is at [skills.internetcomputer.org](https://skills.internetcomputer.org).
 
-ICP skills follow the [Agent Skills](https://agentskills.io/specification) open standard: [published by Anthropic](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) in December 2025 to define a portable SKILL.md format that works across coding agents. The registry uses the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) so agents can auto-discover and load skills without manual configuration.
+ICP skills follow the [Agent Skills open standard](https://agentskills.io/specification). Anthropic [published the SKILL.md format](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) in December 2025 to define a portable format that works across coding agents. The registry uses the [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) so agents can auto-discover and load skills without manual configuration.
 
 ## How discovery works
 
@@ -79,7 +77,7 @@ This docs site implements the [Agent-Friendly Documentation Spec](https://agentd
 
 **[`/llms.txt`](/llms.txt)**: a discovery index listing every page with links to its clean markdown endpoint, plus the ICP skills registry URL.
 
-**`/<path>.md`**: every page is available as clean markdown. HTML, navigation, and site chrome are stripped, leaving only the content. For example, this page is available at [`/guides/tools/ai-coding-agents.md`](/guides/tools/ai-coding-agents.md).
+**`/<path>.md`**: every page is available as clean markdown. HTML, navigation, and site chrome are stripped, leaving only the content. For example, this page is available at [`/guides/ai-coding-agents.md`](/guides/ai-coding-agents.md).
 
 A discovery link in every page's `<head>` points to `/llms.txt`, so agents that crawl docs pages find the index automatically.
 
@@ -95,12 +93,10 @@ ICP skills are available without authentication:
 | Skill zip bundle | `https://skills.internetcomputer.org/.well-known/skills/{name}/SKILL.zip` |
 | Skills discovery index | `https://skills.internetcomputer.org/llms.txt` |
 
-
 ## Next steps
 
 - [skills.internetcomputer.org](https://skills.internetcomputer.org): browse all available ICP skills
-- [Developer tools overview](overview.md): icp-cli, CDKs, and other tools in the ICP toolchain
-- [Quickstart](../../getting-started/quickstart.md): deploy your first canister with icp-cli
-- [Migrating from dfx](migrating-from-dfx.md): upgrade an existing project from the legacy dfx tool
+- [Developer tools](../reference/developer-tools.md): icp-cli, CDKs, and other tools in the ICP toolchain
+- [Quickstart](../getting-started/quickstart.md): deploy your first canister with icp-cli
 
 <!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md -->

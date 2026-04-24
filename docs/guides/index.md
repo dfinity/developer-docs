@@ -7,6 +7,8 @@ sidebar:
 
 Practical how-to guides organized by development stage. Each guide solves a specific task with working code.
 
+- **[AI Coding Agents](ai-coding-agents.md)**: Use ICP skills to give AI coding agents accurate canister IDs, tested code patterns, and ICP-specific context.
+
 ## Build
 
 - **[Backends](backends/data-persistence.md)**: Data persistence, HTTPS outcalls, timers, randomness, and other backend patterns.
@@ -25,7 +27,3 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 - **[Chain Fusion](chain-fusion/bitcoin.md)**: Native Bitcoin, Ethereum, Solana, and Dogecoin integration.
 - **[DeFi](defi/token-ledgers.md)**: Token ledgers, chain-key tokens, and the Rosetta API.
 - **[Governance](governance/launching.md)**: Launch and manage an SNS DAO for your app.
-
-## Developer tools
-
-- **[Tools](tools/overview.md)**: Developer toolchain overview, icp-cli, CDKs, and AI coding agents with ICP skills.

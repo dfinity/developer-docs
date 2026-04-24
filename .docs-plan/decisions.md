@@ -4,6 +4,15 @@ Record decisions that constrain future work — things an agent needs to know th
 
 ---
 
+## 2026-04-24: Developer Tools is a top-level sidebar item, not a section
+
+**Context:** The tools overview page (`reference/developer-tools.md`) is a toolchain catalog — not a how-to guide, concept explanation, or specification. It doesn't fit cleanly in any Diataxis quadrant. It was previously under `guides/tools/` and then considered for Reference.
+**Decision:** Expose it as a single flat top-level sidebar link between Concepts and Languages. The sidebar order is: Getting Started → Guides → Concepts → Developer Tools → Languages → Reference. The file lives at `docs/reference/developer-tools.md` with `sidebar: hidden: true` to suppress it from the Reference autogenerate; `sidebar.mjs` references it explicitly via `{ slug: "reference/developer-tools", label: "Developer Tools" }`.
+**Rationale:** A catalog page warrants top-level visibility. Placing it between Concepts and Languages follows the natural developer flow: understand the platform, know the tools, then go deep on your language. Single flat link (no collapsible) is correct while it remains one page.
+**When to revisit:** If the tools section grows to multiple pages (dedicated icp-cli reference, JS SDK getting-started, PocketIC advanced guide), convert to a collapsible group with `autogenerate` from a new `docs/tools/` directory and update this decision.
+
+---
+
 ## 2026-04-23: icp-brand-guidelines skill lives directly in the repo
 
 **Context:** The `icp-brand-guidelines` skill was added to support design/brand work on the docs (CSS tokens, typography, voice). No upstream repo exists for it yet.

@@ -61,16 +61,7 @@ Crate documentation: [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent
 
 ### Community agents
 
-The following agents are community-maintained. Check their repositories for current status and security review history before using in production:
-
-| Language | Package |
-|----------|---------|
-| Go | [`agent-go` by Aviate Labs](https://github.com/aviate-labs/agent-go) |
-| Java / Android | [`ic4j-agent` by IC4J](https://github.com/ic4j/ic4j-agent) |
-| Dart / Flutter | [`agent_dart` by AstroX](https://github.com/AstroxNetwork/agent_dart) |
-| .NET | [`ICP.NET` by Gekctek](https://github.com/Gekctek/ICP.NET) |
-| Elixir | [`icp_agent`](https://github.com/diodechain/icp_agent) |
-| C | [`agent-c` by Zondax](https://github.com/Zondax/icp-client-cpp) |
+Community-maintained agents are available for Go, Java/Android, Dart/Flutter, .NET, Elixir, and C. See [Developer Tools](../../reference/developer-tools.md#community-agents) for the full list.
 
 ## JavaScript / TypeScript: using the agent
 

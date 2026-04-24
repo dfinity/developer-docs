@@ -17,6 +17,7 @@ export const sidebar = [
   {
     label: "Guides",
     items: [
+      { slug: "guides/ai-coding-agents", label: "AI Coding Agents" },
       // Build: core development
       {
         label: "Backends",
@@ -70,11 +71,6 @@ export const sidebar = [
         collapsed: true,
         autogenerate: { directory: "guides/governance" },
       },
-      {
-        label: "Tools",
-        collapsed: true,
-        autogenerate: { directory: "guides/tools" },
-      },
     ],
   },
   {
@@ -82,6 +78,7 @@ export const sidebar = [
     collapsed: true,
     autogenerate: { directory: "concepts" },
   },
+  { slug: "reference/developer-tools", label: "Developer Tools" },
   {
     label: "Languages",
     items: [

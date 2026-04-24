@@ -43,7 +43,7 @@ The biggest shift: on Ethereum, smart contracts are minimal programs that rely o
 
 ICP has a set of [ICP skills](https://skills.internetcomputer.org): structured knowledge files that AI agents can load to write canister code, debug deployments, and navigate the platform. If you work with tools like Claude Code, Cursor, or Copilot, ICP skills give them the context they need.
 
-**Learn more:** [AI coding agents](../guides/tools/ai-coding-agents.md)
+**Learn more:** [AI coding agents](../guides/ai-coding-agents.md)
 
 ## Backend development
 
