@@ -22,6 +22,8 @@ Cycles are obtained by converting ICP tokens. The conversion happens through the
 
 Once minted, cycles are held by principals via the **cycles ledger** (`um5iw-rqaaa-aaaaq-qaaba-cai`) and transferred to canisters to fund their operation. Cycles flow in one direction: they can only be burned (consumed by canisters), never converted back to ICP tokens.
 
+For step-by-step instructions, see [Acquiring cycles](../guides/canister-management/cycles-management.md#acquiring-cycles).
+
 ### Cycles are pegged to XDR
 
 Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
