@@ -15,7 +15,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 ## Core capabilities
 
-- **[Reverse Gas Model](reverse-gas-model.md)**: Why users never pay gas: canisters pay cycles for compute, storage, and bandwidth.
+- **[Cycles](cycles.md)**: How canisters pay for their own compute, storage, and bandwidth — and why users pay nothing.
 - **[Orthogonal Persistence](orthogonal-persistence.md)**: How canister memory survives across executions and upgrades without databases.
 - **[HTTPS Outcalls](https-outcalls.md)**: How canisters make HTTP requests to external services with consensus on responses.
 - **[Onchain Randomness](onchain-randomness.md)**: Cryptographically secure random numbers using threshold VRF.

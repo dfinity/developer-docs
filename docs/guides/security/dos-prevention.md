@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-ICP's [reverse gas model](../../concepts/reverse-gas-model.md) means your canister pays for every message it processes: including messages from attackers. Anyone on the internet can send update calls to your canister, and each call burns cycles even if your code ultimately rejects it. Left unmitigated, this lets an attacker drain your cycle balance by flooding your canister with messages.
+On ICP, [canisters pay for every message they process](../../concepts/cycles.md): including messages from attackers. Anyone on the internet can send update calls to your canister, and each call burns cycles even if your code ultimately rejects it. Left unmitigated, this lets an attacker drain your cycle balance by flooding your canister with messages.
 
 This guide covers the patterns that protect against denial-of-service (DoS) attacks: early message filtering, rate limiting, resource allocation, and cycle monitoring.
 

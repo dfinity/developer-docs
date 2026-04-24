@@ -18,7 +18,7 @@ A canister interacting with Bitcoin or Ethereum has no external dependency beyon
 - **No bridges.** Canisters hold assets directly on external chains. There is no wrapped token that can depeg, no bridge contract that can be exploited.
 - **No oracles.** Canisters can read external chain state themselves: either through a direct protocol integration (Bitcoin) or by querying RPC providers via [HTTPS outcalls](https-outcalls.md).
 - **Full autonomy.** Canisters can schedule cross-chain actions using [timers](../guides/backends/timers.md), enabling use cases like automated trading, periodic liquidations, or cronjob services: all without external triggers.
-- **Web2-like UX.** Because ICP has low-cost computation and a [reverse gas model](reverse-gas-model.md), users can interact with cross-chain apps through a standard browser without installing a wallet.
+- **Familiar UX.** Because ICP has low-cost computation and [canisters pay for their own cycles](cycles.md), users can interact with cross-chain apps through a standard browser without installing a wallet.
 
 ## How it works
 

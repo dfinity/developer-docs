@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canisters on ICP pay for compute and storage using **cycles**. Unlike gas on Ethereum, cycles are paid by the canister: not the caller. This is ICP's [reverse gas model](../../concepts/reverse-gas-model.md): developers fund their own canisters, and users interact for free.
+Canisters on ICP pay for compute and storage using **cycles**. Cycles are paid by the canister, not the caller: developers fund their own canisters, and users interact for free. See [Cycles](../../concepts/cycles.md) for a full explanation of the billing model.
 
 This guide covers everything you need to manage cycles in production: acquiring them, monitoring balances, setting thresholds, and deploying to mainnet.
 
@@ -424,7 +424,7 @@ icp canister top-up backend --amount 1T -n ic
 - [Canister settings](settings.md): Freezing threshold, memory allocation, compute allocation
 - [Canister lifecycle](lifecycle.md): Create, install, upgrade, and delete canisters
 - [Cycles costs reference](../../reference/cycles-costs.md): Exact cost tables per operation
-- [Reverse gas model](../../concepts/reverse-gas-model.md): Why canisters pay for execution
+- [Cycles](../../concepts/cycles.md): Why canisters pay for execution
 - [Reproducible builds](reproducible-builds.md): Verify your WASM is trustworthy before deploying
 - [icp-cli docs](https://cli.internetcomputer.org/): Full command reference
 

@@ -18,7 +18,7 @@ Canisters share the core properties of smart contracts: their execution is gover
 - **Large state.** Canisters can hold up to 500 GiB of stable memory, far beyond what most blockchains allow per contract.
 - **Outbound calls.** Canisters make HTTPS requests to external services (see [HTTPS outcalls](https-outcalls.md)) and sign transactions on other blockchains using chain-key cryptography (see [Chain Fusion](chain-fusion.md)).
 - **Autonomous execution.** Timers let canisters schedule their own work without any external trigger.
-- **Reverse gas model.** Canisters pay for their own compute and storage using [cycles](reverse-gas-model.md), so end users don't need tokens to interact with them.
+- **Canisters fund themselves.** Canisters pay for their own compute and storage using [cycles](cycles.md), so end users don't need tokens to interact with them.
 
 ## Execution model
 
@@ -127,7 +127,7 @@ Under the hood, each canister maintains several components:
 
 ## Next steps
 
-- [Reverse gas model](reverse-gas-model.md): how canisters pay for computation
+- [Cycles](cycles.md): how canisters pay for computation
 - [App architecture](app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on

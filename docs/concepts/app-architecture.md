@@ -48,7 +48,7 @@ If you have built on Ethereum or other EVM chains, here is how ICP concepts map:
 | EVM bytecode | WebAssembly | Wasm runs general-purpose code at near-native speed |
 | Solidity / Vyper | Motoko, Rust (official); TypeScript, Python (community) | Multiple language options, full standard libraries |
 | Block time (~12s) | Finality (~1–2s) | Update calls typically finalize in 1–2 seconds |
-| Gas (user pays) | [Cycles](reverse-gas-model.md) (canister pays) | Users interact for free; developers fund computation |
+| Fee (user pays) | [Cycles](cycles.md) (canister pays) | Users interact for free; developers fund computation |
 | No HTTP serving | Built-in HTTP serving | Canisters serve web pages directly |
 | Offchain storage (IPFS, etc.) | Onchain stable memory | Up to 500 GiB per canister, no external storage needed |
 | Bridges / oracles | [Chain-key signing](chain-fusion.md) | Canisters sign transactions on other chains natively |

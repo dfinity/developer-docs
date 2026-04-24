@@ -1,13 +1,13 @@
 ---
-title: "Reverse Gas Model"
-description: "Why users never pay gas on ICP: canisters pay cycles for compute, storage, and bandwidth"
+title: "Cycles"
+description: "How canisters pay for their own compute, storage, and bandwidth using cycles"
 sidebar:
   order: 4
 ---
 
-On most blockchains, users pay a gas fee every time they interact with a smart contract. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing. This is the **reverse gas model**.
+On most networks, users pay a fee every time they interact with an app. On ICP, the model is flipped: **canisters pay for their own resource consumption using cycles**, and users pay nothing.
 
-The result is a Web2-like user experience. Users can interact with any app on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management: and the responsibility that comes with it.
+The result is a familiar user experience. Users can interact with any app on ICP without holding tokens, configuring a wallet, or approving every transaction. For developers, it means full control over cost management: and the responsibility that comes with it.
 
 ## What are cycles?
 
@@ -65,7 +65,7 @@ Every canister is replicated across all nodes on its subnet. Costs scale with su
 
 ## Developer responsibility
 
-The reverse gas model shifts payment from users to developers. This comes with ongoing obligations:
+Canisters pay for their own resources, which comes with ongoing obligations:
 
 **Topping up**: canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
 
@@ -77,9 +77,9 @@ These responsibilities can be automated. Tools like [CycleOps](https://cycleops.
 
 ## Cost predictability
 
-The XDR peg and flat per-resource pricing make ICP costs predictable in a way that transaction-fee blockchains are not:
+The XDR peg and flat per-resource pricing make ICP costs predictable:
 
-- **No gas auctions**: there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
+- **No fee auctions**: there is no bidding for block space. Cycle prices are set by the NNS and change infrequently.
 - **No per-transaction fees for users**: apps absorb all costs, like SaaS businesses absorb server bills.
 - **Stable unit economics**: because cycles are pegged to XDR (not ICP price), infrastructure costs remain consistent even when ICP token price swings.
 
@@ -89,6 +89,6 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
 - [Cycles Costs Reference](../reference/cycles-costs.md): exact cost tables for all operations
-- [Canisters](./canisters.md): canisters as the paying entity in the reverse gas model
+- [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx -->

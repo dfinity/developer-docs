@@ -137,7 +137,7 @@ Certain ICP features have additional cycle costs beyond the base execution and m
 ## Related pages
 
 - [Cycles management](../guides/canister-management/cycles-management.md): Topping up and monitoring canister balances
-- [Reverse gas model](../concepts/reverse-gas-model.md): Why canisters (not users) pay for execution
+- [Cycles](../concepts/cycles.md): Why canisters (not users) pay for execution
 - [Subnet types](subnet-types.md): Cost multipliers per subnet type
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx, docs/building-apps/canister-management/resource-limits.mdx -->

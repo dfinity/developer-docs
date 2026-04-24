@@ -14,7 +14,7 @@ If you prefer to learn the concepts before diving into guides, the [Concepts](..
 - [Network overview](../concepts/network-overview.md): how the Internet Computer is structured
 - [Canisters](../concepts/canisters.md): the compute unit of ICP
 - [Orthogonal persistence](../concepts/orthogonal-persistence.md): how data survives canister upgrades
-- [Reverse gas model](../concepts/reverse-gas-model.md): why users don't pay gas fees
+- [Cycles](../concepts/cycles.md): why users don't pay to interact with apps
 - [Chain-key cryptography](../concepts/chain-key-cryptography.md): the cryptographic foundation enabling chain fusion
 
 ## Backend development
