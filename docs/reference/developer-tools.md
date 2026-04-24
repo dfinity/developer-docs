@@ -104,21 +104,15 @@ Community CDKs are maintained independently of DFINITY. Check each project's doc
 
 ## Client libraries
 
-### Agents
+Client libraries handle the protocol details of calling canisters from outside the network: constructing and signing ingress messages, encoding Candid, and verifying responses. For setup and usage patterns, see [Offchain calls](../guides/canister-calls/offchain-calls.md).
 
-Agents handle the protocol details of calling canisters from outside the network: constructing and signing ingress messages, encoding Candid, and verifying responses. Two official agents are available:
+### JavaScript / TypeScript
 
-- **`@icp-sdk/core/agent`** (JavaScript / TypeScript) — for browser and Node.js applications. Full documentation at [js.icp.build](https://js.icp.build).
-- **`ic-agent`** (Rust) — a low-level library for scripts and backend services. API reference at [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent/).
-
-For setup and usage patterns, see [Offchain calls](../guides/canister-calls/offchain-calls.md).
-
-### JavaScript / TypeScript SDK
-
-The `@icp-sdk` package provides companion libraries for working with ICP from JavaScript and TypeScript:
+The `@icp-sdk` package provides the agent and companion libraries for browser and Node.js applications. Full documentation at [js.icp.build](https://js.icp.build).
 
 | Package | Purpose |
 |---------|---------|
+| `@icp-sdk/core/agent` | Send update and query calls to canisters; manage actors |
 | `@icp-sdk/core/candid` | Encode and decode Candid values |
 | `@icp-sdk/core/principal` | Work with canister and user principal identifiers |
 | `@icp-sdk/core/identity` | Manage signing identities |
@@ -127,7 +121,13 @@ The `@icp-sdk` package provides companion libraries for working with ICP from Ja
 
 `@icp-sdk/bindgen` is also available as a Vite plugin and a standalone CLI tool. The official project templates wire it up automatically: generated bindings appear in `src/declarations/` after each build.
 
-### Community agents
+### Rust
+
+[`ic-agent`](https://docs.rs/ic-agent/latest/ic_agent/) is the official Rust library for building applications and scripts that interact with ICP.
+
+### Other languages
+
+Community-maintained client libraries are available for additional languages:
 
 | Language | Package |
 |----------|---------|
@@ -138,7 +138,7 @@ The `@icp-sdk` package provides companion libraries for working with ICP from Ja
 | Elixir | [`icp_agent`](https://github.com/diodechain/icp_agent) |
 | C | [`agent-c` by Zondax](https://github.com/Zondax/icp-client-cpp) |
 
-Community agents are maintained independently of DFINITY. Check each repository for current status and security review history before using in production.
+Community libraries are maintained independently of DFINITY. Check each repository for current status and security review history before using in production.
 
 ## Testing tools
 
