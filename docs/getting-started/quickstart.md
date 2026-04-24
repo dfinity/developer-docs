@@ -68,7 +68,7 @@ Your new project contains:
 icp network start -d
 ```
 
-This starts a local Internet Computer replica in the background. The local network comes pre-funded. You can deploy immediately without setting up a wallet or acquiring cycles.
+This starts a local Internet Computer replica in the background. The local network comes pre-funded. You can deploy immediately without setting up a wallet or acquiring [cycles](../concepts/cycles.md).
 
 ## Deploy
 

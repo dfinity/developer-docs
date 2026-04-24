@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Canisters on the Internet Computer communicate by calling each other's functions. A caller canister sends a request message containing the method name, arguments, and optionally attached cycles. The callee executes the method and returns a response. If the callee cannot be reached or a resource limit is hit, the system produces a reject response instead.
+Canisters on the Internet Computer communicate by calling each other's functions. A caller canister sends a request message containing the method name, arguments, and optionally attached [cycles](../../concepts/cycles.md). The callee executes the method and returns a response. If the callee cannot be reached or a resource limit is hit, the system produces a reject response instead.
 
 This guide covers making inter-canister calls in both Motoko and Rust, choosing between query and update calls, handling errors, and avoiding common pitfalls. For the messaging model behind these calls, see [Canisters](../../concepts/canisters.md).
 

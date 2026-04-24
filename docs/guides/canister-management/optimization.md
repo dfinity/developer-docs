@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-Canister Wasm binaries compiled from Rust or Motoko are often larger than necessary and may execute more instructions than needed. Smaller binaries install faster, consume fewer cycles on deployment, and leave more room within the per-canister Wasm memory limit. Better runtime efficiency directly reduces the cycles charged per call.
+Canister Wasm binaries compiled from Rust or Motoko are often larger than necessary and may execute more instructions than needed. Smaller binaries install faster, consume fewer [cycles](../../concepts/cycles.md) on deployment, and leave more room within the per-canister Wasm memory limit. Better runtime efficiency directly reduces the cycles charged per call.
 
 This guide covers the main tools and techniques available:
 

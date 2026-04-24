@@ -32,7 +32,7 @@ Users access your frontend at `https://<canister-id>.icp0.io` (mainnet) or `http
 
 - **No server-side rendering.** Canisters cannot run JavaScript at the server level. Use static-site generation (SSG) or client-side rendering. If SSR is required, host the frontend outside ICP and keep the backend logic in a canister.
 - **No dynamic URL routing at the server level.** The asset canister serves static files. Client-side routing (via SPA aliasing) works, but server-generated routes do not.
-- **Storage limits.** The asset canister can hold well over 4 GiB in stable memory, but individual uploads are limited by the 2 MB ingress message size (the JS SDK handles chunking automatically for larger files). Large media files become expensive in cycles. Use a dedicated storage solution for video or large datasets.
+- **Storage limits.** The asset canister can hold well over 4 GiB in stable memory, but individual uploads are limited by the 2 MB ingress message size (the JS SDK handles chunking automatically for larger files). Large media files become expensive in [cycles](../../concepts/cycles.md). Use a dedicated storage solution for video or large datasets.
 
 ## Configure the asset canister
 
