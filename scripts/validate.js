@@ -11,7 +11,6 @@ const DOCS_ROOT = path.join(ROOT, 'docs');
 
 const SYNCED = [
   path.join(DOCS_ROOT, 'languages', 'motoko'),
-  path.join(DOCS_ROOT, 'guides', 'tools', 'migrating-from-dfx.md'),
 ];
 
 function isSynced(file) {

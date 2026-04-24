@@ -101,6 +101,6 @@ ICP skills are available without authentication:
 - [skills.internetcomputer.org](https://skills.internetcomputer.org): browse all available ICP skills
 - [Developer tools overview](overview.md): icp-cli, CDKs, and other tools in the ICP toolchain
 - [Quickstart](../../getting-started/quickstart.md): deploy your first canister with icp-cli
-- [Migrating from dfx](migrating-from-dfx.md): upgrade an existing project from the legacy dfx tool
+- [Migrating from dfx](https://cli.internetcomputer.org/0.2/migration/from-dfx): upgrade an existing project from the legacy dfx tool
 
 <!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md -->
