@@ -104,7 +104,11 @@ Community CDKs are maintained independently of DFINITY. Check each project's doc
 
 ## Client libraries
 
-The ICP JavaScript SDK (`@icp-sdk`) provides TypeScript and JavaScript libraries for building frontends and scripts that interact with canisters. Full documentation is at [js.icp.build](https://js.icp.build).
+Agent libraries handle the protocol details of calling canisters from outside the network: constructing and signing ingress messages, encoding and decoding Candid, and verifying responses.
+
+### Official agents
+
+**JavaScript / TypeScript: `@icp-sdk/core`** — the primary agent for browser and Node.js applications. Full documentation at [js.icp.build](https://js.icp.build).
 
 | Package | Purpose |
 |---------|---------|
@@ -115,13 +119,24 @@ The ICP JavaScript SDK (`@icp-sdk`) provides TypeScript and JavaScript libraries
 | `@icp-sdk/auth` | Authentication client for Internet Identity |
 | `@icp-sdk/bindgen` | Generate TypeScript bindings from a Candid interface file |
 
-Install:
-
-```bash
-npm install @icp-sdk/core
-```
-
 `@icp-sdk/bindgen` is also available as a Vite plugin and a standalone CLI tool. The official project templates wire it up automatically: generated bindings appear in `src/declarations/` after each build.
+
+**Rust: `ic-agent`** — a low-level Rust library for building applications that interact with ICP. API reference at [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent/).
+
+For setup and usage patterns for both agents, see [Offchain calls](../guides/canister-calls/offchain-calls.md).
+
+### Community agents
+
+| Language | Package |
+|----------|---------|
+| Go | [`agent-go` by Aviate Labs](https://github.com/aviate-labs/agent-go) |
+| Java / Android | [`ic4j-agent` by IC4J](https://github.com/ic4j/ic4j-agent) |
+| Dart / Flutter | [`agent_dart` by AstroX](https://github.com/AstroxNetwork/agent_dart) |
+| .NET | [`ICP.NET` by Gekctek](https://github.com/Gekctek/ICP.NET) |
+| Elixir | [`icp_agent`](https://github.com/diodechain/icp_agent) |
+| C | [`agent-c` by Zondax](https://github.com/Zondax/icp-client-cpp) |
+
+Community agents are maintained independently of DFINITY. Check each repository for current status and security review history before using in production.
 
 ## Testing tools
 
