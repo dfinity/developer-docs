@@ -114,6 +114,7 @@ export const sidebar = [
       },
     ],
   },
+  { slug: "reference/developer-tools", label: "Developer Tools" },
   {
     label: "Reference",
     collapsed: true,

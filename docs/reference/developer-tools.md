@@ -2,7 +2,7 @@
 title: "Developer Tools"
 description: "Overview of the ICP developer toolchain: icp-cli, CDKs, JS SDK, PocketIC, and more"
 sidebar:
-  order: 0
+  hidden: true
 ---
 
 Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
