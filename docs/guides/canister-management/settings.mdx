@@ -442,19 +442,19 @@ For the full management canister interface, see the [management canister referen
 
 How you configure controllers depends on the trust model for your canister:
 
-**Developer or team** -- One or more developer identities as controllers. Suitable for development and early-stage projects. Add a backup controller to prevent lockout if a key is lost.
+**Developer or team:** One or more developer identities as controllers. Suitable for development and early-stage projects. Add a backup controller to prevent lockout if a key is lost.
 
-**Multi-signature** -- A multi-sig canister (such as the [Threshold canister](https://github.com/dfinity/threshold)) controls the application canister. Administrative actions require multiple signers, preventing any single developer from making unilateral changes.
+**Multi-signature:** A multi-sig canister (such as the [Threshold canister](https://github.com/dfinity/threshold)) controls the application canister. Administrative actions require multiple signers, preventing any single developer from making unilateral changes.
 
-**DAO-governed** -- The canister is controlled by a decentralized autonomous organization. On ICP, the most common pattern is handing control to a [Service Nervous System (SNS)](../governance/launching.md), where upgrades and settings changes are decided by token-holder vote.
+**DAO-governed:** The canister is controlled by a decentralized autonomous organization. On ICP, the most common pattern is handing control to a [Service Nervous System (SNS)](../governance/launching.md), where upgrades and settings changes are decided by token-holder vote.
 
-**Immutable (blackholed)** -- The canister has no controllers. No one can upgrade, change settings, or delete it. This is the strongest trust guarantee but makes bug fixes impossible.
+**Immutable (blackholed):** The canister has no controllers. No one can upgrade, change settings, or delete it. This is the strongest trust guarantee but makes bug fixes impossible.
 
 ## Next steps
 
-- [Canister lifecycle](lifecycle.md) -- Create, deploy, upgrade, stop, and delete canisters.
-- [Cycles management](cycles-management.md) -- Monitor and top up cycle balances.
-- [Cycles costs reference](../../reference/cycles-costs.md) -- Pricing for compute and memory allocation.
-- [Management canister reference](../../reference/management-canister.md) -- Full interface specification.
+- [Canister lifecycle](lifecycle.md): Create, deploy, upgrade, stop, and delete canisters.
+- [Cycles management](cycles-management.md): Monitor and top up cycle balances.
+- [Cycles costs reference](../../reference/cycles-costs.md): Pricing for compute and memory allocation.
+- [Management canister reference](../../reference/management-canister.md): Full interface specification.
 
 {/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli) docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

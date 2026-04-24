@@ -151,8 +151,8 @@ pub async fn call_increment(counter: Principal) -> Result<(), String> {
 
 The distinction matters for correctness:
 
-- **Clean reject** -- the callee never executed the method. Safe to retry.
-- **Non-clean reject** -- the callee may or may not have executed. Use idempotent APIs or provide a separate endpoint to query the outcome.
+- **Clean reject:** the callee never executed the method. Safe to retry.
+- **Non-clean reject:** the callee may or may not have executed. Use idempotent APIs or provide a separate endpoint to query the outcome.
 
 </TabItem>
 </Tabs>
@@ -359,7 +359,7 @@ Update methods that make inter-canister calls are **not** executed atomically. C
 - State changes made **before** `await` are persisted
 - State changes made **after** `await` are rolled back
 
-This means a trap in your callback does not undo work done before the call. Design accordingly -- use idempotent operations and check postconditions.
+This means a trap in your callback does not undo work done before the call. Design accordingly: use idempotent operations and check postconditions.
 
 ### Caller identity across await (Rust)
 
@@ -390,7 +390,7 @@ Mitigate with locking patterns: set a flag before the call, clear it in the call
 
 ### canister_inspect_message does not apply
 
-The `canister_inspect_message` hook is only called for ingress messages (calls from external users). It is **not** called for inter-canister calls. Do not rely on it for access control between canisters -- perform authorization checks inside the method body instead.
+The `canister_inspect_message` hook is only called for ingress messages (calls from external users). It is **not** called for inter-canister calls. Do not rely on it for access control between canisters: perform authorization checks inside the method body instead.
 
 ### Cross-subnet latency
 
@@ -398,9 +398,9 @@ Calls between canisters on the same subnet complete within a single round. Cross
 
 ## Next steps
 
-- [Parallel Calls and Composite Queries](parallel-calls.md) -- make multiple calls concurrently and use composite queries for efficient read patterns
-- [Candid](candid.md) -- define the interface your canister exposes for inter-canister calls
-- [Certified Variables](../backends/certified-variables.md) -- make query responses verifiable without update call overhead
-- [Inter-Canister Call Security](../security/inter-canister-calls.md) -- reentrancy guards, async safety patterns, and trust considerations
+- [Parallel Calls and Composite Queries](parallel-calls.md): make multiple calls concurrently and use composite queries for efficient read patterns
+- [Candid](candid.md): define the interface your canister exposes for inter-canister calls
+- [Certified Variables](../backends/certified-variables.md): make query responses verifiable without update call overhead
+- [Inter-Canister Call Security](../security/inter-canister-calls.md): reentrancy guards, async safety patterns, and trust considerations
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, icp-cli icskill, dfinity/icp-cli docs/concepts/canister-discovery.md, dfinity/examples motoko/pub-sub, and caffeinelabs/motoko doc/md/fundamentals/2-actors/1-actors-async.md (timeout parenthetical syntax, try/finally cleanup pattern) */}

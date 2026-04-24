@@ -54,9 +54,9 @@ canisters:
 
 The key fields are:
 
-- **`recipe.type`** -- specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.1.0`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
-- **`dir`** -- the directory containing your build output. This is `dist` for Vite-based projects, `out` for Next.js static exports, or `build` for Create React App. The contents of this directory (not the directory itself) are uploaded to the canister.
-- **`build`** -- shell commands that icp-cli runs before uploading. If omitted, icp-cli uploads whatever is already in `dir` without building.
+- **`recipe.type`:** specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.1.0`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
+- **`dir`:** the directory containing your build output. This is `dist` for Vite-based projects, `out` for Next.js static exports, or `build` for Create React App. The contents of this directory (not the directory itself) are uploaded to the canister.
+- **`build`:** shell commands that icp-cli runs before uploading. If omitted, icp-cli uploads whatever is already in `dir` without building.
 
 For a full-stack project with a backend canister, list both in the same `icp.yaml`:
 
@@ -322,10 +322,10 @@ icp canister call frontend http_request '(record {
 
 ## Next steps
 
-- [Framework integration](frameworks.md) -- set up React, Svelte, or Vue with the asset canister
-- [Custom domains](custom-domains.md) -- serve your frontend from your own domain
-- [Response certification](certification.md) -- verify that asset canister responses are authentic
-- [Authentication with Internet Identity](../authentication/internet-identity.md) -- add user login to your frontend
-- [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage) -- programmatic uploads with AssetManager
+- [Framework integration](frameworks.md): set up React, Svelte, or Vue with the asset canister
+- [Custom domains](custom-domains.md): serve your frontend from your own domain
+- [Response certification](certification.md): verify that asset canister responses are authentic
+- [Authentication with Internet Identity](../authentication/internet-identity.md): add user login to your frontend
+- [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage): programmatic uploads with AssetManager
 
 <!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
