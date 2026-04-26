@@ -1,6 +1,6 @@
 ---
 title: "Candid Type Reference"
-description: "Complete reference for all Candid types: syntax, subtyping rules, and Motoko/Rust/JavaScript mappings"
+description: "Complete reference for all Candid types: syntax, subtyping rules, and Motoko, Rust and JavaScript mappings"
 sidebar:
   order: 11
 ---
