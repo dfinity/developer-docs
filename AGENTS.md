@@ -1,4 +1,4 @@
-# ICP Developer Docs — Agent & Contributor Instructions
+# ICP Developer Docs: Agent & Contributor Instructions
 
 ICP developer documentation built with Astro + Starlight.
 Content is `.md` by default. Pages that need interactive components (e.g., language-synced tabs) use `.mdx` — see `.docs-plan/decisions.md` for the policy.
