@@ -20,7 +20,9 @@ Technical reference material for ICP development. These pages cover exact specif
 
 ## Tokens and costs
 
-- **[Token Standards](token-standards.md)**: ICRC-1 fungible tokens, ICRC-2 approval, ICRC-3 transaction log, and ICRC-7 NFTs.
+- **[ICRC Standards](icrc-standards.md)**: Index of all adopted ICRC standards grouped by category.
+- **[Digital Asset Standards](digital-asset-standards.md)**: ICRC-1, ICRC-2, ICRC-3, ICRC-7, and ICRC-37 in full detail.
+- **[Chain-Key Token Canister IDs](chain-key-canister-ids.md)**: Mainnet and testnet canister IDs for ckBTC, ckETH, ckERC20, ckDOGE, and ckSOL.
 - **[Cycles Costs](cycles-costs.md)**: Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations.
 - **[Subnet Types](subnet-types.md)**: All subnet types with node counts, replication factors, and cycle cost multipliers.
 

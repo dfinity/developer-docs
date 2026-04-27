@@ -133,7 +133,7 @@ Key methods:
 
 The ICP ledger archives historical transactions across multiple archive canisters to keep its own state manageable. See [ICP ledger archives](#icp-ledger-archives) below.
 
-For token standards and ICRC interface details, see [Token Standards](token-standards.md).
+For ICRC interface details, see [Digital Asset Standards](digital-asset-standards.md).
 
 ## ICP ledger archives
 

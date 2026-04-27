@@ -1,11 +1,13 @@
 ---
 title: "Protocol Canisters"
-description: "Bitcoin canister, ckBTC minter, ckETH minter, EVM RPC canister, exchange rate canister, and other protocol-level canisters with their canister IDs and interfaces"
+description: "Bitcoin canister, ckBTC minter, ckETH minter, EVM RPC canister, exchange rate canister, and other protocol-level canisters with their APIs and Candid interfaces"
 sidebar:
   order: 3
 ---
 
 Protocol canisters implement platform-level features on the Internet Computer. Unlike [system canisters](system-canisters.md), which govern the network itself, protocol canisters provide infrastructure that applications build on: Bitcoin integration, Ethereum integration, chain-key tokens, and exchange rates. They are controlled by the NNS and run on dedicated system subnets.
+
+For all chain-key token canister IDs (ledger, minter, index), see [Chain-Key Token Canister IDs](chain-key-canister-ids.md). For deposit, withdrawal, and transfer flows, see [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md).
 
 ## Bitcoin canisters
 
@@ -31,8 +33,6 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 
 ### Key endpoints
 
-The Bitcoin canisters expose endpoints for reading UTXOs, balances, and block headers, and for submitting transactions. These mirror the management canister Bitcoin API:
-
 - `bitcoin_get_utxos`: returns UTXOs for a Bitcoin address
 - `bitcoin_get_balance`: returns the balance of a Bitcoin address in satoshi
 - `bitcoin_send_transaction`: submits a signed Bitcoin transaction
@@ -41,92 +41,105 @@ The Bitcoin canisters expose endpoints for reading UTXOs, balances, and block he
 
 For integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
 
-## ckBTC canisters
+## ckBTC minter
 
-Chain-key Bitcoin (ckBTC) is a 1:1 BTC-backed ICRC-2 token native to ICP. The ckBTC minter holds real BTC and mints or burns ckBTC tokens. Transfers settle in seconds with a 10 satoshi fee.
+The ckBTC minter holds real BTC in a threshold ECDSA-controlled wallet and mints or burns ckBTC tokens. It issues a unique Bitcoin deposit address per `(owner, subaccount)` account and handles withdrawal requests by submitting signed Bitcoin transactions.
 
-### Mainnet canister IDs
+For canister IDs, see [Chain-Key Token Canister IDs: ckBTC](chain-key-canister-ids.md#ckbtc).
 
-| Canister | ID |
-|---|---|
-| ckBTC Ledger | [`mxzaz-hqaaa-aaaar-qaada-cai`](https://dashboard.internetcomputer.org/canister/mxzaz-hqaaa-aaaar-qaada-cai) |
-| ckBTC Minter | [`mqygn-kiaaa-aaaar-qaadq-cai`](https://dashboard.internetcomputer.org/canister/mqygn-kiaaa-aaaar-qaadq-cai) |
-| ckBTC Index | [`n5wcd-faaaa-aaaar-qaaea-cai`](https://dashboard.internetcomputer.org/canister/n5wcd-faaaa-aaaar-qaaea-cai) |
-
-### Bitcoin Testnet4 canister IDs
-
-| Canister | ID |
-|---|---|
-| ckBTC Ledger (testnet4) | [`mc6ru-gyaaa-aaaar-qaaaq-cai`](https://dashboard.internetcomputer.org/canister/mc6ru-gyaaa-aaaar-qaaaq-cai) |
-| ckBTC Minter (testnet4) | [`ml52i-qqaaa-aaaar-qaaba-cai`](https://dashboard.internetcomputer.org/canister/ml52i-qqaaa-aaaar-qaaba-cai) |
-| ckBTC Index (testnet4) | [`mm444-5iaaa-aaaar-qaabq-cai`](https://dashboard.internetcomputer.org/canister/mm444-5iaaa-aaaar-qaabq-cai) |
-
-### ckBTC minter configuration
-
-The ckBTC minter has the following key parameters:
+### Minter parameters
 
 | Parameter | Value | Description |
 |---|---|---|
-| `retrieve_btc_min_amount` | 50,000 satoshi (0.0005 BTC) | Minimum amount for BTC withdrawal |
-| `max_time_in_queue_nanos` | 10 minutes | Maximum time a retrieval request can wait in the queue |
-| `min_confirmations` | 6 | Bitcoin confirmations required before minting ckBTC |
-| `kyt_fee` | 100 satoshi | Fee for know-your-token (KYT) checks |
+| `retrieve_btc_min_amount` | 50,000 satoshi | Minimum amount for BTC withdrawal |
+| `max_time_in_queue_nanos` | 10 minutes | Maximum time a retrieval request waits |
+| `min_confirmations` | 6 | Bitcoin confirmations required before minting |
+| `kyt_fee` | 100 satoshi | Fee for know-your-transaction (KYT) check |
 
-### ckBTC minter endpoints
+### Minter endpoints
 
 - `get_btc_address(owner, subaccount)`: returns a unique Bitcoin deposit address for the given principal and subaccount
-- `get_known_utxos(owner, subaccount)`: returns UTXOs already processed by the minter for the given account
-- `update_balance(owner, subaccount)`: checks for new UTXOs and mints ckBTC for any newly confirmed deposits
+- `update_balance(owner, subaccount)`: checks for newly confirmed UTXOs and mints ckBTC
+- `get_known_utxos(owner, subaccount)`: returns UTXOs already processed for the given account
 - `estimate_withdrawal_fee(amount)`: estimates the fee for retrieving a given BTC amount
-- `get_deposit_fee`: returns the current fee charged when minting ckBTC (currently the KYT fee)
-- `retrieve_btc_with_approval(address, amount, from_subaccount)`: burns ckBTC (using an ICRC-2 approval) and sends the equivalent BTC to the given Bitcoin address
-- `retrieve_btc(address, amount)`: alternative withdrawal flow that requires transferring ckBTC to the minter's withdrawal account first; prefer `retrieve_btc_with_approval` for new integrations
-- `get_withdrawal_account`: returns the caller's withdrawal account for use with `retrieve_btc`
+- `get_deposit_fee`: returns the current fee charged when minting ckBTC (the KYT fee)
+- `retrieve_btc_with_approval(address, amount, from_subaccount)`: burns ckBTC via ICRC-2 approval and sends BTC to the given Bitcoin address
 - `retrieve_btc_status_v2(block_index)`: returns the status of a previous withdrawal request
 - `retrieve_btc_status_v2_by_account(account)`: returns statuses for all recent withdrawal requests from the given account
 - `get_minter_info`: returns current minter parameters
-- `get_events(start, length)`: returns the minter's internal event log (for debugging)
+- `get_events(start, length)`: returns the minter's internal event log
 
-### Deposit and withdrawal flows
+### KYT checker
 
-**Deposit (BTC to ckBTC):**
-1. Call `get_btc_address` with the user's principal and subaccount to get a unique Bitcoin deposit address.
-2. The user sends BTC to that address.
-3. After 6 confirmations, call `update_balance` to trigger minting. The minter credits the ICRC-1 account corresponding to the provided principal and subaccount.
+The ckBTC checker canister (`oltsj-fqaaa-aaaar-qal5q-cai`) performs know-your-transaction compliance checks on incoming Bitcoin UTXOs. It is called internally by the minter on deposit and is not part of the developer-facing API.
 
-**Withdrawal (ckBTC to BTC):**
-1. Call `icrc2_approve` on the ckBTC ledger to grant the minter allowance.
-2. Call `retrieve_btc_with_approval` with the destination Bitcoin address and amount.
-3. The minter burns the ckBTC and submits a Bitcoin transaction. BTC arrives after Bitcoin confirmations.
+## ckETH minter
 
-For integration examples, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
+The ckETH minter bridges ETH and all ERC-20 tokens between Ethereum and ICP. It monitors the ckETH helper contract on Ethereum via HTTPS outcalls to detect deposits, and submits signed Ethereum transactions for withdrawals using threshold ECDSA.
 
-## ckETH canisters
+For canister IDs, see [Chain-Key Token Canister IDs: ckETH](chain-key-canister-ids.md#cketh).
 
-Chain-key Ethereum (ckETH) is an ICRC-2 token backed 1:1 by ETH. The ckETH minter bridges between ETH on Ethereum mainnet and ckETH on ICP using HTTPS outcalls and threshold ECDSA.
+### Helper contract
 
-### Mainnet canister IDs
+The minter uses a helper smart contract on Ethereum to receive deposits for both ETH and ERC-20 tokens. Always verify the current address before constructing a deposit transaction:
 
-| Canister | ID |
-|---|---|
-| ckETH Ledger | [`ss2fx-dyaaa-aaaar-qacoq-cai`](https://dashboard.internetcomputer.org/canister/ss2fx-dyaaa-aaaar-qacoq-cai) |
-| ckETH Minter | [`sv3dd-oaaaa-aaaar-qacoa-cai`](https://dashboard.internetcomputer.org/canister/sv3dd-oaaaa-aaaar-qacoa-cai) |
-| ckETH Index | [`s3zol-vqaaa-aaaar-qacpa-cai`](https://dashboard.internetcomputer.org/canister/s3zol-vqaaa-aaaar-qacpa-cai) |
+```bash
+icp canister call sv3dd-oaaaa-aaaar-qacoa-cai get_minter_info '()' -n ic
+```
 
-### How it works
+Check `deposit_with_subaccount_helper_contract_address` in the response.
 
-**Deposit (ETH to ckETH):**
-1. The user calls the `deposit` function on the ckETH helper contract on Ethereum, with ETH attached and the destination ICP principal as an argument.
-2. The ckETH minter periodically fetches logs from the helper contract via multiple Ethereum JSON-RPC providers. For each `ReceivedEth` event, it mints the corresponding ckETH to the receiver's account on the ckETH ledger.
+### Minter endpoints
 
-**Withdrawal (ckETH to ETH):**
-1. The user calls `icrc2_approve` on the ckETH ledger to grant the minter allowance.
-2. The user calls `withdraw_eth` on the ckETH minter with a destination Ethereum address.
-3. The minter burns the ckETH, creates an Ethereum transaction, and submits it to the Ethereum network.
+- `get_minter_info`: returns current minter info including the helper contract address and `supported_ckerc20_tokens`
+- `withdraw_eth(address, amount)`: burns ckETH or ckERC20 and submits an Ethereum withdrawal transaction; used for both ETH and all ERC-20 withdrawals
+- `get_canister_status`: returns the minter's current status
 
-The ckETH ledger follows the ICRC-1/ICRC-2 standard. Interact with it using the same patterns as any ICRC-1 ledger.
+## ckERC20 ledgers
 
-For integration examples, see the [Ethereum guide](../guides/chain-fusion/ethereum.md).
+ckERC20 tokens share the ckETH minter. Each ERC-20 token has its own ICRC-1 ledger canister. New tokens are added via NNS governance proposals.
+
+To get the authoritative current list of supported tokens and their ledger canister IDs at runtime:
+
+```bash
+icp canister call sv3dd-oaaaa-aaaar-qacoa-cai get_minter_info '()' -n ic
+```
+
+Check `supported_ckerc20_tokens` in the response. For a static reference table, see [Chain-Key Token Canister IDs: ckERC20](chain-key-canister-ids.md#ckerc20).
+
+## ckDOGE minter
+
+The ckDOGE minter follows the same UTXO-based model as ckBTC. It holds real DOGE in a threshold ECDSA-controlled wallet and issues a unique Dogecoin deposit address per `(owner, subaccount)` account.
+
+For canister IDs, see [Chain-Key Token Canister IDs: ckDOGE](chain-key-canister-ids.md#ckdoge).
+
+### Minter endpoints
+
+- `get_deposit_address(owner, subaccount)`: returns a unique Dogecoin deposit address for the given principal and subaccount
+- `update_balance(owner, subaccount)`: checks for newly confirmed UTXOs and mints ckDOGE
+- `retrieve_doge_with_approval(address, amount, from_subaccount)`: burns ckDOGE via ICRC-2 approval and sends DOGE to the given Dogecoin address
+- `get_minter_info`: returns current minter parameters
+
+Amounts are denominated in koinu (1 DOGE = 100,000,000 koinu).
+
+Source: [dfinity/ic rs/dogecoin/ckdoge](https://github.com/dfinity/ic/tree/master/rs/dogecoin/ckdoge)
+
+## ckSOL minter
+
+The ckSOL minter bridges SOL between Solana and ICP. It issues a unique Solana deposit address per `(owner, subaccount)` account and verifies deposits via the SOL RPC canister using threshold signatures (Ed25519).
+
+For canister IDs, see [Chain-Key Token Canister IDs: ckSOL](chain-key-canister-ids.md#cksol).
+
+### Minter endpoints
+
+- `get_deposit_address(owner, subaccount)`: returns a unique Solana deposit address for the given principal and subaccount
+- `process_deposit(tx_signature, owner, subaccount)`: verifies a Solana deposit transaction and mints ckSOL; requires cycles to cover RPC verification
+- `withdraw(address, amount)`: burns ckSOL via ICRC-2 approval and signs a Solana transaction using threshold Ed25519
+- `withdrawal_status(burn_block_index)`: returns the status of a pending withdrawal
+
+Amounts are denominated in lamports (1 SOL = 1,000,000,000 lamports).
+
+Source: [dfinity/cksol](https://github.com/dfinity/cksol)
 
 ## EVM RPC canister
 
@@ -252,7 +265,7 @@ icp canister call uf6dk-hyaaa-aaaaq-qaaaq-cai get_exchange_rate \
     base_asset  = record { symbol = "BTC"; class = variant { Cryptocurrency } };
     quote_asset = record { symbol = "USD"; class = variant { FiatCurrency } };
   })' \
-  -e ic
+  -n ic
 ```
 
 ## SNS-W canister
@@ -274,21 +287,24 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 |---|---|---|
 | Bitcoin mainnet | `ghsi2-tqaaa-aaaan-aaaca-cai` | Bitcoin mainnet UTXO tracking |
 | Bitcoin testnet (v4) | `g4xu7-jiaaa-aaaan-aaaaq-cai` | Bitcoin testnet UTXO tracking |
-| ckBTC Ledger | `mxzaz-hqaaa-aaaar-qaada-cai` | ckBTC ICRC-1/ICRC-2 token ledger |
 | ckBTC Minter | `mqygn-kiaaa-aaaar-qaadq-cai` | BTC ↔ ckBTC minting and burning |
-| ckBTC Index | `n5wcd-faaaa-aaaar-qaaea-cai` | ckBTC transaction index |
-| ckETH Ledger | `ss2fx-dyaaa-aaaar-qacoq-cai` | ckETH ICRC-1/ICRC-2 token ledger |
-| ckETH Minter | `sv3dd-oaaaa-aaaar-qacoa-cai` | ETH ↔ ckETH minting and burning |
-| ckETH Index | `s3zol-vqaaa-aaaar-qacpa-cai` | ckETH transaction index |
+| ckBTC KYT Checker | `oltsj-fqaaa-aaaar-qal5q-cai` | Know-your-transaction compliance |
+| ckETH Minter | `sv3dd-oaaaa-aaaar-qacoa-cai` | ETH and ERC-20 ↔ ckETH/ckERC20 minting and burning |
+| ckDOGE Minter | `eqltq-xqaaa-aaaar-qb3vq-cai` | DOGE ↔ ckDOGE minting and burning |
+| ckSOL Minter | `lh22c-kyaaa-aaaar-qb5nq-cai` | SOL ↔ ckSOL minting and burning |
 | EVM RPC | `7hfb6-caaaa-aaaar-qadga-cai` | Ethereum JSON-RPC proxy |
 | Exchange Rate (XRC) | `uf6dk-hyaaa-aaaaq-qaaaq-cai` | Crypto and forex exchange rates |
 | SNS-W | `qaa6y-5yaaa-aaaaa-aaafa-cai` | SNS deployment and upgrades |
 
+For ledger, index, and testnet canister IDs for all chain-key tokens, see [Chain-Key Token Canister IDs](chain-key-canister-ids.md).
+
 ## Next steps
 
+- [Chain-Key Token Canister IDs](chain-key-canister-ids.md): ledger, minter, and index IDs for all chain-key tokens
+- [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md): deposit, withdrawal, and transfer flows for all chain-key tokens
 - [Bitcoin guide](../guides/chain-fusion/bitcoin.md): integrating Bitcoin in canisters using the Bitcoin canister and ckBTC
 - [Ethereum guide](../guides/chain-fusion/ethereum.md): integrating Ethereum in canisters using the EVM RPC canister and ckETH
 - [System canisters](system-canisters.md): NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
 - [Management canister](management-canister.md): the virtual canister for canister lifecycle, signing, and platform APIs
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/ic rs/bitcoin/ckbtc, rs/dogecoin/ckdoge, rs/ethereum/cketh; dfinity/cksol; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->

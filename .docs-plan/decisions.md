@@ -4,6 +4,24 @@ Record decisions that constrain future work — things an agent needs to know th
 
 ---
 
+## 2026-04-27: CLI and language tabs are always separate
+
+**Context:** Some pages were mixing CLI commands into the same `<Tabs syncKey="lang">` group as Motoko and Rust code. Other pages (e.g. `cycles-management.mdx`, `lifecycle.mdx`) kept CLI as standalone blocks with language tabs appearing separately. The mixed approach creates an awkward tab for users who just want a quick CLI command.
+**Decision:** CLI commands always appear as standalone code blocks, never inside a `<Tabs syncKey="lang">` group. When a section has both a CLI command and language-specific code, the CLI block comes first (quick-check path), followed by the `<Tabs>` group (integration path). Tab order within language tabs remains Motoko → Rust → others per CLAUDE.md.
+**Rationale:** CLI and code serve different audiences and mental models. CLI is for quick ad-hoc use; language code is for building integrations. Mixing them forces one audience to click past irrelevant tabs. Placing CLI first gives the faster answer to the more common case.
+**When to revisit:** If a section has no meaningful CLI equivalent, omit it — don't add a CLI block just for consistency.
+
+---
+
+## 2026-04-27: ICRC standards reference restructured into index + detail pages
+
+**Context:** `reference/token-standards.md` mixed two unrelated standard families (digital asset standards ICRC-1/2/3/7/37 and wallet signer standards ICRC-21/25/27/29/49) under a title that didn't fit either category cleanly. The page also used "token" as a primary descriptor, conflicting with the brand voice push toward "digital assets."
+**Decision:** Split into two pages. `reference/icrc-standards.md` is a lightweight index of all ICRC standards grouped by category (extensible for future standards). `reference/digital-asset-standards.md` (renamed from `token-standards.md`) is the deep reference for ICRC-1/2/3/7/37 only. Wallet signer standard detail stays in the wallet integration guide; the index page links to it. `guides/digital-assets/token-ledgers.mdx` renamed to `guides/digital-assets/ledgers.mdx`.
+**Rationale:** "Token Standards" as a page title was inaccurate (covered signers too) and jargon-heavy. "ICRC Standards" as a single page title would be too broad (implies ALL ICRC work). Separating the index from the detail page gives a clean extensible home for future ICRC standards without forcing unrelated content together.
+**When to revisit:** If wallet signer content grows enough to warrant its own `reference/signer-standards.md`, add it to the index and link from there.
+
+---
+
 ## 2026-04-24: Developer Tools is a top-level sidebar item, not a section
 
 **Context:** The tools overview page (`reference/developer-tools.md`) is a toolchain catalog — not a how-to guide, concept explanation, or specification. It doesn't fit cleanly in any Diataxis quadrant. It was previously under `guides/tools/` and then considered for Reference.

@@ -95,7 +95,7 @@ Chain fusion lets your canister hold native assets, sign transactions, and inter
 
 ICP has a standard token framework (ICRC) and chain-key tokens that represent assets from other chains. These guides cover the ledger APIs and token patterns for building payment flows, issuing digital assets, and integrating with exchanges.
 
-**Start with:** [Token ledgers](../guides/digital-assets/token-ledgers.md): understand ICRC token standards and interact with ledger canisters.
+**Start with:** [Ledgers](../guides/digital-assets/ledgers.md): understand ICRC token standards and interact with ledger canisters.
 
 **Then explore:**
 

@@ -2,7 +2,7 @@
 title: "Internet Identity Specification"
 description: "The Internet Identity specification: identity design, client authentication protocol, delegation chain, and backend Candid interface"
 sidebar:
-  order: 12
+  order: 14
 ---
 
 ## Introduction

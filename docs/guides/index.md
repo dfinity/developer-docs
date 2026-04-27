@@ -7,23 +7,23 @@ sidebar:
 
 Practical how-to guides organized by development stage. Each guide solves a specific task with working code.
 
-- **[AI Coding Agents](ai-coding-agents.md)**: Use ICP skills to give AI coding agents accurate canister IDs, tested code patterns, and ICP-specific context.
+- **[AI Coding Agents](ai-coding-agents.md)**: Use ICP skills to give AI coding agents accurate canister IDs and tested code patterns.
 
 ## Build
 
-- **[Backends](backends/data-persistence.md)**: Data persistence, HTTPS outcalls, timers, randomness, and other backend patterns.
-- **[Canister Calls](canister-calls/candid.md)**: Candid interfaces, binding generation, onchain and offchain calling patterns.
-- **[Frontends](frontends/asset-canister.md)**: Asset canisters, frontend frameworks, custom domains, and response certification.
-- **[Authentication](authentication/internet-identity.md)**: Internet Identity, verifiable credentials, and wallet integration.
+- **[Backends](backends/data-persistence.md)**: Persist data, make HTTPS outcalls, schedule timers, and generate randomness.
+- **[Canister Calls](canister-calls/candid.md)**: Define Candid interfaces, generate type-safe bindings, and call canisters from backends and frontends.
+- **[Frontends](frontends/asset-canister.md)**: Serve assets, integrate frontend frameworks, configure custom domains, and certify responses.
+- **[Authentication](authentication/internet-identity.md)**: Add passwordless login and verifiable user identity to your app.
 
 ## Quality and shipping
 
-- **[Testing](testing/strategies.md)**: Unit testing, integration testing with PocketIC, and end-to-end strategies.
-- **[Canister Management](canister-management/lifecycle.md)**: Create, upgrade, configure, optimize, fund, deploy, and back up canisters.
-- **[Security](security/access-management.md)**: Access control, encryption, data integrity, DoS prevention, and safe upgrades.
+- **[Testing](testing/strategies.md)**: Write unit tests, run integration tests with PocketIC, and set up end-to-end testing.
+- **[Canister Management](canister-management/lifecycle.md)**: Deploy, upgrade, fund, optimize, and back up canisters.
+- **[Security](security/access-management.md)**: Implement access control, encryption, DoS prevention, and safe upgrade patterns.
 
 ## Advanced features
 
-- **[Chain Fusion](chain-fusion/bitcoin.md)**: Native Bitcoin, Ethereum, Solana, and Dogecoin integration.
-- **[Digital Assets](digital-assets/token-ledgers.md)**: Token ledgers, chain-key tokens, and the Rosetta API.
-- **[Governance](governance/launching.md)**: Launch and manage an SNS DAO for your app.
+- **[Digital Assets](digital-assets/ledgers.md)**: Create and integrate with ledgers and wallets using digital asset standards.
+- **[Chain Fusion](chain-fusion/bitcoin.md)**: Connect canisters to Bitcoin, Ethereum, and Solana and sign cross-chain transactions.
+- **[Governance](governance/launching.md)**: Transfer control of your app to your community and govern it through proposals.
