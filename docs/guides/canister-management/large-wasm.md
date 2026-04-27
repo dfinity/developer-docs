@@ -88,7 +88,7 @@ You can combine gzip compression with the chunk store. A compressed module that 
 
 ### Cycle costs
 
-Storing each chunk costs cycles proportional to 1 MiB of storage (even if the chunk is smaller). Chunks are temporary storage: they are consumed during `install_chunked_code` and do not accumulate after installation. If an installation attempt fails or is interrupted, call `clear_chunk_store` to reclaim the storage cycles before retrying.
+Storing each chunk costs [cycles](../../concepts/cycles.md) proportional to 1 MiB of storage (even if the chunk is smaller). Chunks are temporary storage: they are consumed during `install_chunked_code` and do not accumulate after installation. If an installation attempt fails or is interrupted, call `clear_chunk_store` to reclaim the storage cycles before retrying.
 
 ## Wasm64: 64-bit memory addressing
 
