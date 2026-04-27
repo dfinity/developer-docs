@@ -62,7 +62,7 @@ export const sidebar = [
         autogenerate: { directory: "guides/chain-fusion" },
       },
       {
-        label: "DeFi",
+        label: "Digital Assets",
         collapsed: true,
         autogenerate: { directory: "guides/defi" },
       },

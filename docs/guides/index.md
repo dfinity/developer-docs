@@ -25,5 +25,5 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 ## Advanced features
 
 - **[Chain Fusion](chain-fusion/bitcoin.md)**: Native Bitcoin, Ethereum, Solana, and Dogecoin integration.
-- **[DeFi](defi/token-ledgers.md)**: Token ledgers, chain-key tokens, and the Rosetta API.
+- **[Digital Assets](defi/token-ledgers.md)**: Token ledgers, chain-key tokens, and the Rosetta API.
 - **[Governance](governance/launching.md)**: Launch and manage an SNS DAO for your app.
