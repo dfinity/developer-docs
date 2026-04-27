@@ -89,11 +89,11 @@ Chain fusion lets your canister hold native assets, sign transactions, and inter
 - [Solana integration](../guides/chain-fusion/solana.md): connect to the Solana network
 - [Dogecoin integration](../guides/chain-fusion/dogecoin.md): work with Dogecoin using the same chain-key ECDSA signing as Bitcoin
 
-## DeFi and tokens
+## Digital assets
 
 **You want to:** Create tokens, interact with ledgers, or build financial applications.
 
-ICP has a standard token framework (ICRC) and chain-key tokens that represent assets from other chains. These guides cover the ledger APIs and token patterns you need for DeFi.
+ICP has a standard token framework (ICRC) and chain-key tokens that represent assets from other chains. These guides cover the ledger APIs and token patterns for building payment flows, issuing digital assets, and integrating with exchanges.
 
 **Start with:** [Token ledgers](../guides/digital-assets/token-ledgers.md): understand ICRC token standards and interact with ledger canisters.
 
