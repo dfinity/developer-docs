@@ -1,11 +1,11 @@
 ---
 title: "Subnet Types Reference"
-description: "All subnet types with node counts, replication factors, and cycle cost multipliers"
+description: "All subnet types with node counts, replication factors, and cost multipliers"
 sidebar:
   order: 6
 ---
 
-The Internet Computer is composed of independent **subnets**: each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, cycle costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
+The Internet Computer is composed of independent **subnets**: each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, [cycle costs](cycles-costs.md), geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
 
 For guidance on choosing a subnet for deployment, see [Subnet selection](../guides/canister-management/subnet-selection.md). For per-operation cycle costs, see [Cycles costs](cycles-costs.md).
 
@@ -111,7 +111,7 @@ icp deploy -e ic --subnet bkfrj-6k62g-dycql-7h53p-atvkj-zg4to-gaogh-netha-ptybj-
 | Fiduciary | See ICP Dashboard | Proportional to node count | Yes | None (global) |
 | European | 13 | 1× | Yes | Europe only |
 
-## Cycle costs by subnet type
+## Costs by subnet type
 
 Cycle costs scale linearly with node count. The baseline is a 13-node application subnet. For all operations:
 
