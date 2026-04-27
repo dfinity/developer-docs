@@ -12,7 +12,7 @@ The Internet Computer is composed of independent [subnets](../../concepts/networ
 Default subnet selection works for most projects. Consider targeting a specific subnet when you have:
 
 - **Data residency requirements**: The European subnet ensures all nodes are located within Europe, which can support GDPR-aligned infrastructure for applications with regional data sovereignty requirements.
-- **Higher security needs**: The fiduciary subnet has 34 nodes instead of 13, providing stronger fault tolerance and Byzantine fault resistance for DeFi and high-value applications.
+- **Higher security needs**: The fiduciary subnet has 34 nodes instead of 13, providing stronger fault tolerance and Byzantine fault resistance for financial applications.
 - **Colocation goals**: Placing canisters on the same subnet eliminates cross-subnet message overhead and reduces inter-canister call latency.
 - **Storage constraints**: Subnets share a storage budget across all their canisters. A subnet near capacity imposes extra reservation costs. Storage-heavy canisters benefit from deploying to subnets with more available headroom.
 
@@ -26,7 +26,7 @@ The [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) shows curren
 
 ### Fiduciary subnet
 
-The fiduciary subnet (`pzp6e`) has 34 nodes instead of 13, providing higher security through a larger replication factor. Canisters on this subnet pay approximately 2.6× the cycle costs of a 13-node subnet: costs scale linearly with node count. The fiduciary subnet is designed for DeFi applications that require stronger guarantees than a standard application subnet provides.
+The fiduciary subnet (`pzp6e`) has 34 nodes instead of 13, providing higher security through a larger replication factor. Canisters on this subnet pay approximately 2.6× the cycle costs of a 13-node subnet: costs scale linearly with node count. The fiduciary subnet is designed for financial applications that require stronger guarantees than a standard application subnet provides.
 
 The fiduciary subnet also hosts the threshold signature signing keys (t-ECDSA and t-Schnorr) and the EVM RPC canister.
 

@@ -5,7 +5,7 @@ sidebar:
   order: 7
 ---
 
-ICP uses the ICRC standard family for tokens and token-related operations. This page covers the token standards (ICRC-1 through ICRC-37) and wallet signer standards (ICRC-21 through ICRC-49) that developers need to build DeFi applications, wallets, and token integrations.
+ICP uses the ICRC standard family for tokens and token-related operations. This page covers the token standards (ICRC-1 through ICRC-37) and wallet signer standards (ICRC-21 through ICRC-49) that developers need to build financial applications, wallets, and token integrations.
 
 ICRC stands for Internet Computer Request for Comments. Standards are proposed by the [ICRC working group](https://github.com/dfinity/ICRC), refined through community consensus, and adopted or rejected through NNS governance proposals.
 

@@ -59,7 +59,7 @@ For a complete list of the canisters running on these subnets, see [System canis
 
 ## Fiduciary subnet
 
-The fiduciary subnet is a single large application subnet with more nodes than the standard 13-node application subnet. The larger committee size provides a higher security threshold: useful for DeFi applications that require stronger guarantees. Cycle costs scale linearly with node count.
+The fiduciary subnet is a single large application subnet with more nodes than the standard 13-node application subnet. The larger committee size provides a higher security threshold: useful for financial applications that require stronger guarantees. Cycle costs scale linearly with node count.
 
 | Property | Value |
 |----------|-------|
