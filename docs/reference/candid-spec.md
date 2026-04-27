@@ -822,7 +822,6 @@ Link replacements from portal source (portal used absolute paths):
   - /building-apps/interact-with-canisters/candid/candid-concepts#upgrades → ../guides/canister-calls/candid.md#upgrades (×2)
   - /building-apps/interact-with-canisters/candid/candid-concepts#candid-service-descriptions → ../guides/canister-calls/candid.md#candid-service-descriptions
 Other changes from portal source:
-  - `dfx` → `icp` (CLAUDE.md rule: never reference dfx)
   - `# Candid` H1 removed (Starlight renders frontmatter title as H1; duplicate would produce two H1s)
 -->
 <!-- Upstream: sync from dfinity/portal — docs/references/candid-ref.mdx -->
