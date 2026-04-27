@@ -2,7 +2,7 @@
 title: "Subnet Types Reference"
 description: "All subnet types with node counts, replication factors, and cost multipliers"
 sidebar:
-  order: 6
+  order: 9
 ---
 
 The Internet Computer is composed of independent [**subnets**](../concepts/network-overview.md#subnets): each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.

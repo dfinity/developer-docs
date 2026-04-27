@@ -2,7 +2,7 @@
 title: "HTTP Gateway Protocol Specification"
 description: "The HTTP Gateway Protocol specification: how HTTP clients interact with the Internet Computer through canister-served HTTP responses"
 sidebar:
-  order: 10
+  order: 12
 ---
 
 ## Introduction

@@ -196,7 +196,7 @@ The SNS ledger implements ICRC-1, ICRC-2, and ICRC-3. The key methods are the sa
 | `icrc2_transfer_from` | Transfer on behalf of an approver |
 | `icrc3_get_blocks` | Query transaction history (ICRC-3 transaction log) |
 
-For token standard details, see [Token Standards](token-standards.md).
+For ICRC interface details, see [Digital Asset Standards](digital-asset-standards.md).
 
 ### Querying SNS canister IDs at runtime
 

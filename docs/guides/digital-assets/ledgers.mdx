@@ -1,39 +1,29 @@
 ---
-title: "Token Ledgers"
-description: "Transfer ICP and ICRC-1/ICRC-2 tokens from canisters and frontends"
+title: "Ledgers"
+description: "Transfer ICP and ICRC-1/ICRC-2 assets from canisters and frontends"
 sidebar:
   order: 1
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Every token on ICP (ICP, ckBTC, ckETH, and custom tokens) is managed by a **ledger canister** that implements the ICRC token standards. Because all ledgers share the same interface, code that works with the ICP ledger also works with ckBTC, ckETH, or any ICRC-1 compliant token. You only need to swap the canister ID and fee.
+Digital assets on ICP are managed by **ledger canisters** that implement the [ICRC digital asset standards](../../reference/digital-asset-standards.md). The ICP ledger is fully ICRC-1 and ICRC-2 compliant: code that works with the ICP ledger works identically with ckBTC, ckETH, or any ICRC-1 compatible asset. You only need to swap the canister ID and fee. The ICRC specifications use the term "token" throughout their text.
 
-This guide covers the most common token operations: transfers, approvals, subaccounts, and local test ledger setup. For the formal standard specifications, see [Token standards](../../reference/token-standards.md).
+Each ledger is paired with an **index canister** that continuously syncs the ledger's blocks and provides efficient per-account transaction history queries. Together they form the **ledger suite**.
 
-## Well-known token ledgers
+This guide covers the most common operations: transfers, approvals, subaccounts, transaction history, and local test ledger setup.
 
-The table below lists a few well-known ledgers used throughout this guide. Many more tokens exist on ICP: see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens) for a broader overview. Anyone can deploy an ICRC-1 compliant ledger.
+## Well-known ledgers
 
-| Token | Ledger canister ID |
-|-------|-------------------|
-| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` |
-| ckBTC | `mxzaz-hqaaa-aaaar-qaada-cai` |
-| ckETH | `ss2fx-dyaaa-aaaar-qacoq-cai` |
+| Asset | Ledger canister ID | Index canister ID |
+|-------|-------------------|------------------|
+| ICP | `ryjl3-tyaaa-aaaaa-aaaba-cai` | `qhbym-qaaaa-aaaaa-aaafq-cai` |
 
 > Query `icrc1_fee` and `icrc1_decimals` at runtime rather than hardcoding values.
 
-Index canisters (for transaction history):
+For chain-key token canister IDs (ckBTC, ckETH, ckDOGE, ckSOL, and ckERC20), see [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md). For chain-key token specifics (minting, deposits, withdrawals), see [Chain-key tokens](chain-key-tokens.md).
 
-| Token | Index canister ID |
-|-------|------------------|
-| ICP | `qhbym-qaaaa-aaaaa-aaafq-cai` |
-| ckBTC | `n5wcd-faaaa-aaaar-qaaea-cai` |
-| ckETH | `s3zol-vqaaa-aaaar-qacpa-cai` |
-
-All of these ledgers are ICRC-1 and ICRC-2 compatible. For chain-key token specifics (minting, deposits, withdrawals), see [Chain-key tokens](chain-key-tokens.md).
-
-## Transferring tokens (ICRC-1)
+## Transferring assets (ICRC-1)
 
 The `icrc1_transfer` function sends tokens from the calling canister's account to a destination account. Every ICRC-1 ledger uses the same `Account` type:
 
@@ -179,14 +169,22 @@ For frontend token operations, use the `@icp-sdk/canisters` package. See the [JS
 Always set the `fee` field explicitly. If you pass a fee that does not match the ledger's current fee, the call returns a `BadFee` error with the `expected_fee` value. You can query the current fee at runtime:
 
 ```bash
-icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_fee '()' -e ic
+icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_fee '()' -n ic
 ```
 
 Always set `created_at_time` to enable deduplication. Without it, two identical transfers submitted within 24 hours both execute.
 
-### Checking balances
+## Checking balances
 
 Query an account's balance with `icrc1_balance_of`. This is a query call: fast and free.
+
+```bash
+icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_balance_of \
+  '(record { owner = principal "YOUR-PRINCIPAL"; subaccount = null })' \
+  -n ic
+```
+
+Replace `ryjl3-tyaaa-aaaaa-aaaba-cai` with the ledger canister ID for any ICRC-1 compatible asset.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -234,9 +232,9 @@ async fn get_balance(ledger: Principal, owner: Principal) -> Result<Nat, String>
 
 ## Approve and transfer-from (ICRC-2)
 
-ICRC-2 adds an approve/transferFrom pattern, similar to ERC-20 on Ethereum. The token owner first approves a spender for a certain amount, then the spender calls `icrc2_transfer_from` to move tokens. This is a two-step flow: calling `transfer_from` without a prior approval fails with `InsufficientAllowance`.
+ICRC-2 adds an approve/transferFrom pattern. The asset owner first approves a spender for a certain amount, then the spender calls `icrc2_transfer_from` to move assets. This is a two-step flow: calling `transfer_from` without a prior approval fails with `InsufficientAllowance`.
 
-**When to use:** DEX swaps, payment processors, subscription services, or any case where a canister needs to pull tokens from a user's account.
+**When to use:** Exchange logic, payment processing, subscription services, or any case where a canister needs to pull assets from a user's account.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -471,26 +469,27 @@ fn deposit_account(canister: Principal, user: Principal) -> Account {
 A typical deposit flow:
 
 1. Generate a unique deposit subaccount for each user (derived from their principal).
-2. The user transfers tokens to your canister's subaccount address.
+2. The user transfers assets to your canister's subaccount address.
 3. Your canister checks the subaccount balance and credits the user internally.
-4. Your canister sweeps tokens from the subaccount to its default account.
+4. Your canister sweeps assets from the subaccount to its default account.
 
-## NFTs (ICRC-7 and ICRC-37)
+## Transaction history
 
-ICRC-7 is the non-fungible token standard on ICP. It follows the same account model as ICRC-1 and defines operations for NFT collections: querying ownership, metadata, and transferring individual tokens by ID.
+Each ledger is paired with an index canister that syncs blocks continuously from the ledger and builds a per-account index. This is the standard way for canisters to query transaction history without scanning the full block log.
 
-ICRC-37 extends ICRC-7 with an approval workflow (similar to how ICRC-2 extends ICRC-1). It adds `approve`, `revoke_approval`, and `transfer_from` for NFTs.
+Query an account's transaction history using `get_account_transactions` on the index canister:
 
-Key operations:
+```bash
+icp canister call qhbym-qaaaa-aaaaa-aaafq-cai get_account_transactions \
+  '(record { account = record { owner = principal "YOUR-PRINCIPAL" }; max_results = 10 : nat })' \
+  -n ic
+```
 
-- **`icrc7_transfer`**: transfer one or more NFTs by token ID
-- **`icrc7_balance_of`**: count how many NFTs an account owns
-- **`icrc7_owner_of`**: look up the owner of specific token IDs
-- **`icrc7_tokens_of`**: list token IDs owned by an account
-- **`icrc37_approve_tokens`**: approve a spender for specific NFTs (ICRC-37)
-- **`icrc37_transfer_from`**: transfer NFTs using a prior approval (ICRC-37)
+The response includes a `transactions` list and the account's current `balance` at the tip. Paginate backwards using the `start` field (the oldest block index from the previous response).
 
-For a complete working example with minting, transferring, and a frontend, see the [nft-creator example](https://github.com/dfinity/examples/tree/master/motoko/nft-creator). For the full standard specifications, see [ICRC-7](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md) and [ICRC-37](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-37/ICRC-37.md).
+**ICRC-3** is the standard that defines how ledgers expose their block structure: the block schema, archive model, and `icrc3_get_blocks` method. It is why index canisters, Rosetta nodes, and custom indexers can all read the same block data in a consistent, verifiable format. All system ledgers on ICP implement ICRC-3. See [ICRC-3: Transaction log](../../reference/digital-asset-standards.md#icrc-3-transaction-log) for the block schema and method signatures.
+
+For client-side indexing across multiple ICRC-1 ledgers (exchange integrations, custody platforms, analytics), use the [Rosetta API](rosetta.md). The ICRC Rosetta implementation supports querying balances and transaction history across any number of ICRC-1 compatible ledgers simultaneously.
 
 ## Local test ledger
 
@@ -562,9 +561,11 @@ icp canister call icrc1_ledger icrc1_transfer \
 
 ## Next steps
 
-- [Token standards](../../reference/token-standards.md): formal ICRC-1, ICRC-2, ICRC-7, and ICRC-37 specifications
-- [Chain-key tokens](chain-key-tokens.md): working with ckBTC and ckETH (minting, deposits, withdrawals)
+- [Digital Asset Standards](../../reference/digital-asset-standards.md): ICRC-1, ICRC-2, ICRC-3, ICRC-7, and ICRC-37 specifications including NFT standards
+- [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md): mainnet and testnet canister IDs for all chain-key tokens
+- [Chain-key tokens](chain-key-tokens.md): minting, depositing, and withdrawing ckBTC, ckETH, ckDOGE, and ckSOL
+- [Rosetta API](rosetta.md): client-side indexing and transaction construction for exchanges and custody platforms
 - [Wallet integration](wallet-integration.md): connecting wallets to your app
-- [Inter-canister calls](../canister-calls/inter-canister-calls.md): how inter-canister calls work (ledger calls are inter-canister calls)
+- [Inter-canister calls](../canister-calls/inter-canister-calls.md): how canister-to-canister calls work, for example when the index canister reads blocks from the ledger
 
-{/* Upstream: informed by dfinity/portal docs/defi/token-standards/, docs/defi/token-integrations/: icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/examples motoko/nft-creator */}
+{/* Upstream: informed by dfinity/portal docs/defi/token-standards/, docs/defi/token-integrations/: icrc-1.mdx, icrc-2.mdx, icrc-7.mdx, icrc-37.mdx; dfinity/portal docs/defi/token-indexes/index.mdx (index canister / get_account_transactions); dfinity/portal docs/defi/rosetta/icrc_rosetta/index.mdx (ICRC Rosetta); dfinity/icskills skills/icrc-ledger/SKILL.md */}

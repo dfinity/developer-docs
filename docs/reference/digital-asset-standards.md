@@ -1,13 +1,11 @@
 ---
-title: "Token Standards"
-description: "ICRC-1 fungible tokens, ICRC-2 approval, ICRC-3 transaction log, and ICRC-7 NFTs"
+title: "Digital Asset Standards"
+description: "ICP's ICRC standards for fungible assets, NFTs, and their extension protocols"
 sidebar:
-  order: 7
+  order: 6
 ---
 
-ICP uses the ICRC standard family for tokens and token-related operations. This page covers the token standards (ICRC-1 through ICRC-37) and wallet signer standards (ICRC-21 through ICRC-49) that developers need to build financial applications, wallets, and token integrations.
-
-ICRC stands for Internet Computer Request for Comments. Standards are proposed by the [ICRC working group](https://github.com/dfinity/ICRC), refined through community consensus, and adopted or rejected through NNS governance proposals.
+ICP implements digital assets using the ICRC standard family. The specifications use the term "token" throughout: a fungible digital asset is a "fungible token" in ICRC-1, and an NFT is a "non-fungible token" in ICRC-7. This page covers the digital asset standards (ICRC-1 through ICRC-37). For the full list of ICRC standards including wallet signer protocols, see [ICRC Standards](icrc-standards.md).
 
 ## Standards overview
 
@@ -18,11 +16,6 @@ ICRC stands for Internet Computer Request for Comments. Standards are proposed b
 | [ICRC-3](#icrc-3-transaction-log) | Transaction log and block archive | ICRC-1 | Adopted |
 | [ICRC-7](#icrc-7-non-fungible-tokens) | Non-fungible token (NFT) base standard | none | Adopted |
 | [ICRC-37](#icrc-37-nft-approvals) | Approve and transfer-from for NFTs | ICRC-7 | Adopted |
-| [ICRC-21](#wallet-signer-standards) | Canister call consent messages | none | Adopted |
-| [ICRC-25](#wallet-signer-standards) | Signer interaction (permissions) | none | Adopted |
-| [ICRC-27](#wallet-signer-standards) | Account discovery | none | Adopted |
-| [ICRC-29](#wallet-signer-standards) | Window PostMessage transport | none | Adopted |
-| [ICRC-49](#wallet-signer-standards) | Call canister via signer | none | Adopted |
 
 ## ICRC-1: Fungible tokens
 
@@ -100,7 +93,7 @@ type TransferError = variant {
 | `icrc1:decimals` | `Nat` | `8` |
 | `icrc1:fee` | `Nat` | `10000` |
 
-For a few well-known ledger canister IDs and index canisters, see [Token ledgers](../guides/digital-assets/token-ledgers.md#well-known-token-ledgers). For a broader overview of tokens on ICP, see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens).
+For a few well-known ledger canister IDs and index canisters, see [Ledgers](../guides/digital-assets/ledgers.md#well-known-token-ledgers). For a broader overview of tokens on ICP, see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens).
 
 [Read the full ICRC-1 standard](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1)
 
@@ -324,27 +317,12 @@ A ledger that implements ICRC-37 must also implement all ICRC-7 methods. Support
 
 [Read the full ICRC-37 standard](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-37/ICRC-37.md)
 
-## Wallet signer standards
-
-The ICRC signer standards define how wallets interact with apps on ICP. They use a popup-based model where every action requires explicit user approval, communicated via JSON-RPC 2.0 over `window.postMessage`.
-
-| Standard | Purpose |
-|----------|---------|
-| **ICRC-21** | Canister call consent messages: enables canisters to provide human-readable descriptions of what a call will do, displayed to the user before signing |
-| **ICRC-25** | Signer interaction standard: defines the permission lifecycle (`granted`, `denied`, `ask_on_use`) for signer methods |
-| **ICRC-27** | Account discovery: allows apps to request the list of accounts available in the wallet |
-| **ICRC-29** | Window PostMessage transport: defines the communication channel between app and signer using `window.postMessage` |
-| **ICRC-49** | Call canister: allows apps to request the signer to execute a canister call on behalf of the user |
-
-These standards are distinct from delegation-based authentication (such as Internet Identity). The signer model requires per-action user approval and does not create sessions or delegated identities.
-
-For implementation details and code examples, see the [wallet integration guide](../guides/digital-assets/wallet-integration.md).
-
 ## Next steps
 
-- [Token ledgers guide](../guides/digital-assets/token-ledgers.md): deploy and interact with ICRC-1/ICRC-2 ledgers
+- [ICRC Standards](icrc-standards.md): full index of all ICRC standards including wallet signer protocols
+- [Ledgers guide](../guides/digital-assets/ledgers.md): deploy and interact with ICRC-1/ICRC-2 ledger canisters
 - [Chain-key tokens guide](../guides/digital-assets/chain-key-tokens.md): work with ckBTC, ckETH, and other chain-key tokens
-- [Wallet integration guide](../guides/digital-assets/wallet-integration.md): integrate wallet signer standards into your app
+- [Wallet integration guide](../guides/digital-assets/wallet-integration.md): implement wallet signer standards (ICRC-21/25/27/29/49) in your app
 - [ICRC-1 standard specification](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1): full specification on GitHub
 - [ICRC-7 standard specification](https://github.com/dfinity/ICRC/blob/main/ICRCs/ICRC-7/ICRC-7.md): full NFT specification on GitHub
 

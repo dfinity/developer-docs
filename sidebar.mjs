@@ -57,14 +57,14 @@ export const sidebar = [
       },
       // Advanced features
       {
-        label: "Chain Fusion",
-        collapsed: true,
-        autogenerate: { directory: "guides/chain-fusion" },
-      },
-      {
         label: "Digital Assets",
         collapsed: true,
         autogenerate: { directory: "guides/digital-assets" },
+      },
+      {
+        label: "Chain Fusion",
+        collapsed: true,
+        autogenerate: { directory: "guides/chain-fusion" },
       },
       {
         label: "Governance",

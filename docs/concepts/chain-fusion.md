@@ -70,7 +70,7 @@ Direct integration provides the strongest trust guarantees. The only assumption 
 
 Chain-key tokens are digital twins of native assets from other blockchains (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each token is backed 1:1 by the native asset, which is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
 
-These tokens implement the [ICRC-2](../guides/digital-assets/token-ledgers.md) token standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP token. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
+These tokens implement the [ICRC-2](../guides/digital-assets/ledgers.md) token standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP token. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
 
 For details on integrating with chain-key tokens, see the [Chain-key tokens guide](../guides/digital-assets/chain-key-tokens.md).
 
