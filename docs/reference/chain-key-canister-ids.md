@@ -7,8 +7,8 @@ sidebar:
 
 Canister IDs for all chain-key tokens. For deposit and withdrawal flows, see [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md).
 
-- [Mainnet chain-key tokens](https://dashboard.internetcomputer.org/tokens?token_type=chain_key) — live overview including market data
-- [Testnet chain-key tokens](https://dashboard.internetcomputer.org/tokens?token_type=chain_key&network=testnet) — testnet tokens deployed on ICP mainnet
+- [Mainnet chain-key tokens](https://dashboard.internetcomputer.org/tokens?token_type=chain_key): live overview including market data
+- [Testnet chain-key tokens](https://dashboard.internetcomputer.org/tokens?token_type=chain_key&network=testnet): testnet tokens deployed on ICP mainnet
 
 > Always query `icrc1_fee` and `icrc1_decimals` at runtime. Fees and decimal precision are set per ledger and can change.
 
@@ -58,7 +58,7 @@ The Sepolia testnet minter connects to Ethereum Sepolia. Use ckTestETH for integ
 
 ## ckERC20
 
-ckERC20 tokens share the ckETH minter. Each token has its own ledger canister. For the authoritative current list, query the minter at runtime — new tokens are added via NNS governance and the table below may lag.
+ckERC20 tokens share the ckETH minter. Each token has its own ledger canister. For the authoritative current list, query the minter at runtime; new tokens are added via NNS governance and the table below may lag.
 
 ### Mainnet
 

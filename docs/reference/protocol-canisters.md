@@ -45,7 +45,7 @@ For integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin
 
 The ckBTC minter holds real BTC in a threshold ECDSA-controlled wallet and mints or burns ckBTC tokens. It issues a unique Bitcoin deposit address per `(owner, subaccount)` account and handles withdrawal requests by submitting signed Bitcoin transactions.
 
-For canister IDs, see [Chain-Key Token Canister IDs — ckBTC](chain-key-canister-ids.md#ckbtc).
+For canister IDs, see [Chain-Key Token Canister IDs: ckBTC](chain-key-canister-ids.md#ckbtc).
 
 ### Minter parameters
 
@@ -77,7 +77,7 @@ The ckBTC checker canister (`oltsj-fqaaa-aaaar-qal5q-cai`) performs know-your-tr
 
 The ckETH minter bridges ETH and all ERC-20 tokens between Ethereum and ICP. It monitors the ckETH helper contract on Ethereum via HTTPS outcalls to detect deposits, and submits signed Ethereum transactions for withdrawals using threshold ECDSA.
 
-For canister IDs, see [Chain-Key Token Canister IDs — ckETH](chain-key-canister-ids.md#cketh).
+For canister IDs, see [Chain-Key Token Canister IDs: ckETH](chain-key-canister-ids.md#cketh).
 
 ### Helper contract
 
@@ -105,13 +105,13 @@ To get the authoritative current list of supported tokens and their ledger canis
 icp canister call sv3dd-oaaaa-aaaar-qacoa-cai get_minter_info '()' -n ic
 ```
 
-Check `supported_ckerc20_tokens` in the response. For a static reference table, see [Chain-Key Token Canister IDs — ckERC20](chain-key-canister-ids.md#ckerc20).
+Check `supported_ckerc20_tokens` in the response. For a static reference table, see [Chain-Key Token Canister IDs: ckERC20](chain-key-canister-ids.md#ckerc20).
 
 ## ckDOGE minter
 
 The ckDOGE minter follows the same UTXO-based model as ckBTC. It holds real DOGE in a threshold ECDSA-controlled wallet and issues a unique Dogecoin deposit address per `(owner, subaccount)` account.
 
-For canister IDs, see [Chain-Key Token Canister IDs — ckDOGE](chain-key-canister-ids.md#ckdoge).
+For canister IDs, see [Chain-Key Token Canister IDs: ckDOGE](chain-key-canister-ids.md#ckdoge).
 
 ### Minter endpoints
 
@@ -122,13 +122,13 @@ For canister IDs, see [Chain-Key Token Canister IDs — ckDOGE](chain-key-canist
 
 Amounts are denominated in koinu (1 DOGE = 100,000,000 koinu).
 
-Source: [dfinity/ic — rs/dogecoin/ckdoge](https://github.com/dfinity/ic/tree/master/rs/dogecoin/ckdoge)
+Source: [dfinity/ic rs/dogecoin/ckdoge](https://github.com/dfinity/ic/tree/master/rs/dogecoin/ckdoge)
 
 ## ckSOL minter
 
 The ckSOL minter bridges SOL between Solana and ICP. It issues a unique Solana deposit address per `(owner, subaccount)` account and verifies deposits via the SOL RPC canister using threshold signatures (Ed25519).
 
-For canister IDs, see [Chain-Key Token Canister IDs — ckSOL](chain-key-canister-ids.md#cksol).
+For canister IDs, see [Chain-Key Token Canister IDs: ckSOL](chain-key-canister-ids.md#cksol).
 
 ### Minter endpoints
 
@@ -307,4 +307,4 @@ For ledger, index, and testnet canister IDs for all chain-key tokens, see [Chain
 - [System canisters](system-canisters.md): NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
 - [Management canister](management-canister.md): the virtual canister for canister lifecycle, signing, and platform APIs
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/ic — rs/bitcoin/ckbtc, rs/dogecoin/ckdoge, rs/ethereum/cketh; dfinity/cksol; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/index.mdx, docs/references/system-canisters/xrc.mdx, docs/references/ckbtc-reference.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/overview.mdx, docs/defi/chain-key-tokens/cketh/overview.mdx, docs/defi/chain-key-tokens/ckerc20/overview.mdx; dfinity/ic rs/bitcoin/ckbtc, rs/dogecoin/ckdoge, rs/ethereum/cketh; dfinity/cksol; dfinity/icskills — skills/ckbtc/SKILL.md, skills/evm-rpc/SKILL.md, skills/icrc-ledger/SKILL.md -->
