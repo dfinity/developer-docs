@@ -1,13 +1,13 @@
 ---
 title: "VetKeys"
-description: "Verifiable encrypted threshold key derivation for onchain encryption and secret management"
+description: "Verifiable encrypted threshold key derivation for encryption and secret management on ICP"
 sidebar:
   order: 11
 ---
 
 VetKeys (verifiably encrypted threshold keys) give canisters the ability to derive secret key material on demand, without any node or canister ever seeing the raw key. The protocol that underpins this capability is called vetKD: verifiable encrypted threshold key derivation.
 
-The core problem vetKeys solve: encrypting data and storing it onchain is easy when the secret key stays on one device. The difficulty arises when a user needs to access that data from another device, share it with someone else, or let a canister participate in encryption workflows. Transmitting key material over public channels or storing it in a canister exposes it. VetKeys eliminate that exposure by making keys derivable from the network itself, encrypted for delivery, and verifiable by the recipient.
+The core problem vetKeys solve: encrypting data and storing it on the network is easy when the secret key stays on one device. The difficulty arises when a user needs to access that data from another device, share it with someone else, or let a canister participate in encryption workflows. Transmitting key material over public channels or storing it in a canister exposes it. VetKeys eliminate that exposure by making keys derivable from the network itself, encrypted for delivery, and verifiable by the recipient.
 
 ## The vetKD properties
 
@@ -69,7 +69,7 @@ The only supported curve is `bls12_381_g2`. Two key names are available:
 
 ## Use cases
 
-### Encrypted onchain storage
+### Encrypted storage
 
 A canister derives a symmetric encryption key for each user or resource using a unique input (a principal or document ID). The client encrypts data with this key before storing it in the canister. Only the client, and anyone the canister grants access to, can later obtain the decryption key. The `EncryptedMaps` library in `ic-vetkeys` and `@dfinity/vetkeys` provides a ready-to-use implementation of this pattern.
 
