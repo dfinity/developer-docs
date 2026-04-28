@@ -36,6 +36,15 @@
     }
   },
   {
+    // Shell scripts served as plain text so curl | sh works correctly.
+    // install.sh is fetched fresh on every build so no long-lived cache.
+    "match": "**/*.sh",
+    "headers": {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=0, must-revalidate"
+    }
+  },
+  {
     // Markdown endpoints and llms.txt — short cache so updates are visible quickly
     "match": "**/*.{md,txt}",
     "headers": {
