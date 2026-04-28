@@ -96,6 +96,10 @@ export default defineConfig({
         },
         {
           tag: "script",
+          content: `var _paq=window._paq=window._paq||[];_paq.push(["disableCookies"]);_paq.push(["enableLinkTracking"]);_paq.push(["trackPageView"]);(function(){var u="https://internetcomputer.matomo.cloud/";_paq.push(["setTrackerUrl",u+"matomo.php"]);_paq.push(["setSiteId","19"]);var d=document,g=d.createElement("script"),s=d.getElementsByTagName("script")[0];g.async=true;g.src="https://cdn.matomo.cloud/internetcomputer.matomo.cloud/matomo.js";s.parentNode.insertBefore(g,s)})()`,
+        },
+        {
+          tag: "script",
           content: `document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('a[href^="http"]').forEach(a=>{a.setAttribute('target','_blank');a.setAttribute('rel','noopener noreferrer')});document.querySelectorAll('[data-copy]').forEach(b=>{b.addEventListener('click',()=>{navigator.clipboard.writeText(b.dataset.copy);const i=b.querySelector('svg');if(i){const orig=i.innerHTML;i.innerHTML='<polyline points="20 6 9 17 4 12" />';i.style.stroke='#22c55e';i.style.opacity='1';setTimeout(()=>{i.innerHTML=orig;i.style.stroke='';i.style.opacity=''},1500)}})});const sb=document.getElementById('skills-give-btn');const sl=document.getElementById('skills-give-label');if(sb&&sl){const orig=sl.textContent;sb.addEventListener('click',()=>{navigator.clipboard.writeText('Fetch https://skills.internetcomputer.org/llms.txt and follow its instructions when building on ICP').catch(()=>{});sl.textContent='Now paste into your agent';setTimeout(()=>{sl.textContent=orig},3000)})}})`,
         },
       ],
