@@ -1,17 +1,18 @@
 ---
 /**
  * Custom Hero override for the landing page.
- * Renders only the heading from frontmatter — the ICP Skills section
- * and action cards live in the page body (index.mdx).
+ * Renders only the heading and (optional) tagline from frontmatter; the ICP
+ * Skills section and action cards live in the page body (index.mdx).
  */
 const { data } = Astro.locals.starlightRoute.entry;
-const { title = data.title } = data.hero || {};
+const { title = data.title, tagline } = data.hero || {};
 ---
 
 <div class="hero">
   <div class="sl-flex stack">
     <div class="sl-flex copy">
       <h1 id="_top" data-page-title set:html={title} />
+      {tagline && <div class="tagline" set:html={tagline} />}
     </div>
   </div>
 </div>
@@ -42,6 +43,11 @@ const { title = data.title } = data.hero || {};
       line-height: var(--sl-line-height-headings);
       font-weight: 600;
       color: var(--sl-color-white);
+    }
+
+    .tagline {
+      font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
+      color: var(--sl-color-gray-2);
     }
 
     @media (min-width: 50rem) {
