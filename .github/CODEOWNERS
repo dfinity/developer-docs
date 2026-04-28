@@ -1,0 +1,5 @@
+# All files are owned by the DX team.
+# At least one DX team member must approve every PR before it can be merged.
+# DX team members are also configured as bypass actors in the branch ruleset
+# and can merge their own PRs without a separate review.
+* @dfinity/dx
