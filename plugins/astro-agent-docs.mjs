@@ -664,13 +664,19 @@ export default function agentDocs() {
         // because Twitter/X rejects SVG for social sharing previews.
         const ogSvgPath = path.join(outDir, "og-image.svg");
         if (fs.existsSync(ogSvgPath)) {
-          const fontDir = path.resolve("node_modules/@fontsource/inter/files");
-          const fontBuffers = ["400", "500", "600", "700"]
-            .map((w) => {
-              const p = path.join(fontDir, `inter-latin-${w}-normal.woff`);
-              return fs.existsSync(p) ? fs.readFileSync(p) : null;
-            })
-            .filter(Boolean);
+          const interDir = path.resolve("node_modules/@fontsource/inter/files");
+          const newsreaderDir = path.resolve("node_modules/@fontsource/newsreader/files");
+          const loadFonts = (dir, prefix, weights) =>
+            weights
+              .map((w) => {
+                const p = path.join(dir, `${prefix}-latin-${w}-normal.woff`);
+                return fs.existsSync(p) ? fs.readFileSync(p) : null;
+              })
+              .filter(Boolean);
+          const fontBuffers = [
+            ...loadFonts(interDir, "inter", ["400", "500", "600", "700"]),
+            ...loadFonts(newsreaderDir, "newsreader", ["400", "500"]),
+          ];
 
           const svg = fs.readFileSync(ogSvgPath, "utf-8");
           const resvg = new Resvg(svg, {
@@ -679,6 +685,7 @@ export default function agentDocs() {
               loadSystemFonts: false,
               defaultFontFamily: "Inter",
               sansSerifFamily: "Inter",
+              serifFamily: "Newsreader",
             },
             fitTo: { mode: "original" },
           });
