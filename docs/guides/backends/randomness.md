@@ -11,7 +11,7 @@ For how ICP produces unpredictable randomness without any trusted party, see [On
 
 ## Why onchain randomness is different
 
-Most blockchains execute transactions deterministically: every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
+Consensus-based systems execute every transaction deterministically: every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
 
 ICP solves this with a threshold Verifiable Random Function (VRF). The result of `raw_rand` is produced collaboratively by the subnet's nodes using a random beacon that no single node can predict or bias. Every node independently verifies the output is correct, and the same 32 bytes are delivered to all replicas: satisfying both unpredictability and consensus.
 

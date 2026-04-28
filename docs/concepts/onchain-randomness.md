@@ -5,11 +5,11 @@ sidebar:
   order: 7
 ---
 
-Generating unpredictable random numbers is a fundamental requirement for many applications: lotteries, games, fair selection, cryptographic protocols, and more. On a blockchain, this is harder than it sounds.
+Generating unpredictable random numbers is a fundamental requirement for many applications: lotteries, games, fair selection, cryptographic protocols, and more. In a system where every node must agree on the same state, this is harder than it sounds.
 
-## Why randomness is hard on blockchains
+## Why randomness is hard on deterministic consensus systems
 
-Traditional blockchains execute every transaction deterministically. Each node replays the same operations and must arrive at the same state. This means randomness sources available to normal programs (such as OS entropy (`/dev/urandom`), hardware timers, or per-process seeds) cannot be used directly: they would produce different values on each replica, breaking consensus.
+Consensus-based systems execute every transaction deterministically. Each node replays the same operations and must arrive at the same state. This means randomness sources available to normal programs (such as OS entropy (`/dev/urandom`), hardware timers, or per-process seeds) cannot be used directly: they would produce different values on each replica, breaking consensus.
 
 Naive alternatives have well-known weaknesses:
 
@@ -32,7 +32,7 @@ The process runs once per execution round:
 
 ### Security properties
 
-The threshold VRF provides three guarantees that address the blockchain randomness problem:
+The threshold VRF provides three guarantees that address these challenges:
 
 - **Unpredictability.** The output cannot be known before the threshold of nodes collaborates to compute it. Because the computation spans a round boundary, no party (including subnet nodes) can predict the result in advance.
 - **Unbiasability.** No individual node can influence the output. A malicious node cannot single-handedly prevent the subnet from producing randomness (a threshold of honest nodes is sufficient) but it cannot steer the result toward a preferred value. This is in contrast to leader-based schemes where the block producer has exclusive influence.
