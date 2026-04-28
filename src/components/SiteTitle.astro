@@ -43,23 +43,18 @@ const { siteTitleHref } = Astro.locals.starlightRoute;
     }
 
     .title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      line-height: 1.15;
-    }
-
-    .title-docs {
       font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
       font-size: var(--sl-text-h4);
       font-weight: 500;
-      color: var(--sl-color-white);
       letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .title-docs {
+      color: var(--sl-color-white);
     }
 
     .title-domain {
-      font-size: var(--sl-text-xs);
-      font-weight: 400;
       color: var(--sl-color-gray-3);
     }
 
