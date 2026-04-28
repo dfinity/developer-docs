@@ -167,12 +167,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .landing-action-card {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
   background: var(--icp-bg-elev);
   border: 1px solid var(--icp-rule);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
-  text-align: center;
   font-weight: 500;
   font-size: var(--sl-text-base);
   color: var(--icp-fg);
@@ -187,12 +189,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .landing-action-card::after {
-  content: ' →';
+  content: '→';
   opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .landing-action-card[href^="http"]::after {
-  content: ' ↗';
+  content: '↗';
+  opacity: 1;
 }
 
 /* ── ICP Skills banner ─────────────────────────────────────── */
