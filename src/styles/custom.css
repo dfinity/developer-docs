@@ -147,7 +147,8 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Landing page hero ───────────────────────────────────── */
 
 .hero {
-  padding-block: clamp(2rem, 6vmin, 4rem) !important;
+  padding-block-start: clamp(2rem, 6vmin, 4rem) !important;
+  padding-block-end: 1.5rem !important;
 }
 
 /* ── Landing action cards (three boxes under hero) ────────── */
