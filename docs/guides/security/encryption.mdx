@@ -303,7 +303,7 @@ await encryptedMaps.setUserRights(mapOwner, mapName, user, { ReadWrite: null });
 </TabItem>
 </Tabs>
 
-The backend `EncryptedMaps` component stores only ciphertext; all plaintext stays on the frontend. See the [password manager example](https://github.com/dfinity/vetkeys/tree/main/examples/password_manager) for a full implementation.
+The backend `EncryptedMaps` component stores only ciphertext; all plaintext stays on the frontend. See the [password manager example](https://github.com/dfinity/examples/tree/master/rust/vetkeys/password_manager) (Motoko + Rust) for a full implementation, or the [password manager with metadata](https://github.com/dfinity/examples/tree/master/rust/vetkeys/password_manager_with_metadata) variant that adds unencrypted metadata alongside encrypted values.
 
 For the Rust backend, `EncryptedMaps` lives in `ic_vetkeys::encrypted_maps`; for TypeScript, import from `@dfinity/vetkeys/encrypted_maps`.
 
@@ -352,7 +352,7 @@ const decrypted = deserialized.decrypt(vetKey);
 // decrypted is Uint8Array of the plaintext
 ```
 
-See the [basic IBE example](https://github.com/dfinity/vetkeys/tree/main/examples/basic_ibe) for a complete Motoko and Rust backend implementation.
+See the [basic IBE example](https://github.com/dfinity/examples/tree/master/rust/vetkeys/basic_ibe) (Motoko + Rust) for a complete backend and frontend implementation. For IBE with a time-based release condition (timelock encryption), see the [secret-bid auction example](https://github.com/dfinity/examples/tree/master/rust/vetkeys/basic_timelock_ibe).
 
 ## Testing locally
 
@@ -385,6 +385,7 @@ For `vetkd_derive_key` testing, use the [chain-key testing canister](https://git
 - [VetKeys concept](../../concepts/vetkeys.md): how the vetKD protocol works and what use cases it enables
 - [Data integrity](data-integrity.md): certified variables and response verification
 - [Internet Identity](../authentication/internet-identity.md): authenticate users before granting access to vetKeys
-- [vetkeys repository](https://github.com/dfinity/vetkeys): full examples including password manager, IBE messaging, and secret-bid auction
+- [vetkeys examples](https://github.com/dfinity/examples/tree/master/rust/vetkeys): password manager, encrypted notes, IBE messaging, BLS signing, and secret-bid auction
+- [ic-vetkeys library](https://github.com/dfinity/vetkeys): Rust crate and TypeScript package source
 
-{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/vetkeys/ (introduction.mdx, api.mdx, encrypted-onchain-storage.mdx, identity-based-encryption.mdx, dkms.mdx, timelock-encryption.mdx); dfinity/icskills vetkd */}
+{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/vetkeys/ (introduction.mdx, api.mdx, encrypted-onchain-storage.mdx, identity-based-encryption.mdx, dkms.mdx, timelock-encryption.mdx); dfinity/icskills vetkd; dfinity/examples rust/vetkeys/password_manager, rust/vetkeys/password_manager_with_metadata, rust/vetkeys/basic_ibe, rust/vetkeys/basic_timelock_ibe, rust/vetkeys/encrypted_notes_dapp_vetkd */}

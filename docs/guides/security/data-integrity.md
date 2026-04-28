@@ -345,9 +345,9 @@ const derivedKey: DerivedPublicKey = canisterKey.deriveSubKey(
 ```
 
 For complete IBE and encrypted storage examples, see:
-- [Password manager example](https://github.com/dfinity/vetkeys/tree/main/examples/password_manager): encrypted key-value storage with `EncryptedMaps`
-- [Encrypted notes app](https://github.com/dfinity/vetkeys/tree/main/examples/encrypted_notes_dapp_vetkd): per-user encrypted note storage
-- [IBE example](https://github.com/dfinity/vetkeys/tree/main/examples/basic_ibe): identity-based encryption with Internet Identity principals
+- [Password manager](https://github.com/dfinity/examples/tree/master/rust/vetkeys/password_manager): encrypted key-value storage with `EncryptedMaps`
+- [Encrypted notes app](https://github.com/dfinity/examples/tree/master/rust/vetkeys/encrypted_notes_dapp_vetkd): per-user encrypted note storage
+- [IBE example](https://github.com/dfinity/examples/tree/master/rust/vetkeys/basic_ibe): identity-based encryption with Internet Identity principals
 
 ## Certified variables for data authenticity
 
@@ -448,8 +448,8 @@ Confirm that:
 ## Next steps
 
 - [vetKeys concept guide](../../concepts/vetkeys.md): how the threshold key derivation protocol works
-- [Encryption guide](./encryption.md): vetKeys encryption patterns including EncryptedMaps (coming soon)
+- [Encryption guide](./encryption.md): vetKeys encryption patterns including EncryptedMaps
 - [Certified variables](../backends/certified-variables.md): full certified data implementation
 - [Security model](../../concepts/security.md): IC security guarantees and threat model
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/authentication/independently-verifying-ic-signatures.mdx; dfinity/icskills — canister-security, vetkd, certified-variables; dfinity/examples — rust/vetkd, motoko/vetkd, rust/x509 -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/authentication/independently-verifying-ic-signatures.mdx; dfinity/icskills — canister-security, vetkd, certified-variables; dfinity/examples — rust/vetkeys/password_manager, rust/vetkeys/encrypted_notes_dapp_vetkd, rust/vetkeys/basic_ibe, rust/x509 -->
