@@ -29,6 +29,7 @@ export default defineConfig({
         Hero: "./src/components/Hero.astro",
         SiteTitle: "./src/components/SiteTitle.astro",
         ThemeProvider: "./src/components/ThemeProvider.astro",
+        ThemeSelect: "./src/components/ThemeSelect.astro",
       },
       head: [
         {
