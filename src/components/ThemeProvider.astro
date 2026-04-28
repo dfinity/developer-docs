@@ -1,12 +1,13 @@
 ---
 ---
 
-{/* Inlined to avoid FOUC. Defaults to light; dark is opt-in. Never auto-switches on prefers-color-scheme. */}
+{/* Inlined to avoid FOUC. Defaults to system prefers-color-scheme; overridden by stored user preference. */}
 <script is:inline>
 	window.StarlightThemeProvider = (() => {
 		const storedTheme =
 			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
-		const theme = storedTheme || 'light';
+		const prefersTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		const theme = storedTheme || prefersTheme;
 		document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
 		return {
 			updatePickers(theme = storedTheme || 'auto') {

@@ -23,11 +23,11 @@
 
 	const storageKey = 'starlight-theme';
 
-	const parseTheme = (theme: unknown): Theme =>
-		theme === 'dark' ? 'dark' : 'light';
-
-	const loadTheme = (): Theme =>
-		parseTheme(typeof localStorage !== 'undefined' && localStorage.getItem(storageKey));
+	const loadTheme = (): Theme => {
+		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
+		if (stored === 'dark' || stored === 'light') return stored;
+		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	};
 
 	function storeTheme(theme: Theme): void {
 		if (typeof localStorage !== 'undefined') {

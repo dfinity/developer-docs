@@ -26,6 +26,7 @@ export default defineConfig({
       components: {
         EditLink: "./src/components/EditLink.astro",
         Footer: "./src/components/Footer.astro",
+        Header: "./src/components/Header.astro",
         Hero: "./src/components/Hero.astro",
         SiteTitle: "./src/components/SiteTitle.astro",
         ThemeProvider: "./src/components/ThemeProvider.astro",
