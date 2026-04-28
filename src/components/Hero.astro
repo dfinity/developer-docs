@@ -2,40 +2,36 @@
 /**
  * Custom Hero override for the landing page.
  *
- * Renders the two-line site identity ("docs" / ".internetcomputer.org")
- * and embeds the ICP Skills box inside the hero area.
- *
- * The three action cards and remaining content live in the page body (index.mdx).
+ * Renders the hero title from frontmatter, then integrates the ICP Skills
+ * content (description text + action buttons) directly into the hero area
+ * as a natural continuation of the heading — no separate box below.
  */
+const { data } = Astro.locals.starlightRoute.entry;
+const { title = data.title } = data.hero || {};
 ---
 
 <div class="hero">
   <div class="sl-flex stack">
     <div class="sl-flex copy">
-      <h1 id="_top" data-page-title>
-        <span class="hero-title-docs">docs</span>
-        <span class="hero-title-domain">.internetcomputer.org</span>
-      </h1>
-    </div>
-
-    <div class="skills-banner skills-in-hero">
-      <h2>ICP skills for agents that write code</h2>
-      <p>Teach your AI agent canister patterns, API integrations, CLI commands, and deployment workflows so it ships working code instead of guessing.</p>
-      <div class="skills-actions">
-        <button class="skills-primary" id="skills-give-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span id="skills-give-label">Give your agent ICP skills</span>
-        </button>
-        <a class="skills-cta" href="/guides/ai-coding-agents/">
-          <span>Learn more</span>
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </a>
+      <h1 id="_top" data-page-title set:html={title} />
+      <div class="tagline">
+        Teach your AI agent canister patterns, API integrations, CLI commands, and deployment workflows so it ships working code instead of guessing.
       </div>
+    </div>
+    <div class="sl-flex actions">
+      <button class="skills-primary" id="skills-give-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span id="skills-give-label">Give your agent ICP skills</span>
+      </button>
+      <a class="skills-cta" href="/guides/ai-coding-agents/">
+        <span>Learn more</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
     </div>
   </div>
 </div>
@@ -44,7 +40,7 @@
   @layer starlight.core {
     .hero {
       display: grid;
-      align-items: start;
+      align-items: center;
       gap: 1rem;
       padding-bottom: 1rem;
     }
@@ -61,24 +57,26 @@
       align-items: center;
     }
 
-    .hero-title-docs {
-      display: block;
-      font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
-      font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
-      font-weight: 500;
-      line-height: var(--sl-line-height-headings);
-      color: var(--sl-color-white);
-      letter-spacing: -0.015em;
+    .copy > * {
+      max-width: 50ch;
     }
 
-    .hero-title-domain {
-      display: block;
-      font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
-      font-size: clamp(var(--sl-text-xl), calc(0.25rem + 2.5vw), var(--sl-text-3xl));
-      font-weight: 400;
-      line-height: 1.3;
-      color: var(--sl-color-gray-3);
-      letter-spacing: -0.01em;
+    h1 {
+      font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
+      line-height: var(--sl-line-height-headings);
+      font-weight: 600;
+      color: var(--sl-color-white);
+    }
+
+    .tagline {
+      font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
+      color: var(--sl-color-gray-2);
+    }
+
+    .actions {
+      gap: 1rem 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     @media (min-width: 50rem) {
@@ -92,6 +90,10 @@
 
       .copy {
         align-items: flex-start;
+      }
+
+      .actions {
+        justify-content: flex-start;
       }
     }
   }

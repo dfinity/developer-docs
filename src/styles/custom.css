@@ -185,43 +185,9 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--icp-fg);
 }
 
-/* ── Skills banner ─────────────────────────────────────────── */
+/* ── ICP Skills actions (used in the Hero component) ──────── */
 
-.skills-banner {
-  background: var(--icp-bg-elev);
-  border: 1px solid var(--icp-rule);
-  border-radius: 0.5rem;
-  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
-  text-align: center;
-  margin-block: 0;
-}
-
-.skills-banner h2 {
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-weight: 500;
-  color: var(--icp-fg);
-  margin: 0 0 0.5rem;
-  border: none;
-  font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
-}
-
-.skills-banner p {
-  color: var(--icp-muted);
-  font-size: clamp(0.85rem, 1.2vw, 1rem);
-  max-width: 42rem;
-  margin: 0 auto 1.25rem;
-  line-height: 1.6;
-}
-
-.skills-banner .skills-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.skills-banner .skills-primary {
+.skills-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
@@ -237,18 +203,18 @@ h1, h2, h3, h4, h5, h6 {
   transition: filter 0.15s ease;
 }
 
-.skills-banner .skills-primary:hover {
+.skills-primary:hover {
   filter: brightness(1.1);
 }
 
-.skills-banner .skills-primary svg {
+.skills-primary svg {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
   opacity: 0.7;
 }
 
-.skills-banner .skills-cta {
+.skills-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -263,12 +229,12 @@ h1, h2, h3, h4, h5, h6 {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.skills-banner .skills-cta:hover {
+.skills-cta:hover {
   background: var(--icp-accent-dim);
   border-color: var(--icp-accent);
 }
 
-.skills-banner .skills-cta .arrow-icon {
+.skills-cta .arrow-icon {
   width: 0.85rem;
   height: 0.85rem;
 }
