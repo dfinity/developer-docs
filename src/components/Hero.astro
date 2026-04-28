@@ -1,10 +1,8 @@
 ---
 /**
  * Custom Hero override for the landing page.
- *
- * Renders the hero title from frontmatter, then integrates the ICP Skills
- * content (description text + action buttons) directly into the hero area
- * as a natural continuation of the heading — no separate box below.
+ * Renders only the heading from frontmatter — the ICP Skills section
+ * and action cards live in the page body (index.mdx).
  */
 const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title } = data.hero || {};
@@ -14,24 +12,6 @@ const { title = data.title } = data.hero || {};
   <div class="sl-flex stack">
     <div class="sl-flex copy">
       <h1 id="_top" data-page-title set:html={title} />
-      <div class="tagline">
-        Give your coding agent the patterns, APIs, and CLI knowledge it needs to build on ICP from the first prompt.
-      </div>
-    </div>
-    <div class="sl-flex actions">
-      <button class="skills-primary" id="skills-give-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-        </svg>
-        <span id="skills-give-label">Give your agent ICP skills</span>
-      </button>
-      <a class="skills-cta" href="/guides/ai-coding-agents/">
-        <span>Learn more</span>
-        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </a>
     </div>
   </div>
 </div>
@@ -57,26 +37,11 @@ const { title = data.title } = data.hero || {};
       align-items: center;
     }
 
-    .copy > * {
-      max-width: 50ch;
-    }
-
     h1 {
       font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
       line-height: var(--sl-line-height-headings);
       font-weight: 600;
       color: var(--sl-color-white);
-    }
-
-    .tagline {
-      font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
-      color: var(--sl-color-gray-2);
-    }
-
-    .actions {
-      gap: 1rem 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
     }
 
     @media (min-width: 50rem) {
@@ -90,10 +55,6 @@ const { title = data.title } = data.hero || {};
 
       .copy {
         align-items: flex-start;
-      }
-
-      .actions {
-        justify-content: flex-start;
       }
     }
   }

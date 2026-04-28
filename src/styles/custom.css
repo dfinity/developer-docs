@@ -185,7 +185,43 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--icp-fg);
 }
 
-/* ── ICP Skills actions (used in the Hero component) ──────── */
+/* ── ICP Skills banner ─────────────────────────────────────── */
+
+.skills-banner {
+  background: var(--icp-bg-elev);
+  border: 1px solid var(--icp-rule);
+  border-radius: 0.5rem;
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+  text-align: center;
+  margin-block: 0 2rem;
+}
+
+.skills-banner h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 500;
+  color: var(--icp-fg);
+  margin: 0 0 0.5rem;
+  border: none;
+  font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
+}
+
+.skills-banner p {
+  color: var(--icp-muted);
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  max-width: 42rem;
+  margin: 0 auto 1.25rem;
+  line-height: 1.6;
+}
+
+.skills-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── ICP Skills action buttons ─────────────────────────────── */
 
 .skills-primary {
   display: inline-flex;
