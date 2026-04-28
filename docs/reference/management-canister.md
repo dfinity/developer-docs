@@ -560,6 +560,17 @@ Returns metadata about a subnet.
   - `replica_version` (`text`): the replica version running on the subnet
   - `registry_version` (`nat64`): the registry version of the subnet
 
+### `list_canisters`
+
+Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call; not callable by canisters, via replicated calls, or from composite query calls.
+
+- **Caller:** Subnet admins only (query call; not callable by canisters)
+- **Parameters:** none
+- **Returns:**
+  - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive
+
+> The response comes from a single replica and is not suitable for security-sensitive applications. Consider replica-signed queries if verification of the subnet origin is required.
+
 ## Provisional methods (local testing only)
 
 These methods are only available on local development instances. They do not exist on mainnet.
