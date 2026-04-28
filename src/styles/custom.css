@@ -186,6 +186,15 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--icp-fg);
 }
 
+.landing-action-card::after {
+  content: ' →';
+  opacity: 0.5;
+}
+
+.landing-action-card[href^="http"]::after {
+  content: ' ↗';
+}
+
 /* ── ICP Skills banner ─────────────────────────────────────── */
 
 .skills-banner {
