@@ -17,8 +17,8 @@
 
   <!-- Main headline -->
   <text x="80" y="296"
-    font-family="Georgia,'Times New Roman',ui-serif,serif"
-    font-size="86" font-weight="400" fill="#f0ebe0">Developer Docs</text>
+    font-family="Newsreader,'Source Serif 4','EB Garamond',Georgia,ui-serif,serif"
+    font-size="86" font-weight="500" fill="#f0ebe0">Developer Docs</text>
 
   <!-- Tagline -->
   <text x="80" y="358"
