@@ -150,8 +150,39 @@ h1, h2, h3, h4, h5, h6 {
   padding-block: clamp(2rem, 6vmin, 4rem) !important;
 }
 
-.hero h1 {
-  font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 4vw), var(--sl-text-5xl)) !important;
+/* ── Landing action cards (three boxes under hero) ────────── */
+
+.landing-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-block: 0 2.5rem;
+}
+
+@media (max-width: 50rem) {
+  .landing-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.landing-action-card {
+  display: block;
+  background: var(--icp-bg-elev);
+  border: 1px solid var(--icp-rule);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: var(--sl-text-base);
+  color: var(--icp-fg);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.landing-action-card:hover {
+  border-color: var(--icp-accent);
+  background: var(--icp-accent-dim);
+  color: var(--icp-fg);
 }
 
 /* ── Skills banner ─────────────────────────────────────────── */
@@ -160,9 +191,9 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--icp-bg-elev);
   border: 1px solid var(--icp-rule);
   border-radius: 0.5rem;
-  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
   text-align: center;
-  margin-block: 0 2rem;
+  margin-block: 0;
 }
 
 .skills-banner h2 {

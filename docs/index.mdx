@@ -2,73 +2,16 @@
 title: Build on the Internet Computer
 description: "Build tamperproof fullstack applications on the Internet Computer: no cloud vendor, no server patching, no security team required"
 template: splash
-hero:
-  title: "The Network is The Cloud.<br/>Agents Build."
-  tagline: "Build fullstack apps on a public network where security is enforced by the protocol. No cloud vendor, no server patching, no security team. Tamperproof. Sovereign."
-  actions:
-    - text: Get started
-      link: /getting-started/quickstart/
-      icon: right-arrow
-      variant: primary
-    - text: Explore guides
-      link: /guides/
-      variant: secondary
-    - text: Try in browser
-      link: https://icp.ninja/projects/hello-world
-      icon: external
-      variant: minimal
+hero: {}
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-## Start building
-
-<CardGrid>
-  <LinkCard title="Quickstart" description="Install the icp CLI, create a project, and deploy your first canister in under 5 minutes." href="/getting-started/quickstart/" />
-  <LinkCard title="Choose your path" description="Not sure what to build next? Find the right guide based on your goal." href="/getting-started/choose-your-path/" />
-</CardGrid>
-
-<div class="skills-banner" style="margin-top: 3rem">
-
-## ICP skills for agents that write code
-
-Teach your AI agent canister patterns, API integrations, CLI commands, and deployment workflows so it ships working code instead of guessing.
-
-<div class="skills-actions">
-<button class="skills-primary" id="skills-give-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span id="skills-give-label">Give your agent ICP skills</span></button>
-<a class="skills-cta" href="/guides/ai-coding-agents/"><span>Learn more</span><svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+<div class="landing-actions">
+  <a href="https://icp.ninja/projects/hello-world" class="landing-action-card">Playground for craft coders</a>
+  <a href="/getting-started/quickstart/" class="landing-action-card">Quick start for craft coders</a>
+  <a href="/guides/" class="landing-action-card">Explore Guides</a>
 </div>
-
-</div>
-
-## The frontier cloud for your apps
-
-<CardGrid>
-  <Card title="Tamperproof by the network" icon="approve-check-circle">
-    Security is enforced by the protocol across every node. No security team, no server patching, no compliance dashboard required.
-    [Learn more](concepts/canisters.md)
-  </Card>
-  <Card title="Fullstack on the network" icon="laptop">
-    Frontend, backend, and data all run on the network. No cloud vendor, no CDN, no separate database.
-    [Learn more](concepts/app-architecture.md)
-  </Card>
-  <Card title="Sovereign by design" icon="star">
-    Apps run across independent nodes and are portable across hardware providers. No vendor lock-in.
-    [Learn more](concepts/network-overview.md)
-  </Card>
-  <Card title="Data survives upgrades" icon="document">
-    Canister memory persists automatically across executions and upgrades. No serialization, no migration scripts.
-    [Learn more](concepts/orthogonal-persistence.md)
-  </Card>
-  <Card title="Autonomous execution" icon="rocket">
-    Canisters schedule their own execution with timers. No external cron jobs, background workers, or separate infrastructure to maintain.
-    [Learn more](concepts/timers.md)
-  </Card>
-  <Card title="Canisters fund themselves" icon="setting">
-    Pre-load a canister with cycles and it pays for its own compute, storage, and bandwidth. No usage-based billing to pass on, no per-user pricing logic to build.
-    [Learn more](concepts/cycles.md)
-  </Card>
-</CardGrid>
 
 ## Documentation
 
