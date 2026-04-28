@@ -13,7 +13,7 @@ import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://beta-docs.internetcomputer.org",
+  site: "https://docs.internetcomputer.org",
   markdown: {
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
@@ -61,7 +61,7 @@ export default defineConfig({
         },
         {
           tag: "meta",
-          attrs: { property: "og:image", content: "https://beta-docs.internetcomputer.org/og-image.png" },
+          attrs: { property: "og:image", content: "https://docs.internetcomputer.org/og-image.png" },
         },
         {
           tag: "meta",
@@ -69,7 +69,7 @@ export default defineConfig({
         },
         {
           tag: "meta",
-          attrs: { name: "twitter:image", content: "https://beta-docs.internetcomputer.org/og-image.png" },
+          attrs: { name: "twitter:image", content: "https://docs.internetcomputer.org/og-image.png" },
         },
         {
           tag: "script",
@@ -79,15 +79,15 @@ export default defineConfig({
             "@graph": [
               {
                 "@type": "WebSite",
-                "@id": "https://beta-docs.internetcomputer.org/#website",
+                "@id": "https://docs.internetcomputer.org/#website",
                 "name": TITLE,
                 "description": DESCRIPTION,
-                "url": "https://beta-docs.internetcomputer.org",
-                "publisher": { "@id": "https://beta-docs.internetcomputer.org/#organization" },
+                "url": "https://docs.internetcomputer.org",
+                "publisher": { "@id": "https://docs.internetcomputer.org/#organization" },
               },
               {
                 "@type": "Organization",
-                "@id": "https://beta-docs.internetcomputer.org/#organization",
+                "@id": "https://docs.internetcomputer.org/#organization",
                 "name": PUBLISHER,
                 "url": "https://dfinity.org",
               },

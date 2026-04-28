@@ -141,7 +141,7 @@ git checkout main
 - Write code snippets from memory — find and adapt from actual upstream code in `.sources/`
 - Modify the rationale or context of existing decisions in `.docs-plan/decisions.md` — you may remove entries that are fully reflected in the current codebase but never alter reasoning behind active decisions
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
-- Link to `internetcomputer.org/docs/` or `docs.internetcomputer.org` — those URLs will break. Link to pages in this site (relative paths), Learn Hub, or explain inline.
+- Link to `internetcomputer.org/docs/` — that site is retired. For internal pages use relative paths, not absolute `docs.internetcomputer.org/...` URLs. Link to Learn Hub or explain inline for external content.
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
 - Link externally when an internal page exists — check `docs/` before using an external URL
 - Offer, suggest, or perform PR reviews unless a human explicitly asks
@@ -369,10 +369,7 @@ sidebar:
 
 ## Portal tracking
 
-The old portal (`dfinity/portal`) is still live during the transition period.
-- **Ignore:** dfx-only changes, JSX/component changes, release notes, NNS dapp guides
-- **Flag for rewrite:** Content updates to topics we cover
-- **Evaluate:** New content — does it belong in the new docs?
+The old portal (`dfinity/portal`) has been replaced by this site. The `.sources/portal` submodule is kept as a read-only reference for spec content (see `ic.did` sync checklist above) but no longer needs active monitoring for content changes.
 
 ## Commands
 

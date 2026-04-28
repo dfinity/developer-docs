@@ -44,8 +44,8 @@ function checkFrontmatter(file, content) {
 
 const FORBIDDEN = [
   { re: /mo:base/, msg: '"mo:base" is banned — use "mo:core" instead' },
-  { re: /internetcomputer\.org\/docs/, msg: 'internetcomputer.org/docs URLs will break — link internally or inline' },
-  { re: /docs\.internetcomputer\.org/, msg: 'docs.internetcomputer.org URLs will break — link internally or inline' },
+  { re: /internetcomputer\.org\/docs/, msg: 'internetcomputer.org/docs is retired — link internally or inline' },
+  { re: /docs\.internetcomputer\.org/, msg: 'docs.internetcomputer.org is this site — use relative paths for internal links' },
 ];
 
 function checkEmdash(file, content) {

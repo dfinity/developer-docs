@@ -35,6 +35,6 @@
   <circle cx="80" cy="560" r="5" fill="#ff7a4d"/>
   <text x="96" y="566"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="17" font-weight="400" fill="#6e6660">DFINITY Foundation  ·  beta-docs.internetcomputer.org</text>
+    font-size="17" font-weight="400" fill="#6e6660">DFINITY Foundation  ·  docs.internetcomputer.org</text>
 
 </svg>

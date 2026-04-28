@@ -275,3 +275,10 @@ Record decisions that constrain future work — things an agent needs to know th
 **Rationale:** Dynamic SVG generation in the build plugin adds ~30 lines of complexity for a one-time change. Static is simpler and good enough.
 **Alternatives considered:** Generate SVG dynamically in `plugins/astro-agent-docs.mjs` using `siteUrl` from Astro config (more robust, but over-engineered for a single domain change)
 
+
+## 2026-04-28: Production domain cutover to docs.internetcomputer.org
+
+**Context:** The site was previously served from `beta-docs.internetcomputer.org` as a staging domain during the transition from `dfinity/portal`. The portal has now been retired and this site is the canonical ICP developer docs.
+**Decision:** Switch all domain references from `beta-docs.internetcomputer.org` to `docs.internetcomputer.org`. Updated files: `astro.config.mjs` (site URL + og/twitter/schema.org meta), `public/robots.txt` (sitemap), `public/og-image.svg` (footer text), `README.md`, `AGENTS.md` (never-link rule + portal tracking section), `scripts/validate.js` (error messages). The `docs.internetcomputer.org` lint rule in validate.js is kept — it still enforces relative paths for internal links.
+**Rationale:** The beta domain was always a temporary staging address. With the portal retired, `docs.internetcomputer.org` is the permanent home.
+**Alternatives considered:** Keep beta domain as a redirect origin (handled at DNS/CDN level, not in code)

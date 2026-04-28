@@ -1,16 +1,14 @@
 # ICP Developer Docs
 
-Developer documentation for the [Internet Computer](https://internetcomputer.org) — built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build), deployed at [beta-docs.internetcomputer.org](https://beta-docs.internetcomputer.org).
+Developer documentation for the [Internet Computer](https://internetcomputer.org) — built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build), deployed at [docs.internetcomputer.org](https://docs.internetcomputer.org).
 
 ## Background
 
-The existing ICP docs live at [internetcomputer.org/docs](https://internetcomputer.org/docs), sourced from [dfinity/portal](https://github.com/dfinity/portal) (Docusaurus). That site accumulated content over years without a consistent information architecture, making it hard to navigate and harder to keep accurate.
-
-This repo is a ground-up rewrite: a flat Diataxis structure (Getting Started, Guides, Concepts, Languages, Reference), content verified against pinned upstream repos, and a workflow built for both human contributors and AI coding agents from day one.
+This repo is a ground-up rewrite of the ICP developer docs: a flat Diataxis structure (Getting Started, Guides, Concepts, Languages, Reference), content verified against pinned upstream repos, and a workflow built for both human contributors and AI coding agents from day one. It replaces the previous [dfinity/portal](https://github.com/dfinity/portal) (Docusaurus) site.
 
 ## Current state
 
-Most pages are content-complete. A small number of pages remain as stubs (vetkeys, encryption). The existing production docs remain live during the transition.
+Most pages are content-complete. A small number of pages remain as stubs (vetkeys, encryption).
 
 ## Content areas
 
