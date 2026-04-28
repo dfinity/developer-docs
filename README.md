@@ -1,17 +1,33 @@
 # ICP Developer Docs
 
-> **Work in progress.** This is a complete rewrite of the ICP developer documentation. Most pages are content-complete; a small number remain as stubs. The existing production docs live at [internetcomputer.org/docs](https://internetcomputer.org/docs) (source: [dfinity/portal](https://github.com/dfinity/portal)).
+Developer documentation for the [Internet Computer](https://internetcomputer.org) — built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build), deployed at [beta-docs.internetcomputer.org](https://beta-docs.internetcomputer.org).
 
-**Live preview:** [beta-docs.internetcomputer.org](https://beta-docs.internetcomputer.org) — deployed automatically on every push to `main`.
+## Background
 
-Developer documentation for the [Internet Computer](https://internetcomputer.org), built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build).
+The existing ICP docs live at [internetcomputer.org/docs](https://internetcomputer.org/docs), sourced from [dfinity/portal](https://github.com/dfinity/portal) (Docusaurus). That site accumulated content over years without a consistent information architecture, making it hard to navigate and harder to keep accurate.
+
+This repo is a ground-up rewrite: a flat Diataxis structure (Getting Started, Guides, Concepts, Languages, Reference), content verified against pinned upstream repos, and a workflow built for both human contributors and AI coding agents from day one.
+
+## Current state
+
+Most pages are content-complete. A small number of pages remain as stubs (vetkeys, encryption). The existing production docs remain live during the transition.
+
+## Content areas
+
+| Section | What it covers |
+|---------|----------------|
+| Getting Started | Tutorials and quickstarts |
+| Guides | How-to guides: backends, frontends, authentication, testing, deployment, chain fusion, security |
+| Concepts | Developer-focused explanations of ICP architecture and design decisions |
+| Languages | Language-specific guides for Rust and Motoko |
+| Reference | Specifications, canister IDs, cycle costs, glossary |
 
 ## Quick start
 
 ```bash
-npm install
-npm run dev      # Dev server at localhost:4321
-npm run build    # Production build
+./scripts/setup.sh    # Initialize submodules and install dependencies
+npm run dev           # Dev server at localhost:4321
+npm run build         # Production build
 ```
 
 ## Project layout
@@ -21,103 +37,72 @@ docs/                   # All documentation (.md only)
 ├── getting-started/    # Tutorials
 ├── guides/             # How-to guides
 ├── concepts/           # Explanations
-├── languages/          # Motoko (synced) + Rust
+├── languages/          # Motoko (synced) + Rust (hand-written)
 └── reference/          # Specs and reference
-.sources/               # Pinned upstream repos (read-only source material for agents)
-├── VERSIONS            # Current pinned release versions for versioned submodules
+.sources/               # Pinned upstream source repos (read-only)
+├── VERSIONS            # Current pinned versions for versioned submodules
 └── ...                 # portal, icp-cli, motoko, cdk-rs, icskills, examples, ...
-.docs-plan/             # Planning artifacts and progress tracking
-AGENTS.md               # Agent and contributor instructions
-CONTRIBUTING.md         # Contribution guidelines
+.docs-plan/             # Planning artifacts and authoring workflow
+AGENTS.md               # Contributor and agent instructions
 ```
 
-Documentation lives in `docs/` at the project root. Astro reads it via a symlink at `src/content/docs/`.
-
-`.sources/` contains pinned git submodules that agents use as ground truth when writing and verifying content — CLI references, API signatures, skill files, code examples. **Do not edit files in `.sources/` directly.** See `.sources/VERSIONS` for current pinned release versions and `AGENTS.md` for the bump procedure.
+Documentation lives in `docs/` at the project root. Astro reads it via a symlink at `src/content/docs/`. Pages default to `.md`; `.mdx` is used only when a page needs interactive components (for example, language-synced tabs).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for content format, frontmatter schema, and review ownership.
+Open tasks are tracked as [GitHub Issues](https://github.com/dfinity/developer-docs/issues). Content pages use the `documentation` label; infrastructure tasks use `enhancement`.
 
-## Working with agents
+**AGENTS.md** is the single source of truth for contributors and AI agents alike. It covers branch naming, content authoring workflow, code conventions, PR submission, and how to handle feedback. `CLAUDE.md` symlinks to `AGENTS.md`.
 
-This project uses AI agents (Claude Code, Codex, etc.) to write documentation pages. Agents follow the workflow in [AGENTS.md](AGENTS.md). Human developers direct agents and review their output.
+Key rules at a glance:
 
-### Workflow at a glance
+- Use `icp` CLI commands in all examples — never `dfx`
+- Use `mo:core` for all Motoko standard library imports — never `mo:base`
+- Every content page ends with an `<!-- Upstream: -->` comment listing source repos used
+- Every PR includes a `## Sync recommendation` in the description
 
-```
-Developer: "check for PR feedback"
-    │
-    ├─ Agent reads all comments (human + Copilot)
-    ├─ Agent evaluates each item, presents summary
-    ├─ Developer confirms which fixes to make
-    └─ Agent applies fixes, pushes, comments on PR
-```
+Use **squash and merge** to keep `main` history clean.
 
-```
-Developer: "write the vetkeys page"
-    │
-    ├─ Agent picks up GitHub Issue, checks out a branch
-    ├─ Reads source material from .sources/
-    ├─ Writes content, verifies links and code
-    ├─ Builds, pushes, opens PR
-    └─ Developer reviews and merges
-```
+## Working with AI agents
 
-### Things you can ask an agent to do
+This project treats AI coding agents as first-class contributors. Agents (Claude Code, Codex, Cursor, etc.) write pages from source material in `.sources/`, verify code snippets, and address PR feedback. Human developers direct the work, review the output, and make structural decisions.
 
-- Check open PRs for unaddressed feedback
-- Write a specific page (link to the GitHub Issue)
-- Address feedback on a specific PR
-- Review a PR (checks links, code, CLI commands, technical accuracy against `.sources/`)
-- Rebase a PR on main
-
-Agent reviews complement but don't replace human review — use them to catch mechanical issues before you review the content yourself.
-
-### Task coordination
-
-Open tasks are tracked as [GitHub Issues](https://github.com/dfinity/developer-docs/issues). Content pages use the `documentation` label; infra tasks use `enhancement`.
-
-**Merging PRs:** Use **squash and merge** (keeps `main` history clean — one commit per page). Branches are auto-deleted after merge.
-
-### What agents handle vs. what developers handle
-
-| Agents | Developers |
-|--------|-----------|
-| Draft content from source material | Review content for accuracy |
-| Review PRs (links, code, technical claims) | Final approval and merge |
-| Fix PR feedback | Decide which feedback to accept |
-| Verify links, code snippets, CLI commands | Bump source submodules |
-| Open PRs | Make structural decisions |
-
-### Setup
+`.sources/` contains pinned git submodules — CLI references, API signatures, code examples, skill files — that agents use as ground truth when writing and verifying content. Agents always read from `.sources/` rather than training data.
 
 ```bash
-./scripts/setup.sh    # submodules + npm install
+./scripts/setup.sh    # Sets up submodules and npm deps
+# Then open Claude Code or your preferred agent in the repo root.
+# The agent reads AGENTS.md automatically.
 ```
 
-Then open Claude Code (or your preferred agent tool) in the repo root. The agent reads `AGENTS.md` automatically.
+| Agents handle | Developers handle |
+|---------------|-------------------|
+| Draft content from source material | Review content for accuracy |
+| Verify links, code, CLI commands | Final approval and merge |
+| Address PR feedback | Decide which feedback to accept |
+| Open PRs | Bump source submodules |
+| Review PRs (mechanical checks) | Make structural decisions |
 
-## For AI agents
+## Agent-friendly documentation
 
-The site is built to be agent-friendly per the [Agent-Friendly Documentation Spec](https://agentdocsspec.com):
+The site is built per the [Agent-Friendly Documentation Spec](https://agentdocsspec.com):
 
 - **`/llms.txt`** — discovery index listing all pages with descriptions
 - **`/<path>.md`** — clean markdown endpoint for every page (e.g., `/concepts/canisters.md`)
-- **Agent signaling** — hidden blockquote after `<body>` pointing to `/llms.txt` (per agentdocsspec), plus `<link rel="llms">` in `<head>`
+- **Agent signaling** — hidden element after `<body>` pointing to `/llms.txt`, plus `<link rel="llms">` in `<head>`
 
-See [AGENTS.md](AGENTS.md) for the full workflow: orientation, rules, content authoring, and planning artifacts. `CLAUDE.md` symlinks to `AGENTS.md`.
+These endpoints are generated at build time and updated automatically on every deploy.
 
 ## Related resources
 
 | Resource | URL |
 |----------|-----|
-| icp-cli docs | https://cli.internetcomputer.org/ |
+| ICP CLI docs | https://cli.internetcomputer.org |
 | JS SDK docs | https://js.icp.build |
-| icskills | https://skills.internetcomputer.org |
+| ICP Skills | https://skills.internetcomputer.org |
 | Learn Hub | https://learn.internetcomputer.org |
-| Motoko libraries | https://mops.one/core/docs |
-| Rust CDK API | https://docs.rs/ic-cdk/latest/ic_cdk/ |
+| Motoko core library | https://mops.one/core/docs |
+| Rust CDK API | https://docs.rs/ic-cdk/latest/ic_cdk |
 
 ## License
 
