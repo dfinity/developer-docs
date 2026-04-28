@@ -15,7 +15,7 @@ This design has several consequences for developers:
 
 - **Fast verification.** Clients verify subnet responses with a single public key check. There is no need to download block headers or maintain a light client.
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified variables](../guides/backends/certified-variables.md).
-- **Onchain randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Onchain randomness](onchain-randomness.md).
+- **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Cross-chain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion.md).
 
 ## Core protocols
@@ -33,7 +33,7 @@ BLS is the signature scheme used for ICP's internal operations: consensus, respo
 BLS was chosen for two properties:
 
 1. **Non-interactive signing.** A node holding a key share can independently produce a signature share. Shares are combined into a full signature with no further communication between nodes.
-2. **Unique signatures.** For a given public key and message, exactly one valid BLS signature exists. This uniqueness is what makes onchain randomness unbiasable. No coalition of nodes can influence the output.
+2. **Unique signatures.** For a given public key and message, exactly one valid BLS signature exists. This uniqueness is what makes the verifiable randomness unbiasable. No coalition of nodes can influence the output.
 
 ### Chain-key signatures (threshold ECDSA and Schnorr)
 
