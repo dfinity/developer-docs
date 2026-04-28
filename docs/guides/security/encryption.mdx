@@ -53,13 +53,15 @@ npm install @dfinity/vetkeys@0.4.0
 
 ## Step 1: Expose vetKD endpoints in the backend canister
 
-The backend canister wraps the management canister's `vetkd_derive_key` and `vetkd_public_key` methods and enforces access control. In this pattern, each caller gets a vetKey scoped to their principal, so only that caller can retrieve their key.
+The backend canister wraps the management canister's `vetkd_derive_key` and `vetkd_public_key` methods and enforces per-caller key isolation. The context passed to both API methods encodes the domain separator and the caller's principal, so each caller's keys are cryptographically separate and only that caller can retrieve them.
 
 <Tabs>
 <TabItem label="Motoko">
 
 ```motoko
+import Array "mo:core/Array";
 import Blob "mo:core/Blob";
+import Nat8 "mo:core/Nat8";
 import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 
@@ -98,17 +100,28 @@ persistent actor {
     vetkd_derive_key : VetKdDeriveKeyRequest -> async VetKdDeriveKeyResponse;
   } = actor "aaaaa-aa";
 
-  let context : Blob = Text.encodeUtf8("my_app_v1");
+  let domainSeparator : [Nat8] = Blob.toArray(Text.encodeUtf8("my_app_v1"));
+
+  // Encodes domain separator + caller principal so each caller's keys are isolated.
+  func callerContext(caller : Principal) : Blob {
+    Blob.fromArray(
+      Array.flatten([
+        [Nat8.fromNat(domainSeparator.size())],
+        domainSeparator,
+        Blob.toArray(Principal.toBlob(caller)),
+      ])
+    )
+  };
 
   func keyId() : VetKdKeyId {
     { curve = #bls12_381_g2; name = "test_key_1" }
     // Use "key_1" for production
   };
 
-  public shared func getPublicKey() : async Blob {
+  public shared ({ caller }) func getPublicKey() : async Blob {
     let response = await managementCanister.vetkd_public_key({
       canister_id = null;
-      context;
+      context = callerContext(caller);
       key_id = keyId();
     });
     response.public_key
@@ -118,11 +131,10 @@ persistent actor {
     input : Blob,
     transportPublicKey : Blob,
   ) : async Blob {
-    // caller is captured before the await
     // test_key_1 costs ~10B cycles; key_1 costs ~26B cycles
     let response = await (with cycles = 10_000_000_000) managementCanister.vetkd_derive_key({
       input;
-      context;
+      context = callerContext(caller);
       transport_public_key = transportPublicKey;
       key_id = keyId();
     });
@@ -135,10 +147,18 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
-use candid::Principal;
 use ic_cdk::update;
 
-const CONTEXT: &[u8] = b"my_app_v1";
+const DOMAIN_SEPARATOR: &[u8] = b"my_app_v1";
+
+/// Encodes domain separator + caller principal so each caller's keys are isolated.
+fn caller_context(caller: candid::Principal) -> Vec<u8> {
+    [DOMAIN_SEPARATOR.len() as u8]
+        .into_iter()
+        .chain(DOMAIN_SEPARATOR.iter().copied())
+        .chain(caller.as_slice().iter().copied())
+        .collect()
+}
 
 fn key_id() -> ic_cdk::management_canister::VetKDKeyId {
     ic_cdk::management_canister::VetKDKeyId {
@@ -149,9 +169,10 @@ fn key_id() -> ic_cdk::management_canister::VetKDKeyId {
 
 #[update]
 async fn get_public_key() -> Vec<u8> {
+    let caller = ic_cdk::caller();
     let request = ic_cdk::management_canister::VetKDPublicKeyArgs {
         canister_id: None,
-        context: CONTEXT.to_vec(),
+        context: caller_context(caller),
         key_id: key_id(),
     };
     let reply = ic_cdk::management_canister::vetkd_public_key(&request)
@@ -163,12 +184,10 @@ async fn get_public_key() -> Vec<u8> {
 #[update]
 async fn get_encrypted_vetkey(input: Vec<u8>, transport_public_key: Vec<u8>) -> Vec<u8> {
     let caller = ic_cdk::caller(); // capture before await
-
-    // Use input as-is (caller's principal, document ID, etc.)
     // test_key_1 costs ~10B cycles; key_1 costs ~26B cycles
     let request = ic_cdk::management_canister::VetKDDeriveKeyArgs {
         input,
-        context: CONTEXT.to_vec(),
+        context: caller_context(caller),
         transport_public_key,
         key_id: key_id(),
     };
@@ -186,8 +205,8 @@ ic_cdk::export_candid!();
 
 **Key decisions:**
 
-- **Context** (`my_app_v1`): a domain separator that scopes all keys to this application. Change it if you need to isolate keys between features of the same canister.
-- **Input**: the identifier for the specific key (a principal, a document ID, a room ID). Different inputs yield different keys; the same input always yields the same key.
+- **Context**: encodes the domain separator (`my_app_v1`) plus the caller's principal. This makes every caller's keys cryptographically separate; a key derived for one principal cannot be decrypted by another. Both `getPublicKey` and `getEncryptedVetKey` must use the same context so that `decryptAndVerify` succeeds on the frontend.
+- **Input**: an additional identifier within the caller's key space (a document ID, a room ID, or an empty vector for a single per-user key). Different inputs yield different keys; the same input always yields the same key.
 - **Caller capture before `await`**: always read `caller` before any `await` in an update call.
 
 ## Step 2: Generate a transport key pair on the frontend
@@ -197,9 +216,8 @@ The transport key pair is ephemeral. Generate it fresh for each session or each 
 ```typescript
 import { TransportSecretKey } from "@dfinity/vetkeys";
 
-const seed = crypto.getRandomValues(new Uint8Array(32));
-const transportSecretKey = TransportSecretKey.fromSeed(seed);
-const transportPublicKey = transportSecretKey.publicKey();
+const transportSecretKey = TransportSecretKey.random();
+const transportPublicKey = transportSecretKey.publicKeyBytes();
 ```
 
 Pass `transportPublicKey` to the canister when requesting a derived key.
@@ -213,8 +231,9 @@ import {
   EncryptedVetKey,
 } from "@dfinity/vetkeys";
 
-// Use the caller's principal bytes (or another unique identifier) as the input
-const input = new Uint8Array(0); // simplest possible input; use a real ID in practice
+// An additional identifier within the caller's key space.
+// Use an empty vector for a single per-user key, or a document/room ID for multiple.
+const input = new Uint8Array(0);
 
 const [encryptedKeyBytes, verificationKeyBytes] = await Promise.all([
   backendActor.get_encrypted_vetkey(input, transportPublicKey),
@@ -377,7 +396,7 @@ For `vetkd_derive_key` testing, use the [chain-key testing canister](https://git
 - **Reusing transport keys across sessions.** Each session must generate a fresh transport key pair.
 - **Using the raw vetKey as an AES key.** Always call `toDerivedKeyMaterial()` first; do not pass the raw bytes to `importKey`.
 - **Putting secret data in the `input` field.** The `input` is sent to the management canister in plaintext. Use it as an identifier (principal, document ID), not for the secret data itself.
-- **Mismatched `context` between frontend and backend.** If the canister uses `b"my_app_v1"` but the frontend verification uses a different value, decryption will fail silently.
+- **Mismatched `context` between `getPublicKey` and `getEncryptedVetKey`.** Both endpoints must derive context from the same inputs (domain separator + caller principal). If they differ, `decryptAndVerify` will fail silently.
 - **Not attaching enough cycles to `vetkd_derive_key`.** `test_key_1` costs approximately 10 billion cycles; `key_1` costs approximately 26 billion cycles.
 
 ## Next steps
