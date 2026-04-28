@@ -18,7 +18,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 - **[Cycles](cycles.md)**: How canisters pay for their own compute, storage, and bandwidth, and why users pay nothing.
 - **[Orthogonal Persistence](orthogonal-persistence.md)**: How canister memory survives across executions and upgrades without databases.
 - **[HTTPS Outcalls](https-outcalls.md)**: How canisters make HTTP requests to external services with consensus on responses.
-- **[Onchain Randomness](onchain-randomness.md)**: Cryptographically secure random numbers using threshold VRF.
+- **[Verifiable Randomness](verifiable-randomness.md)**: Cryptographically secure random numbers using threshold VRF.
 - **[Timers](timers.md)**: Periodic and one-shot scheduled tasks via the global timer mechanism.
 
 ## Cryptography and cross-chain

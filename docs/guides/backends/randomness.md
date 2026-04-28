@@ -1,5 +1,5 @@
 ---
-title: "Onchain Randomness"
+title: "Verifiable Randomness"
 description: "Generate cryptographically secure random numbers in canisters using the management canister's raw_rand API"
 sidebar:
   order: 4
@@ -7,9 +7,9 @@ sidebar:
 
 [Canisters](../../concepts/canisters.md) can generate cryptographically secure random numbers directly from canister code. This guide shows how to call the `raw_rand` method, derive typed values from the returned bytes, and use randomness safely.
 
-For how ICP produces unpredictable randomness without any trusted party, see [Onchain Randomness](../../concepts/onchain-randomness.md).
+For how ICP produces unpredictable randomness without any trusted party, see [Verifiable Randomness](../../concepts/verifiable-randomness.md).
 
-## Why onchain randomness is different
+## Why verifiable randomness matters
 
 Consensus-based systems execute every transaction deterministically: every node replays the same operations and must reach the same state. This means you cannot use typical randomness sources like `Math.random()` or `/dev/urandom`: they would produce different values on each replica, breaking consensus.
 
@@ -223,7 +223,7 @@ Note: this example predates `mo:core` and uses the older `Random.Finite` API. Th
 
 ## Next steps
 
-- [Onchain Randomness (concept)](../../concepts/onchain-randomness.md): how the IC's threshold VRF works
+- [Verifiable Randomness (concept)](../../concepts/verifiable-randomness.md): how the IC's threshold VRF works
 - [Management Canister](../../reference/management-canister.md): `raw_rand` API reference
 - [Data Integrity](../security/data-integrity.md): using randomness in a secure application design
 - [Inter-canister calls](../canister-calls/inter-canister-calls.md): async patterns and reentrancy
