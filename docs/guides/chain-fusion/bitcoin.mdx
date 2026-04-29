@@ -393,7 +393,7 @@ async fn withdraw(btc_address: String, amount: u64) -> RetrieveBtcResult {
 First, export your principal from your active identity (every command below reuses it):
 
 ```bash
-export MY_PRINCIPAL=$(icp identity get-principal)
+export MY_PRINCIPAL=$(icp identity principal)
 ```
 
 Get a deposit address:
