@@ -19,11 +19,30 @@ function encode(data) {
   return r;
 }
 
+const SKIN = `
+skinparam backgroundColor transparent
+skinparam defaultFontName sans-serif
+skinparam defaultFontSize 13
+skinparam defaultFontColor #1a1714
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceArrowColor #cc5a2b
+skinparam SequenceLifeLineBorderColor #e5ddcf
+skinparam ParticipantBackgroundColor #fdfaf3
+skinparam ParticipantBorderColor #e5ddcf
+skinparam ParticipantFontColor #1a1714
+skinparam ActorBackgroundColor #fdfaf3
+skinparam ActorBorderColor #e5ddcf
+skinparam ActorFontColor #1a1714
+skinparam NoteBackgroundColor #f2d7c7
+skinparam NoteBorderColor #e5ddcf
+skinparam NoteFontColor #1a1714
+`;
+
 function toUrl(source) {
-  const src = source.trimStart().startsWith("@startuml")
+  const body = source.trimStart().startsWith("@startuml")
     ? source
-    : `@startuml\n${source}\n@enduml`;
-  const compressed = deflateRawSync(Buffer.from(src, "utf-8"), { level: 9 });
+    : `@startuml\n${SKIN}\n${source}\n@enduml`;
+  const compressed = deflateRawSync(Buffer.from(body, "utf-8"), { level: 9 });
   return `${SERVER}/${encode(compressed)}`;
 }
 
