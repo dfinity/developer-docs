@@ -34,7 +34,7 @@ The deposit flow has two steps:
 1. **Get a deposit address**: call `get_btc_address` on the ckBTC minter with the owner principal and an optional subaccount. The minter returns a unique Bitcoin address.
 2. **Mint ckBTC**: after BTC is sent to that address, call `update_balance` on the minter. The minter checks for new UTXOs and mints ckBTC to the corresponding ICRC-1 account.
 
-The minter requires a minimum number of Bitcoin confirmations before minting (currently 6 on mainnet). `update_balance` returns `NoNewUtxos` if confirmations have not yet been reached: your app should poll or prompt the user to wait.
+The minter requires a minimum number of Bitcoin confirmations before minting (currently 4 on mainnet). `update_balance` returns `NoNewUtxos` if confirmations have not yet been reached: your app should poll or prompt the user to wait.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">

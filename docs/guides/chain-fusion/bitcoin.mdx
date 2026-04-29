@@ -41,7 +41,7 @@ participant "Bitcoin Network" as BTC
 User -> Minter: get_btc_address(owner, subaccount)
 Minter --> User: btc_address
 User -> BTC: send BTC to btc_address
-note right of BTC: 6 confirmations required
+note right of BTC: 4 confirmations required
 User -> Minter: update_balance(owner, subaccount)
 Minter -> KYT: check UTXO
 KYT --> Minter: ok
@@ -51,7 +51,7 @@ Minter --> User: MintedUtxos
 
 1. Call `get_btc_address` on the minter with the user's principal and subaccount. This returns a unique Bitcoin address controlled by the minter via threshold ECDSA.
 2. Send BTC to that address from any Bitcoin wallet.
-3. Wait for 6 Bitcoin confirmations (mainnet). The minter will not process UTXOs until the required number of confirmations is reached.
+3. Wait for 4 Bitcoin confirmations (mainnet). The minter will not process UTXOs until the required number of confirmations is reached.
 4. Call `update_balance` on the minter. The minter checks for new UTXOs, runs a KYT (Know-Your-Transaction) compliance check via the Bitcoin Checker canister, and mints ckBTC to the user's ICRC-1 account. A KYT fee of 100 satoshis is deducted per UTXO. UTXOs that fail the KYT check are quarantined and not minted.
 
 <Tabs syncKey="lang">
