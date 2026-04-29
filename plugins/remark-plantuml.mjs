@@ -26,15 +26,15 @@ skinparam defaultFontSize 13
 skinparam defaultFontColor #1a1714
 skinparam sequenceArrowThickness 1.5
 skinparam sequenceArrowColor #cc5a2b
-skinparam SequenceLifeLineBorderColor #e5ddcf
+skinparam SequenceLifeLineBorderColor #6b6660
 skinparam ParticipantBackgroundColor #fdfaf3
-skinparam ParticipantBorderColor #e5ddcf
+skinparam ParticipantBorderColor #6b6660
 skinparam ParticipantFontColor #1a1714
 skinparam ActorBackgroundColor #fdfaf3
-skinparam ActorBorderColor #e5ddcf
+skinparam ActorBorderColor #6b6660
 skinparam ActorFontColor #1a1714
 skinparam NoteBackgroundColor #f2d7c7
-skinparam NoteBorderColor #e5ddcf
+skinparam NoteBorderColor #6b6660
 skinparam NoteFontColor #1a1714
 `;
 
@@ -53,7 +53,7 @@ export default function remarkPlantUML() {
       const url = toUrl(node.value);
       parent.children[index] = {
         type: "html",
-        value: `<img src="${url}" alt="PlantUML diagram" />`,
+        value: `<figure class="plantuml-diagram"><img src="${url}" alt="PlantUML diagram" /></figure>`,
       };
     });
   };

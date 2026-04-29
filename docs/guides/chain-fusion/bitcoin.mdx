@@ -12,7 +12,7 @@ ICP provides a protocol-level integration with the Bitcoin network. Canisters ca
 There are two approaches to working with Bitcoin on ICP:
 
 - **ckBTC (chain-key Bitcoin)**: a 1:1 BTC-backed token native to ICP. Transfers settle in 1-2 seconds with a 10 satoshi fee. Best for most applications that need to accept, hold, or transfer Bitcoin value.
-- **Direct Bitcoin API**: call the management canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
+- **Direct Bitcoin API**: call the Bitcoin canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
 
 This guide covers both approaches.
 
@@ -34,19 +34,25 @@ ckBTC is the recommended path for most developers. The ckBTC minter canister hol
 ```plantuml
 actor User
 participant "ckBTC Minter" as Minter
+participant "Bitcoin Checker" as KYT
+participant "ckBTC Ledger" as Ledger
 participant "Bitcoin Network" as BTC
 
-User -> Minter: get_btc_address(account)
+User -> Minter: get_btc_address(owner, subaccount)
 Minter --> User: btc_address
 User -> BTC: send BTC to btc_address
-User -> Minter: update_balance(account)
-Minter --> User: ckBTC minted to ICRC-1 account
+note right of BTC: 4 confirmations required
+User -> Minter: update_balance(owner, subaccount)
+Minter -> KYT: check UTXO
+KYT --> Minter: ok
+Minter -> Ledger: mint ckBTC (amount - kyt_fee)
+Minter --> User: MintedUtxos
 ```
 
-1. Call `get_btc_address` on the minter with the user's principal and subaccount. This returns a unique Bitcoin address controlled by the minter.
-2. The user sends BTC to that address using any Bitcoin wallet.
-3. Wait for Bitcoin confirmations (the minter requires confirmations before minting).
-4. Call `update_balance` on the minter with the same principal and subaccount. The minter checks for new UTXOs and mints equivalent ckBTC to the user's ICRC-1 account.
+1. Call `get_btc_address` on the minter with the user's principal and subaccount. This returns a unique Bitcoin address controlled by the minter via threshold ECDSA.
+2. Send BTC to that address from any Bitcoin wallet.
+3. Wait for 4 Bitcoin confirmations (mainnet). The minter will not process UTXOs until the required number of confirmations is reached.
+4. Call `update_balance` on the minter. The minter checks for new UTXOs, runs a KYT (Know-Your-Transaction) compliance check via the Bitcoin Checker canister, and mints ckBTC to the user's ICRC-1 account. A KYT fee of 100 satoshis is deducted per UTXO. UTXOs that fail the KYT check are quarantined and not minted.
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -243,15 +249,20 @@ async fn transfer(to: Principal, amount: Nat) -> Result<Nat, TransferError> {
 actor User
 participant "ckBTC Ledger" as Ledger
 participant "ckBTC Minter" as Minter
+participant "Bitcoin Checker" as KYT
 participant "Bitcoin Network" as BTC
 
 User -> Ledger: icrc2_approve(spender=minter, amount)
 User -> Minter: retrieve_btc_with_approval(btc_address, amount)
+Minter -> KYT: check destination address
+KYT --> Minter: ok
 Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
-Minter -> BTC: send BTC to btc_address
+Minter --> User: block_index
+note right of Minter: processed asynchronously
+Minter -> BTC: submit signed transaction
 ```
 
-Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
+Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. Before burning ckBTC, the minter runs a KYT check on the destination Bitcoin address. The Bitcoin transaction is submitted asynchronously — the minter batches pending requests to optimize miner fees. Track status with `retrieve_btc_status_v2(block_index)`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -493,7 +504,7 @@ For a complete working example with all type definitions and error handling, see
 
 ## Direct Bitcoin API
 
-For use cases that require full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20), you can call the Bitcoin API directly through the management canister. This involves generating addresses with threshold ECDSA or Schnorr signatures, building raw transactions, and submitting them to the Bitcoin network.
+For use cases that require full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20), you can call the Bitcoin canister directly. This involves generating addresses with threshold ECDSA or Schnorr signatures, building raw transactions, and submitting them to the Bitcoin network.
 
 ### Bitcoin API canister IDs
 
@@ -1165,7 +1176,7 @@ docker stop bitcoind && docker rm bitcoind
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): learn how threshold ECDSA and Schnorr signatures work
 - [Chain-key tokens](../digital-assets/chain-key-tokens.md): explore ckBTC, ckETH, and other chain-key tokens
 - [Ethereum integration](ethereum.md): apply similar patterns for Ethereum
-- [Management canister reference](../../reference/management-canister.md): full API reference for `bitcoin_get_utxos`, `sign_with_ecdsa`, and other management canister methods
+- [Management canister reference](../../reference/management-canister.md): full API reference for `sign_with_ecdsa`, `sign_with_schnorr`, and other management canister methods (note: the `bitcoin_*` methods in the management canister are deprecated; use the Bitcoin canister directly)
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
 - [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
 
