@@ -1,6 +1,6 @@
 ---
 title: "Bitcoin Integration"
-description: "Send and receive BTC directly from ICP canisters using chain-key signatures"
+description: "Send and receive BTC from ICP canisters using ckBTC or the direct Bitcoin API"
 sidebar:
   order: 1
 ---
@@ -452,18 +452,112 @@ The Bitcoin canister exposes these methods:
 - `bitcoin_get_current_fee_percentiles`: returns fee percentiles from recent transactions
 - `bitcoin_get_block_headers`: returns raw block headers for a height range
 - `bitcoin_send_transaction`: submits a signed transaction to the Bitcoin network
+- `get_blockchain_info`: returns chain state (tip height, block hash, timestamp, difficulty, UTXO count)
 
-The `ic-cdk-bitcoin-canister` crate provides `get_blockchain_info()` for querying blockchain state (current height, chain tip hash, timestamp, etc.):
+Signing uses threshold key derivation provided by the management canister:
+
+- `ecdsa_public_key` / `sign_with_ecdsa`: P2PKH, P2SH, and P2WPKH addresses
+- `schnorr_public_key` / `sign_with_schnorr`: Taproot (P2TR) addresses
+
+All calls require cycles — see [Cycle costs](#cycle-costs). The `ic-cdk-bitcoin-canister` crate handles them automatically in Rust; in Motoko attach cycles explicitly with `(with cycles = amount)`.
+
+### Blockchain info
+
+`get_blockchain_info()` queries the state of the Bitcoin chain. The response includes:
+
+| Field | Type | Description |
+|---|---|---|
+| `height` | `nat32` | Current chain tip block height |
+| `block_hash` | `blob` | Chain tip block hash |
+| `timestamp` | `nat32` | Unix timestamp of the tip block |
+| `difficulty` | `nat` | Current mining difficulty target |
+| `utxos_length` | `nat64` | Total number of UTXOs in the UTXO set |
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+
+persistent actor Backend {
+  public type Network = { #mainnet; #testnet; #regtest };
+
+  type BlockchainInfo = {
+    height : Nat32;
+    block_hash : Blob;
+    timestamp : Nat32;
+    difficulty : Nat;
+    utxos_length : Nat64;
+  };
+
+  type BitcoinCanister = actor {
+    get_blockchain_info : shared () -> async BlockchainInfo;
+  };
+
+  // <system> capability is required to access Runtime.envVar (reads environment variables at runtime)
+  private func getNetwork<system>() : Network {
+    switch (Runtime.envVar("BITCOIN_NETWORK")) {
+      case (?value) {
+        switch (Text.toLower(value)) {
+          case ("mainnet") #mainnet;
+          case ("testnet") #testnet;
+          case _ #regtest;
+        };
+      };
+      case null #regtest;
+    };
+  };
+
+  private func getBitcoinCanisterId(network : Network) : Text {
+    switch (network) {
+      case (#mainnet) "ghsi2-tqaaa-aaaan-aaaca-cai";
+      case _ "g4xu7-jiaaa-aaaan-aaaaq-cai";
+    };
+  };
+
+  private func getBlockchainInfoCost(network : Network) : Nat {
+    switch (network) {
+      case (#mainnet) 100_000_000;
+      case _ 40_000_000;
+    };
+  };
+
+  public func get_blockchain_info() : async BlockchainInfo {
+    let network = getNetwork();
+    await (with cycles = getBlockchainInfoCost(network))
+      (actor (getBitcoinCanisterId(network)) : BitcoinCanister)
+        .get_blockchain_info();
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
 
 ```rust
-use ic_cdk_bitcoin_canister::get_blockchain_info;
+use ic_cdk_bitcoin_canister::{get_blockchain_info, BlockchainInfo, Network};
 
-let info = get_blockchain_info(get_network())
-    .await
-    .expect("Failed to get blockchain info");
-// info.height    : current chain height
-// info.block_hash: chain tip block hash (hex)
-// info.timestamp : tip block timestamp
+fn get_network() -> Network {
+    let network_str = if ic_cdk::api::env_var_name_exists("BITCOIN_NETWORK") {
+        ic_cdk::api::env_var_value("BITCOIN_NETWORK").to_lowercase()
+    } else {
+        "regtest".to_string()
+    };
+
+    match network_str.as_str() {
+        "mainnet" => Network::Mainnet,
+        "testnet" => Network::Testnet,
+        _ => Network::Regtest,
+    }
+}
+
+#[ic_cdk::update]
+async fn get_blockchain_info_handler() -> BlockchainInfo {
+    get_blockchain_info(get_network())
+        .await
+        .expect("Failed to get blockchain info")
+}
 ```
 
 Add to `Cargo.toml` alongside `ic-cdk`:
@@ -472,12 +566,10 @@ Add to `Cargo.toml` alongside `ic-cdk`:
 ic-cdk-bitcoin-canister = "0.2"
 ```
 
-The threshold signature system provides:
+</TabItem>
+</Tabs>
 
-- `ecdsa_public_key` / `sign_with_ecdsa`: for standard Bitcoin (P2PKH, P2SH) addresses
-- `schnorr_public_key` / `sign_with_schnorr`: for Taproot (P2TR) addresses
-
-All Bitcoin API calls require cycles. The `ic-cdk-bitcoin-canister` crate handles cycle calculation and attachment automatically.
+Full implementation: [basic_bitcoin example (Rust)](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin) — `src/service/get_blockchain_info.rs`.
 
 ### Read Bitcoin balance
 
@@ -579,21 +671,302 @@ async fn get_balance(address: String) -> Satoshi {
 </TabItem>
 </Tabs>
 
+### Read UTXOs
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+
+persistent actor Backend {
+  public type Satoshi = Nat64;
+  public type Network = { #mainnet; #testnet; #regtest };
+
+  type OutPoint = { txid : Blob; vout : Nat32 };
+  type Utxo = { outpoint : OutPoint; value : Satoshi; height : Nat32 };
+  type GetUtxosResponse = {
+    utxos : [Utxo];
+    tip_block_hash : Blob;
+    tip_height : Nat32;
+    next_page : ?Blob;
+  };
+
+  type BitcoinCanister = actor {
+    bitcoin_get_utxos : shared {
+      address : Text;
+      network : Network;
+      filter : ?{ #min_confirmations : Nat32; #page : Blob };
+    } -> async GetUtxosResponse;
+  };
+
+  // <system> capability is required to access Runtime.envVar (reads environment variables at runtime)
+  private func getNetwork<system>() : Network {
+    switch (Runtime.envVar("BITCOIN_NETWORK")) {
+      case (?value) {
+        switch (Text.toLower(value)) {
+          case ("mainnet") #mainnet;
+          case ("testnet") #testnet;
+          case _ #regtest;
+        };
+      };
+      case null #regtest;
+    };
+  };
+
+  private func getBitcoinCanisterId(network : Network) : Text {
+    switch (network) {
+      case (#mainnet) "ghsi2-tqaaa-aaaan-aaaca-cai";
+      case _ "g4xu7-jiaaa-aaaan-aaaaq-cai";
+    };
+  };
+
+  private func getUtxosCost(network : Network) : Nat {
+    switch (network) {
+      case (#mainnet) 10_000_000_000;
+      case _ 4_000_000_000;
+    };
+  };
+
+  public func get_utxos(address : Text) : async GetUtxosResponse {
+    let network = getNetwork();
+    await (with cycles = getUtxosCost(network))
+      (actor (getBitcoinCanisterId(network)) : BitcoinCanister)
+        .bitcoin_get_utxos({
+          address;
+          network;
+          filter = null;
+        });
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk_bitcoin_canister::{bitcoin_get_utxos, GetUtxosRequest, GetUtxosResponse};
+
+#[ic_cdk::update]
+async fn get_utxos(address: String) -> GetUtxosResponse {
+    bitcoin_get_utxos(&GetUtxosRequest {
+        address,
+        network: get_network(),
+        filter: None,
+    })
+    .await
+    .expect("Failed to get UTXOs")
+}
+```
+
+</TabItem>
+</Tabs>
+
+`bitcoin_get_utxos` returns a `next_page` field. If non-null, the address has more UTXOs than fit in one response — call again with `filter = ?#page(next_page)` (Motoko) or `filter: Some(UtxosFilter::Page(next_page))` (Rust) until `next_page` is null.
+
+### Get fee percentiles
+
+Fee percentiles are measured in millisatoshi per vbyte (1,000 msat = 1 satoshi). The 50th percentile gives a reasonable median confirmation target. On regtest there are no transactions, so the response is empty — use a fallback.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+
+persistent actor Backend {
+  public type Network = { #mainnet; #testnet; #regtest };
+
+  type BitcoinCanister = actor {
+    bitcoin_get_current_fee_percentiles : shared {
+      network : Network;
+    } -> async [Nat64];
+  };
+
+  // <system> capability is required to access Runtime.envVar (reads environment variables at runtime)
+  private func getNetwork<system>() : Network {
+    switch (Runtime.envVar("BITCOIN_NETWORK")) {
+      case (?value) {
+        switch (Text.toLower(value)) {
+          case ("mainnet") #mainnet;
+          case ("testnet") #testnet;
+          case _ #regtest;
+        };
+      };
+      case null #regtest;
+    };
+  };
+
+  private func getBitcoinCanisterId(network : Network) : Text {
+    switch (network) {
+      case (#mainnet) "ghsi2-tqaaa-aaaan-aaaca-cai";
+      case _ "g4xu7-jiaaa-aaaan-aaaaq-cai";
+    };
+  };
+
+  private func getFeePercentilesCost(network : Network) : Nat {
+    switch (network) {
+      case (#mainnet) 100_000_000;
+      case _ 40_000_000;
+    };
+  };
+
+  public func get_fee_per_byte() : async Nat64 {
+    let network = getNetwork();
+    let percentiles = await (with cycles = getFeePercentilesCost(network))
+      (actor (getBitcoinCanisterId(network)) : BitcoinCanister)
+        .bitcoin_get_current_fee_percentiles({ network });
+    if (percentiles.size() == 0) {
+      2_000 // regtest fallback: 2 sat/vB in millisatoshi
+    } else {
+      percentiles[50]
+    }
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk_bitcoin_canister::{
+    bitcoin_get_current_fee_percentiles, GetCurrentFeePercentilesRequest, MillisatoshiPerByte,
+};
+
+async fn get_fee_per_byte(network: Network) -> MillisatoshiPerByte {
+    let percentiles = bitcoin_get_current_fee_percentiles(
+        &GetCurrentFeePercentilesRequest { network: network.into() },
+    )
+    .await
+    .expect("Failed to get fee percentiles");
+
+    if percentiles.is_empty() {
+        2_000 // regtest fallback: 2 sat/vB in millisatoshi
+    } else {
+        percentiles[50]
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
 ### Developer workflow
 
 Building a full Bitcoin transaction flow involves these steps:
 
 1. **Generate a Bitcoin address** from a threshold ECDSA or Schnorr public key
 2. **Read UTXOs** for the address using `bitcoin_get_utxos`
-3. **Build the transaction** selecting UTXOs as inputs, calculating fees, and setting outputs
-4. **Sign each input** using `sign_with_ecdsa` or `sign_with_schnorr`
-5. **Submit the transaction** using `bitcoin_send_transaction`
+3. **Select UTXOs and calculate the fee** — see below
+4. **Build the unsigned transaction** from the selected UTXOs, recipient output, and change output
+5. **Sign each input** using `sign_with_ecdsa` or `sign_with_schnorr`
+6. **Submit the transaction** using `bitcoin_send_transaction`
 
-The complete implementation for all steps (address generation, transaction construction, signing, and submission) is more than 30 lines per language. See these working examples:
+#### UTXO selection
+
+Transaction fee depends on transaction size in bytes, which depends on the number of inputs, which depends on which UTXOs are selected. Because fee and input count are mutually dependent, the calculation is iterative: start with fee=0, select UTXOs to cover `amount + 0`, estimate the signed transaction size with a mock signer, recalculate fee, repeat until the fee stabilises.
+
+Two selection strategies cover the common cases:
+
+**Greedy (standard payments):** accumulate UTXOs oldest-first until the total covers `amount + fee`. Consolidates old UTXOs and reduces wallet fragmentation over time.
+
+**Single UTXO (Ordinals, Runes, BRC-20):** find the first UTXO that alone covers `amount + fee`. Required when the asset is inscribed on a specific satoshi — spending multiple UTXOs risks accidentally burning the inscription.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Array "mo:core/Array";
+import Runtime "mo:core/Runtime";
+
+type Utxo = { outpoint : { txid : Blob; vout : Nat32 }; value : Nat64; height : Nat32 };
+
+// Greedy: accumulate oldest-first until covering amount + fee.
+// Use for standard payments.
+func selectUtxosGreedy(utxos : [Utxo], amount : Nat64, fee : Nat64) : [Utxo] {
+  var selected : [Utxo] = [];
+  var total : Nat64 = 0;
+  label done for (utxo in Array.reverse(utxos).vals()) {
+    selected := Array.concat(selected, [utxo]);
+    total += utxo.value;
+    if (total >= amount + fee) break done;
+  };
+  if (total < amount + fee) Runtime.trap("Insufficient balance");
+  selected
+};
+
+// Single UTXO: find one that alone covers amount + fee.
+// Use for Ordinals, Runes, and BRC-20 where the asset is tied to a specific satoshi.
+func selectOneUtxo(utxos : [Utxo], amount : Nat64, fee : Nat64) : Utxo {
+  for (utxo in Array.reverse(utxos).vals()) {
+    if (utxo.value >= amount + fee) return utxo;
+  };
+  Runtime.trap("No single UTXO covers amount + fee")
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk_bitcoin_canister::Utxo;
+
+// Greedy: accumulate oldest-first until covering amount + fee.
+// Use for standard payments.
+fn select_utxos_greedy<'a>(
+    utxos: &'a [Utxo],
+    amount: u64,
+    fee: u64,
+) -> Result<Vec<&'a Utxo>, String> {
+    let mut selected = vec![];
+    let mut total = 0u64;
+    for utxo in utxos.iter().rev() {
+        total += utxo.value;
+        selected.push(utxo);
+        if total >= amount + fee {
+            break;
+        }
+    }
+    if total < amount + fee {
+        return Err(format!("Insufficient balance: {} satoshi", total));
+    }
+    Ok(selected)
+}
+
+// Single UTXO: find one that alone covers amount + fee.
+// Use for Ordinals, Runes, and BRC-20 where the asset is tied to a specific satoshi.
+fn select_one_utxo<'a>(
+    utxos: &'a [Utxo],
+    amount: u64,
+    fee: u64,
+) -> Result<Vec<&'a Utxo>, String> {
+    for utxo in utxos.iter().rev() {
+        if utxo.value >= amount + fee {
+            return Ok(vec![utxo]);
+        }
+    }
+    Err(format!("No single UTXO covers {} satoshi", amount + fee))
+}
+```
+
+</TabItem>
+</Tabs>
+
+Address generation, transaction construction, signing, and submission together exceed 30 lines per language. See these working examples for the full flow:
 
 - [basic_bitcoin (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/basic_bitcoin): full send/receive with ECDSA and Schnorr
 - [basic_bitcoin (Rust)](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin): full send/receive with ECDSA and Schnorr
 - [threshold-ecdsa (Motoko)](https://github.com/dfinity/examples/tree/master/motoko/threshold-ecdsa): ECDSA signing
+
+### Common mistakes
+
+- **Not paginating `bitcoin_get_utxos`.** The response includes a `next_page` field. For addresses with many transactions a single call may not return all UTXOs. If `next_page` is non-null, call again with `filter = ?#page(next_page)` (Motoko) or `UtxosFilter::Page(next_page)` (Rust) until `next_page` is null.
+- **Spending unconfirmed or immature UTXOs.** Coinbase outputs require 100 confirmations before they can be spent. Non-coinbase UTXOs with zero confirmations carry double-spend risk. Use `min_confirmations` in the `bitcoin_get_utxos` filter when building payment flows.
+- **Skipping the iterative fee calculation.** Transaction size depends on the number of inputs selected. Build the transaction with fee=0, measure the signed size using a mock signer, recalculate the fee, and repeat until stable. Skipping this step produces transactions that underpay (stuck) or overpay.
+- **Creating change outputs below the dust threshold.** Change less than ~1,000 satoshis is uneconomical and some nodes reject outputs below this level. Either add the dust amount to the miner fee or omit the change output entirely.
+- **Concurrent calls spending the same UTXOs.** If two update calls fetch the same UTXO set at the same time, both will attempt to spend the same inputs. Only one transaction will be valid on the Bitcoin network; the other will be rejected. Track spent UTXOs in canister state and exclude them from future selections.
 
 ### Cycle costs
 
@@ -607,6 +980,7 @@ All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-
 | `bitcoin_send_transaction` (per byte) | 8,000,000 | 20,000,000 |
 | `bitcoin_get_current_fee_percentiles` | 40,000,000 | 100,000,000 |
 | `bitcoin_get_block_headers` | 4,000,000,000 | 10,000,000,000 |
+| `get_blockchain_info` | 40,000,000 | 100,000,000 |
 
 ## Development setup
 
@@ -735,4 +1109,4 @@ docker stop bitcoind && docker rm bitcoind
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
 - [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
 
-{/* Upstream: informed by dfinity/portal (docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx; dfinity/icskills) skills/ckbtc/SKILL.md; dfinity/icp-cli-templates (bitcoin-starter/; dfinity/cdk-rs) ic-cdk-bitcoin-canister 0.2 */}
+{/* Upstream: informed by dfinity/portal (docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx); dfinity/icskills (skills/ckbtc/SKILL.md); dfinity/icp-cli-templates (bitcoin-starter/); dfinity/cdk-rs (ic-cdk-bitcoin-canister 0.2); dfinity/examples (rust/basic_bitcoin/src/common.rs, rust/basic_bitcoin/src/service/get_utxos.rs, rust/basic_bitcoin/src/service/get_blockchain_info.rs, rust/basic_bitcoin/basic_bitcoin.did, motoko/basic_bitcoin/src/basic_bitcoin/src/BitcoinApi.mo) */}
