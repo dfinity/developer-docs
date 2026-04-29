@@ -53,7 +53,7 @@ For canister IDs, see [Chain-Key Token Canister IDs: ckBTC](chain-key-canister-i
 |---|---|---|
 | `retrieve_btc_min_amount` | 50,000 satoshi | Minimum amount for BTC withdrawal |
 | `max_time_in_queue_nanos` | 10 minutes | Maximum time a retrieval request waits |
-| `min_confirmations` | 6 | Bitcoin confirmations required before minting |
+| `min_confirmations` | 4 | Bitcoin confirmations required before minting |
 | `kyt_fee` | 100 satoshi | Fee for know-your-transaction (KYT) check |
 
 ### Minter endpoints
