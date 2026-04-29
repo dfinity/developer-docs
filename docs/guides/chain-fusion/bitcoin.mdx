@@ -31,6 +31,18 @@ ckBTC is the recommended path for most developers. The ckBTC minter canister hol
 
 ### Deposit flow (BTC to ckBTC)
 
+```plantuml
+actor User
+participant "ckBTC Minter" as Minter
+participant "Bitcoin Network" as BTC
+
+User -> Minter: get_btc_address(account)
+Minter --> User: btc_address
+User -> BTC: send BTC to btc_address
+User -> Minter: update_balance(account)
+Minter --> User: ckBTC minted to ICRC-1 account
+```
+
 1. Call `get_btc_address` on the minter with the user's principal and subaccount. This returns a unique Bitcoin address controlled by the minter.
 2. The user sends BTC to that address using any Bitcoin wallet.
 3. Wait for Bitcoin confirmations (the minter requires confirmations before minting).
@@ -226,6 +238,18 @@ async fn transfer(to: Principal, amount: Nat) -> Result<Nat, TransferError> {
 </Tabs>
 
 ### Withdraw (ckBTC to BTC)
+
+```plantuml
+actor User
+participant "ckBTC Ledger" as Ledger
+participant "ckBTC Minter" as Minter
+participant "Bitcoin Network" as BTC
+
+User -> Ledger: icrc2_approve(spender=minter, amount)
+User -> Minter: retrieve_btc_with_approval(btc_address, amount)
+Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
+Minter -> BTC: send BTC to btc_address
+```
 
 Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
 

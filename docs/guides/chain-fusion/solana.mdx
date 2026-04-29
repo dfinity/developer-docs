@@ -22,6 +22,18 @@ Two ICP features enable Solana integration:
 
 The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet and handles Solana JSON-RPC calls on your behalf. When your canister calls it:
 
+```plantuml
+participant "Your Canister" as Canister
+participant "SOL RPC Canister" as SolRpc
+participant "Solana Providers" as Providers
+participant "Solana" as SOL
+
+Canister -> SolRpc: request(json_rpc, max_response_bytes) + cycles
+SolRpc -> Providers: HTTPS outcalls to multiple providers
+Providers --> SolRpc: aggregated responses
+SolRpc --> Canister: result + refund excess cycles
+```
+
 1. Your canister sends a JSON-RPC request with cycles attached.
 2. The SOL RPC canister fans the request out to multiple Solana RPC providers via HTTPS outcalls.
 3. Responses are aggregated. The canister returns the result once providers agree.
@@ -328,6 +340,46 @@ Every SOL RPC call requires cycles to cover HTTPS outcall costs. The `sign_with_
 
 Send 10B cycles per RPC call as a starting budget: unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
 
+## ckSOL
+
+ckSOL is a 1:1 SOL-backed token on ICP. The ckSOL minter holds real SOL via chain-key Ed25519 addresses and mints or burns ckSOL using the ICRC-1/ICRC-2 interface. For canister IDs and CLI-based deposit and withdrawal flows, see [Chain-key tokens](../digital-assets/chain-key-tokens.md).
+
+### Deposit (SOL to ckSOL)
+
+```plantuml
+actor User
+participant "ckSOL Minter" as Minter
+participant "ckSOL Ledger" as Ledger
+participant "SOL RPC Canister" as SolRpc
+participant "Solana" as SOL
+
+User -> Minter: get_deposit_address(owner, subaccount)
+Minter --> User: deposit_address
+User -> SOL: transfer SOL to deposit_address
+User -> Minter: process_deposit(owner, subaccount, tx_signature)
+Minter -> SolRpc: fetch & verify transaction
+Minter -> Ledger: mint ckSOL (amount - deposit_fee)
+Minter --> User: Minted { block_index, minted_amount }
+```
+
+### Withdrawal (ckSOL to SOL)
+
+```plantuml
+actor User
+participant "ckSOL Minter" as Minter
+participant "ckSOL Ledger" as Ledger
+participant "Solana" as SOL
+
+User -> Ledger: icrc2_approve(spender=minter, amount)
+User -> Minter: withdraw(sol_address, amount)
+Minter -> Ledger: burn via icrc2_transfer_from(user, amount)
+Minter --> User: burn_block_index
+note right of Minter: processed asynchronously
+Minter -> SOL: submit SOL transfer (chain-key Ed25519)
+User -> Minter: withdrawal_status(burn_block_index)
+Minter --> User: TxFinalized
+```
+
 ## Current status and limitations
 
 The Solana integration is newer than the Bitcoin and Ethereum integrations:
@@ -335,7 +387,6 @@ The Solana integration is newer than the Bitcoin and Ethereum integrations:
 - **SOL RPC canister is live on mainnet**: deployed and functional, with the API surface still evolving.
 - **Threshold Ed25519 is available**: both test (`test_key_1`) and production (`key_1`) keys are live on ICP mainnet.
 - **No SPL token helpers**: SPL token operations (reading token accounts, transferring tokens) require constructing JSON-RPC calls and transaction instructions manually.
-- **No ckSOL token**: unlike Bitcoin (ckBTC) and Ethereum (ckETH), there is no chain-key SOL token yet.
 - **Transaction construction is manual**: there is no official ICP library for building Solana transactions. See the [basic_solana example](https://github.com/dfinity/sol-rpc-canister/tree/main/examples/basic_solana) for a reference implementation.
 
 Follow the [SOL RPC canister repository](https://github.com/dfinity/sol-rpc-canister/blob/main/README.md) for the latest updates.

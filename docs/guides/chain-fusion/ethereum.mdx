@@ -15,6 +15,24 @@ For a conceptual overview of how ICP connects to other blockchains, see [Chain F
 
 The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system canister deployed on ICP's 34-node fiduciary subnet. When your canister calls it:
 
+```plantuml
+participant "Your Canister" as Canister
+participant "EVM RPC Canister" as EVM
+participant "Provider 1" as P1
+participant "Provider 2" as P2
+participant "Provider N" as PN
+
+Canister -> EVM: eth_getBlockByNumber(chain, args) + cycles
+EVM -> P1: JSON-RPC (HTTPS outcall)
+EVM -> P2: JSON-RPC (HTTPS outcall)
+EVM -> PN: JSON-RPC (HTTPS outcall)
+P1 --> EVM: response
+P2 --> EVM: response
+PN --> EVM: response
+note right of EVM: consensus check (≥2/3 nodes agree)
+EVM --> Canister: Consistent(result) + refund excess cycles
+```
+
 1. Your canister sends a request to the EVM RPC canister with cycles attached.
 2. The EVM RPC canister fans the request out to multiple RPC providers via [HTTPS outcalls](../backends/https-outcalls.md).
 3. Each provider's response goes through ICP subnet consensus (at least 2/3 of nodes must agree).

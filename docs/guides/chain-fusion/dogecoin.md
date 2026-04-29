@@ -132,7 +132,7 @@ The key differences in implementation:
 | | Bitcoin | Dogecoin |
 |---|---|---|
 | API | Management canister (`bitcoin_*` methods) | Dogecoin canister |
-| Chain-key token | ckBTC (live) | ckDOGE (upcoming) |
+| Chain-key token | ckBTC (live) | ckDOGE (live) |
 | Address prefix | `1`, `3`, `bc1` (mainnet) | `D` (mainnet) |
 | Unit | satoshi | koinu |
 | Status | Stable | Beta |
@@ -142,6 +142,38 @@ Developers familiar with the Bitcoin integration will find the Dogecoin integrat
 ## NNS governance
 
 The Dogecoin canister is controlled by the [Network Nervous System](../../concepts/governance.md). Any changes to the canister require an NNS proposal that the community must review and approve before taking effect. This means your canister can call the Dogecoin canister without additional trust assumptions beyond the NNS governance process itself.
+
+## ckDOGE
+
+ckDOGE is a 1:1 DOGE-backed token on ICP. The ckDOGE minter holds real DOGE and mints or burns ckDOGE using the same ICRC-1/ICRC-2 interface as ckBTC. For canister IDs and CLI-based deposit and withdrawal flows, see [Chain-key tokens](../digital-assets/chain-key-tokens.md).
+
+### Deposit (DOGE to ckDOGE)
+
+```plantuml
+actor User
+participant "ckDOGE Minter" as Minter
+participant "Dogecoin Network" as DOGE
+
+User -> Minter: get_doge_address(account)
+Minter --> User: doge_address
+User -> DOGE: send DOGE to doge_address
+User -> Minter: update_balance(account)
+Minter --> User: ckDOGE minted to ICRC-1 account
+```
+
+### Withdrawal (ckDOGE to DOGE)
+
+```plantuml
+actor User
+participant "ckDOGE Ledger" as Ledger
+participant "ckDOGE Minter" as Minter
+participant "Dogecoin Network" as DOGE
+
+User -> Ledger: icrc2_approve(spender=minter, amount)
+User -> Minter: retrieve_doge_with_approval(doge_address, amount)
+Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
+Minter -> DOGE: send DOGE to doge_address
+```
 
 ## Next steps
 
