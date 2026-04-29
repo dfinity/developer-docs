@@ -31,7 +31,7 @@ skinparam ParticipantBackgroundColor #fdfaf3
 skinparam ParticipantBorderColor #e5ddcf
 skinparam ParticipantFontColor #1a1714
 skinparam ActorBackgroundColor #fdfaf3
-skinparam ActorBorderColor #e5ddcf
+skinparam ActorBorderColor #6b6660
 skinparam ActorFontColor #1a1714
 skinparam NoteBackgroundColor #f2d7c7
 skinparam NoteBorderColor #e5ddcf
@@ -53,7 +53,7 @@ export default function remarkPlantUML() {
       const url = toUrl(node.value);
       parent.children[index] = {
         type: "html",
-        value: `<img src="${url}" alt="PlantUML diagram" />`,
+        value: `<figure class="plantuml-diagram"><img src="${url}" alt="PlantUML diagram" /></figure>`,
       };
     });
   };

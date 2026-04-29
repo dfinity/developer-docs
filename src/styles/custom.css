@@ -307,6 +307,28 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--sl-color-white);
 }
 
+/* ── PlantUML diagrams ────────────────────────────────────── */
+
+.plantuml-diagram {
+  display: block;
+  margin: 1.5rem 0;
+  background: var(--icp-bg-elev);
+  border-radius: 6px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.plantuml-diagram img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+[data-theme='dark'] .plantuml-diagram img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 /* ── Agent signaling ──────────────────────────────────────── */
 
 /* Visually hidden but present in DOM for HTML-to-markdown converters.
