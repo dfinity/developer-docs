@@ -21,6 +21,7 @@ import { sidebar } from "../sidebar.mjs";
 import { TITLE, DESCRIPTION, PUBLISHER } from "../src/branding.mjs";
 import { extractSnippet } from "./remark-snippet.mjs";
 
+
 /**
  * Derives llms.txt section mappings from the shared sidebar definition.
  *
@@ -664,24 +665,22 @@ export default function agentDocs() {
         // because Twitter/X rejects SVG for social sharing previews.
         const ogSvgPath = path.join(outDir, "og-image.svg");
         if (fs.existsSync(ogSvgPath)) {
-          const interDir = path.resolve("node_modules/@fontsource/inter/files");
-          const newsreaderDir = path.resolve("node_modules/@fontsource/newsreader/files");
-          const loadFonts = (dir, prefix, weights) =>
-            weights
-              .map((w) => {
-                const p = path.join(dir, `${prefix}-latin-${w}-normal.woff`);
-                return fs.existsSync(p) ? fs.readFileSync(p) : null;
-              })
-              .filter(Boolean);
-          const fontBuffers = [
-            ...loadFonts(interDir, "inter", ["400", "500", "600", "700"]),
-            ...loadFonts(newsreaderDir, "newsreader", ["400", "500"]),
-          ];
+          const fontsDir = path.resolve(
+            path.dirname(fileURLToPath(import.meta.url)),
+            "../src/fonts"
+          );
+          const fontFiles = [
+            "Inter-Regular.ttf",
+            "Inter-Medium.ttf",
+            "Inter-SemiBold.ttf",
+            "Inter-Bold.ttf",
+            "Newsreader-Variable.ttf",
+          ].map((f) => path.join(fontsDir, f));
 
           const svg = fs.readFileSync(ogSvgPath, "utf-8");
           const resvg = new Resvg(svg, {
             font: {
-              fontBuffers,
+              fontFiles,
               loadSystemFonts: false,
               defaultFontFamily: "Inter",
               sansSerifFamily: "Inter",
