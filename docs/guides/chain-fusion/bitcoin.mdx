@@ -416,7 +416,7 @@ The minter does not mint ckBTC until the depositing Bitcoin transaction reaches 
 icp canister call mqygn-kiaaa-aaaar-qaadq-cai get_minter_info '()' -n ic
 ```
 
-The response includes `min_confirmations` (how many Bitcoin confirmations are required before minting, currently 6 on mainnet), `kyt_fee` (the know-your-token check fee charged per deposit, in satoshis), and `retrieve_btc_min_amount` (the minimum withdrawal amount, currently 50,000 satoshis).
+The response includes `min_confirmations` (how many Bitcoin confirmations are required before minting, currently 6 on mainnet), `kyt_fee` (the know-your-transaction check fee charged per deposit, in satoshis), and `retrieve_btc_min_amount` (the minimum withdrawal amount, currently 50,000 satoshis).
 
 **Step 3: Mint ckBTC**
 
@@ -454,7 +454,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
   })" -n ic
 ```
 
-`created_at_time = null` skips deduplication: if you run this command twice, both transfers execute. In production canister code, set this field to the current nanosecond timestamp so that retried calls are rejected as duplicates rather than sending twice.
+`created_at_time = null` skips deduplication: if you run this command twice, both transfers execute. In production canister code, set this field to the current nanosecond timestamp so that retried calls are rejected as duplicates rather than sending twice. See [Transferring assets (ICRC-1)](../digital-assets/ledgers.md#transferring-assets-icrc-1) for details.
 
 ### Common mistakes
 
