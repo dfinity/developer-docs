@@ -12,7 +12,7 @@ ICP provides a protocol-level integration with the Bitcoin network. Canisters ca
 There are two approaches to working with Bitcoin on ICP:
 
 - **ckBTC (chain-key Bitcoin)**: a 1:1 BTC-backed token native to ICP. Transfers settle in 1-2 seconds with a 10 satoshi fee. Best for most applications that need to accept, hold, or transfer Bitcoin value.
-- **Direct Bitcoin API**: call the management canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
+- **Direct Bitcoin API**: call the Bitcoin canister to read UTXOs, get balances, and submit raw Bitcoin transactions. Best for advanced use cases that need full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20).
 
 This guide covers both approaches.
 
@@ -493,7 +493,7 @@ For a complete working example with all type definitions and error handling, see
 
 ## Direct Bitcoin API
 
-For use cases that require full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20), you can call the Bitcoin API directly through the management canister. This involves generating addresses with threshold ECDSA or Schnorr signatures, building raw transactions, and submitting them to the Bitcoin network.
+For use cases that require full control over Bitcoin transactions (custom scripts, Ordinals, Runes, BRC-20), you can call the Bitcoin canister directly. This involves generating addresses with threshold ECDSA or Schnorr signatures, building raw transactions, and submitting them to the Bitcoin network.
 
 ### Bitcoin API canister IDs
 
@@ -1165,7 +1165,7 @@ docker stop bitcoind && docker rm bitcoind
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): learn how threshold ECDSA and Schnorr signatures work
 - [Chain-key tokens](../digital-assets/chain-key-tokens.md): explore ckBTC, ckETH, and other chain-key tokens
 - [Ethereum integration](ethereum.md): apply similar patterns for Ethereum
-- [Management canister reference](../../reference/management-canister.md): full API reference for `bitcoin_get_utxos`, `sign_with_ecdsa`, and other management canister methods
+- [Management canister reference](../../reference/management-canister.md): full API reference for `sign_with_ecdsa`, `sign_with_schnorr`, and other management canister methods (note: the `bitcoin_*` methods in the management canister are deprecated; use the Bitcoin canister directly)
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
 - [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
 

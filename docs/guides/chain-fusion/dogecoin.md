@@ -14,7 +14,7 @@ ICP canisters can interact directly with the Dogecoin network without bridges or
 - **Dogecoin canister**: a system canister controlled by the NNS that exposes an API for querying Dogecoin network state (UTXOs, balances, block information) and submitting signed transactions.
 - **Threshold ECDSA**: canisters request threshold ECDSA signatures from the management canister to sign Dogecoin transactions. The private key is never reconstructed; it exists only as secret shares distributed across subnet nodes.
 
-This is the same model as the [Bitcoin integration](bitcoin.md), using a UTXO-based transaction model and secp256k1 ECDSA signatures. The main difference is that Dogecoin transactions are submitted through the Dogecoin canister rather than the Bitcoin management canister API.
+This is the same model as the [Bitcoin integration](bitcoin.md), using a UTXO-based transaction model and secp256k1 ECDSA signatures. The main difference is that Dogecoin transactions are submitted through the Dogecoin canister rather than the Bitcoin canister.
 
 ## How it works
 
@@ -118,7 +118,7 @@ For a complete, working implementation covering all steps (including deriving a 
 
 The [Bitcoin integration guide](bitcoin.md) covers the same conceptual steps with complete inline code. Because Dogecoin is a fork of Bitcoin and shares the same UTXO model and secp256k1 ECDSA signatures, the patterns translate directly with these differences:
 
-- Use the Dogecoin canister for UTXO queries and transaction submission (not the management canister's `bitcoin_*` API)
+- Use the Dogecoin canister for UTXO queries and transaction submission (not the Bitcoin canister's `bitcoin_*` API)
 - Use Dogecoin's P2PKH address format (mainnet addresses start with `D`)
 - Dogecoin uses koinus instead of satoshis (1 DOGE = 100,000,000 koinus)
 - Dogecoin uses a different fee rate: use `dogecoin_get_current_fee_percentiles` to get current rates
@@ -131,13 +131,13 @@ The key differences in implementation:
 
 | | Bitcoin | Dogecoin |
 |---|---|---|
-| API | Management canister (`bitcoin_*` methods) | Dogecoin canister |
+| API | Bitcoin canister (`bitcoin_*` methods) | Dogecoin canister |
 | Chain-key token | ckBTC | ckDOGE |
 | Address prefix | `1`, `3`, `bc1` (mainnet) | `D` (mainnet) |
 | Unit | satoshi | koinu |
 | Status | Stable | Beta |
 
-Developers familiar with the Bitcoin integration will find the Dogecoin integration conceptually identical. The primary practical difference is calling the Dogecoin canister rather than the management canister's Bitcoin API.
+Developers familiar with the Bitcoin integration will find the Dogecoin integration conceptually identical. The primary practical difference is calling the Dogecoin canister rather than the Bitcoin canister.
 
 ## NNS governance
 
