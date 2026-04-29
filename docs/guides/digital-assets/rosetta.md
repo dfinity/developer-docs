@@ -129,7 +129,7 @@ Pull the official image:
 docker pull dfinity/ic-icrc-rosetta-api
 ```
 
-**Quick start**: connects to the TICRC1 test token (`3jkp5-oyaaa-aaaaj-azwqa-cai`):
+**Quickstart**: connects to the TICRC1 test token (`3jkp5-oyaaa-aaaaj-azwqa-cai`):
 
 ```bash
 docker run \
