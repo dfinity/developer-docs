@@ -26,7 +26,7 @@ skinparam defaultFontSize 13
 skinparam defaultFontColor #1a1714
 skinparam sequenceArrowThickness 1.5
 skinparam sequenceArrowColor #cc5a2b
-skinparam SequenceLifeLineBorderColor #e5ddcf
+skinparam SequenceLifeLineBorderColor #6b6660
 skinparam ParticipantBackgroundColor #fdfaf3
 skinparam ParticipantBorderColor #e5ddcf
 skinparam ParticipantFontColor #1a1714
