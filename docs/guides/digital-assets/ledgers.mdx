@@ -172,7 +172,23 @@ Always set the `fee` field explicitly. If you pass a fee that does not match the
 icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_fee '()' -n ic
 ```
 
-Always set `created_at_time` to enable deduplication. Without it, two identical transfers submitted within 24 hours both execute.
+### Transaction deduplication
+
+When `created_at_time` is set to the current nanosecond timestamp, the ledger tracks submitted transactions and rejects exact duplicates within a 24-hour window. A duplicate submission returns `Duplicate { duplicate_of: block_index }` instead of executing again. The `duplicate_of` value is the block index of the original accepted transaction, so you can confirm it succeeded without re-submitting.
+
+Without `created_at_time` (set to `null`), every submission is treated as a new transaction: submitting the same call twice sends the amount twice.
+
+Set `created_at_time` to the current nanosecond timestamp to enable deduplication:
+
+- **Motoko**: `Nat64.fromNat(Int.abs(Time.now()))` (as shown in `sendTokens` above)
+- **Rust**: `ic_cdk::api::time()` (as shown in `send_tokens` above)
+
+Two boundary errors to handle alongside the normal transfer errors:
+
+- `TooOld`: the timestamp is more than 24 hours in the past. The ledger no longer tracks that window and rejects the transaction.
+- `CreatedInFuture { ledger_time }`: the timestamp is ahead of the ledger's current time, typically due to system clock drift. The `ledger_time` field shows the ledger's view of the current time so you can diagnose the skew.
+
+Always set `created_at_time` in production canister code. `null` is only appropriate for one-off manual CLI calls where double-submission is not a concern.
 
 ## Checking balances
 

@@ -454,7 +454,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_transfer \
   })" -n ic
 ```
 
-`created_at_time = null` skips deduplication: if you run this command twice, both transfers execute. In production canister code, set this field to the current nanosecond timestamp so that retried calls are rejected as duplicates rather than sending twice. See [Transferring assets (ICRC-1)](../digital-assets/ledgers.md#transferring-assets-icrc-1) for details.
+`created_at_time = null` skips deduplication: if you run this command twice, both transfers execute. In production canister code, set this field to the current nanosecond timestamp so that retried calls are rejected as duplicates rather than sending twice. See [Transaction deduplication](../digital-assets/ledgers.md#transaction-deduplication) for details.
 
 ### Common mistakes
 
