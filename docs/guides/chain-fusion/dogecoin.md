@@ -132,7 +132,7 @@ The key differences in implementation:
 | | Bitcoin | Dogecoin |
 |---|---|---|
 | API | Management canister (`bitcoin_*` methods) | Dogecoin canister |
-| Chain-key token | ckBTC (live) | ckDOGE (live) |
+| Chain-key token | ckBTC | ckDOGE |
 | Address prefix | `1`, `3`, `bc1` (mainnet) | `D` (mainnet) |
 | Unit | satoshi | koinu |
 | Status | Stable | Beta |
