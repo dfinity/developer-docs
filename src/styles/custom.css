@@ -329,6 +329,64 @@ h1, h2, h3, h4, h5, h6 {
   filter: invert(1) hue-rotate(180deg);
 }
 
+/* ── Ask AI button (Kapa.ai widget trigger) ─────────────────── */
+
+.search-group {
+  gap: 0.5rem;
+}
+
+.ask-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  align-self: stretch;
+  background: transparent;
+  border: 1px solid var(--icp-rule);
+  border-radius: 6px;
+  padding: 0 0.75rem;
+  color: var(--icp-fg);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ask-ai-btn:hover {
+  background: var(--icp-accent-dim);
+  border-color: var(--icp-accent);
+}
+
+.ask-ai-icon {
+  color: var(--icp-accent);
+  flex-shrink: 0;
+  animation: ask-ai-sparkle 3.5s ease-in-out infinite;
+}
+
+.ask-ai-btn:hover .ask-ai-icon {
+  animation-duration: 1s;
+}
+
+@keyframes ask-ai-sparkle {
+  0%, 60%, 100% { opacity: 1; }
+  80% { opacity: 0.5; }
+}
+
+@media (max-width: 49.999rem) {
+  .ask-ai-label {
+    display: none;
+  }
+
+  .ask-ai-btn {
+    padding: 0 0.5rem;
+    align-self: center;
+    height: 2rem;
+  }
+}
+
 /* ── Agent signaling ──────────────────────────────────────── */
 
 /* Visually hidden but present in DOM for HTML-to-markdown converters.

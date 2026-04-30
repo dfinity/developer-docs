@@ -6,6 +6,7 @@ import Search from 'virtual:starlight/components/Search';
 import SiteTitle from 'virtual:starlight/components/SiteTitle';
 import SocialIcons from 'virtual:starlight/components/SocialIcons';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+import AskAIButton from './AskAIButton.astro';
 
 const shouldRenderSearch =
 	config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
@@ -15,8 +16,9 @@ const shouldRenderSearch =
 	<div class="title-wrapper sl-flex">
 		<SiteTitle />
 	</div>
-	<div class="sl-flex print:hidden">
+	<div class="sl-flex print:hidden search-group">
 		{shouldRenderSearch && <Search />}
+		<AskAIButton />
 	</div>
 	{/* Mobile-only theme toggle — desktop uses the one inside right-group */}
 	<div class="md:sl-hidden print:hidden mobile-theme">
