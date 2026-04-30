@@ -87,6 +87,9 @@ const SECTIONS = deriveSections(sidebar);
 // a charset=utf-8 in the Content-Type header.
 const BOM = "\uFEFF";
 
+const LLMS_TXT_DIRECTIVE =
+  "> For the complete documentation index, see [llms.txt](/llms.txt)\n\n";
+
 /** Strip YAML frontmatter, HTML comments, and MDX artifacts; prepend title heading. */
 function cleanMarkdown(raw, isMdx = false) {
   const { data, content } = matter(raw);
@@ -96,7 +99,7 @@ function cleanMarkdown(raw, isMdx = false) {
   }
   body = body.replace(/\n{3,}/g, "\n\n").trim();
   const title = data.title ? `# ${data.title}\n\n` : "";
-  return BOM + title + body + "\n";
+  return BOM + title + LLMS_TXT_DIRECTIVE + body + "\n";
 }
 
 /**
