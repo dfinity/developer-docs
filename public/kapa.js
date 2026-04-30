@@ -13,7 +13,7 @@
     projectLogo: 'https://docs.internetcomputer.org/favicon.svg',
     modalOverrideOpenClass: 'ask-ai-widget-trigger',
     modalAskAiInputPlaceholder: 'Ask anything about building on ICP...',
-    modalExampleQuestions: 'How do I deploy a canister?,What are cycles?,How do I call an external API from a canister?',
+    modalExampleQuestions: 'How do I pay for my application?,Where does my app store data?,How do I add user login to my app?',
     modalDisclaimer: 'AI responses are generated automatically and may be inaccurate. Verify critical information before acting on it.',
     buttonHide: 'true',
     botProtectionMechanism: 'hcaptcha',
