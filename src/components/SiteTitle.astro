@@ -55,6 +55,25 @@ const { siteTitleHref } = Astro.locals.starlightRoute;
       color: var(--sl-color-gray-3);
     }
 
+    @media (max-width: 30rem) {
+      .title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        white-space: normal;
+        line-height: 1.15;
+      }
+
+      .title-docs {
+        font-size: 1.05rem;
+      }
+
+      .title-domain {
+        font-size: 0.725rem;
+        letter-spacing: 0;
+      }
+    }
+
     img {
       height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
       width: auto;
