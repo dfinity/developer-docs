@@ -13,7 +13,7 @@
     projectLogo: 'https://docs.internetcomputer.org/favicon.svg',
     modalOverrideOpenClass: 'ask-ai-widget-trigger',
     modalAskAiInputPlaceholder: 'Ask anything about building on ICP...',
-    modalExampleQuestions: 'What makes ICP different from traditional clouds?,How does my app store data?,How do I pay for my application?,How do I add user login to my app?,Is my app\'s data private on ICP?',
+    modalExampleQuestions: 'What makes ICP different from traditional clouds?,How can I build and deploy ICP apps with coding agents?,How does my app store data?,How do I pay for my application?,How do I add user login to my app?,Is my app\'s data private on ICP?',
     modalDisclaimer: 'AI responses are generated automatically and may be inaccurate. Verify critical information before acting on it.',
     buttonHide: 'true',
     botProtectionMechanism: 'hcaptcha',

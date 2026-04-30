@@ -38,6 +38,10 @@
   --sl-content-width: 55rem;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Newsreader for all headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
