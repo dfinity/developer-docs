@@ -36,6 +36,9 @@
 :root {
   --sl-font: 'Inter', var(--sl-font-system);
   --sl-content-width: 55rem;
+  /* Starlight overrides --sl-content-width on splash pages (45rem × 1.5 = 67.5rem).
+     This mirror variable stays unaffected and is used in the splash-page header formula. */
+  --icp-content-width: 55rem;
 }
 
 html {
@@ -130,13 +133,36 @@ h1, h2, h3, h4, h5, h6 {
   --sl-color-hairline-shade: #1e1a13;
 }
 
+/* ── Header grid — splash pages (no sidebar) ─────────────── */
+
+/* Replicate Starlight's header column 1 formula for sidebar+TOC pages so search
+   lands at the same x position on the landing page as on docs pages.
+   Starlight overrides --sl-content-width on splash pages (45rem × 1.5 = 67.5rem),
+   so we use --icp-content-width which tracks the real docs content width.
+   Derived from Starlight's formula: (sidebar-width - nav-pad-x) +
+   max(0, (100% - 2×sidebar-width - content-width) / 2 - nav-gap) */
+@media (min-width: 50rem) {
+  :root:not([data-has-sidebar]) .header {
+    grid-template-columns:
+      minmax(
+        calc(
+          var(--sl-sidebar-width) - var(--sl-nav-pad-x) +
+          max(0px, (100% - 2 * var(--sl-sidebar-width) - var(--icp-content-width)) / 2 - var(--sl-nav-gap))
+        ),
+        auto
+      )
+      1fr
+      auto;
+  }
+}
+
 /* ── Responsive content width ─────────────────────────────── */
 
 @media (min-width: 105rem) {
-  :root { --sl-content-width: 65rem; }
+  :root { --sl-content-width: 65rem; --icp-content-width: 65rem; }
 }
 @media (min-width: 115rem) {
-  :root { --sl-content-width: 75rem; }
+  :root { --sl-content-width: 75rem; --icp-content-width: 75rem; }
 }
 
 /* ── Buttons ──────────────────────────────────────────────── */
