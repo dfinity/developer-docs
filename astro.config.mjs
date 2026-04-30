@@ -69,6 +69,10 @@ export default defineConfig({
         },
         {
           tag: "meta",
+          attrs: { name: "twitter:card", content: "summary_large_image" },
+        },
+        {
+          tag: "meta",
           attrs: { name: "twitter:image", content: "https://docs.internetcomputer.org/og-image.png" },
         },
         {
