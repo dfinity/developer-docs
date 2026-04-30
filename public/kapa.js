@@ -76,4 +76,26 @@
     attributes: true,
     attributeFilter: ['data-theme'],
   });
+
+  // react-remove-scroll stamps data-scroll-locked on body and injects a <style> tag with
+  // `body[data-scroll-locked] { margin-right: 17px !important }` to compensate for the
+  // scrollbar disappearing. With scrollbar-gutter: stable the space is already reserved,
+  // so this margin shifts content instead of preventing a shift.
+  // Primary fix: @layer kapa-fix in custom.css (layered !important beats unlayered).
+  // Backup: patch the injected node's text content directly so the rule is never applied.
+  new MutationObserver(function (mutations) {
+    for (var i = 0; i < mutations.length; i++) {
+      for (var j = 0; j < mutations[i].addedNodes.length; j++) {
+        var n = mutations[i].addedNodes[j];
+        if (n.nodeName === 'STYLE' && n.textContent &&
+            n.textContent.indexOf('data-scroll-locked') !== -1) {
+          n.textContent = n.textContent.replace(
+            /margin-right\s*:\s*[^;!}]*(?:\s*!important)?/g,
+            'margin-right:0'
+          );
+        }
+      }
+    }
+  }).observe(document.head, { childList: true });
+
 })();

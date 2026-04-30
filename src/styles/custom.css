@@ -42,6 +42,17 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* react-remove-scroll (used by Mantine inside the kapa widget) stamps data-scroll-locked
+   on body and injects an unlayered `body[data-scroll-locked] { margin-right: 17px !important }`.
+   Per CSS Cascade 5, a @layer !important beats an unlayered !important regardless of
+   specificity or source order. The JS observer in kapa.js patches the injected node
+   directly as a parallel defence. */
+@layer kapa-fix {
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
+}
+
 /* Newsreader for all headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
