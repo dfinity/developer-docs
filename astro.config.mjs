@@ -14,9 +14,6 @@ import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.internetcomputer.org",
-  redirects: {
-    "/reference/": "/references/",
-  },
   markdown: {
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
