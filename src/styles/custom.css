@@ -230,13 +230,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .landing-action-card::after {
-  content: '→';
+  content: '→\fe0e';
   opacity: 0.5;
   flex-shrink: 0;
 }
 
 .landing-action-card[href^="http"]::after {
-  content: '↗';
+  content: '↗\fe0e';
   opacity: 1;
 }
 
@@ -337,7 +337,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sl-link-card:has(a[target="_blank"])::after {
-  content: '↗';
+  content: '↗\fe0e';
   color: var(--sl-color-gray-3);
   font-size: 1.333em;
   line-height: 1;
