@@ -79,36 +79,32 @@ function getIdentityProviderUrl() {
 
 ### Login, logout, and session check
 
-Create a single `AuthClient` instance on page load and reuse it for all operations:
+Create a single `AuthClient` instance on page load and reuse it for all operations. The identity provider URL is passed at construction time, not on each sign-in:
 
 ```javascript
 // Create the auth client (once, on page load)
-const authClient = await AuthClient.create();
+const authClient = new AuthClient({
+  identityProvider: getIdentityProviderUrl(),
+});
 
 // Check for existing session
-const isAuthenticated = await authClient.isAuthenticated();
-if (isAuthenticated) {
-  const identity = authClient.getIdentity();
+if (authClient.isAuthenticated()) {
+  const identity = await authClient.getIdentity();
   // Restore session: create agent and actor with this identity
 }
 
 // Login
 async function login() {
-  return new Promise((resolve, reject) => {
-    authClient.login({
-      identityProvider: getIdentityProviderUrl(),
+  try {
+    const identity = await authClient.signIn({
       maxTimeToLive: BigInt(8) * BigInt(3_600_000_000_000), // 8 hours
-      onSuccess: () => {
-        const identity = authClient.getIdentity();
-        console.log("Logged in as:", identity.getPrincipal().toText());
-        resolve(identity);
-      },
-      onError: (error) => {
-        console.error("Login failed:", error);
-        reject(error);
-      },
     });
-  });
+    console.log("Logged in as:", identity.getPrincipal().toText());
+    return identity;
+  } catch (error) {
+    console.error("Login failed:", error);
+    throw error;
+  }
 }
 
 // Logout
@@ -117,6 +113,21 @@ async function logout() {
   // Reset UI state or reload
 }
 ```
+
+`signIn()` returns the new `Identity` directly. It rejects if the user closes the popup or authentication fails, so wrap the call in `try`/`catch` instead of relying on success/error callbacks.
+
+### One-click OpenID sign-in
+
+To skip the Internet Identity authentication-method screen and send the user straight to a specific OpenID provider, pass `openIdProvider` to the constructor. Supported values are `'google'`, `'apple'`, and `'microsoft'`:
+
+```javascript
+const authClient = new AuthClient({
+  identityProvider: getIdentityProviderUrl(),
+  openIdProvider: "google",
+});
+```
+
+The rest of the flow (`signIn`, `getIdentity`, `logout`) is unchanged.
 
 ### Create an authenticated agent
 
@@ -291,13 +302,12 @@ To keep principals consistent across your own custom domains, configure **altern
    ]
    ```
 
-3. **On the alternative origin (B):** Set the `derivationOrigin` in your login call to point back to the primary origin:
+3. **On the alternative origin (B):** Set the `derivationOrigin` on the `AuthClient` constructor to point back to the primary origin:
 
    ```javascript
-   authClient.login({
+   const authClient = new AuthClient({
      identityProvider: "https://id.ai",
      derivationOrigin: "https://xxxxx.icp0.io", // primary origin A
-     onSuccess: () => { /* ... */ },
    });
    ```
 
@@ -309,7 +319,7 @@ For full details, see the [Internet Identity specification](../../references/int
 
 - **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
 - **`fetch` "Illegal invocation" in bundled builds**: always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
-- **Missing `onSuccess`/`onError` callbacks**: `authClient.login()` requires both. Without them, login failures are silently swallowed.
+- **Not awaiting `signIn()` or skipping the `try`/`catch`**: `authClient.signIn()` returns a promise that rejects when the user closes the popup or authentication fails. Without `await` and a `catch`, those failures are silently swallowed.
 - **Delegation expiry too long**: the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
 - **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
 - **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
