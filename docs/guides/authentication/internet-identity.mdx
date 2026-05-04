@@ -313,6 +313,141 @@ async fn protected_async_action() -> String {
 }
 ```
 
+### Read identity attributes
+
+When the frontend wraps an identity with `AttributesIdentity`, every call carries a verified attribute bundle. Read it on the backend with `msg_caller_info_data` (Rust) or `Prim.callerInfoData` (Motoko). Always verify the signer first: by itself the bundle is signed by *some* canister, and any canister could have signed an arbitrary one. Trust it only when the signer is the Internet Identity backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`).
+
+The bundle is Candid-encoded as an [ICRC-3 Value](../../reference/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
+
+- `implicit:nonce`: must equal a nonce your canister issued for this user and action.
+- `implicit:origin`: must equal a trusted frontend origin.
+- `implicit:issued_at_timestamp_ns`: reject if too old (a few minutes is typical).
+- Plain attribute keys (e.g., `"email"`) for default-scope attributes; OpenID-scoped keys (e.g., `"openid:https://accounts.google.com:email"`) when the frontend used `scopedKeys`.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Prim "mo:prim";
+import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+  let iiPrincipal = Principal.fromText("rdmx6-jaaaa-aaaaa-aaadq-cai");
+
+  type Icrc3Value = {
+    #Nat : Nat;
+    #Int : Int;
+    #Blob : Blob;
+    #Text : Text;
+    #Array : [Icrc3Value];
+    #Map : [(Text, Icrc3Value)];
+  };
+
+  func lookupText(entries : [(Text, Icrc3Value)], key : Text) : ?Text {
+    for ((k, v) in entries.vals()) {
+      if (k == key) {
+        switch v { case (#Text t) { return ?t }; case _ {} };
+      };
+    };
+    null;
+  };
+
+  // Returns the verified attribute map, trapping if the signer is not II.
+  func iiAttributes() : [(Text, Icrc3Value)] {
+    let signer = Prim.callerInfoSigner<system>();
+    if (signer.size() == 0 or Principal.fromBlob(signer) != iiPrincipal) {
+      Runtime.trap("Untrusted attribute signer");
+    };
+    let data = Prim.callerInfoData<system>();
+    let ?value : ?Icrc3Value = from_candid (data) else Runtime.trap("invalid attribute bundle");
+    let #Map(entries) = value else Runtime.trap("expected attribute map");
+    entries
+  };
+
+  public shared ({ caller }) func registerFinish() : async Text {
+    if (Principal.isAnonymous(caller)) Runtime.trap("Anonymous caller not allowed");
+    let entries = iiAttributes();
+
+    let ?origin = lookupText(entries, "implicit:origin") else Runtime.trap("missing origin");
+    if (origin != "https://your-app.icp0.io") Runtime.trap("Wrong origin");
+
+    // Compare implicit:nonce to the nonce you minted in registerBegin (omitted for brevity)
+    // and check implicit:issued_at_timestamp_ns is within your freshness window.
+
+    let ?email = lookupText(entries, "email") else Runtime.trap("missing email");
+    "Registered " # Principal.toText(caller) # " with email " # email
+  };
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use candid::{decode_one, CandidType, Deserialize, Principal};
+use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer};
+use ic_cdk::update;
+
+const II_PRINCIPAL: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+
+#[derive(CandidType, Deserialize)]
+enum Icrc3Value {
+    Nat(candid::Nat),
+    Int(candid::Int),
+    Blob(Vec<u8>),
+    Text(String),
+    Array(Vec<Icrc3Value>),
+    Map(Vec<(String, Icrc3Value)>),
+}
+
+fn lookup_text<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a str> {
+    entries.iter().find_map(|(k, v)| match v {
+        Icrc3Value::Text(s) if k == key => Some(s.as_str()),
+        _ => None,
+    })
+}
+
+// Returns the verified attribute entries, trapping if the signer is not II.
+fn ii_attributes() -> Vec<(String, Icrc3Value)> {
+    let trusted = Principal::from_text(II_PRINCIPAL).unwrap();
+    if msg_caller_info_signer() != Some(trusted) {
+        ic_cdk::trap("Untrusted attribute signer");
+    }
+    let bundle = msg_caller_info_data();
+    let value: Icrc3Value = decode_one(&bundle).unwrap_or_else(|_| ic_cdk::trap("invalid attribute bundle"));
+    match value {
+        Icrc3Value::Map(entries) => entries,
+        _ => ic_cdk::trap("expected attribute map"),
+    }
+}
+
+#[update]
+fn register_finish() -> String {
+    let caller = msg_caller();
+    if caller == Principal::anonymous() { ic_cdk::trap("Anonymous caller not allowed"); }
+    let entries = ii_attributes();
+
+    let origin = lookup_text(&entries, "implicit:origin")
+        .unwrap_or_else(|| ic_cdk::trap("missing origin"));
+    if origin != "https://your-app.icp0.io" { ic_cdk::trap("Wrong origin"); }
+
+    // Compare implicit:nonce to the nonce you minted in register_begin (omitted for brevity)
+    // and check implicit:issued_at_timestamp_ns is within your freshness window.
+
+    let email = lookup_text(&entries, "email")
+        .unwrap_or_else(|| ic_cdk::trap("missing email"));
+    format!("Registered {} with email {}", caller, email)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::tip[Storing the nonce]
+Mint the nonce in your `registerBegin` (or equivalent) method and persist it in stable memory keyed by the user's principal and the action name. Mark it consumed in `registerFinish` so a bundle cannot be replayed. Use a short freshness window so abandoned attempts age out.
+:::
+
 ## Local development
 
 Start the local network and deploy. With `ii: true` in your `icp.yaml`, icp-cli deploys a local Internet Identity canister automatically:
@@ -403,6 +538,7 @@ For full details, see the [Internet Identity specification](../../references/int
 - **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
 - **Creating multiple `AuthClient` instances**: create one on page load and reuse it. Multiple instances cause race conditions with session storage.
 - **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` matches an action it actually started.
+- **Reading attribute data without verifying the signer**: `msg_caller_info_data` (`Prim.callerInfoData` in Motoko) returns whatever bundle the caller provided. The IC system checks the signature, not the identity of the signer. If you skip the `msg_caller_info_signer` check (or compare it against the wrong principal), any canister can mint its own bundle and your method will read attacker-controlled values. Verify the signer matches `rdmx6-jaaaa-aaaaa-aaadq-cai` (Internet Identity) before trusting the bundle.
 
 ## Next steps
 
@@ -414,4 +550,4 @@ For full details, see the [Internet Identity specification](../../references/int
 
 {/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
-{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx; dfinity/icskills) skills/internet-identity/SKILL.md */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-auth (README.md, src/client/auth-client.ts); dfinity/cdk-rs (ic-cdk/src/api.rs msg_caller_info_data/signer); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo) */}
