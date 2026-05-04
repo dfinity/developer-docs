@@ -2,7 +2,8 @@
 title: "IC Interface Specification"
 description: "Introduction, pervasive concepts, and the IC system state tree"
 sidebar:
-  order: 11
+  label: "Introduction"
+  order: 0
 ---
 
 ## Introduction
