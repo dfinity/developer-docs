@@ -317,7 +317,7 @@ async fn protected_async_action() -> String {
 
 When the frontend wraps an identity with `AttributesIdentity`, every call carries a verified attribute bundle. Read it on the backend with `msg_caller_info_data` (Rust) or `Prim.callerInfoData` (Motoko). Always verify the signer first: by itself the bundle is signed by *some* canister, and any canister could have signed an arbitrary one. Trust it only when the signer is the Internet Identity backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`).
 
-The bundle is Candid-encoded as an [ICRC-3 Value](../../reference/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
+The bundle is Candid-encoded as an [ICRC-3 Value](../../references/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
 
 - `implicit:nonce`: must equal a nonce your canister issued for this user and action.
 - `implicit:origin`: must equal a trusted frontend origin.
@@ -550,4 +550,4 @@ For full details, see the [Internet Identity specification](../../references/int
 
 {/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
-{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-auth (README.md, src/client/auth-client.ts); dfinity/cdk-rs (ic-cdk/src/api.rs msg_caller_info_data/signer); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo) */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/ — AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md — AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo) */}
