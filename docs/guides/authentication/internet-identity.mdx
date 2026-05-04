@@ -77,7 +77,7 @@ function getIdentityProviderUrl() {
 }
 ```
 
-### Sign in, log out, and session check
+### Sign in, sign out, and session check
 
 Create a single `AuthClient` instance on page load and reuse it for all operations. The identity provider URL is passed at construction time, not on each sign-in:
 
@@ -107,9 +107,9 @@ async function signIn() {
   }
 }
 
-// Log out
-async function logout() {
-  await authClient.logout();
+// Sign out
+async function signOut() {
+  await authClient.signOut();
   // Reset UI state or reload
 }
 ```
@@ -127,7 +127,7 @@ const authClient = new AuthClient({
 });
 ```
 
-The rest of the flow (`signIn`, `getIdentity`, `logout`) is unchanged.
+The rest of the flow (`signIn`, `getIdentity`, `signOut`) is unchanged.
 
 ### Create an authenticated agent
 
