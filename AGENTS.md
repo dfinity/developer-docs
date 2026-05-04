@@ -290,10 +290,19 @@ EOF
 | `candid` | Check for spec changes affecting the Candid reference or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria |
-| `internetidentity` | Check for spec changes in `docs/ii-spec.mdx`; re-sync `internet-identity-spec.md`. Re-copy Candid interface from `src/internet_identity/internet_identity.did` if changed |
+| `internetidentity` | Check for spec changes in `docs/ii-spec.mdx`; re-sync `internet-identity-spec.md` (see link adaptation note below). Re-copy Candid interface from `src/internet_identity/internet_identity.did` if changed |
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |
+
+**Link adaptation for `internet-identity-spec.md`:** The upstream source (`docs/ii-spec.mdx`) uses absolute `internetcomputer.org` URLs pointing to the IC interface spec. Our file uses relative paths into the split `ic-interface-spec/` directory. After every re-sync, run:
+```bash
+grep -n "ic-interface-spec" docs/reference/internet-identity-spec.md
+```
+Any link of the form `internetcomputer.org/.../ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/reference/internet-identity-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
+```bash
+grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
+```
 
 ### Synced files from submodules
 
@@ -333,7 +342,13 @@ For every commit in the bump range that touched `docs/references/ic-interface-sp
 **Step 3 — `http-gateway-spec.md`:** For every commit in the bump range that touched `docs/references/http-gateway-protocol-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/http-gateway-protocol-spec.md > /tmp/patch.diff`
 2. `patch -F 5 -p1 --input=/tmp/patch.diff docs/reference/http-gateway-spec.md`
-3. Resolve any rejects manually
+3. Resolve any rejects manually (see note below on link adaptation)
+4. Run `grep -n "ic-interface-spec" docs/reference/http-gateway-spec.md` and convert any newly introduced links
+
+**Link adaptation for `http-gateway-spec.md`:** The portal source uses absolute `/references/ic-interface-spec#anchor` URLs. Our file uses relative paths into the split `ic-interface-spec/` directory. After every sync, any link of the form `/references/ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/reference/http-gateway-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
+```bash
+grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
+```
 
 **Finding which commits touched which files:**
 ```bash
