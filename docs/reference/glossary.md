@@ -121,7 +121,7 @@ A **canister signature** uses a signature scheme based on [certified variables](
 [canister id](#canister-identifier) plus a seed (so that
 every [canister](#canister) has many public keys); signatures
 are certificates that prove that the canister has put the signed message
-at a specific place in its state tree. Details can be found in the [Internet Computer interface specification](./ic-interface-spec.md).
+at a specific place in its state tree. Details can be found in the [Internet Computer interface specification](./ic-interface-spec/index.md#canister-signatures).
 
 #### canister state
 
@@ -292,7 +292,7 @@ An **identity** is a byte string that is used to identify an entity,
 such as a [principal](#principal), that interacts with the
 [Internet Computer](#internet-computer-protocol-icp). For users, the
 identity is the SHA-224 hash of the DER-encoded public key of the user.
-[IC interface specification](./ic-interface-spec.md) has more
+[IC interface specification](./ic-interface-spec/index.md) has more
 detail.
 
 #### Internet Identity
@@ -651,6 +651,6 @@ stack-based virtual machine.
 
 <!--
 Link replacements from portal source (portal used absolute paths):
-  - /references/ic-interface-spec/ → ./ic-interface-spec.md (×2, link text shortened to "IC interface specification")
+  - /references/ic-interface-spec/ → ./ic-interface-spec/index.md (×2, link text shortened to "IC interface specification")
 -->
 <!-- Upstream: sync from dfinity/portal — docs/references/glossary.mdx -->

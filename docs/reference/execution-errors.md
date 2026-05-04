@@ -38,7 +38,7 @@ The canister aborted execution by calling the `ic0.trap` system API.
 Canister called `ic0.trap` with message: <Canister error message>
 ```
 
-When encountering an error, canisters may choose to fail with an error message by calling the [`ic0.trap` API](./ic-interface-spec.md). The Rust and Motoko CDKs insert calls to this API when panicking.
+When encountering an error, canisters may choose to fail with an error message by calling the [`ic0.trap` API](./ic-interface-spec/canister-interface.md). The Rust and Motoko CDKs insert calls to this API when panicking.
 
 To fix this error, test the canister to determine which inputs trigger panics. Review the error message embedded in the trap to identify the source of the failure.
 
@@ -105,7 +105,7 @@ Canister cannot grow its memory usage.
 
 ICP imposes limits on both the main memory (Wasm heap, up to 4 GiB for wasm32 or 6 GiB for wasm64) and stable memory (up to 500 GiB) per canister, as well as on the total memory per subnet. This error is triggered when any one of those limits is reached.
 
-To diagnose this error, check the canister's current memory usage using the [`canister_status` API](./ic-interface-spec.md) or the `icp canister status` command. Subnet memory usage is visible on the [ICP dashboard](https://dashboard.internetcomputer.org/subnets).
+To diagnose this error, check the canister's current memory usage using the [`canister_status` API](./ic-interface-spec/management-canister.md#ic-canister_status) or the `icp canister status` command. Subnet memory usage is visible on the [ICP dashboard](https://dashboard.internetcomputer.org/subnets).
 
 To fix this error:
 
@@ -274,7 +274,7 @@ The canister tried to use a system API call in a message type where it is not pe
 Canister violated contract: "ic0.call_new" cannot be executed in non-replicated query mode.
 ```
 
-Certain system APIs are only available in specific message types. For a complete overview of which system APIs are available in which contexts, see the [IC interface specification](./ic-interface-spec.md).
+Certain system APIs are only available in specific message types. For a complete overview of which system APIs are available in which contexts, see the [IC interface specification](./ic-interface-spec/canister-interface.md#system-api-imports).
 
 Common cases:
 - Trying to make a call in a query (only allowed in composite queries).
@@ -313,7 +313,7 @@ The canister tried to set certified data that exceeds the ICP limit on certified
 Canister violated contract: ic0_certified_data_set failed because the passed data must be no larger than 32 bytes. Found 100 bytes.
 ```
 
-The certified data field is limited to 32 bytes. To fix this error, certify just a hash of the data instead of its full contents. For background on certified data, see the [IC interface specification](./ic-interface-spec.md).
+The certified data field is limited to 32 bytes. To fix this error, certify just a hash of the data instead of its full contents. For background on certified data, see the [IC interface specification](./ic-interface-spec/canister-interface.md#system-api-certified-data).
 
 ### Canister made a call with too large a method name
 
@@ -378,7 +378,7 @@ Attempted to execute a message, but the canister contains no Wasm module.
 
 A canister can exist without having Wasm code installed if it has never been deployed or if it has been uninstalled. Check the canister status using `icp canister status` or the `canister_status` API to confirm whether a module is installed (the "Module hash" field will be non-null if code is present).
 
-To fix this error, deploy code to the canister using `icp deploy` or the [`install_code`](./ic-interface-spec.md) / [`install_chunked_code`](./ic-interface-spec.md) management canister APIs.
+To fix this error, deploy code to the canister using `icp deploy` or the [`install_code`](./ic-interface-spec/management-canister.md#ic-install_code) / [`install_chunked_code`](./ic-interface-spec/management-canister.md#ic-install_chunked_code) management canister APIs.
 
 ### Wasm module too large
 
@@ -809,6 +809,6 @@ To fix this error, confirm that the metadata section exists for the given canist
 - Review [resource limits](./cycles-costs.md) for the full table of ICP constraints.
 - Learn about [canister lifecycle](../guides/canister-management/lifecycle.md) including traps during upgrades.
 - Optimize resource usage with the [canister optimization guide](../guides/canister-management/optimization.md).
-- Understand the system APIs in the [IC interface specification](./ic-interface-spec.md).
+- Understand the system APIs in the [IC interface specification](./ic-interface-spec/canister-interface.md).
 
 <!-- Upstream: informed by dfinity/portal — docs/references/execution-errors.mdx; docs/building-apps/canister-management/trapping.mdx; docs/building-apps/canister-management/resource-limits.mdx -->

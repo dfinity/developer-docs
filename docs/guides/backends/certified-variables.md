@@ -361,6 +361,7 @@ See [Frontend certification](../../guides/frontends/certification.md) for the as
 
 - [Security concepts](../../concepts/security.md): why query integrity matters and when to use certified variables vs replicated queries
 - [Frontend certification](../../guides/frontends/certification.md): HTTP asset certification for the asset canister
-- [IC Interface Specification](../../reference/ic-interface-spec.md): the certified data system API and certificate format
+- [IC Interface Specification — Certified Data](../../reference/ic-interface-spec/canister-interface.md#system-api-certified-data): the certified data system API
+- [IC Interface Specification — Certification](../../reference/ic-interface-spec/certification.md): certificate format and delegation
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/security/data-integrity-and-authenticity.mdx; dfinity/icskills — skills/certified-variables/SKILL.md; dfinity/cdk-rs — library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs; caffeinelabs/motoko-core — src/CertifiedData.mo; dfinity/examples — motoko/cert-var; dfinity/response-verification — README.md -->

@@ -87,7 +87,7 @@ A user account is identified by a unique *Identity Anchor*, a natural number cho
 
 A client application frontend is identified by its origin (e.g., `https://abcde-efg.ic0.app`, `https://nice-name.com`). Frontend applications can be served by canisters or by websites that are not hosted on the Internet Computer.
 
-A user has a separate *user identity* for each client application frontend (i.e., per origin). This identity is a [*self-authenticating id*](./ic-interface-spec.md#id-classes) of the [DER encoded canister signature public key](./ic-interface-spec.md/#canister-signatures) which has the form
+A user has a separate *user identity* for each client application frontend (i.e., per origin). This identity is a [*self-authenticating id*](./ic-interface-spec/index.md#id-classes) of the [DER encoded canister signature public key](./ic-interface-spec/index.md#canister-signatures) which has the form
 ```
 user_id = SHA-224(DER encoded public key) · 0x02` (29 bytes)
 ```
@@ -108,9 +108,9 @@ where `H` is SHA-256, `·` is concatenation, `|…|` is a single byte representi
 A `frontend_origin` of the form `https://<canister id>.icp0.io` will be rewritten to `https://<canister id>.ic0.app` before being used in the seed. This ensures transparent pseudonym transfer between apps hosted on `ic0.app` and `icp0.io` domains.
 :::
 
-When a client application frontend wants to authenticate as a user, it uses a *session key* (e.g., Ed25519 or ECDSA), and by way of the authentication flow (details below) obtains a [*delegation chain*](./ic-interface-spec.md#authentication) that allows the session key to sign for the user's main identity.
+When a client application frontend wants to authenticate as a user, it uses a *session key* (e.g., Ed25519 or ECDSA), and by way of the authentication flow (details below) obtains a [*delegation chain*](./ic-interface-spec/https-interface.md#authentication) that allows the session key to sign for the user's main identity.
 
-The delegation chain consists of one delegation, called the *client delegation*. It delegates from the user identity (for the given client application frontend) to the session key. This delegation is created by the Internet Identity Service Canister, and signed using a [canister signature](./ic-interface-spec.md/#canister-signatures). This delegation is unscoped (valid for all canisters) and has a maximum lifetime of 30 days, with a default of 30 minutes.
+The delegation chain consists of one delegation, called the *client delegation*. It delegates from the user identity (for the given client application frontend) to the session key. This delegation is created by the Internet Identity Service Canister, and signed using a [canister signature](./ic-interface-spec/index.md#canister-signatures). This delegation is unscoped (valid for all canisters) and has a maximum lifetime of 30 days, with a default of 30 minutes.
 
 The Internet Identity service frontend also manages an *identity frontend delegation*, delegating from the security device's public key to a session key managed by this frontend, so that it can interact with the backend without having to invoke the security device for each signature.
 
@@ -203,7 +203,7 @@ sequenceDiagram
     }
     ```
 
-    where the `userPublicKey` is the user's Identity on the given frontend and `delegations` corresponds to the CBOR-encoded delegation chain as used for [*authentication on the IC*](./ic-interface-spec.md#authentication) and `authnMethod` is the method used by the user to authenticate (`passkey` for webauthn, `pin` for temporary key/PIN identity, and `recovery` for recovery phrase or recovery device).
+    where the `userPublicKey` is the user's Identity on the given frontend and `delegations` corresponds to the CBOR-encoded delegation chain as used for [*authentication on the IC*](./ic-interface-spec/https-interface.md#authentication) and `authnMethod` is the method used by the user to authenticate (`passkey` for webauthn, `pin` for temporary key/PIN identity, and `recovery` for recovery phrase or recovery device).
 
 9.  It could also receive a failure message of the following type
     ```ts
@@ -739,7 +739,7 @@ type WebAuthn = record {
 };
 
 // Authentication method using generic signatures
-// See ./ic-interface-spec.md/#signatures for
+// See ./ic-interface-spec/index.md#signatures for
 // supported signature schemes.
 type PublicKeyAuthn = record {
     pubkey : PublicKey;
@@ -1455,7 +1455,7 @@ Since this cannot be done during `canister_init` (no calls from canister init), 
 
 ### Why we do not use `canister_inspect_message`
 
-The system allows canisters to inspect ingress messages before they are actually ingressed, and decide if they want to pay for them (see [the interface spec](./ic-interface-spec.md/#system-api-inspect-message)). Because the Internet Identity canisters run on a system subnet, cycles are not actually charged, but we still want to avoid wasting resources.
+The system allows canisters to inspect ingress messages before they are actually ingressed, and decide if they want to pay for them (see [the interface spec](./ic-interface-spec/canister-interface.md#system-api-inspect-message)). Because the Internet Identity canisters run on a system subnet, cycles are not actually charged, but we still want to avoid wasting resources.
 
 It seems that this implies that we should use `canister_inspect_message` to reject messages that would, for example, not pass authentication.
 
@@ -1471,10 +1471,10 @@ Therefore, the Internet Identity Canister intentionally does not implement `cani
 
 <!--
 Link replacements from source (source used absolute/relative paths pointing outside this site):
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec#id-classes → ./ic-interface-spec.md#id-classes
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec.md#canister-signatures (×2)
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec#authentication → ./ic-interface-spec.md#authentication
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec.md#system-api-inspect-message
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec#id-classes → ./ic-interface-spec/index.md#id-classes
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec/index.md#canister-signatures (×2)
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec#authentication → ./ic-interface-spec/https-interface.md#authentication
+  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message
   - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-spec.md
   - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
   - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md

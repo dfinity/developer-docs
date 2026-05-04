@@ -953,7 +953,7 @@ Replica-signed queries may improve security because the recipient can verify the
 
 The Bitcoin API exposed by the management canister is DEPRECATED.
 Developers should interact with the Bitcoin canisters (`ghsi2-tqaaa-aaaan-aaaca-cai` for Bitcoin mainnet and `g4xu7-jiaaa-aaaan-aaaaq-cai` for Bitcoin testnet) directly.
-Information about Bitcoin and the IC Bitcoin integration can be found in the [Bitcoin developer guides](https://developer.bitcoin.org/devguide/) and  the [Bitcoin integration documentation](../guides/chain-fusion/bitcoin.mdx).
+Information about Bitcoin and the IC Bitcoin integration can be found in the [Bitcoin developer guides](https://developer.bitcoin.org/devguide/) and  the [Bitcoin integration documentation](../../guides/chain-fusion/bitcoin.md).
 
 ### IC method `bitcoin_get_utxos` {#ic-bitcoin_get_utxos}
 

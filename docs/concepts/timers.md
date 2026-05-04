@@ -13,7 +13,7 @@ At the protocol level, each canister has a single **global timer**: a nanosecond
 
 Setting the timer is done through the `ic0.global_timer_set()` system API call, which takes an absolute timestamp in nanoseconds since the Unix epoch. This is the only mechanism the protocol provides directly. It is intentionally minimal: one timer, one callback, absolute time only.
 
-The IC interface specification defines this behavior in the [timer section](../reference/ic-interface-spec.md).
+The IC interface specification defines this behavior in the [timer section](../reference/ic-interface-spec/canister-interface.md#global-timer).
 
 ## CDK timers libraries
 
@@ -93,6 +93,6 @@ Timers introduce two security-relevant properties developers should understand:
 
 - [Timers guide](../guides/backends/timers.md): practical API usage for Rust and Motoko
 - [Canisters](canisters.md): the canister execution model
-- [IC interface specification](../reference/ic-interface-spec.md): the protocol-level timer definition
+- [IC interface specification](../reference/ic-interface-spec/index.md): the protocol-level timer definition
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, caffeinelabs/motoko doc/md/core/Timer.md -->

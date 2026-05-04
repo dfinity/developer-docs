@@ -11,7 +11,7 @@ The management canister address is `aaaaa-aa` (the empty blob). It is present on
 
 Most methods require the caller to be a **controller** of the target canister. Some methods (such as `raw_rand` and `deposit_cycles`) can only be called by canisters, not by external users. When an external user calls the management canister, the cost is charged to the managed canister.
 
-For the full formal specification, see the [IC interface specification](ic-interface-spec.md).
+For the full formal specification, see the [IC interface specification](ic-interface-spec/index.md).
 
 ## Canister settings
 
@@ -622,6 +622,6 @@ The complete Candid interface definition for the management canister is availabl
 - [Canister settings guide](../guides/canister-management/settings.md): configuring controllers, memory, compute, and freezing thresholds
 - [HTTPS outcalls](../concepts/https-outcalls.md): architecture and constraints of outbound HTTP requests
 - [Bitcoin integration](../guides/chain-fusion/bitcoin.md): building Bitcoin-native applications with chain-key signing
-- [IC interface specification](ic-interface-spec.md): the complete formal specification
+- [IC interface specification](ic-interface-spec/index.md): the complete formal specification
 
 <!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md, docs/references/_attachments/ic.did; dfinity/icskills — skills/cycles-management/SKILL.md -->

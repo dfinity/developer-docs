@@ -476,8 +476,8 @@ sidebar:
 <!--
 Link replacements from portal source (portal used absolute paths):
   - internetcomputer.org [/docs]/home → / (site root)
-  - internetcomputer.org/.../resource-limits → ./cycles-costs.md (×3: max response size, max inter-canister call payload, Wasm stable memory limit)
-  - internetcomputer.org/.../bitcoin-how-it-works → ../guides/chain-fusion/bitcoin.mdx
+  - internetcomputer.org/.../resource-limits → ../cycles-costs.md (×3 in canister-interface.md: max response size, max inter-canister call payload, Wasm stable memory limit)
+  - internetcomputer.org/.../bitcoin-how-it-works → ../../guides/chain-fusion/bitcoin.md (in management-canister.md, one level deeper than the original single file)
 -->
 
 <!-- Upstream: sync from dfinity/portal — docs/references/ic-interface-spec.md, docs/references/_attachments/interface-spec-changelog.md -->
