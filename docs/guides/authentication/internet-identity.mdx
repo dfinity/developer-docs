@@ -149,6 +149,84 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
 `safeGetCanisterEnv()` reads the `ic_env` cookie set by the asset canister or Vite dev server (it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint) on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
 :::
 
+### Requesting identity attributes
+
+When a backend canister needs more than just the user's principal (for example, a verified email address), Internet Identity can return signed attributes alongside the delegation. Your backend issues a nonce scoped to a specific action; the frontend requests the attributes during sign-in; the backend verifies the bundle when the user calls the protected method.
+
+**Why a backend-issued nonce?** Tying attributes to a canister-issued nonce prevents replay: an intercepted bundle cannot be reused for a different action, on a different user, or after that action expires. The nonce must originate from the canister, not the frontend.
+
+```typescript
+import { AuthClient } from "@icp-sdk/auth/client";
+import { AttributesIdentity } from "@icp-sdk/core/identity";
+import { HttpAgent, Actor } from "@icp-sdk/core/agent";
+import { Principal } from "@icp-sdk/core/principal";
+
+async function registerWithEmail() {
+  // 1. Backend issues a nonce scoped to this registration
+  const anonymousAgent = await HttpAgent.create();
+  const backend = Actor.createActor(backendIdl, {
+    agent: anonymousAgent,
+    canisterId,
+  });
+  const nonce = await backend.registerBegin();
+
+  // 2. Run sign-in and the attribute request in parallel.
+  //    The user sees a single Internet Identity interaction.
+  const signInPromise = authClient.signIn();
+  const attributesPromise = authClient.requestAttributes({
+    keys: ["email"],
+    nonce,
+  });
+
+  const identity = await signInPromise;
+  const { data, signature } = await attributesPromise;
+
+  // 3. Wrap the identity so the signed attributes travel with each call
+  const identityWithAttributes = new AttributesIdentity({
+    inner: identity,
+    attributes: { data, signature },
+    // The Internet Identity backend canister ID is the attribute signer
+    signer: { canisterId: Principal.fromText("rdmx6-jaaaa-aaaaa-aaadq-cai") },
+  });
+
+  // 4. Call the protected method. The backend verifies the nonce, origin,
+  //    and timestamp, then reads the email.
+  const agent = await HttpAgent.create({ identity: identityWithAttributes });
+  const app = Actor.createActor(appIdl, { agent, canisterId });
+  await app.registerFinish();
+}
+```
+
+Each signed attribute bundle carries three implicit fields the backend should verify:
+
+- `implicit:nonce`: matches the canister-issued nonce, preventing replay across actions and users.
+- `implicit:origin`: the requesting frontend origin, so a malicious dapp cannot forward attributes to a different backend.
+- `implicit:issued_at_timestamp_ns`: issuance time, letting the canister reject stale bundles even when the nonce is still valid.
+
+Attributes can also be requested after sign-in, for example to link an email to an existing account. The pattern is the same: the backend issues a nonce for that action, the frontend calls `requestAttributes`, and the backend verifies the result.
+
+#### OpenID-scoped attributes
+
+When using one-click OpenID sign-in, attributes can be scoped to the provider. The user authenticates and shares attributes in a single step, with no extra prompt:
+
+```typescript
+import { AuthClient, scopedKeys } from "@icp-sdk/auth/client";
+
+const authClient = new AuthClient({
+  identityProvider: getIdentityProviderUrl(),
+  openIdProvider: "google",
+});
+
+const nonce = await backend.registerBegin();
+const signInPromise = authClient.signIn();
+// Requests name, email, and verified_email from the Google account
+// linked to the user's Internet Identity.
+const attributesPromise = authClient.requestAttributes({
+  keys: scopedKeys({ openIdProvider: "google" }),
+  nonce,
+});
+```
+
 ## Backend authentication
 
 Your backend canister receives the caller's principal automatically through the IC protocol. You do not pass the principal as a function argument: use `msg.caller` (Motoko) or `ic_cdk::api::msg_caller()` (Rust) to read it.
@@ -324,6 +402,7 @@ For full details, see the [Internet Identity specification](../../references/int
 - **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
 - **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
 - **Creating multiple `AuthClient` instances**: create one on page load and reuse it. Multiple instances cause race conditions with session storage.
+- **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` matches an action it actually started.
 
 ## Next steps
 
