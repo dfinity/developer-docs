@@ -13,7 +13,7 @@ The signer charges callers in cycles for each API call. You pre-approve the sign
 
 ## Prerequisites
 
-- An ICP identity with cycles in the [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger) (`um5iw-rqaaa-aaaaq-qaaba-cai`)
+- An ICP identity with cycles in the [Cycles Ledger](../../references/system-canisters.md#cycles-ledger) (`um5iw-rqaaa-aaaaq-qaaba-cai`)
 - icp-cli installed and authenticated (`icp identity whoami`)
 - For offline address derivation: Node.js and `npx`
 
@@ -269,7 +269,7 @@ These variants are defined by [papi](https://github.com/dfinity/papi), an open-s
 
 - [Bitcoin integration guide](bitcoin.md): build a full Bitcoin app with your own signing backend
 - [Ethereum integration guide](ethereum.md): EVM RPC canister for reading Ethereum state
-- [Cycles Ledger](../../reference/system-canisters.md#cycles-ledger): fund your account with cycles
+- [Cycles Ledger](../../references/system-canisters.md#cycles-ledger): fund your account with cycles
 - [Offline key derivation](offline-key-derivation.md): derive ETH/BTC addresses for any canister principal without a management canister call
 - [papi](https://github.com/dfinity/papi): add the same `CallerPaysIcrc2Cycles` / `PatronPaysIcrc2Cycles` payment pattern to your own canister
 

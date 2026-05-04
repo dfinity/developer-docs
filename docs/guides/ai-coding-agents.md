@@ -96,7 +96,7 @@ ICP skills are available without authentication:
 ## Next steps
 
 - [skills.internetcomputer.org](https://skills.internetcomputer.org): browse all available ICP skills
-- [Developer tools](../reference/developer-tools.md): icp-cli, CDKs, and other tools in the ICP toolchain
+- [Developer tools](../references/developer-tools.md): icp-cli, CDKs, and other tools in the ICP toolchain
 - [Quickstart](../getting-started/quickstart.md): deploy your first canister with icp-cli
 
 <!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md -->

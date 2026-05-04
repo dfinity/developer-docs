@@ -21,7 +21,7 @@ Decisions made through the NNS include:
 - Authorizing new node providers and their hardware
 - Creating new SNS DAOs for apps
 
-The NNS governance canister (`rrkah-fqaaa-aaaaa-aaaaq-cai`) is the entry point for all proposal submissions and voting. See [system canisters](../reference/system-canisters.md) for the full list of NNS canister IDs.
+The NNS governance canister (`rrkah-fqaaa-aaaaa-aaaaq-cai`) is the entry point for all proposal submissions and voting. See [system canisters](../references/system-canisters.md) for the full list of NNS canister IDs.
 
 ## ICP tokens and the ledger
 
@@ -70,7 +70,7 @@ An NNS proposal is a governance action submitted by a neuron and voted on by the
 - *UpdateCanisterSettings* for NNS canisters: Can change the behavior of system canisters.
 - *CreateServiceNervousSystem*: Authorizes a new SNS DAO, launching the decentralization process for an app.
 
-See [system canisters](../reference/system-canisters.md) for the full list of NNS proposal topics and types.
+See [system canisters](../references/system-canisters.md) for the full list of NNS proposal topics and types.
 
 ## Voting rewards
 
@@ -147,6 +147,6 @@ Developers preparing for an SNS launch should ensure their codebase is stable, o
 
 - [Launch an SNS](../guides/governance/launching.md): step-by-step guide to decentralizing your app
 - [Manage a live SNS](../guides/governance/managing.md): proposals, upgrades, and treasury management after launch
-- [System canisters reference](../reference/system-canisters.md): NNS canister IDs and interfaces
+- [System canisters reference](../references/system-canisters.md): NNS canister IDs and interfaces
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills — sns-launch/SKILL.md -->

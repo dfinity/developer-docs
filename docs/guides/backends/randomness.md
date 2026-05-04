@@ -25,7 +25,7 @@ The management canister (`aaaaa-aa`) exposes `raw_rand`, which returns 32 bytes 
 
 Because `raw_rand` is an update call to the management canister, it can only be invoked from an update context in your canister. **Randomness is not available in query calls**: a query executes on a single replica and cannot access the subnet-level random beacon. Attempting to call `raw_rand` from a query will trap.
 
-See the [Management Canister reference](../../reference/management-canister.md#raw_rand) for the full API specification.
+See the [Management Canister reference](../../references/management-canister.md#raw_rand) for the full API specification.
 
 ## Getting random bytes
 
@@ -224,7 +224,7 @@ Note: this example predates `mo:core` and uses the older `Random.Finite` API. Th
 ## Next steps
 
 - [Verifiable Randomness (concept)](../../concepts/verifiable-randomness.md): how the IC's threshold VRF works
-- [Management Canister](../../reference/management-canister.md): `raw_rand` API reference
+- [Management Canister](../../references/management-canister.md): `raw_rand` API reference
 - [Data Integrity](../security/data-integrity.md): using randomness in a secure application design
 - [Inter-canister calls](../canister-calls/inter-canister-calls.md): async patterns and reentrancy
 

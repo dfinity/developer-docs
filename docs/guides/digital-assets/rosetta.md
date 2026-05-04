@@ -510,6 +510,6 @@ Each directory includes a `requirements.txt` and a `run_tests.sh` script for iso
 ## Next steps
 
 - [Ledgers](ledgers.md): transfer and manage assets directly from canister code
-- [Digital Asset Standards](../../reference/digital-asset-standards.md): formal ICRC standard specifications for fungible assets, NFTs, and their extensions
+- [Digital Asset Standards](../../references/digital-asset-standards.md): formal ICRC standard specifications for fungible assets, NFTs, and their extensions
 
 <!-- Upstream: informed by dfinity/portal docs/defi/rosetta/icp_rosetta/index.mdx, docs/defi/rosetta/icp_rosetta/running-rosetta.mdx, docs/defi/rosetta/icp_rosetta/data_api/index.mdx, docs/defi/rosetta/icp_rosetta/construction_api/index.mdx, docs/defi/rosetta/icp_rosetta/examples.mdx, docs/defi/rosetta/icrc_rosetta/index.mdx, docs/defi/rosetta/icrc_rosetta/running-rosetta.mdx, docs/defi/rosetta/icrc_rosetta/examples.mdx -->

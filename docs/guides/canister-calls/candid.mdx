@@ -94,7 +94,7 @@ Candid has a fixed set of types that map to native types in each supported langu
 
 > **JavaScript `opt T` tip:** The `[value] | []` representation is the raw IDL encoding. In practice, use `fromNullable()` and `toNullable()` from `@dfinity/utils` to convert between `opt` values and idiomatic JavaScript (`value | undefined`).
 
-For the complete type reference, including subtyping rules, see the [Candid specification](../../reference/candid-spec.md).
+For the complete type reference, including subtyping rules, see the [Candid specification](../../references/candid-spec.md).
 
 ## Generating `.did` files
 
@@ -445,6 +445,6 @@ For type selector configuration and advanced options, see the [`ic-cdk-bindgen` 
 
 - [Inter-canister calls](inter-canister-calls.md): make inter-canister calls using Candid interfaces
 - [Calling from clients](calling-from-clients.md): call canisters from JavaScript frontends and agents
-- [Candid specification](../../reference/candid-spec.md): full type reference and subtyping rules
+- [Candid specification](../../references/candid-spec.md): full type reference and subtyping rules
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/candid/ (3 files), docs/building-apps/developer-tools/cdks/rust/generating-candid.mdx, icp-cli concepts/binding-generation.md, ic-cdk-bindgen README, and @icp-sdk/bindgen. Type mappings verified against .sources/candid (spec), .sources/motoko (IDL-Motoko.md), and .sources/cdk-rs. */}

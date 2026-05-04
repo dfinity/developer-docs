@@ -22,7 +22,7 @@ When you deploy a canister, it lands on one subnet and is replicated across ever
 - **Shared storage budget.** All canisters on a subnet share a common storage budget. Each canister can use up to 500 GiB of stable memory, but the total available depends on the subnet's current utilization. Storage-heavy applications should consider subnet selection.
 - **Geographic distribution.** Nodes within a subnet are distributed across data centers, operators, and jurisdictions to maximize decentralization. Localized subnets also exist for applications with data residency requirements.
 
-For details on subnet types and how to choose one, see [Subnet types](../reference/subnet-types.md) and [Subnet selection](../guides/canister-management/subnet-selection.md).
+For details on subnet types and how to choose one, see [Subnet types](../references/subnet-types.md) and [Subnet selection](../guides/canister-management/subnet-selection.md).
 
 ## Nodes
 
@@ -87,6 +87,6 @@ Individual applications can also be governed by a **Service Nervous System (SNS)
 
 - [Canisters](canisters.md): what runs on the network
 - [App architecture](app-architecture.md): how applications use subnets and canisters
-- [Subnet types](../reference/subnet-types.md): comparing subnet sizes and properties
+- [Subnet types](../references/subnet-types.md): comparing subnet sizes and properties
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/network-overview.mdx -->

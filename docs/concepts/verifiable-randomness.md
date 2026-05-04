@@ -64,7 +64,7 @@ For applications that need verifiable randomness tied to a specific user or even
 ## Next steps
 
 - [Verifiable randomness guide](../guides/backends/randomness.md): how to call `raw_rand` and derive typed values in Motoko and Rust
-- [Management canister reference](../reference/management-canister.md#raw_rand): `raw_rand` API specification
+- [Management canister reference](../references/management-canister.md#raw_rand): `raw_rand` API specification
 - [Chain-key cryptography](chain-key-cryptography.md): the cryptographic foundation underlying the threshold VRF
 - [Security](security.md): how randomness fits into the broader ICP security model
 

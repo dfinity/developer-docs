@@ -85,7 +85,7 @@ For deriving Chain Fusion Signer addresses specifically (ETH/BTC for a given pri
 ## Next steps
 
 - [Chain Fusion Signer](chain-fusion-signer.md): sign transactions for Bitcoin and Ethereum from web apps and CLI
-- [Management canister reference](../../reference/management-canister.md#chain-key-signing): the `ecdsa_public_key` and `schnorr_public_key` management canister methods
+- [Management canister reference](../../references/management-canister.md#chain-key-signing): the `ecdsa_public_key` and `schnorr_public_key` management canister methods
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): how threshold key derivation works
 
 <!-- ic-pub-key: known issue — @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release — update all references when that happens. -->

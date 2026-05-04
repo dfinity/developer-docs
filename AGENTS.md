@@ -119,7 +119,7 @@ git checkout main
 
 ## Ask first (confirm with the user before doing these)
 
-- Creating new top-level sections (getting-started, guides, concepts, languages, reference)
+- Creating new top-level sections (getting-started, guides, concepts, languages, references)
 - Adding new pages not in the migration plan
 - Removing existing pages from the structure
 - Changing a page's sync recommendation from hand-written to synced (or vice versa)
@@ -182,7 +182,7 @@ docs/                       # All documentation (.md only) — src/content/docs/
 │   └── tools/              # Developer tools
 ├── concepts/               # Explanations
 ├── languages/              # Language-specific (Motoko synced, Rust hand-written)
-└── reference/              # Specifications and reference
+└── references/             # Specifications and reference
 ```
 
 ## Source material repos (`.sources/`)
@@ -297,20 +297,20 @@ EOF
 
 **Link adaptation for `internet-identity-spec.md`:** The upstream source (`docs/ii-spec.mdx`) uses absolute `internetcomputer.org` URLs pointing to the IC interface spec. Our file uses relative paths into the split `ic-interface-spec/` directory. After every re-sync, run:
 ```bash
-grep -n "ic-interface-spec" docs/reference/internet-identity-spec.md
+grep -n "ic-interface-spec" docs/references/internet-identity-spec.md
 ```
-Any link of the form `internetcomputer.org/.../ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/reference/internet-identity-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
+Any link of the form `internetcomputer.org/.../ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/references/internet-identity-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
 ```bash
-grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
+grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 ```
 
 ### Synced files from submodules
 
 | Local file | Source | Affects |
 |-----------|--------|---------|
-| `public/reference/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/reference/management-canister.md` |
-| `docs/reference/ic-interface-spec/` | `.sources/portal/docs/references/ic-interface-spec.md` | IC interface spec split into 7 focused pages — apply portal diffs by section (see checklist below) |
-| `docs/reference/http-gateway-spec.md` | `.sources/portal/docs/references/http-gateway-protocol-spec.md` | HTTP Gateway spec — apply portal diff as a patch on every bump |
+| `public/reference/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/references/management-canister.md` |
+| `docs/references/ic-interface-spec/` | `.sources/portal/docs/references/ic-interface-spec.md` | IC interface spec split into 7 focused pages — apply portal diffs by section (see checklist below) |
+| `docs/references/http-gateway-spec.md` | `.sources/portal/docs/references/http-gateway-protocol-spec.md` | HTTP Gateway spec — apply portal diff as a patch on every bump |
 
 **Portal bump checklist (run on every portal bump):**
 
@@ -318,9 +318,9 @@ grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
 1. `diff public/reference/ic.did .sources/portal/docs/references/_attachments/ic.did`
 2. If changed: `cp .sources/portal/docs/references/_attachments/ic.did public/reference/ic.did`
 3. Review diff for new/changed/removed methods
-4. Update `docs/reference/management-canister.md` and any affected guides
+4. Update `docs/references/management-canister.md` and any affected guides
 
-**Step 2 — `ic-interface-spec/`:** The spec is now split into 7 files under `docs/reference/ic-interface-spec/`. Each file maps to a section of the portal source:
+**Step 2 — `ic-interface-spec/`:** The spec is now split into 7 files under `docs/references/ic-interface-spec/`. Each file maps to a section of the portal source:
 
 | File | Portal section (## heading) |
 |---|---|
@@ -335,23 +335,23 @@ grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
 For every commit in the bump range that touched `docs/references/ic-interface-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md > /tmp/spec.diff`
 2. Inspect the diff: identify which section(s) changed
-3. Apply the relevant hunks manually to the corresponding file(s) in `docs/reference/ic-interface-spec/`
+3. Apply the relevant hunks manually to the corresponding file(s) in `docs/references/ic-interface-spec/`
 4. Update any cross-file anchor links (`(./other.md#anchor)`) if headings were added or removed
-5. Verify new methods/fields are reflected in `docs/reference/management-canister.md` if they touch the management canister
+5. Verify new methods/fields are reflected in `docs/references/management-canister.md` if they touch the management canister
 
 For every commit in the bump range that touched `docs/references/_attachments/interface-spec-changelog.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/_attachments/interface-spec-changelog.md > /tmp/changelog.diff`
-2. Apply the new version entries to `docs/reference/ic-interface-spec/changelog.md`
+2. Apply the new version entries to `docs/references/ic-interface-spec/changelog.md`
 
 **Step 3 — `http-gateway-spec.md`:** For every commit in the bump range that touched `docs/references/http-gateway-protocol-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/http-gateway-protocol-spec.md > /tmp/patch.diff`
-2. `patch -F 5 -p1 --input=/tmp/patch.diff docs/reference/http-gateway-spec.md`
+2. `patch -F 5 -p1 --input=/tmp/patch.diff docs/references/http-gateway-spec.md`
 3. Resolve any rejects manually (see note below on link adaptation)
-4. Run `grep -n "ic-interface-spec" docs/reference/http-gateway-spec.md` and convert any newly introduced links
+4. Run `grep -n "ic-interface-spec" docs/references/http-gateway-spec.md` and convert any newly introduced links
 
-**Link adaptation for `http-gateway-spec.md`:** The portal source uses absolute `/references/ic-interface-spec#anchor` URLs. Our file uses relative paths into the split `ic-interface-spec/` directory. After every sync, any link of the form `/references/ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/reference/http-gateway-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
+**Link adaptation for `http-gateway-spec.md`:** The portal source uses absolute `/references/ic-interface-spec#anchor` URLs. Our file uses relative paths into the split `ic-interface-spec/` directory. After every sync, any link of the form `/references/ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/references/http-gateway-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
 ```bash
-grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
+grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 ```
 
 **Finding which commits touched which files:**

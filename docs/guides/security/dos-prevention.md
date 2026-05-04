@@ -28,7 +28,7 @@ Every ingress message (external call to your canister) costs cycles. The cost in
 - Per-instruction fees for all code executed before a trap or rejection
 - Candid decoding, which runs before your method body
 
-This means an attacker can drain your cycles simply by sending many messages. The canister pays for Candid decoding and early checks even when it rejects the call. See [Cycles costs](../../reference/cycles-costs.md) for exact figures.
+This means an attacker can drain your cycles simply by sending many messages. The canister pays for Candid decoding and early checks even when it rejects the call. See [Cycles costs](../../references/cycles-costs.md) for exact figures.
 
 ### Use inspect_message as a first-pass filter
 
@@ -223,7 +223,7 @@ The IC enforces hard limits on message execution. If your canister frequently ap
 | Wasm heap memory | 4 GiB (wasm32) |
 | Wasm stable memory | 500 GiB |
 
-Source: [Cycles costs reference](../../reference/cycles-costs.md).
+Source: [Cycles costs reference](../../references/cycles-costs.md).
 
 ### Prevent memory exhaustion
 
@@ -288,7 +288,7 @@ canisters:
       compute_allocation: 10  # Guaranteed 10% of one execution core
 ```
 
-A value of `10` means the canister is scheduled at least every 10 consensus rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet). Only set it if you need guaranteed throughput under load. See [Cycles costs](../../reference/cycles-costs.md).
+A value of `10` means the canister is scheduled at least every 10 consensus rounds. Compute allocation incurs an ongoing rental fee (10M cycles per percentage point per second on a 13-node subnet). Only set it if you need guaranteed throughput under load. See [Cycles costs](../../references/cycles-costs.md).
 
 ### Memory allocation
 
@@ -338,7 +338,7 @@ Chain-key signing (threshold ECDSA/Schnorr), HTTPS outcalls, and Bitcoin API cal
 - [Access management](access-management.md): caller checks, anonymous principal rejection, and role-based guards
 - [Inter-canister call safety](inter-canister-calls.md): TOCTOU vulnerabilities and the CallerGuard pattern
 - [Canister settings](../canister-management/settings.md): freezing threshold, memory allocation, and compute allocation
-- [Cycles costs](../../reference/cycles-costs.md): exact cost tables and resource limits
+- [Cycles costs](../../references/cycles-costs.md): exact cost tables and resource limits
 - [Security model](../../concepts/security.md): IC trust boundaries and threat model overview
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/security/dos.mdx; icskills: canister-security -->

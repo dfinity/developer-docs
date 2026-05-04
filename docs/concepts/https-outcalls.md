@@ -76,7 +76,7 @@ The cost depends on two factors:
 
 If you omit `max_response_bytes`, the system assumes the maximum of 2 MB and charges accordingly: roughly 21.5 billion cycles on a 13-node subnet. Always set this to a reasonable upper bound for your expected response to avoid overpaying. Unused cycles are refunded.
 
-For exact pricing formulas, see the [cycles costs reference](../reference/cycles-costs.md).
+For exact pricing formulas, see the [cycles costs reference](../references/cycles-costs.md).
 
 ## Limitations
 
@@ -110,7 +110,7 @@ One extension is under consideration that may affect architecture decisions:
 
 - [HTTPS outcalls guide](../guides/backends/https-outcalls.md): practical how-to with code examples in Motoko and Rust
 - [Chain Fusion: Ethereum integration](../guides/chain-fusion/ethereum.md): uses HTTPS outcalls via the EVM RPC canister
-- [Cycles costs reference](../reference/cycles-costs.md): detailed pricing formulas
+- [Cycles costs reference](../references/cycles-costs.md): detailed pricing formulas
 - [Learn Hub: HTTPS Outcalls](https://learn.internetcomputer.org/hc/en-us/articles/34211194553492): additional learning material
 
 <!-- Upstream: informed by dfinity/portal docs/references/https-outcalls-how-it-works.mdx -->

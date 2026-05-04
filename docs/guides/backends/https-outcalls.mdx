@@ -10,7 +10,7 @@ import CodeExample from '../../../src/components/CodeExample.astro';
 
 [Canisters](../../concepts/canisters.md) can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications: all from onchain code.
 
-HTTPS outcalls are available through the [IC management canister](../../reference/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
+HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
 
 For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md).
 
@@ -146,7 +146,7 @@ For reference, on a 13-node subnet:
 - Per request byte: 5,200 cycles
 - Per `max_response_bytes` byte: 10,400 cycles
 
-See [Cycles Costs](../../reference/cycles-costs.md) for the full pricing table.
+See [Cycles Costs](../../references/cycles-costs.md) for the full pricing table.
 
 ## Limitations and pitfalls
 
@@ -163,9 +163,9 @@ Use the "Full example in ICP Ninja" links above to deploy and test directly in t
 ## Next steps
 
 - [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md): how consensus works for outcalls
-- [Management canister reference](../../reference/management-canister.md#http_request): full `http_request` parameter reference including all fields
+- [Management canister reference](../../references/management-canister.md#http_request): full `http_request` parameter reference including all fields
 - [Exchange Rate Canister (XRC)](https://github.com/dfinity/exchange-rate-canister): a production service powered by HTTPS outcalls that fetches digital asset and fiat exchange rates
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md): the EVM RPC canister uses HTTPS outcalls under the hood
-- [Cycles Costs](../../reference/cycles-costs.md): outcall pricing details
+- [Cycles Costs](../../references/cycles-costs.md): outcall pricing details
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/; dfinity/examples send_http_get, send_http_post */}

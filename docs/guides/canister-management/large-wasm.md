@@ -72,7 +72,7 @@ When compression alone is not enough, the Wasm chunk store lets you upload modul
 1. **Upload chunks**: Call `upload_chunk` on the management canister to store up to 1 MiB chunks in the target canister's chunk store. Each call returns the SHA-256 hash of the stored chunk.
 2. **Assemble and install**: Call `install_chunked_code` with the ordered list of chunk hashes. The system concatenates the chunks, verifies the aggregate hash matches `wasm_module_hash`, and installs the result as if you had called `install_code` directly.
 
-The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE`, defined in the IC interface spec: see the [management canister reference](../../reference/management-canister.md) for the exact value). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
+The chunk store is bounded: each chunk is at most 1 MiB, and there is a maximum number of chunks per store (`CHUNK_STORE_SIZE`, defined in the IC interface spec: see the [management canister reference](../../references/management-canister.md) for the exact value). You can inspect stored chunks with `stored_chunks` and clear the store with `clear_chunk_store`.
 
 ### icp-cli handles this automatically
 
@@ -248,7 +248,7 @@ rustup component add rust-src --toolchain nightly
 ## Next steps
 
 - [Canister optimization](optimization.md): reduce Wasm size before reaching for the chunk store
-- [Execution errors reference](../../reference/execution-errors.md): Wasm size and chunk store error codes
+- [Execution errors reference](../../references/execution-errors.md): Wasm size and chunk store error codes
 - [Canister lifecycle](lifecycle.md): deployment modes and install options
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/compile.mdx; dfinity/portal docs/building-apps/network-features/simd.mdx; dfinity/examples rust/backend_wasm64; dfinity/portal docs/references/ic-interface-spec.md -->

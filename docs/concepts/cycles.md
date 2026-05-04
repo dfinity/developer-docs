@@ -83,7 +83,7 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 ## Related
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
-- [Cycles Costs Reference](../reference/cycles-costs.md): exact cost tables for all operations
+- [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx -->

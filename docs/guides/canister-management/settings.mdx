@@ -69,7 +69,7 @@ settings:
 
 A value of `50` means the canister gets 50% of an execution core and is scheduled at least every other round. A value of `100` means the canister runs every round.
 
-Compute allocation incurs a rental fee based on time and allocation percentage, regardless of whether the canister actually executes. This increases idle [cycle](../../concepts/cycles.md) consumption. See [cycles costs](../../reference/cycles-costs.md) for pricing details.
+Compute allocation incurs a rental fee based on time and allocation percentage, regardless of whether the canister actually executes. This increases idle [cycle](../../concepts/cycles.md) consumption. See [cycles costs](../../references/cycles-costs.md) for pricing details.
 
 ### Memory allocation
 
@@ -90,7 +90,7 @@ Supported suffixes: `kb` (1,000), `kib` (1,024), `mb` (1,000,000), `mib` (1,048,
 
 When set, the canister draws new Wasm and stable memory from the pre-allocated pool. If usage exceeds the allocation, additional memory is allocated on demand and may fail if the subnet is at capacity.
 
-Like compute allocation, memory allocation incurs a rental fee based on time and allocated amount, regardless of actual usage. See [cycles costs](../../reference/cycles-costs.md) for pricing.
+Like compute allocation, memory allocation incurs a rental fee based on time and allocated amount, regardless of actual usage. See [cycles costs](../../references/cycles-costs.md) for pricing.
 
 ### Freezing threshold
 
@@ -436,7 +436,7 @@ async fn set_freezing_threshold(canister_id: Principal, seconds: u64) {
 
 Only a controller of the target canister can call `update_settings`. Set fields to `null`/`None` to leave them unchanged.
 
-For the full management canister interface, see the [management canister reference](../../reference/management-canister.md).
+For the full management canister interface, see the [management canister reference](../../references/management-canister.md).
 
 ## Common control models
 
@@ -454,7 +454,7 @@ How you configure controllers depends on the trust model for your canister:
 
 - [Canister lifecycle](lifecycle.md): Create, deploy, upgrade, stop, and delete canisters.
 - [Cycles management](cycles-management.md): Monitor and top up cycle balances.
-- [Cycles costs reference](../../reference/cycles-costs.md): Pricing for compute and memory allocation.
-- [Management canister reference](../../reference/management-canister.md): Full interface specification.
+- [Cycles costs reference](../../references/cycles-costs.md): Pricing for compute and memory allocation.
+- [Management canister reference](../../references/management-canister.md): Full interface specification.
 
 {/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli) docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

@@ -52,7 +52,7 @@ Each scheme is backed by a pair of management canister methods:
 - **Public key retrieval** (`ecdsa_public_key`, `schnorr_public_key`): returns a canister's public key for a given derivation path.
 - **Signing** (`sign_with_ecdsa`, `sign_with_schnorr`): computes a threshold signature using the canister's derived key.
 
-See the [Management canister reference](../reference/management-canister.md) for the full API, and the [IC interface specification](../reference/ic-interface-spec/index.md) for the authoritative protocol-level details.
+See the [Management canister reference](../references/management-canister.md) for the full API, and the [IC interface specification](../references/ic-interface-spec/index.md) for the authoritative protocol-level details.
 
 ### Key derivation
 
@@ -87,7 +87,7 @@ The following master keys are deployed at the time of writing. The NNS can add n
 
 Test keys are available for development and run on smaller subnets with lower signing costs. They should not be used for anything of value. Production keys run on high-replication subnets (34+ nodes) for stronger security guarantees. Each key is also reshared to a backup subnet for availability: if the signing subnet fails, the backup can take over without generating a new key.
 
-For signing costs, see [Cycles costs](../reference/cycles-costs.md).
+For signing costs, see [Cycles costs](../references/cycles-costs.md).
 
 ## Supported chains
 
@@ -106,6 +106,6 @@ For more on how upgrades work at the protocol level, see the [Chain Evolution](h
 - [Chain Fusion](chain-fusion.md): how canisters use chain-key signatures to interact with other blockchains
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
 - [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
-- [Management canister reference](../reference/management-canister.md): the threshold signing API
+- [Management canister reference](../references/management-canister.md): the threshold signing API
 
 <!-- Upstream: informed by dfinity/portal docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx -->

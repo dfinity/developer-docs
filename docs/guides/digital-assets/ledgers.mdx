@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Digital assets on ICP are managed by **ledger canisters** that implement the [ICRC digital asset standards](../../reference/digital-asset-standards.md). The ICP ledger is fully ICRC-1 and ICRC-2 compliant: code that works with the ICP ledger works identically with ckBTC, ckETH, or any ICRC-1 compatible asset. You only need to swap the canister ID and fee. The ICRC specifications use the term "token" throughout their text.
+Digital assets on ICP are managed by **ledger canisters** that implement the [ICRC digital asset standards](../../references/digital-asset-standards.md). The ICP ledger is fully ICRC-1 and ICRC-2 compliant: code that works with the ICP ledger works identically with ckBTC, ckETH, or any ICRC-1 compatible asset. You only need to swap the canister ID and fee. The ICRC specifications use the term "token" throughout their text.
 
 Each ledger is paired with an **index canister** that continuously syncs the ledger's blocks and provides efficient per-account transaction history queries. Together they form the **ledger suite**.
 
@@ -21,7 +21,7 @@ This guide covers the most common operations: transfers, approvals, subaccounts,
 
 > Query `icrc1_fee` and `icrc1_decimals` at runtime rather than hardcoding values.
 
-For chain-key token canister IDs (ckBTC, ckETH, ckDOGE, ckSOL, and ckERC20), see [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md). For chain-key token specifics (minting, deposits, withdrawals), see [Chain-key tokens](chain-key-tokens.md).
+For chain-key token canister IDs (ckBTC, ckETH, ckDOGE, ckSOL, and ckERC20), see [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md). For chain-key token specifics (minting, deposits, withdrawals), see [Chain-key tokens](chain-key-tokens.md).
 
 ## Transferring assets (ICRC-1)
 
@@ -503,7 +503,7 @@ icp canister call qhbym-qaaaa-aaaaa-aaafq-cai get_account_transactions \
 
 The response includes a `transactions` list and the account's current `balance` at the tip. Paginate backwards using the `start` field (the oldest block index from the previous response).
 
-**ICRC-3** is the standard that defines how ledgers expose their block structure: the block schema, archive model, and `icrc3_get_blocks` method. It is why index canisters, Rosetta nodes, and custom indexers can all read the same block data in a consistent, verifiable format. All system ledgers on ICP implement ICRC-3. See [ICRC-3: Transaction log](../../reference/digital-asset-standards.md#icrc-3-transaction-log) for the block schema and method signatures.
+**ICRC-3** is the standard that defines how ledgers expose their block structure: the block schema, archive model, and `icrc3_get_blocks` method. It is why index canisters, Rosetta nodes, and custom indexers can all read the same block data in a consistent, verifiable format. All system ledgers on ICP implement ICRC-3. See [ICRC-3: Transaction log](../../references/digital-asset-standards.md#icrc-3-transaction-log) for the block schema and method signatures.
 
 For client-side indexing across multiple ICRC-1 ledgers (exchange integrations, custody platforms, analytics), use the [Rosetta API](rosetta.md). The ICRC Rosetta implementation supports querying balances and transaction history across any number of ICRC-1 compatible ledgers simultaneously.
 
@@ -577,8 +577,8 @@ icp canister call icrc1_ledger icrc1_transfer \
 
 ## Next steps
 
-- [Digital Asset Standards](../../reference/digital-asset-standards.md): ICRC-1, ICRC-2, ICRC-3, ICRC-7, and ICRC-37 specifications including NFT standards
-- [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md): mainnet and testnet canister IDs for all chain-key tokens
+- [Digital Asset Standards](../../references/digital-asset-standards.md): ICRC-1, ICRC-2, ICRC-3, ICRC-7, and ICRC-37 specifications including NFT standards
+- [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md): mainnet and testnet canister IDs for all chain-key tokens
 - [Chain-key tokens](chain-key-tokens.md): minting, depositing, and withdrawing ckBTC, ckETH, ckDOGE, and ckSOL
 - [Rosetta API](rosetta.md): client-side indexing and transaction construction for exchanges and custody platforms
 - [Wallet integration](wallet-integration.md): connecting wallets to your app

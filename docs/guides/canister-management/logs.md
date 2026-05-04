@@ -251,7 +251,7 @@ If the `"name"` section is absent, backtraces will not be available.
 
 ## Query statistics
 
-Each canister exposes cumulative statistics about its query call traffic. These are available through the [management canister](../../reference/management-canister.md)'s `canister_status` method.
+Each canister exposes cumulative statistics about its query call traffic. These are available through the [management canister](../../references/management-canister.md)'s `canister_status` method.
 
 The statistics are cumulative since the canister was created. They are updated approximately once per epoch rather than in real time.
 

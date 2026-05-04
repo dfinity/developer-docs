@@ -24,7 +24,7 @@ Use Internet Identity for login. Use a wallet signer when your app needs users t
 
 ## ICRC signer standards
 
-The signer model is defined by five ICRC standards (ICRC-21, 25, 27, 29, and 49) covering consent messages, permissions, account discovery, and canister call routing. For details on each, see [Wallet signer standards](../../reference/icrc-standards.md#wallet-signer-standards). A compliant wallet such as [OISY](https://oisy.com) implements all five.
+The signer model is defined by five ICRC standards (ICRC-21, 25, 27, 29, and 49) covering consent messages, permissions, account discovery, and canister call routing. For details on each, see [Wallet signer standards](../../references/icrc-standards.md#wallet-signer-standards). A compliant wallet such as [OISY](https://oisy.com) implements all five.
 
 ## How it works
 
@@ -242,6 +242,6 @@ Both libraries are expected to move to the `@icp-sdk` namespace on npm and will 
 
 - [Internet Identity integration](../authentication/internet-identity.md): add authentication alongside wallet signing
 - [Ledgers](ledgers.md): transfer and manage assets with ledgers that implement digital asset standards
-- [Digital Asset Standards](../../reference/digital-asset-standards.md): formal ICRC specifications for fungible assets, NFTs, and their extensions
+- [Digital Asset Standards](../../references/digital-asset-standards.md): formal ICRC specifications for fungible assets, NFTs, and their extensions
 
 <!-- Upstream: informed by dfinity/icskills — skills/wallet-integration/SKILL.md; dfinity/examples — hosting/oisy-signer-demo; dfinity/icp-js-sdk-docs — signer/latest.zip -->

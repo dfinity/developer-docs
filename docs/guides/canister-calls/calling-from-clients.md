@@ -61,7 +61,7 @@ Crate documentation: [docs.rs/ic-agent](https://docs.rs/ic-agent/latest/ic_agent
 
 ### Community agents
 
-Community-maintained agents are available for Go, Java/Android, Dart/Flutter, .NET, Elixir, and C. See [Developer Tools](../../reference/developer-tools.md#other-languages) for the full list.
+Community-maintained agents are available for Go, Java/Android, Dart/Flutter, .NET, Elixir, and C. See [Developer Tools](../../references/developer-tools.md#other-languages) for the full list.
 
 ## JavaScript / TypeScript: using the agent
 

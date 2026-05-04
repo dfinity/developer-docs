@@ -72,7 +72,7 @@ Returns the consent text shown to the user in the II dialog. This message must c
 
 #### 2. `derivation_origin`
 
-Returns the URL used to derive the user's principal for this issuer. If you do not use [alternative derivation origins](../../reference/internet-identity-spec.md), return the canister's default URL:
+Returns the URL used to derive the user's principal for this issuer. If you do not use [alternative derivation origins](../../references/internet-identity-spec.md), return the canister's default URL:
 
 ```
 https://<issuer-canister-id>.icp0.io
@@ -97,7 +97,7 @@ Issues the signed credential. This endpoint:
 - Verifies that `prepared_context` is consistent with the earlier preparation step.
 - Returns the signed credential as a JWT.
 
-The credential is signed using a [canister signature](../../reference/ic-interface-spec/index.md#canister-signatures): a signature produced by the canister's key, not an ECDSA or Ed25519 key. This means the canister must update `certified_data` in `prepare_credential` before the signature becomes available in `get_credential`.
+The credential is signed using a [canister signature](../../references/ic-interface-spec/index.md#canister-signatures): a signature produced by the canister's key, not an ECDSA or Ed25519 key. This means the canister must update `certified_data` in `prepare_credential` before the signature becomes available in `get_credential`.
 
 ### Credential format convention
 
@@ -329,7 +329,7 @@ The `verifiableCredential` array always contains exactly two JWTs in this order:
 
 #### Cryptographic verification
 
-Both credentials are signed using [canister signatures](../../reference/ic-interface-spec/index.md#canister-signatures). To verify them:
+Both credentials are signed using [canister signatures](../../references/ic-interface-spec/index.md#canister-signatures). To verify them:
 
 1. Decode the outer VP JWT.
 2. Extract the two inner JWTs from `vp.verifiableCredential`.
@@ -398,6 +398,6 @@ The VC protocol provides the following privacy guarantees:
 - Read the [VC specification](https://github.com/dfinity/internet-identity/blob/main/docs/vc-spec.md) for the full protocol details.
 - Explore the [verifiable credentials playground](https://github.com/dfinity/vc-playground) for issuer and relying party reference implementations.
 - Review [Internet Identity integration](internet-identity.md) for authentication setup.
-- See the [Internet Identity specification](../../reference/internet-identity-spec.md) for alternative derivation origins and canister signature details.
+- See the [Internet Identity specification](../../references/internet-identity-spec.md) for alternative derivation origins and canister signature details.
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/network-features/verifiable-credentials/ (overview.mdx, how-it-works.mdx, issuer.mdx, relying-party.mdx); dfinity/icskills skills/internet-identity/SKILL.md -->

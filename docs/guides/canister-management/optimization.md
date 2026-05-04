@@ -231,7 +231,7 @@ Most production canisters benefit from combining several techniques:
 ## Next steps
 
 - [Large Wasm](large-wasm.md): when binary size exceeds the upload limit
-- [Cycles costs](../../reference/cycles-costs.md): how Wasm size and instruction count map to cycle charges
+- [Cycles costs](../../references/cycles-costs.md): how Wasm size and instruction count map to cycle charges
 - [Canister lifecycle](lifecycle.md): how optimized builds integrate with the icp-cli deploy workflow
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/advanced/optimize/rust.mdx; docs/building-apps/advanced/optimize/motoko.mdx -->

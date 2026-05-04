@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Chain-key tokens are ICP-native representations of assets from other blockchains. Each one is backed 1:1 by the original asset and controlled entirely by ICP canisters. No bridges, no wrapped tokens, no third-party custodians.
 
-All chain-key tokens implement the [ICRC-1 standard](../../reference/digital-asset-standards.md#icrc-1-fungible-tokens). The deposit and withdrawal flows use [ICRC-2](../../reference/digital-asset-standards.md#icrc-2-approve-and-transfer-from) `icrc2_approve` to authorize the minter to burn tokens on your behalf.
+All chain-key tokens implement the [ICRC-1 standard](../../references/digital-asset-standards.md#icrc-1-fungible-tokens). The deposit and withdrawal flows use [ICRC-2](../../references/digital-asset-standards.md#icrc-2-approve-and-transfer-from) `icrc2_approve` to authorize the minter to burn tokens on your behalf.
 
 This guide covers deposit and withdrawal flows for each asset, plus the pattern for issuing per-user deposit addresses from a backend canister.
 
@@ -397,7 +397,7 @@ The ERC-20 deposit flow uses the same helper contract and minter:
    - A 32-byte subaccount (`0x` for the default account).
 3. The minter detects the `ReceivedEthOrErc20` event and mints the corresponding ckERC20 to `(principal, subaccount)`.
 
-Supported ERC-20 tokens on mainnet: USDC, USDT, EURC, WBTC, wstETH, LINK, UNI, SHIB, PEPE, XAUT, and OCT. For canister IDs, see [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md#ckerc20). For the authoritative current list including any newly added tokens, call `get_minter_info` on the ckETH minter and check `supported_ckerc20_tokens`.
+Supported ERC-20 tokens on mainnet: USDC, USDT, EURC, WBTC, wstETH, LINK, UNI, SHIB, PEPE, XAUT, and OCT. For canister IDs, see [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md#ckerc20). For the authoritative current list including any newly added tokens, call `get_minter_info` on the ckETH minter and check `supported_ckerc20_tokens`.
 
 ### Withdrawal: ckETH or ckERC20 → ETH / ERC-20
 
@@ -520,7 +520,7 @@ icp canister call mxzaz-hqaaa-aaaar-qaada-cai icrc1_balance_of \
   -n ic
 ```
 
-For canister IDs for all other chain-key tokens, see [Chain-Key Token Canister IDs](../../reference/chain-key-canister-ids.md).
+For canister IDs for all other chain-key tokens, see [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md).
 
 ## Next steps
 
@@ -528,6 +528,6 @@ For canister IDs for all other chain-key tokens, see [Chain-Key Token Canister I
 - [Bitcoin integration](../chain-fusion/bitcoin.md): native BTC UTXO access and threshold signing
 - [Ethereum integration](../chain-fusion/ethereum.md): calling Ethereum contracts from ICP canisters
 - [Wallet integration](wallet-integration.md): add wallet signing to your app
-- [Digital Asset Standards](../../reference/digital-asset-standards.md): formal ICRC standard specifications for fungible assets, NFTs, and their extensions
+- [Digital Asset Standards](../../references/digital-asset-standards.md): formal ICRC standard specifications for fungible assets, NFTs, and their extensions
 
 {/* Upstream: informed by dfinity/icskills skills/ckbtc/SKILL.md; dfinity/icskills skills/icrc-ledger/SKILL.md; dfinity/portal docs/defi/chain-key-tokens/cketh/overview.mdx; dfinity/ic rs/ethereum/cketh/docs/cketh.adoc; dfinity/ic rs/ethereum/cketh/docs/ckerc20.adoc; dfinity/ic rs/bitcoin/ckbtc (ckBTC minter API); dfinity/ic rs/dogecoin/ckdoge (ckDOGE minter API and canister IDs); dfinity/cksol (ckSOL minter API and canister IDs) */}
