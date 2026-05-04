@@ -300,7 +300,7 @@ EOF
 | Local file | Source | Affects |
 |-----------|--------|---------|
 | `public/reference/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/reference/management-canister.md` |
-| `docs/reference/ic-interface-spec.md` | `.sources/portal/docs/references/ic-interface-spec.md` | Full IC interface spec — apply portal diff as a patch on every bump |
+| `docs/reference/ic-interface-spec/` | `.sources/portal/docs/references/ic-interface-spec.md` | IC interface spec split into 7 focused pages — apply portal diffs by section (see checklist below) |
 | `docs/reference/http-gateway-spec.md` | `.sources/portal/docs/references/http-gateway-protocol-spec.md` | HTTP Gateway spec — apply portal diff as a patch on every bump |
 
 **Portal bump checklist (run on every portal bump):**
@@ -311,11 +311,24 @@ EOF
 3. Review diff for new/changed/removed methods
 4. Update `docs/reference/management-canister.md` and any affected guides
 
-**Step 2 — `ic-interface-spec.md`:** For every commit in the bump range that touched `docs/references/ic-interface-spec.md`:
-1. `git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md > /tmp/patch.diff`
-2. `patch -F 5 -p1 --input=/tmp/patch.diff docs/reference/ic-interface-spec.md`
-3. Resolve any rejects manually (our file has intentional diffs: Astro frontmatter, internal link fixes)
-4. Verify new methods/fields are reflected in `docs/reference/management-canister.md` if they touch the management canister
+**Step 2 — `ic-interface-spec/`:** The spec is now split into 7 files under `docs/reference/ic-interface-spec/`. Each file maps to a section of the portal source:
+
+| File | Portal section (## heading) |
+|---|---|
+| `index.md` | Introduction, Pervasive concepts, The system state tree |
+| `https-interface.md` | HTTPS Interface |
+| `canister-interface.md` | Canister module format, Canister interface (System API) |
+| `management-canister.md` | The IC management canister, The IC Bitcoin API, The IC Provisional API |
+| `certification.md` | Certification, The HTTP Gateway protocol |
+| `abstract-behavior.md` | Abstract behavior |
+| `changelog.md` | Changelog |
+
+For every commit in the bump range that touched `docs/references/ic-interface-spec.md`:
+1. `git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md > /tmp/spec.diff`
+2. Inspect the diff: identify which section(s) changed
+3. Apply the relevant hunks manually to the corresponding file(s) in `docs/reference/ic-interface-spec/`
+4. Update any cross-file anchor links (`(./other.md#anchor)`) if headings were added or removed
+5. Verify new methods/fields are reflected in `docs/reference/management-canister.md` if they touch the management canister
 
 **Step 3 — `http-gateway-spec.md`:** For every commit in the bump range that touched `docs/references/http-gateway-protocol-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/http-gateway-protocol-spec.md > /tmp/patch.diff`
@@ -325,6 +338,7 @@ EOF
 **Finding which commits touched which files:**
 ```bash
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/ic-interface-spec.md
+git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md | grep "^[+-]## " | head -20  # identify which sections changed
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/http-gateway-protocol-spec.md
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/ic.did
 ```

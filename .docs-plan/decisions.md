@@ -282,3 +282,13 @@ Record decisions that constrain future work — things an agent needs to know th
 **Decision:** Switch all domain references from `beta-docs.internetcomputer.org` to `docs.internetcomputer.org`. Updated files: `astro.config.mjs` (site URL + og/twitter/schema.org meta), `public/robots.txt` (sitemap), `public/og-image.svg` (footer text), `README.md`, `AGENTS.md` (never-link rule + portal tracking section), `scripts/validate.js` (error messages). The `docs.internetcomputer.org` lint rule in validate.js is kept — it still enforces relative paths for internal links.
 **Rationale:** The beta domain was always a temporary staging address. With the portal retired, `docs.internetcomputer.org` is the permanent home.
 **Alternatives considered:** Keep beta domain as a redirect origin (handled at DNS/CDN level, not in code)
+
+---
+
+## 2026-05-04: ic-interface-spec split into 7 focused sub-pages
+
+**Context:** `docs/reference/ic-interface-spec.md` was a 483K monolith covering 13 distinct sections serving very different audiences (agent builders, CDK developers, canister developers, protocol implementors). The `afdocs` checker flagged it for both `page-size-markdown` (482K chars, limit 480K) and `page-size-html` (524K converted, 79% boilerplate). The Abstract behavior section alone was 5,747 lines (formal state machine notation) accounting for 64% of the file.
+**Decision:** Split into `docs/reference/ic-interface-spec/` with 7 pages: `index.md` (intro, pervasive concepts, system state tree), `https-interface.md`, `canister-interface.md` (module format + System API), `management-canister.md` (management + Bitcoin + provisional APIs), `certification.md` (certification + HTTP Gateway), `abstract-behavior.md`, `changelog.md`. All 204 heading anchors were remapped; cross-file `(#anchor)` references updated to `(./target.md#anchor)`. The Abstract behavior page carries a note directing application developers to the practical sections. CLAUDE.md sync rules updated with a section-to-file mapping table for portal bump workflow.
+**Rationale:** Each section serves a distinct audience and use case. Splitting enables independent navigation, brings all pages under the 480K size limit, and gives the agent-friendly docs checker clean per-section `.md` endpoints. The technical-documentation skill confirmed the split is correct Diataxis structure for a reference spec of this scope.
+**Sync:** Portal bump workflow changed from patch-on-single-file to inspect-diff-and-apply-by-section. See CLAUDE.md "Step 2 — ic-interface-spec/" checklist.
+**When to revisit:** If the portal is fully retired as source, remove the portal sync checklist from CLAUDE.md and mark these files as hand-maintained.

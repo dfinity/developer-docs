@@ -32,7 +32,7 @@ Technical reference material for ICP development. These pages cover exact specif
 
 ## Specifications
 
-- **[IC Interface Specification](ic-interface-spec.md)**: System API, HTTP interface, and certified data specification.
+- **[IC Interface Specification](ic-interface-spec/index.md)**: System API, HTTPS interface, certified data, management canister, and formal specification of the Internet Computer.
 - **[HTTP Gateway Specification](http-gateway-spec.md)**: How boundary nodes serve canister HTTP responses with certification verification.
 - **[Candid Specification](candid-spec.md)**: The Candid interface description language: type system, encoding, and subtyping rules.
 - **[Internet Identity Specification](internet-identity-spec.md)**: Delegation chains, passkey management, and canister signatures.
