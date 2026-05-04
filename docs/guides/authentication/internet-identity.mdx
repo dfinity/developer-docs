@@ -1,6 +1,6 @@
 ---
 title: "Internet Identity"
-description: "Integrate passkey-based authentication with Internet Identity for frontend login, backend caller verification, and session management"
+description: "Integrate passkey-based authentication with Internet Identity for frontend sign-in, backend caller verification, and session management"
 sidebar:
   order: 1
 ---
@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Internet Identity (II) is the Internet Computer's native authentication system. Users sign in with passkeys or OpenID accounts (Google, Apple, Microsoft) instead of passwords. Each user receives a unique principal per frontend origin, preventing cross-app tracking.
 
-This guide covers setting up II authentication end-to-end: configuring your project, adding login to your frontend, and verifying callers in your backend.
+This guide covers setting up II authentication end-to-end: configuring your project, adding sign-in to your frontend, and verifying callers in your backend.
 
 ## How it works
 
@@ -46,7 +46,7 @@ npm install @icp-sdk/auth @icp-sdk/core
 
 ## Frontend integration
 
-The `AuthClient` from `@icp-sdk/auth` handles the full login flow: opening the II popup, receiving the delegation, and managing session persistence.
+The `AuthClient` from `@icp-sdk/auth` handles the full sign-in flow: opening the II popup, receiving the delegation, and managing session persistence.
 
 ### Environment detection
 
@@ -77,7 +77,7 @@ function getIdentityProviderUrl() {
 }
 ```
 
-### Login, logout, and session check
+### Sign in, log out, and session check
 
 Create a single `AuthClient` instance on page load and reuse it for all operations. The identity provider URL is passed at construction time, not on each sign-in:
 
@@ -93,21 +93,21 @@ if (authClient.isAuthenticated()) {
   // Restore session: create agent and actor with this identity
 }
 
-// Login
-async function login() {
+// Sign in
+async function signIn() {
   try {
     const identity = await authClient.signIn({
       maxTimeToLive: BigInt(8) * BigInt(3_600_000_000_000), // 8 hours
     });
-    console.log("Logged in as:", identity.getPrincipal().toText());
+    console.log("Signed in as:", identity.getPrincipal().toText());
     return identity;
   } catch (error) {
-    console.error("Login failed:", error);
+    console.error("Sign-in failed:", error);
     throw error;
   }
 }
 
-// Logout
+// Log out
 async function logout() {
   await authClient.logout();
   // Reset UI state or reload
@@ -131,7 +131,7 @@ The rest of the flow (`signIn`, `getIdentity`, `logout`) is unchanged.
 
 ### Create an authenticated agent
 
-After login, create an `HttpAgent` using the delegation identity. The agent signs all subsequent canister calls with the user's delegated key:
+After sign-in, create an `HttpAgent` using the delegation identity. The agent signs all subsequent canister calls with the user's delegated key:
 
 ```javascript
 async function createAuthenticatedActor(identity, canisterId, idlFactory) {
