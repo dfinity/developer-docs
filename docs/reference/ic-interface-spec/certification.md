@@ -251,6 +251,6 @@ In the pruned tree, the `lookup_path` function behaves as follows:
 
 ## The HTTP Gateway protocol {#http-gateway}
 
-The HTTP Gateway Protocol has been moved into its own [specification](./http-gateway-spec.md).
+The HTTP Gateway Protocol has been moved into its own [specification](../http-gateway-spec.md).
 
 <!-- Upstream: sync from dfinity/portal — docs/references/ic-interface-spec.md -->

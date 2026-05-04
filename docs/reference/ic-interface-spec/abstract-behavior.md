@@ -7,7 +7,7 @@ sidebar:
 ---
 
 :::note
-This section is a rigorous formal specification intended for protocol implementors and security researchers. Most application developers do not need to read this section — see the [HTTPS Interface](./https-interface.md), [Canister Interface](./canister-interface.md), and [IC Management Canister](./management-canister.md) pages instead.
+This section is a rigorous formal specification intended for protocol implementors and security researchers. Most application developers do not need to read this section. See the [HTTPS Interface](./https-interface.md), [Canister Interface](./canister-interface.md), and [IC Management Canister](./management-canister.md) pages instead.
 :::
 
 ## Abstract behavior {#abstract-behavior}

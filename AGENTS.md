@@ -330,7 +330,7 @@ grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
 | `management-canister.md` | The IC management canister, The IC Bitcoin API, The IC Provisional API |
 | `certification.md` | Certification, The HTTP Gateway protocol |
 | `abstract-behavior.md` | Abstract behavior |
-| `changelog.md` | Changelog |
+| `changelog.md` | `.sources/portal/docs/references/_attachments/interface-spec-changelog.md` (NOT `ic-interface-spec.md`) |
 
 For every commit in the bump range that touched `docs/references/ic-interface-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md > /tmp/spec.diff`
@@ -338,6 +338,10 @@ For every commit in the bump range that touched `docs/references/ic-interface-sp
 3. Apply the relevant hunks manually to the corresponding file(s) in `docs/reference/ic-interface-spec/`
 4. Update any cross-file anchor links (`(./other.md#anchor)`) if headings were added or removed
 5. Verify new methods/fields are reflected in `docs/reference/management-canister.md` if they touch the management canister
+
+For every commit in the bump range that touched `docs/references/_attachments/interface-spec-changelog.md`:
+1. `git -C .sources/portal show <commit> -- docs/references/_attachments/interface-spec-changelog.md > /tmp/changelog.diff`
+2. Apply the new version entries to `docs/reference/ic-interface-spec/changelog.md`
 
 **Step 3 — `http-gateway-spec.md`:** For every commit in the bump range that touched `docs/references/http-gateway-protocol-spec.md`:
 1. `git -C .sources/portal show <commit> -- docs/references/http-gateway-protocol-spec.md > /tmp/patch.diff`
@@ -354,6 +358,7 @@ grep -r "{#<anchor>}" docs/reference/ic-interface-spec/
 ```bash
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/ic-interface-spec.md
 git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md | grep "^[+-]## " | head -20  # identify which sections changed
+git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/interface-spec-changelog.md
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/http-gateway-protocol-spec.md
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/ic.did
 ```
