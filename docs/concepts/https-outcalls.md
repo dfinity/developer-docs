@@ -5,15 +5,15 @@ sidebar:
   order: 8
 ---
 
-Canisters on the Internet Computer can make HTTP requests to any public web server — fetching API data, posting to webhooks, or querying external services — without relying on oracles or other intermediaries. This capability is called **HTTPS outcalls**.
+Canisters on the Internet Computer can make HTTP requests to any public web server (fetching API data, posting to webhooks, or querying external services) without relying on oracles or other intermediaries. This capability is called **HTTPS outcalls**.
 
-ICP runs every canister on a subnet where all replicas execute the same code independently and must reach consensus. Outbound HTTP requests are non-trivial in this model: each replica independently contacts the server and typically receives a slightly different response — timestamps, headers, or field ordering vary — which would cause replicas to diverge. The traditional workaround is **oracles**: third-party services that fetch external data and relay it to the network, at the cost of extra complexity, fees, and a trust assumption. HTTPS outcalls solve the problem directly: the subnet reaches consensus over the response internally, so canisters call external APIs without a middleman.
+ICP runs every canister on a subnet where all replicas execute the same code independently and must reach consensus. Outbound HTTP requests are non-trivial in this model: each replica independently contacts the server and typically receives a slightly different response: timestamps, headers, or field ordering vary, which would cause replicas to diverge. The traditional workaround is **oracles**: third-party services that fetch external data and relay it to the network, at the cost of extra complexity, fees, and a trust assumption. HTTPS outcalls solve the problem directly: the subnet reaches consensus over the response internally, so canisters call external APIs without a middleman.
 
 ## Replicated and non-replicated mode
 
 HTTPS outcalls have two modes controlled by the `is_replicated` field:
 
-**Replicated mode** (default) is what the consensus mechanism below describes: all replicas independently fetch the URL, a transform function normalizes the responses, and the subnet agrees on a single result. This provides the strongest integrity guarantee — the response is confirmed by a supermajority of nodes, making it extremely difficult for any single party to tamper with it. The tradeoff is that all replicas (typically 13) send the same request to the external server within milliseconds of each other, which can trigger API rate limits.
+**Replicated mode** (default) is what the consensus mechanism below describes: all replicas independently fetch the URL, a transform function normalizes the responses, and the subnet agrees on a single result. This provides the strongest integrity guarantee: the response is confirmed by a supermajority of nodes, making it extremely difficult for any single party to tamper with it. The tradeoff is that all replicas (typically 13) send the same request to the external server within milliseconds of each other, which can trigger API rate limits.
 
 **Non-replicated mode** (`is_replicated = false`) has a single replica make the request. No consensus is needed, so there is no transform function requirement and no rate-limit pressure on the external server. The tradeoff is trust: the single replica that handles the request could theoretically observe or modify the response before returning it to the canister. This mode is appropriate when the endpoint is idempotent, rate limits are a concern, or you're making POST requests where duplicate submissions would cause problems.
 
