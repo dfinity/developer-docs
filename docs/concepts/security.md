@@ -61,7 +61,7 @@ The following threats are your responsibility to mitigate:
 
 Every update method is publicly callable. If you do not check the caller, anyone can invoke admin functions, drain funds, or corrupt state. The anonymous principal (`2vxsx-fae`) is a particularly common gap: it must be explicitly rejected in any authenticated endpoint, because otherwise it acts as a shared identity that anyone can use.
 
-See [Access management](../guides/security/access-management.md#reject-anonymous-callers) for implementation patterns.
+See [Access management](../guides/security/identity-and-access-management.md#reject-anonymous-callers) for implementation patterns.
 
 ### Reentrancy and async interleaving
 
@@ -97,11 +97,11 @@ Users have no way to verify that a canister's running code matches its published
 
 ## What's next
 
-- [Access management](../guides/security/access-management.md): caller checks, guards, and role-based access control
+- [Access management](../guides/security/identity-and-access-management.md): caller checks, guards, and role-based access control
 - [Upgrade safety](../guides/security/canister-upgrades.md): safe upgrade patterns
 - [Inter-canister call safety](../guides/security/inter-canister-calls.md): async pitfalls and mitigations
 - [DoS prevention](../guides/security/dos-prevention.md): cycle drain protection
-- [Data integrity](../guides/security/data-integrity.md): input validation and storage safety
+- [Data integrity](../guides/security/data-integrity-and-authenticity.md): input validation and storage safety
 - [Response certification](../guides/frontends/certification.md): certified variables for query responses
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/trust-in-canisters.mdx, docs/building-apps/best-practices/general.mdx; icskills: canister-security -->

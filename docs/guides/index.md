@@ -20,7 +20,7 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 
 - **[Testing](testing/strategies.md)**: Write unit tests, run integration tests with PocketIC, and set up end-to-end testing.
 - **[Canister Management](canister-management/lifecycle.md)**: Deploy, upgrade, fund, optimize, and back up canisters.
-- **[Security](security/access-management.md)**: Implement access control, encryption, DoS prevention, and safe upgrade patterns.
+- **[Security](security/identity-and-access-management.md)**: Implement access control, DoS prevention, and safe upgrade patterns.
 
 ## Advanced features
 
