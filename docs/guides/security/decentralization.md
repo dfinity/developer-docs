@@ -71,6 +71,6 @@ Note that also loading other assets such as [CSS](https://xsleaks.dev/docs/attac
 
 - Make sure all the content delivered to the browser is served and certified by the canister using asset certification. This holds in particular for any JavaScript, but also for fonts, CSS, etc.
 
-- Use a [content security policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to prevent scripts and other content from other origins from being loaded at all. See also [define security headers, including a content security policy (CSP)](./resources.md#web-security).
+- Use a [content security policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to prevent scripts and other content from other origins from being loaded at all. See also [define security headers, including a content security policy (CSP)](./overview.md#web-security).
 
 <!-- Upstream: dfinity/portal — building-apps/security/decentralization.mdx -->
