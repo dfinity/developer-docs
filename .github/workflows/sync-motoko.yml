@@ -119,7 +119,6 @@ jobs:
         run: |
           git config user.name "pr-automation-bot-public[bot]"
           git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
 
           BRANCH="infra/bump-motoko-${{ steps.latest.outputs.versions_tag }}"
           git checkout -b "$BRANCH"
