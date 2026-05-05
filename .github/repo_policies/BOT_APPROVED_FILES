@@ -1,0 +1,10 @@
+# Files the pr-automation-bot-public bot is allowed to change via automated PRs.
+
+# sync-motoko: bumps the Motoko submodule and syncs generated docs
+.sources/motoko
+.sources/VERSIONS
+docs/languages/motoko/*
+
+# update-syntax-grammars: updates TextMate grammars from vscode-motoko releases
+syntaxes/motoko.tmLanguage.json
+syntaxes/candid.tmLanguage.json
