@@ -2,7 +2,7 @@
 title: "Formal Verification"
 description: "Applying formal verification and TLA+ model checking to find and prove the absence of security bugs in ICP canisters."
 sidebar:
-  order: 13
+  order: 12
 ---
 
 Formal verification is the highest form of quality assurance for software. Given a specification of what the system should do, formal verification tools check whether this specification is satisfied by a model of the system. The unique advantage of formal verification is that it can not only find bugs but also formally **prove** their absence — including the absence of security bugs. This goes beyond what testing or manual audits can achieve.

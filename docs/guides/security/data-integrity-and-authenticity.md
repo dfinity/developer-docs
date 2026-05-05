@@ -2,7 +2,7 @@
 title: "Data Integrity and Authenticity"
 description: "Security best practices for certified variables, asset certification, and protecting data authenticity on ICP."
 sidebar:
-  order: 5
+  order: 4
 ---
 
 ## Certified variables
