@@ -1,5 +1,5 @@
 ---
-title: "Reference"
+title: "References"
 description: "Specifications, canister IDs, token standards, cycle costs, and technical reference for ICP"
 sidebar:
   hidden: true

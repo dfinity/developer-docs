@@ -53,8 +53,14 @@ function deriveSections(items, parentLabel = "", depth = 0) {
       const childSections = deriveSections(item.items, item.label, depth + 1);
       sections.push(...childSections);
 
-      // Add a parent fallback if children have a common directory prefix
-      const childDirs = childSections.map((s) => s.dir);
+      // Add a parent fallback if children have a common directory prefix.
+      // Also include directory prefixes from explicit { slug } children so that
+      // groups listing pages individually (rather than via autogenerate) still
+      // get a section entry for llms.txt prefix matching.
+      const directSlugDirs = item.items
+        .filter((c) => c.slug && c.slug.includes("/"))
+        .map((c) => c.slug.split("/").slice(0, -1).join("/"));
+      const childDirs = [...childSections.map((s) => s.dir), ...directSlugDirs];
       const commonPrefix = findCommonPrefix(childDirs);
       if (commonPrefix) {
         sections.push({ dir: commonPrefix, label: item.label });
