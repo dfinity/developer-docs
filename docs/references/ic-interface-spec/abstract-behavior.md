@@ -733,7 +733,7 @@ is_effective_subnet_id(CanisterQuery {canister_id = ic_principal, method_name = 
 
 #### API Request submission {#api-request-submission}
 
-After a replica (i.e., a node belonging to an IC subnet) receives a call in an HTTP request to `/api/v2/canister/<ECID>/call` or `/api/v4/canister/<ECID>/call`
+After a replica (i.e., a node belonging to an IC subnet) receives a call in an HTTP request to `/api/v2/canister/<ECID>/call`, `/api/v4/canister/<ECID>/call`, or `/api/v4/subnet/<ESID>/call`
 and if the replica accepts the call and subsequently the IC subnet (as a whole) receives the call, then the call gets added to the IC state as `Received`.
 
 This can only happen if the target canister is not frozen and
