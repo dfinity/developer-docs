@@ -3,3 +3,9 @@
 # DX team members are also configured as bypass actors in the branch ruleset
 # and can merge their own PRs without a separate review.
 * @dfinity/dx
+
+# Security — product-security team must approve changes to security best practices
+docs/guides/security/ @dfinity/product-security @dfinity/dx
+docs/concepts/security.md @dfinity/product-security @dfinity/dx
+docs/references/message-execution-properties.md @dfinity/product-security @dfinity/dx
+docs/guides/canister-calls/idempotency.md @dfinity/product-security @dfinity/dx
