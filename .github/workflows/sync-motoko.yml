@@ -8,13 +8,17 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+        id: app-token
+        with:
+          app-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_APP_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
 
       - name: Initialize motoko submodule
         run: |
@@ -32,7 +36,7 @@ jobs:
           echo "git_tag=$GIT_TAG" >> $GITHUB_OUTPUT
           echo "versions_tag=$VERSIONS_TAG" >> $GITHUB_OUTPUT
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Get currently pinned version
         id: current
@@ -113,8 +117,9 @@ jobs:
       - name: Create PR
         if: steps.check.outputs.needed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "pr-automation-bot-public[bot]"
+          git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
 
           BRANCH="infra/bump-motoko-${{ steps.latest.outputs.versions_tag }}"
           git checkout -b "$BRANCH"
@@ -152,4 +157,4 @@ jobs:
             --title "chore: bump Motoko to ${{ steps.latest.outputs.versions_tag }}" \
             --body-file /tmp/pr-body.md
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
