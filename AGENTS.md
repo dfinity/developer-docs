@@ -300,15 +300,22 @@ EOF
 **Link adaptation for `icp-cli`:** All links to the CLI docs site use a versioned path slug (e.g. `https://cli.internetcomputer.org/0.2/...`). The slug must match the current latest release. When the submodule is bumped to a new minor version:
 
 1. Read the new slug from the submodule: `cat .sources/icp-cli/docs-site/versions.json` — use the `"version"` value marked `"latest": true`.
-2. Find all CLI doc links in the docs: `grep -rn "cli.internetcomputer.org" docs/ --include="*.md" --include="*.mdx"`
+2. Extract every unique path currently linked and verify each one still exists in the new submodule **before** doing any replacements:
+   ```bash
+   grep -roh "cli\.internetcomputer\.org/[0-9][.0-9]*/[^\"' )#]*" docs/ --include="*.md" --include="*.mdx" \
+     | sed 's|cli\.internetcomputer\.org/[0-9][.0-9]*/||' | sort -u | grep -v "^$" \
+     | while read p; do
+         [ -f ".sources/icp-cli/docs/${p}.md" ] || echo "MISSING: $p"
+       done
+   ```
+   If any path is reported as MISSING, find its replacement in `.sources/icp-cli/docs/` and update that link manually. Do not proceed to step 3 until all paths are accounted for.
 3. Replace the old slug with the new one across all files:
    ```bash
    old=0.2   # replace with the old slug
    new=0.3   # replace with the new slug
    find docs/ \( -name "*.md" -o -name "*.mdx" \) | xargs sed -i "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g"
    ```
-4. Verify the target paths still exist under the new version: `ls .sources/icp-cli/docs/<path>.md` for any path that changed in the bump.
-5. Run `npm run build` to confirm no broken links.
+4. Run `npm run build` to confirm no broken links.
 
 **Link adaptation for `internet-identity-spec.md`:** The upstream source (`docs/ii-spec.mdx`) uses absolute `internetcomputer.org` URLs pointing to the IC interface spec. Our file uses relative paths into the split `ic-interface-spec/` directory. After every re-sync, run:
 ```bash
