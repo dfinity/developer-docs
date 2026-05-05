@@ -144,7 +144,7 @@ git checkout main
 - Link to `internetcomputer.org/docs/` — that site is retired. For internal pages use relative paths, not absolute `docs.internetcomputer.org/...` URLs. Link to Learn Hub or explain inline for external content.
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
 - Link to a page without a section anchor when the surrounding context refers to a specific topic covered by a subsection — always check the target file's headings and include `#anchor` when a more precise destination exists. Verify anchors by grepping headings: `grep "^## \|^### " <target>`. Anchor slugs: lowercase, spaces → `-`, special chars stripped.
-- Link to `https://cli.internetcomputer.org/` (bare root) — all CLI doc pages are under a versioned path. Use `https://cli.internetcomputer.org/0.2/<path>` and verify the path exists in `.sources/icp-cli/docs/<path>.md`. For command-specific links, add a section anchor derived from the heading in `.sources/icp-cli/docs/reference/cli.md` (e.g. `#icp-canister-logs`, `#icp-canister-settings-update`, `#icp-cycles`). When the icp-cli version is bumped, update the version prefix in all CLI doc links.
+- Link to `https://cli.internetcomputer.org/` (bare root) — all CLI doc pages are under a versioned path. Use `https://cli.internetcomputer.org/0.2/<path>` (current slug; verify with `cat .sources/icp-cli/docs-site/versions.json`) and confirm the path exists in `.sources/icp-cli/docs/<path>.md`. For command-specific links add a section anchor from `.sources/icp-cli/docs/reference/cli.md` (e.g. `#icp-canister-logs`, `#icp-canister-settings-update`, `#icp-cycles`). When bumping icp-cli to a new minor version, follow the "Link adaptation for `icp-cli`" checklist in "Bumping submodules".
 - Link externally when an internal page exists — check `docs/` before using an external URL
 - Offer, suggest, or perform PR reviews unless a human explicitly asks
 - Write em-dashes (`—`) or use `--` as an em-dash substitute in prose. These are banned in all content: body text, bullet descriptions, link label text (including "Next steps", "Further reading", and "See also" sections), and inline comments. Use a colon, semicolon, period, comma, or parentheses instead. (`--` is only acceptable inside fenced code blocks as a code comment or CLI flag.)
@@ -283,7 +283,7 @@ EOF
 | `motoko` | **Automated** — `.github/workflows/sync-motoko.yml` opens a PR with the submodule bump, synced docs, and VERSIONS update already committed. Review the content diff and merge. Also check for changed/removed API signatures — grep all Motoko code blocks in docs. |
 | `motoko-core` | Check for changed/removed API signatures — grep all Motoko code blocks in docs |
 | `cdk-rs` | Check `ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros` API changes — grep all Rust code blocks |
-| `icp-cli` | Check for changed/removed commands or flags — grep all CLI examples |
+| `icp-cli` | Check for changed/removed commands or flags — grep all CLI examples. If the release tag introduces a new minor version (e.g. `v0.3.x`), update all CLI doc link slugs — see "Link adaptation for `icp-cli`" below |
 | `icskills` | Check for changed canister IDs or code patterns |
 | `examples` | Verify linked files still exist at the same path |
 | `icp-cli-recipes` | Check for renamed or removed recipes referenced in docs |
@@ -296,6 +296,19 @@ EOF
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |
+
+**Link adaptation for `icp-cli`:** All links to the CLI docs site use a versioned path slug (e.g. `https://cli.internetcomputer.org/0.2/...`). The slug must match the current latest release. When the submodule is bumped to a new minor version:
+
+1. Read the new slug from the submodule: `cat .sources/icp-cli/docs-site/versions.json` — use the `"version"` value marked `"latest": true`.
+2. Find all CLI doc links in the docs: `grep -rn "cli.internetcomputer.org" docs/ --include="*.md" --include="*.mdx"`
+3. Replace the old slug with the new one across all files:
+   ```bash
+   old=0.2   # replace with the old slug
+   new=0.3   # replace with the new slug
+   find docs/ \( -name "*.md" -o -name "*.mdx" \) | xargs sed -i "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g"
+   ```
+4. Verify the target paths still exist under the new version: `ls .sources/icp-cli/docs/<path>.md` for any path that changed in the bump.
+5. Run `npm run build` to confirm no broken links.
 
 **Link adaptation for `internet-identity-spec.md`:** The upstream source (`docs/ii-spec.mdx`) uses absolute `internetcomputer.org` URLs pointing to the IC interface spec. Our file uses relative paths into the split `ic-interface-spec/` directory. After every re-sync, run:
 ```bash
