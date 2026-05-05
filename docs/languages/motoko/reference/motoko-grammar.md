@@ -64,6 +64,7 @@ This section describes the concrete syntax, or grammar, of Motoko. The specifica
 <typ_un> ::= 
     <typ_nullary>
     '?' <typ_un>
+    '??' <typ_un>
     'weak' <typ_un>
 
 <typ_pre> ::= 
@@ -217,6 +218,7 @@ This section describes the concrete syntax, or grammar, of Motoko. The specifica
     '#' <id>
     '#' <id> <exp_nullary>
     '?' <exp_un>
+    '??' <exp_un>
     <unop> <exp_un>
     <unassign> <exp_un>
     'actor' <exp_plain>
@@ -237,6 +239,7 @@ This section describes the concrete syntax, or grammar, of Motoko. The specifica
 <exp_nondec> ::= 
     <exp_bin>
     <exp_bin> ':=' <exp>
+    <exp_bin> '??' <exp_nest>
     <exp_bin> <binassign> <exp>
     'return' <exp>?
     <parenthetical>? 'async' <exp_nest>
@@ -320,6 +323,7 @@ This section describes the concrete syntax, or grammar, of Motoko. The specifica
     '#' <id>
     '#' <id> <pat_nullary>
     '?' <pat_un>
+    '??' <pat_un>
     <unop> <lit>
 
 <pat_bin> ::= 
