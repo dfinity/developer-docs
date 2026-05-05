@@ -2,7 +2,7 @@
 title: "Observability and Monitoring"
 description: "Security best practices for monitoring canister cycles, logs, and health indicators."
 sidebar:
-  order: 10
+  order: 9
 ---
 
 ## Monitor your canister

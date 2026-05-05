@@ -2,7 +2,7 @@
 title: "HTTPS Outcall Security"
 description: "Security best practices for canister HTTPS outcalls: API keys, rate limits, idempotency, response consistency, and input validation."
 sidebar:
-  order: 7
+  order: 6
 ---
 
 ## Do not store sensitive data such as API keys in canisters

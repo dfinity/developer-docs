@@ -2,7 +2,7 @@
 title: "Data Storage"
 description: "Security best practices for canister data storage, stable memory, encryption of sensitive data, and backups."
 sidebar:
-  order: 6
+  order: 3
 ---
 
 ## Rust: Use `thread_local!` with `Cell/RefCell` for state variables and put all your globals in one basket

@@ -2,7 +2,7 @@
 title: "Canister Upgrade Security"
 description: "Security best practices for canister upgrade hooks, panics during upgrades, and timer reinstatement."
 sidebar:
-  order: 9
+  order: 8
 ---
 
 ## Be careful with panics during upgrades

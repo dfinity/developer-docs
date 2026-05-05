@@ -2,7 +2,7 @@
 title: "Inter-Canister Call Security"
 description: "Security best practices for handling traps in callbacks, message ordering, rejected calls, and untrustworthy canisters."
 sidebar:
-  order: 2
+  order: 5
 ---
 
 To understand the issues around async inter-canister calls, one needs to understand the [properties of message execution on ICP](../../references/message-execution-properties.md). Understanding these properties is a prerequisite for understanding the security issues discussed below.

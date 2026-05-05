@@ -2,7 +2,7 @@
 title: "Decentralization"
 description: "Security best practices for decentralizing dapp control using SNS, governance, and reducing centralized trust."
 sidebar:
-  order: 4
+  order: 10
 ---
 
 ## Use a decentralized governance system like SNS to put dapps under decentralized control
