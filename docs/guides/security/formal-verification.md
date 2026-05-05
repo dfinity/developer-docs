@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Formal Verification"
+title: "Formal Verification"
 description: "Applying formal verification and TLA+ model checking to find and prove the absence of security bugs in ICP canisters."
 sidebar:
   order: 13

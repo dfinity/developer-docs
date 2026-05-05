@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Observability and Monitoring"
+title: "Observability and Monitoring"
 description: "Security best practices for monitoring canister cycles, logs, and health indicators."
 sidebar:
   order: 10

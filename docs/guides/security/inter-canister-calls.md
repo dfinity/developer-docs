@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Inter-Canister Calls"
+title: "Inter-Canister Call Security"
 description: "Security best practices for handling traps in callbacks, message ordering, rejected calls, and untrustworthy canisters."
 sidebar:
   order: 2

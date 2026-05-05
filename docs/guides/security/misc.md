@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Miscellaneous"
+title: "Miscellaneous Security Practices"
 description: "Miscellaneous security best practices: data confidentiality, secure randomness, endpoint validation, testing, reproducible builds, monotonic time, and floating point."
 sidebar:
   order: 11

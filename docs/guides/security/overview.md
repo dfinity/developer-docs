@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices Overview"
+title: "Security Overview"
 description: "Introduction to the ICP security best practices for canister and web app developers."
 sidebar:
   order: 1

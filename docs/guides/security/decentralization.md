@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Decentralization"
+title: "Decentralization"
 description: "Security best practices for decentralizing dapp control using SNS, governance, and reducing centralized trust."
 sidebar:
   order: 4

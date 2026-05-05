@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Resources"
+title: "Security Resources"
 description: "Important security resources and further reading for ICP canister and web app developers."
 sidebar:
   order: 12
