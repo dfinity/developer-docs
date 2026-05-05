@@ -258,10 +258,28 @@ Only the project maintainer bumps submodule refs. When bumped:
 
 **General checklist (all submodules):**
 1. Identify changes: `git -C .sources/<repo> log --oneline <old-ref>..<new-ref>`
-2. Grep docs pages for content derived from that submodule; update affected pages
+2. Apply any mechanical per-submodule steps (synced file copies, link slug updates — see table below)
 3. Check open PRs — post a comment if the bump may affect pages under review (format below)
 4. **For release-pinned repos:** update `.sources/VERSIONS`
 5. Note the bump in the PR description
+6. **Always open a follow-up GitHub issue** for a dedicated docs review (label: `documentation`, title: `docs: review docs after bumping <submodule> to <new-ref>`). Include the old and new version, a summary of what changed (from the changelog/log), and the instruction below for the reviewing agent.
+
+**Follow-up issue body template:**
+```
+`<submodule>` was bumped from `<old-ref>` to `<new-ref>`.
+
+## What changed
+<paste relevant entries from git log / CHANGELOG>
+
+## Docs review task
+Review all docs pages that reference content from this submodule (API names, CLI commands, canister IDs, code patterns, version numbers). For every affected page, check it against the new version and update as needed. Look for:
+- Changed or removed APIs/commands that appear in code blocks or prose
+- New APIs not yet documented
+- Cross-SDK gaps (e.g. a new API landed in one language but not others)
+- Version numbers that need updating
+
+Submodule source: `.sources/<submodule>/`
+```
 
 **PR comment format:**
 ```bash
