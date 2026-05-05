@@ -1,455 +1,629 @@
 ---
-title: "Data integrity"
-description: "Protect data confidentiality and authenticity in canisters using vetKeys encryption, identity-based encryption, certified variables, and signature verification."
+title: "Security Best Practices: Data Integrity and Authenticity"
+description: "Security best practices for certified variables, asset certification, and protecting data authenticity on ICP."
 sidebar:
-  order: 3
+  order: 5
 ---
 
-Data on the Internet Computer faces two distinct threats: **confidentiality** (unauthorized parties reading data) and **authenticity** (verifying that data hasn't been tampered with). This guide covers the IC mechanisms that address both: vetKeys for onchain encryption, certified variables for cryptographic data authenticity, and signature verification for external data.
+## Certified variables
 
-For a conceptual overview of how these fit into the IC security model, see [Security model](../../concepts/security.md). For a deeper look at the vetKeys cryptographic protocol, see [vetKeys](../../concepts/vetkeys.md).
+### Security concern
 
-## Onchain encryption with vetKeys
+ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For the sake of simplicity, we will club `composite_query` under queries for the rest of this section.
 
-Canister state on standard application subnets is readable by node operators. If your application stores private data (notes, messages, files), you must encrypt it before storing. vetKeys (verifiably encrypted threshold keys) give canisters access to cryptographic key material derived by a threshold quorum of subnet nodes. No single node ever holds the raw key.
+Update calls are slow and expensive but provide integrity guarantees as their responses include a threshold signature signed by the subnet.
 
-The core workflow:
+On the other hand, query calls are fast since a single replica formulates the response, but **there is no integrity guarantee, since the response can be manipulated by a single replica or boundary node.** For example, if the NNS dapp fetches proposal information from the governance canister via query calls and the responding node is malicious, it can mask an ill-intentioned proposal that causes irrevocable damage as innocuous by modifying the proposal payload in the response and mislead voters into voting yes. Another consequence of query calls is that users can't rely on [canister_inspect_message](../../references/ic-interface-spec/canister-interface.md#system-api-inspect-message) as a guard. **This makes query calls, in their raw form, unfit to serve data for security-critical applications.**
 
-1. The client generates an ephemeral **transport key pair**
-2. The canister calls `vetkd_derive_key` on the management canister, which derives a key encrypted under the client's transport public key
-3. The client decrypts the result with its transport private key to obtain the raw vetKey
-4. The client uses the vetKey to encrypt or decrypt data locally
+### Using certified variables for secure queries
+In certain use cases, there is a third option whereby query results can return data that has been certified by the subnet in an earlier update call. This is the concept of certified data, and it requires changes to the update call to create the certification, the query call to return the certificate, and the frontend to verify the certificate. Using certified data provides the best of both worlds with query-like response times and update-like certified responses.
 
-No key material ever leaves the subnet in plaintext. The canister never sees the raw key.
+Some examples of certified variables are asset certification in [Internet Identity](https://github.com/dfinity/internet-identity/blob/b29a6f68bbe5a49d048e12bc7a3263a9f43d080b/src/internet_identity/src/main.rs#L775-L808), [NNS dapp](https://github.com/dfinity/nns-dapp/blob/372c3562127d70c2fde059bc9c268e8ae858583e/rs/src/assets.rs#L121-L145), or the [canister signature implementation in Internet Identity](https://github.com/dfinity/ic-canister-sig-creation).
 
-### Prerequisites
+:::tip
+Certified variables are an advanced feature that require careful implementation of authenticated data structures and verification on the canister and client sides, respectively. **If the client doesn't require fast response times, call the query method as an update call (replicated query).** The response would be certified by the subnet, and a single malicious or boundary node can't modify the response.
+:::
+
+:::tip
+ICP also provides replica signed queries, where query responses are signed by the answering replica node; however, it doesn't have the same security guarantees as an `update` call and only protects from malicious boundary nodes. Replica signed queries are enabled by default on both the ICP Rust agent and the ICP JavaScript agent.
+:::
+
+### What is certified data?
+Aside from update calls, the subnet certifies (creates a threshold signature) a part of the canister data every round. This is stored in the state tree under the label `certified_data`. However, since it's certified every round, the amount of data that can be stored in `certified_data` is limited to 32 bytes. Hence, when you modify the state of your canister during an update call, if you can convert the state into a unique representation that can fit into 32 bytes, you can store it under `certified_data`, and it will be certified. Naturally, this can be done by computing a hash of the data structure of the canister state. This is also why certified variables are difficult to implement. Depending on your data structures, you will need to develop a different kind of hashing function.
+
+Subsequent query calls can return the data as-is, including the signature on the `certified_data`, which the frontend can verify with the IC root public key. This means that data aggregation or other calculations can't be done in query calls, as there would be no way to produce a signature over that newly created data. There are two workarounds: either this data is precomputed in the update call or all raw data is sent to the frontend, which verifies it and does the calculations. Combining these features, a canister should be able to certify a variable in a query response with this [design](https://medium.com/dfinity/how-internet-computer-responses-are-certified-as-authentic-2ff1bb1ea659).
+
+On a high level, in your canister:
+1. Choose an [authenticated data structure](https://cs.brown.edu/research/pubs/pdfs/2003/Tamassia-2003-ADS.pdf) like Merkle trees to store a value in canister memory.
+2. In the **update** call:
+    - Perform the computation and store the result in the Merkle tree.
+    - The lookup path for the result must act as its `key`. Ideally this `key` should be the parameters provided by the caller in the query method.
+    - Recompute the Merkle proof (`root_hash`)
+    - Store the `root_hash` as the canister's certified data.
+    - Return the `key` as response.
+3. In the **query** call:
+    - Fetch the result from the Merkle structure using the query parameters as the lookup path.
+    - Fetch the current `certified_data` for the canister.
+    - Compute the witness for the result using the same lookup path. The Merkle witness provides proof of inclusion that the requested result exists in the Merkle tree under the given path.
+    - Return `(result, certified_data, witness)` as the response.
+
+The rest of the section shows an example canister, which can serve a certified response for a `query` using `certified_data` that is verified in the frontend. The examples are written in Rust and Motoko, but the overall design can be implemented in other languages.
+
+### Building a canister with certified variables
+Let's consider the following canister interface:
+
+```c
+type User = record {
+    name: text;
+    age: nat8;
+};
+
+type CertifiedUser = record {
+    user : User;
+    certificate : blob;
+    witness : blob;
+};
+
+service : {
+    "set_user": (User) -> (nat64);
+    "get_user": (nat64) -> (CertifiedUser) query;
+}
+```
+
+The canister exposes the following service:
+- **set_user**: The caller provides a `User` object to the canister. The canister records it and serves a corresponding `index` for the entry as the response. Since `certified_data` can only store 32 bytes of data, it uses a specialized data structure from `ic_certified_map` to store the `User` data.
+    - The data structure internally stores the data in a `HashTree` (or [Merkle tree](https://en.wikipedia.org/wiki/Merkle_tree)) and records the `root_hash` of the data structure in the `certified_data`, which is 32 bytes.
+    - The `root_hash` cryptographically guarantees that only one tree can correspond to that hash. The `root_hash` is also referred to as the Merkle proof.
+- **get_user**: The caller provides a `index: nat64` to the canister and gets a certified response for the corresponding `User`. The `CertifiedUser` response must have the following structure for verifying the response:
+    - **user**: The actual response.
+    - **certificate**: The payload for verifying the signature on the `certified_data`. ICP provides the system API `data_certificate()` for this.
+    - **witness**: Allows for the final verification of the response to be completed with the requested input and `certified_data`.
+
+You can find an example implementation of the canister below.
+
+**Motoko:**
+
+```motoko
+import CertifiedData "mo:core/CertifiedData";
+import Blob "mo:core/Blob";
+import Nat8 "mo:core/Nat8";
+import Debug "mo:core/Debug";
+import Text "mo:core/Text";
+import Nat64 "mo:core/Nat64";
+import Array "mo:core/Array";
+import CertTree "mo:ic-certification/CertTree";
+import CV "mo:cbor/Value";
+import CborEncoder "mo:cbor/Encoder";
+import CborDecoder "mo:cbor/Decoder";
+
+actor CertifiedVariable {
+
+  type User = {
+    name : Text;
+    age : Nat8;
+  };
+
+  type CertifiedUser = {
+    user : User;
+    certificate : Blob;
+    witness : Blob;
+  };
+
+  stable var count : Nat64 = 0;
+  stable let cert_store : CertTree.Store = CertTree.newStore();
+  let ct = CertTree.Ops(cert_store);
+
+  public func set_user(user : User) : async Nat64 {
+    count += 1;
+    let path : [Blob] = [Text.encodeUtf8("user"), blobOfNat64(count)];
+    ct.put(path, encodeUser(user));
+    ct.setCertifiedData();
+    return count;
+  };
+
+  public query func get_user(index : Nat64) : async CertifiedUser {
+    let certificate = switch (CertifiedData.getCertificate()) {
+      case (?certificate) {
+        certificate;
+      };
+      case (null) {
+        Debug.trap("Certified data not set");
+      };
+    };
+
+    let path : [Blob] = [Text.encodeUtf8("user"), blobOfNat64(index)];
+
+    let value = switch (ct.lookup(path)) {
+      case (?value) {
+        value;
+      };
+      case (null) {
+        Debug.trap("Lookup failed");
+      };
+    };
+
+    let user : User = decodeUser(value);
+    let witness = ct.encodeWitness(ct.reveal(path));
+
+    let certifiedUser : CertifiedUser = {
+      certificate = certificate;
+      witness = witness;
+      user = user;
+    };
+
+    return certifiedUser;
+  };
+
+  func encodeUser(user : User) : Blob {
+    let bytes : CV.Value = #majorType5([
+      (#majorType3("name"), #majorType3(user.name)),
+      (#majorType3("age"), #majorType0(Nat64.fromNat(Nat8.toNat(user.age)))),
+    ]);
+
+    let #ok(encoded_user) = CborEncoder.encode(bytes);
+    return Blob.fromArray(encoded_user);
+  };
+
+  func decodeUser(bytes : Blob) : User {
+    let #ok(#majorType5(map)) = CborDecoder.decode(bytes);
+    let name_tag = Array.find<(CV.Value, CV.Value)>(map, func x = x.0 == #majorType3("name"));
+    let age_tag = Array.find<(CV.Value, CV.Value)>(map, func x = x.0 == #majorType3("age"));
+
+    let name = switch (name_tag) {
+      case (?name_value) {
+        let #majorType3(name) = name_value.1;
+        name;
+      };
+      case (null) {
+        Debug.trap("Decoding failed for name");
+      };
+    };
+
+    let age = switch (age_tag) {
+      case (?age_value) {
+        let #majorType0(age) = age_value.1;
+        Nat8.fromNat(Nat64.toNat(age));
+      };
+      case (null) {
+        Debug.trap("Decoding failed for age");
+      };
+    };
+
+    return {
+      name = name;
+      age = age;
+    };
+  };
+
+  func blobOfNat64(n : Nat64) : Blob {
+    let byteMask : Nat64 = 0xff;
+    func byte(x : Nat64) : Nat8 {
+      Nat8.fromNat(Nat64.toNat(x));
+    };
+    Blob.fromArray([
+      byte(((byteMask << 56) & n) >> 56),
+      byte(((byteMask << 48) & n) >> 48),
+      byte(((byteMask << 40) & n) >> 40),
+      byte(((byteMask << 32) & n) >> 32),
+      byte(((byteMask << 24) & n) >> 24),
+      byte(((byteMask << 16) & n) >> 16),
+      byte(((byteMask << 8) & n) >> 8),
+      byte(((byteMask << 0) & n) >> 0),
+    ]);
+  };
+
+};
+```
 
 **Rust:**
 
-```toml
-[dependencies]
-ic-cdk = "0.19"
-ic-vetkeys = "0.6"
-ic-stable-structures = "0.7"
-```
-
-**Motoko** (`mops.toml`):
-
-```toml
-[dependencies]
-core = "2.0.0"
-```
-
-**Frontend:**
-
-```bash
-npm install @dfinity/vetkeys
-```
-
-> **API stability:** The `ic-vetkeys` crate and `@dfinity/vetkeys` package are published but their APIs may still change. Pin the versions above and check the [DFINITY forum](https://forum.dfinity.org) for migration guides before upgrading.
-
-### Key names and environments
-
-| Key name | Environment | Cycle cost (approx.) |
-|----------|-------------|----------------------|
-| `test_key_1` | Local + mainnet (testing) | ~10B cycles |
-| `key_1` | Mainnet (production) | ~26B cycles |
-
-Use `test_key_1` during development and mainnet testing. Switch to `key_1` for production. `vetkd_public_key` does not cost cycles; only `vetkd_derive_key` does.
-
-### Rust implementation
-
-The `ic-vetkeys` crate provides a high-level `KeyManager` that handles access control and stable storage. For simpler use cases, you can also call the management canister directly.
-
-**Using `ic-vetkeys` KeyManager (recommended):**
-
-Initialize the `KeyManager` with stable memory and a key ID in the `init` hook:
-
 ```rust
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager};
-use ic_stable_structures::DefaultMemoryImpl;
-use ic_vetkeys::key_manager::KeyManager;
-use ic_vetkeys::types::{AccessRights, VetKDCurve, VetKDKeyId};
+use candid::CandidType;
+use ic_certified_map::HashTree;
+use ic_certified_map::{leaf_hash, AsHashTree, Hash, RbTree};
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::cell::Cell;
+use std::cell::RefCell;
 
-thread_local! {
-    static MEMORY_MANAGER: std::cell::RefCell<MemoryManager<DefaultMemoryImpl>> =
-        std::cell::RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-    static KEY_MANAGER: std::cell::RefCell<Option<KeyManager<AccessRights>>> =
-        std::cell::RefCell::new(None);
+#[derive(CandidType, Serialize, Deserialize, Clone)]
+struct User {
+    name: String,
+    age: u8,
 }
 
-#[ic_cdk::init]
-fn init() {
-    let key_id = VetKDKeyId {
-        curve: VetKDCurve::Bls12381G2,
-        name: "key_1".to_string(), // "test_key_1" for local + mainnet testing
-    };
-    MEMORY_MANAGER.with(|mm| {
-        KEY_MANAGER.with(|km| {
-            *km.borrow_mut() = Some(KeyManager::init(
-                "my_app_v1", key_id,
-                mm.borrow().get(MemoryId::new(0)),
-                mm.borrow().get(MemoryId::new(1)),
-                mm.borrow().get(MemoryId::new(2)),
-            ));
-        });
-    });
-}
-```
-
-Expose the two endpoints callers need: one to retrieve an encrypted key, one to retrieve the verification key:
-
-```rust
-use candid::Principal;
-use ic_cdk::update;
-
-#[update]
-async fn get_encrypted_vetkey(subkey_id: Vec<u8>, transport_public_key: Vec<u8>) -> Vec<u8> {
-    let caller = ic_cdk::caller(); // capture BEFORE await
-    let future = KEY_MANAGER.with(|km| {
-        km.borrow().as_ref().expect("not initialized")
-            .get_encrypted_vetkey(caller, subkey_id, transport_public_key)
-            .expect("access denied")
-    });
-    future.await
-}
-
-#[update]
-async fn get_vetkey_verification_key() -> Vec<u8> {
-    let future = KEY_MANAGER.with(|km| {
-        km.borrow().as_ref().expect("not initialized")
-            .get_vetkey_verification_key()
-    });
-    future.await
-}
-```
-
-**Calling management canister directly (lower level):**
-
-Retrieve the public key (no cycles required):
-
-```rust
-use ic_cdk::management_canister::{
-    VetKDCurve, VetKDKeyId, VetKDPublicKeyArgs,
-};
-
-const CONTEXT: &[u8] = b"my_app_v1";
-
-fn key_id() -> VetKDKeyId {
-    VetKDKeyId {
-        curve: VetKDCurve::Bls12_381_G2,
-        name: "key_1".to_string(), // "test_key_1" for testing
+impl AsHashTree for User {
+    fn root_hash(&self) -> Hash {
+        let user_serialized = serde_cbor::to_vec(&self).unwrap();
+        leaf_hash(&user_serialized[..])
+    }
+    fn as_hash_tree(&self) -> HashTree<'_> {
+        HashTree::Leaf(Cow::from(serde_cbor::to_vec(&self).unwrap()))
     }
 }
 
-#[ic_cdk::update]
-async fn get_public_key() -> Vec<u8> {
-    let response = ic_cdk::management_canister::vetkd_public_key(
-        &VetKDPublicKeyArgs { canister_id: None, context: CONTEXT.to_vec(), key_id: key_id() }
-    ).await.expect("vetkd_public_key call failed");
-    response.public_key
+#[derive(CandidType)]
+struct CertifiedUser {
+    user: User,
+    certificate: Vec<u8>,
+    witness: Vec<u8>,
 }
-```
 
-Derive a key for the authenticated caller (`key_1` costs ~26B cycles; `ic-cdk` attaches them automatically):
-
-```rust
-use ic_cdk::management_canister::{VetKDDeriveKeyArgs, VetKDCurve, VetKDKeyId};
+thread_local! {
+    static INDEX : Cell<u64> = Cell::new(0);
+    static TREE: RefCell<RbTree<&'static str, RbTree<[u8; 8], User>>> = RefCell::new(RbTree::new());
+}
 
 #[ic_cdk::update]
-async fn derive_key(transport_public_key: Vec<u8>) -> Vec<u8> {
-    let caller = ic_cdk::api::msg_caller(); // MUST capture before await
-    let response = ic_cdk::management_canister::vetkd_derive_key(
-        &VetKDDeriveKeyArgs {
-            input: caller.as_slice().to_vec(),
-            context: CONTEXT.to_vec(),
-            transport_public_key,
-            key_id: key_id(),
+fn set_user(user: User) -> u64 {
+    let index = INDEX.with(|index| {
+        let count = index.get() + 1;
+        index.set(count);
+        count
+    });
+
+    TREE.with_borrow_mut(|tree| {
+        match tree.get(b"user") {
+            Some(_) => {
+                tree.modify(b"user", |inner| {
+                    inner.insert(index.to_be_bytes(), user);
+                });
+            }
+            None => {
+                let mut inner = RbTree::new();
+                inner.insert(index.to_be_bytes(), user);
+                tree.insert("user", inner);
+            }
         }
-    ).await.expect("vetkd_derive_key call failed");
-    response.encrypted_key
+        ic_cdk::api::set_certified_data(&tree.root_hash());
+    });
+    index
+}
+
+#[ic_cdk::query]
+fn get_user(index: u64) -> CertifiedUser {
+    let certificate = ic_cdk::api::data_certificate().expect("No data certificate available");
+
+    TREE.with_borrow(|tree| {
+        let user = match tree.get(b"user") {
+            Some(inner) => {
+                let user = inner.get(&index.to_be_bytes()[..]).expect("User not found");
+                user.to_owned()
+            }
+            None => {
+                panic!("Tree isn't initialized");
+            }
+        };
+
+        let mut witness = vec![];
+        let mut witness_serializer = serde_cbor::Serializer::new(&mut witness);
+        let _ = witness_serializer.self_describe();
+        tree.nested_witness(b"user", |inner| inner.witness(&index.to_be_bytes()[..]))
+            .serialize(&mut witness_serializer)
+            .unwrap();
+
+        CertifiedUser {
+            user,
+            certificate,
+            witness,
+        }
+    })
 }
 ```
 
-### Motoko implementation
+### Verifying certified variables
 
-Motoko uses the management canister directly. Define the request/response types and declare the actor interface:
+Once you have the response `CertifiedUser`, for the integrity guarantee, the frontend must verify the certification in the response. This is broken down into several steps implemented in the Rust and JavaScript example below.
 
-```motoko
-import Blob "mo:core/Blob";
-import Principal "mo:core/Principal";
-import Text "mo:core/Text";
+:::note
+The example has some extra steps to set up the canister with some `User` data before verification. You can ignore the section marked between `// ==== START of canister data setup` and `// ==== END of canister data setup`.
+:::
 
-persistent actor {
+1. Verify the IC certificate: Recompute the `root_hash` of `certificate.tree` (pruned state tree with the canister's `certified_data`) and verify the `certificate.signature` with `root_hash` as the message, `certificate.delegation`, and the IC `root_key` as the public key. This confirms that the signature is valid for the current state tree.
+2. Validate that the response is not stale by verifying the time at `/time` in `certificate.tree` is less than a certain delta of current time. The recommended delta is 5 minutes but should be adapted to the use case.
+3. Recompute the `root_hash` of the witness and verify equality with the `certified_data`. The `certified_data` can be obtained from `certificate.tree` under the path `/canister/<canister_id>/certified_data`.
+4. Check if query parameters are in the witness. In this example, the lookup path is `/user/<index>` and should be present in the witness.
+5. Validate if the value found in `/user/<index>` matches `user` from the response.
+6. If all of the previous steps succeed, return `user` as the valid response.
 
-  type VetKdCurve = { #bls12_381_g2 };
-  type VetKdKeyId = { curve : VetKdCurve; name : Text };
-  type VetKdPublicKeyRequest = { canister_id : ?Principal; context : Blob; key_id : VetKdKeyId };
-  type VetKdPublicKeyResponse = { public_key : Blob };
-  type VetKdDeriveKeyRequest = { input : Blob; context : Blob; transport_public_key : Blob; key_id : VetKdKeyId };
-  type VetKdDeriveKeyResponse = { encrypted_key : Blob };
-
-  let managementCanister : actor {
-    vetkd_public_key : VetKdPublicKeyRequest -> async VetKdPublicKeyResponse;
-    vetkd_derive_key : VetKdDeriveKeyRequest -> async VetKdDeriveKeyResponse;
-  } = actor "aaaaa-aa";
-
-  let context : Blob = Text.encodeUtf8("my_app_v1");
-  // "test_key_1" for local + mainnet testing, "key_1" for production
-  func keyId() : VetKdKeyId = { curve = #bls12_381_g2; name = "key_1" };
-  // ...
-```
-
-Implement the public key and key derivation endpoints:
-
-```motoko
-  public shared func getPublicKey() : async Blob {
-    // vetkd_public_key does not require cycles
-    let response = await managementCanister.vetkd_public_key({
-      canister_id = null; context; key_id = keyId();
-    });
-    response.public_key
-  };
-
-  public shared ({ caller }) func deriveKey(transportPublicKey : Blob) : async Blob {
-    // caller captured before the await; key_1 costs ~26B cycles
-    let response = await (with cycles = 26_000_000_000) managementCanister.vetkd_derive_key({
-      input = Principal.toBlob(caller);
-      context;
-      transport_public_key = transportPublicKey;
-      key_id = keyId();
-    });
-    response.encrypted_key
-  };
-};
-```
-
-### Frontend: decrypt and use the vetKey
-
-The frontend generates a transport key pair, sends the public half to the canister, receives the encrypted derived key, and decrypts it locally.
-
-Generate a fresh transport key pair each session, then request and decrypt the vetKey:
-
-```typescript
-import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey } from "@dfinity/vetkeys";
-
-// 1. Generate an ephemeral transport key: new one each session
-const transportSecretKey = TransportSecretKey.fromSeed(crypto.getRandomValues(new Uint8Array(32)));
-const transportPublicKey = transportSecretKey.publicKey();
-
-// 2. Request encrypted vetkey and verification key from the canister
-const [encryptedKeyBytes, verificationKeyBytes] = await Promise.all([
-  backendActor.get_encrypted_vetkey(subkeyId, transportPublicKey),
-  backendActor.get_vetkey_verification_key(),
-]);
-
-// 3. Decrypt the vetkey using the transport secret
-const vetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes))
-  .decryptAndVerify(
-    transportSecretKey,
-    DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes)),
-    new Uint8Array(subkeyId),
-  );
-```
-
-Use the vetKey to derive a symmetric AES-GCM key and encrypt/decrypt data:
-
-```typescript
-// 4. Derive a 256-bit AES key from the vetKey material
-const aesKey = await crypto.subtle.importKey(
-  "raw",
-  vetKey.toDerivedKeyMaterial().data.slice(0, 32),
-  { name: "AES-GCM" },
-  false,
-  ["encrypt", "decrypt"],
-);
-
-// 5. Encrypt data
-const iv = crypto.getRandomValues(new Uint8Array(12));
-const ciphertext = await crypto.subtle.encrypt(
-  { name: "AES-GCM", iv },
-  aesKey,
-  new TextEncoder().encode("secret message"),
-);
-
-// 6. Decrypt data
-const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, ciphertext);
-```
-
-### Common mistakes
-
-- **Reusing transport keys across sessions.** Generate a fresh transport key pair for each session. If an attacker ever learns the transport secret, they can decrypt all keys derived while that secret was in use.
-- **Using derived key bytes directly as an AES key.** The `encrypted_key` field from `vetkd_derive_key` is an encrypted blob. After decryption, call `toDerivedKeyMaterial()` before using for AES: do not use the raw bytes directly.
-- **Putting secret data in the `input` field.** The `input` field is sent to the management canister in plaintext and serves as a key identifier (e.g., a user principal or document ID). Never use it for actual secret data.
-- **Inconsistent context values.** The `context` field on the canister and on the frontend must match exactly. A mismatch causes silent decryption failure.
-
-## Identity-based encryption (IBE)
-
-IBE lets you encrypt to an identity (such as a user's principal) without the recipient being online or having registered a key. Anyone who knows the canister's derived public key can encrypt to any principal. The recipient later authenticates to the canister, obtains their vetKey, and decrypts locally.
-
-This is useful for private messaging, sealed auctions, and any case where you want to encrypt data "to" a principal who will retrieve it later.
-
-> **Access control:** If you implement IBE without using `KeyManager` or `EncryptedMaps`, your canister must verify that `caller == recipient_principal` before calling `vetkd_derive_key`. Without this check, any caller can request any derived key and decrypt messages meant for someone else. The `ic-vetkeys` library handles this automatically.
-
-**TypeScript IBE example: encrypt (sender side):**
-
-```typescript
-import { IbeCiphertext, IbeIdentity, IbeSeed } from "@dfinity/vetkeys";
-
-// No canister call needed if the public key is already known
-const recipientIdentity = IbeIdentity.fromBytes(recipientPrincipalBytes);
-const ciphertext = IbeCiphertext.encrypt(
-  derivedPublicKey, recipientIdentity,
-  new TextEncoder().encode("secret message"),
-  IbeSeed.random(),
-);
-const serialized = ciphertext.serialize(); // store this onchain (ciphertext, not plaintext)
-```
-
-**TypeScript IBE example: decrypt (recipient side):**
-
-```typescript
-import { TransportSecretKey, DerivedPublicKey, EncryptedVetKey, IbeCiphertext } from "@dfinity/vetkeys";
-
-// Recipient authenticates to the canister to obtain their vetKey
-const transportSecretKey = TransportSecretKey.fromSeed(crypto.getRandomValues(new Uint8Array(32)));
-const [encryptedKeyBytes, verificationKeyBytes] = await Promise.all([
-  backendActor.get_encrypted_vetkey(subkeyId, transportSecretKey.publicKey()),
-  backendActor.get_vetkey_verification_key(),
-]);
-const vetKey = EncryptedVetKey.deserialize(new Uint8Array(encryptedKeyBytes))
-  .decryptAndVerify(
-    transportSecretKey,
-    DerivedPublicKey.deserialize(new Uint8Array(verificationKeyBytes)),
-    new Uint8Array(subkeyId),
-  );
-
-const decrypted = IbeCiphertext.deserialize(serialized).decrypt(vetKey);
-// decrypted is Uint8Array containing "secret message"
-```
-
-### Deriving public keys offline
-
-You can derive the canister's public key for a given context without making a canister call. This is useful for IBE encryption when the recipient is offline:
-
-```typescript
-import { MasterPublicKey, DerivedPublicKey } from "@dfinity/vetkeys";
-
-// Derive offline from the known mainnet master public key
-const masterKey = MasterPublicKey.productionKey();
-const canisterKey = masterKey.deriveCanisterKey(canisterId);
-const derivedKey: DerivedPublicKey = canisterKey.deriveSubKey(
-  new TextEncoder().encode("my_app_v1"),
-);
-// Use derivedKey for IBE encryption without any network calls
-```
-
-For complete IBE and encrypted storage examples, see:
-- [Password manager](https://github.com/dfinity/examples/tree/master/rust/vetkeys/password_manager): encrypted key-value storage with `EncryptedMaps`
-- [Encrypted notes app](https://github.com/dfinity/examples/tree/master/rust/vetkeys/encrypted_notes_dapp_vetkd): per-user encrypted note storage
-- [IBE example](https://github.com/dfinity/examples/tree/master/rust/vetkeys/basic_ibe): identity-based encryption with Internet Identity principals
-
-## Certified variables for data authenticity
-
-Query calls on ICP run on a single replica and are not verified by consensus. A malicious or faulty replica could return fabricated data. Certified variables solve this: the canister stores a Merkle root hash in the subnet's certified state during update calls, and query responses include a subnet BLS signature proving the data is authentic.
-
-Use certified variables when:
-- Query responses must be verifiable by clients without trusting any single replica
-- You serve data that could change (balances, configuration, records) via fast query calls
-- Your frontend needs to verify that data hasn't been tampered with in transit
-
-For the full implementation guide, including Merkle tree construction, witness generation, and frontend verification, see [Certified variables](../backends/certified-variables.md).
-
-**Key rules:**
-- `certified_data_set` may only be called during update calls (not query calls)
-- You can only certify 32 bytes: build a Merkle tree and certify the root hash
-- Re-certify data in `post_upgrade`: certified data is cleared on upgrade
-- Clients must verify certificate freshness (the certificate embeds a timestamp; reject certificates older than ~5 minutes)
-
-## Signature verification for external data
-
-When your canister receives data from external parties (signed messages, X.509 CSRs, or HTTP request signatures) it must verify the cryptographic signature before trusting the data. ICP verifies signatures on ingress messages automatically, but canister-to-canister or external data flows require manual verification.
-
-### IC ingress message signatures
-
-Every ingress call to a canister is signed by the caller's identity. The IC verifies these signatures automatically before the message reaches your canister: you do not need to verify them yourself. The `caller` principal in your canister method is already authenticated.
-
-For workflows that require additional independent verification (such as verifying a message offline or in a different context), the IC uses the following signature schemes:
-
-- **Ed25519**: used by Internet Identity and many wallet implementations
-- **ECDSA on secp256r1 (P-256)**: used by some hardware authenticators  
-- **ECDSA on secp256k1**: used by Bitcoin-compatible wallets
-
-To verify IC signatures independently (outside the IC, or as a second layer of validation), use the `ic-validator-ingress-message` Rust crate or the `@dfinity/standalone-sig-verifier-web` JavaScript library. See the [independently verifying IC signatures (Rust)](https://github.com/dfinity/ic/tree/master/rs/validator) documentation, or the [`@dfinity/standalone-sig-verifier-web` npm package](https://www.npmjs.com/package/@dfinity/standalone-sig-verifier-web) for the JavaScript path.
-
-### X.509 certificate handling
-
-Canisters can act as certificate authorities using threshold signing keys. Because no single node ever holds the threshold private key, only the canister (via consensus) can sign certificates: this gives you a CA whose private key cannot be exfiltrated.
-
-The pattern: a canister generates a root CA certificate signed with its threshold Ed25519 or ECDSA key, then issues child certificates for CSRs submitted by external parties. Certificates can be verified by any standard X.509 tool.
-
-For a complete working example in Rust, see the [x509 example](https://github.com/dfinity/examples/tree/master/rust/x509), which demonstrates:
-
-1. Creating a root CA certificate with a threshold signing key
-2. Issuing child certificates from externally provided CSRs (in PKCS#10/PEM format)
-3. Verifying ownership of the CSR before signing
-
-The key pattern for issuing a child certificate:
+**Rust (client-side verification):**
 
 ```rust
-// Verify the CSR signature before trusting its contents
-verify_certificate_request_signature(&cert_req)?;
+use arbitrary::{Arbitrary, Unstructured};
+use candid::Encode;
+use candid::Principal;
+use candid::{CandidType, Decode, Deserialize};
+use futures::future::join_all;
+use ic_agent::identity::AnonymousIdentity;
+use ic_agent::Agent;
+use ic_certificate_verification::validate_certificate_time;
+use ic_certificate_verification::VerifyCertificate;
+use ic_certification::hash_tree::HashTree;
+use ic_certification::{Certificate, LookupResult};
+use rand::prelude::*;
+use serde_cbor::Deserializer;
+use std::time::{SystemTime, UNIX_EPOCH};
 
-// Verify the caller owns the key in the CSR
-prove_ownership(&cert_req, ic_cdk::api::caller())?;
+#[derive(CandidType, Deserialize, Debug, PartialEq, Eq, Arbitrary)]
+struct User {
+    name: String,
+    age: u8,
+}
 
-// Sign the child certificate using the canister's threshold key
-// (ed25519_sign or ecdsa_sign via management canister)
+#[derive(CandidType, Deserialize)]
+struct CertifiedUser {
+    user: User,
+    certificate: Vec<u8>,
+    witness: Vec<u8>,
+}
+
+static URL: &str = "http://localhost:41749";
+static CANISTER: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
+const MAX_CERT_TIME_OFFSET_NS: u128 = 300_000_000_000; // 5 min
+const MAX_CALLS: usize = 10;
+
+#[tokio::main]
+async fn main() {
+
+    let agent = Agent::builder()
+        .with_url(URL)
+        .with_identity(AnonymousIdentity)
+        .build()
+        .expect("Unable to create agent");
+
+    // This should be done only in demo environments.
+    // When interacting with mainnet, hardcode the root_key.
+    agent
+        .fetch_root_key()
+        .await
+        .expect("Unable to fetch root key");
+    let root_key = agent.read_root_key();
+
+    let canister_id = Principal::from_text(CANISTER).unwrap();
+
+    // ==== START of canister data setup
+    let mut rng = rand::thread_rng();
+
+    // Make MAX_CALLS to set_user
+    let mut get_user_calls = Vec::new();
+    for _ in 0..MAX_CALLS {
+        let bytes: [u8; 16] = rng.gen();
+        let mut u = Unstructured::new(&bytes[..]);
+        let temp_user = User::arbitrary(&mut u).unwrap();
+
+        println!("Calling set_user with {:?}", temp_user);
+        let response = agent
+            .update(&canister_id, "set_user")
+            .with_effective_canister_id(canister_id)
+            .with_arg(Encode!(&temp_user).unwrap())
+            .call_and_wait();
+        get_user_calls.push(response);
+    }
+    let results: Vec<u64> = join_all(get_user_calls)
+        .await
+        .into_iter()
+        .map(|result| {
+            Decode!(
+                result
+                    .expect("Query call get_user failed")
+                    .as_slice(),
+                u64
+            )
+            .unwrap()
+        })
+        .collect();
+
+    // From response indexes, choose a random index for get_user
+    let index: usize = rng.gen();
+    let index: u64 = *results.get(index % MAX_CALLS).unwrap();
+    // ==== END of canister data setup
+
+    println!("Fetching index {:?}", index);
+
+    let query_response = agent
+        .query(&canister_id, "get_user")
+        .with_effective_canister_id(canister_id)
+        .with_arg(Encode!(&index).unwrap())
+        .call()
+        .await
+        .expect("Unable to call query call get_user");
+
+    let certified_user = Decode!(&query_response, CertifiedUser).unwrap();
+
+    let mut deserializer = Deserializer::from_slice(&certified_user.certificate);
+    let certificate: Certificate = serde::de::Deserialize::deserialize(&mut deserializer).unwrap();
+
+    let start = SystemTime::now();
+    let current_time = start
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_nanos();
+
+    // Step 1: Check if signature in the certificate can be validated with the
+    // root_hash of the tree in certificate as message and root_key as public_key
+    let verification_result = certificate.verify(canister_id.as_slice(), &root_key[..]);
+
+    println!(
+        "Step 1: Digest match & Signature verification: {:?}",
+        verification_result
+    );
+
+    // Step 2: Check if the response is not stale with the given time offset MAX_CERT_TIME_OFFSET_NS.
+    let time_verification_result =
+        validate_certificate_time(&certificate, &current_time, &MAX_CERT_TIME_OFFSET_NS);
+
+    println!("Step 2: Time skew: {:?}", time_verification_result);
+
+    // Step 3: Check if witness root_hash matches the certified_data
+    let lookup_result =
+        certificate
+            .tree
+            .lookup_path([b"canister", canister_id.as_slice(), b"certified_data"]);
+
+    let certified_data: [u8; 32] = match lookup_result {
+        LookupResult::Found(result) => result.try_into().unwrap(),
+        _ => panic!("Certified data not found"),
+    };
+
+    let mut deserializer = Deserializer::from_slice(&certified_user.witness);
+    let witness_decoded: HashTree<Vec<u8>> =
+        serde::de::Deserialize::deserialize(&mut deserializer).unwrap();
+    let witness_digest = witness_decoded.digest();
+
+    println!(
+        "Step 3: Witness digest matches certified data: {:?} ",
+        witness_digest == certified_data
+    );
+
+    // Step 4: Check if the query parameters are in the witness
+    let witness_lookup: User =
+        match witness_decoded.lookup_path([b"user", &index.to_be_bytes()[..]]) {
+            LookupResult::Found(result) => serde_cbor::from_slice(result).unwrap(),
+            _ => panic!("user {} not found", index),
+        };
+
+    // Step 5: Check if the data found in Witness matches the returned result from the query.
+    println!(
+        "Step 4 & Step 5: Witness data matches User value: {:?}",
+        witness_lookup == certified_user.user
+    );
+
+    // Step 6: Return the result
+    println!("Result: {:?}", certified_user.user);
+}
 ```
 
-This approach is used when you need to issue certificates to external systems that expect standard PKI infrastructure, while keeping the CA private key under threshold-protected control.
+**JavaScript (client-side verification):**
 
-## Deploying and testing
+```js
+import pkg from "@dfinity/agent";
+const { Actor, HttpAgent, Certificate, blsVerify, Cbor, reconstruct, lookup_path } = pkg;
+import { IDL } from "@dfinity/candid";
+import { Principal } from "@dfinity/principal";
+import fetch from "isomorphic-fetch";
+import assert from "node:assert/strict";
 
-### Local development
+const idlFactory = ({ IDL }) => {
+  const User = IDL.Record({ age: IDL.Nat8, name: IDL.Text });
+  const CertifiedUser = IDL.Record({
+    certificate: IDL.Vec(IDL.Nat8),
+    user: User,
+    witness: IDL.Vec(IDL.Nat8),
+  });
+  return IDL.Service({
+    get_user: IDL.Func([IDL.Nat64], [CertifiedUser], ["query"]),
+    set_user: IDL.Func([User], [IDL.Nat64], []),
+  });
+};
 
-```bash
-# Start a local network: test_key_1 and key_1 are provisioned automatically
-icp network start -d
+const canisterId = Principal.fromText("a3shf-5eaaa-aaaaa-qaafa-cai");
+const host = "http://localhost:35777";
 
-# Deploy your canister
-icp deploy backend
+start().await;
 
-# Test public key retrieval
-icp canister call backend getPublicKey '()'
-# Returns: (blob "..."): the vetKD public key for your canister
+async function start() {
+  const agent = new HttpAgent({ fetch, host });
+  await agent.fetchRootKey();
 
-# Test key derivation (requires a 48-byte transport public key blob)
-# In practice, the frontend generates this using TransportSecretKey.fromSeed()
-icp canister call backend deriveKey '(blob "\00\01\02...")'
-# Returns: (blob "..."): the encrypted derived key
+  const rootKey = agent.rootKey.buffer;
+  let dummyUser = { name: "test_user", age: 21 };
+
+  const actor = Actor.createActor(idlFactory, {
+    agent,
+    canisterId,
+  });
+
+  let index = await actor.set_user(dummyUser);
+  let certifiedUser = await actor.get_user(index);
+
+  await verifyCertificate(certifiedUser, index, rootKey, canisterId);
+}
+
+async function verifyCertificate(certifiedUser, index, rootKey, canisterId) {
+  const certificate = certifiedUser.certificate.buffer;
+  const witness = certifiedUser.witness.buffer;
+  const user = certifiedUser.user;
+
+  const cert = new Certificate(certificate, rootKey, canisterId, blsVerify);
+
+  // Step 1: Check if signature in the certificate can be validated with the
+  // root_hash of the tree in certificate as message and root_key as public_key
+  await cert.verify();
+  console.log("Certificate verification succeeded");
+
+  // Step 2: Check if the response is not stale with the given time offset of 5m.
+  const te = new TextEncoder();
+  const pathTime = [te.encode("time")];
+  const rawTime = cert.lookup(pathTime).value;
+  console.log("Time skew: ", verifyTime(rawTime));
+
+  // Step 3: Check if witness root_hash matches the certified_data
+  const pathData = [
+    te.encode("canister"),
+    canisterId.toUint8Array(),
+    te.encode("certified_data"),
+  ];
+
+  const certifiedData = cert.lookup(pathData).value;
+  let witnessTree = Cbor.decode(witness);
+  let witnessRootHash = await reconstruct(witnessTree);
+  console.log(
+    "Verify CertifiedData matches witness root_hash: ",
+    certifiedData.buffer === witnessRootHash.buffer
+  );
+
+  // Step 4: Check if the query parameters are in the witness
+  const query_params = [te.encode("user"), bigEndian(index).buffer];
+  const witnessData = Cbor.decode(lookup_path(query_params, witnessTree).value);
+  console.log("Witness data: ", witnessData);
+
+  // Step 5: Check if the data found in Witness matches the returned result from the query.
+  assert.deepStrictEqual(witnessData, user, "Value matches response data");
+
+  // Step 6: Return the result
+  return user
+}
+
+function verifyTime(rawTime) {
+  const idlMessage = new Uint8Array([
+    ...new TextEncoder().encode("DIDL\x00\x01\x7d"),
+    ...new Uint8Array(rawTime),
+  ]);
+  const decodedTime = IDL.decode([IDL.Nat], idlMessage)[0];
+  const time = Number(decodedTime) / 1e9;
+  const now = Date.now() / 1000;
+  const diff = Math.abs(time - now);
+  if (diff > 5) {
+    return false;
+  }
+  return true;
+}
+
+function bigEndian(n) {
+  let buf = new Uint8Array(8);
+
+  for (let i = 7; i >= 0; i--) {
+    buf[i] = Number(n & 0xffn);
+    n >>= 8n;
+  }
+  return buf;
+}
 ```
 
-### Mainnet deployment
+## Use HTTP asset certification and avoid serving your dapp through `raw.icp0.io`
 
-```bash
-# Deploy to mainnet
-icp deploy backend -e ic
+### Security concern
 
-# Verify the public key is non-empty
-icp canister call backend getPublicKey '()' -e ic
-```
+Dapps on ICP can use [asset certification](https://learn.internetcomputer.org/hc/en-us/articles/34276431179412-Asset-Certification) to make sure the HTTP assets delivered to the browser are authentic (i.e., threshold-signed by the subnet). If an app does not do asset certification, it can only be served insecurely through `raw.icp0.io`, where no asset certification is checked. This is insecure since a single malicious node or boundary node can freely modify the assets delivered to the browser.
 
-Confirm that:
-- `getPublicKey` returns a non-empty blob (48+ bytes of BLS public key material)
-- `deriveKey` returns a non-empty blob (encrypted key material)
-- Different callers receive different derived keys (same caller + same input = same key; different caller = different key)
+If an app is served through `raw.icp0.io` in addition to `icp0.io`, an adversary may trick users (phishing) into using the insecure `raw.icp0.io`.
 
-## Next steps
+### Recommendation
 
-- [vetKeys concept guide](../../concepts/vetkeys.md): how the threshold key derivation protocol works
-- [Encryption guide](./encryption.md): vetKeys encryption patterns including EncryptedMaps
-- [Certified variables](../backends/certified-variables.md): full certified data implementation
-- [Security model](../../concepts/security.md): IC security guarantees and threat model
+- Only serve assets through `<canister-id>.icp0.io`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp0.io`.
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/authentication/independently-verifying-ic-signatures.mdx; dfinity/icskills — canister-security, vetkd, certified-variables; dfinity/examples — rust/vetkeys/password_manager, rust/vetkeys/encrypted_notes_dapp_vetkd, rust/vetkeys/basic_ibe, rust/x509 -->
+- Serve assets using the asset canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS dapp](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
+
+- Check in the canister's `http_request` method if the request came through raw. If so, return an error and do not serve any assets.
+
+<!-- Upstream: dfinity/portal — building-apps/security/data-integrity-and-authenticity.mdx -->
