@@ -49,4 +49,4 @@ Using the Rust CDK, the recurring timer is also lost on upgrade as explained in 
 
 - See the Rust documentation on [set_timer_interval](https://docs.rs/ic-cdk/0.6.9/ic_cdk/timer/fn.set_timer_interval.html).
 
-<!-- Upstream: dfinity/portal — building-apps/security/canister-upgrades.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/canister-upgrades.mdx -->

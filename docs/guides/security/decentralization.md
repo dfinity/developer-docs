@@ -73,4 +73,4 @@ Note that also loading other assets such as [CSS](https://xsleaks.dev/docs/attac
 
 - Use a [content security policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to prevent scripts and other content from other origins from being loaded at all. See also [define security headers, including a content security policy (CSP)](./overview.md#web-security).
 
-<!-- Upstream: dfinity/portal — building-apps/security/decentralization.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/decentralization.mdx -->

@@ -20,7 +20,7 @@ By default, the data stored inside your canister is unencrypted. Therefore, if y
 
 Make sure you don't store sensitive data inside your canister.
 
-See also: [data confidentiality on ICP](./misc.md#data-confidentiality-on-icp).
+See also: [data confidentiality on ICP](./miscellaneous.md#data-confidentiality-on-icp).
 
 ## Ensure your canisters have a sufficiently large quota with the HTTP server
 
@@ -76,7 +76,7 @@ The pricing of HTTPS outcalls is determined by the size of the HTTP request and 
 
 When using HTTPS outcalls, be mindful of the HTTP request and response sizes. Ensure that the size of the request issued and the size of the HTTP response coming from the server are reasonable.
 
-When making an HTTPS outcall, it is possible — and highly recommended — to define the `max_response_bytes` parameter, which allows you to set the maximum allowed response size. If this parameter is not defined, it defaults to the hard response size limit of the HTTPS outcalls feature, which is 2MiB. The cycle cost of the response is always charged based on the `max_response_bytes` or 2MB if not set.
+When making an HTTPS outcall, it is possible (and highly recommended) to define the `max_response_bytes` parameter, which allows you to set the maximum allowed response size. If this parameter is not defined, it defaults to the hard response size limit of the HTTPS outcalls feature, which is 2MiB. The cycle cost of the response is always charged based on the `max_response_bytes` or 2MB if not set.
 
 Finally, be aware that users may incur cycles costs for HTTPS outcalls in case these calls can be triggered by user actions.
 
@@ -94,4 +94,4 @@ Perform input validation when using user-submitted data in the HTTPS outcalls.
 
 See the [OWASP Input Validation Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html) for more information.
 
-<!-- Upstream: dfinity/portal — building-apps/security/https-outcalls.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/https-outcalls.mdx -->

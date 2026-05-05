@@ -51,4 +51,4 @@ Below are resources covering security best practices for technologies commonly u
 * In [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html): [test upgrades](https://mmapped.blog/posts/01-effective-rust-canisters.html#test-upgrades), [make code target-independent](https://mmapped.blog/posts/01-effective-rust-canisters.html#target-independent)
 * Consider [PocketIC](../testing/pocket-ic.md) for canister testing
 
-<!-- Upstream: dfinity/portal — building-apps/security/overview.mdx, building-apps/security/resources.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/overview.mdx, building-apps/security/resources.mdx -->

@@ -19,4 +19,4 @@ Without monitoring, it can be hard to detect attacks or vulnerabilities that are
 
 - See [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html) for general patterns on canister observability.
 
-<!-- Upstream: dfinity/portal — building-apps/security/observability-and-monitoring.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/observability-and-monitoring.mdx -->
