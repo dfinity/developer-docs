@@ -5,7 +5,7 @@ sidebar:
   order: 12
 ---
 
-Formal verification is the highest form of quality assurance for software. Given a specification of what the system should do, formal verification tools check whether this specification is satisfied by a model of the system. The unique advantage of formal verification is that it can not only find bugs but also formally **prove** their absence — including the absence of security bugs. This goes beyond what testing or manual audits can achieve.
+Formal verification is the highest form of quality assurance for software. Given a specification of what the system should do, formal verification tools check whether this specification is satisfied by a model of the system. The unique advantage of formal verification is that it can not only find bugs but also formally **prove** their absence, including the absence of security bugs. This goes beyond what testing or manual audits can achieve.
 
 The proof is always relative to the model and the specification. Any simplifications and assumptions in the model, or omissions in the specification, may hide bugs and attacks. On the other hand, verification can require a lot of effort, and model simplifications can make it significantly easier.
 
@@ -17,7 +17,7 @@ These bugs are particularly difficult to find, as they can involve unexpected in
 
 ## TLA+
 
-The Temporal Logic of Actions (TLA+) is a language for specifying and verifying complex systems. TLA+ comes with a set of tools for lightweight formal verification in the form of so-called model checking. Through model checking, it exhaustively (within bounds, such as the aforementioned 2 concurrent calls bound) explores all possible concurrent interactions of a model of the code — exactly the domain that is difficult to test — and finds bugs.
+The Temporal Logic of Actions (TLA+) is a language for specifying and verifying complex systems. TLA+ comes with a set of tools for lightweight formal verification in the form of so-called model checking. Through model checking, it exhaustively (within bounds, such as the aforementioned 2 concurrent calls bound) explores all possible concurrent interactions of a model of the code (exactly the domain that is difficult to test) — and finds bugs.
 
 Importantly, after building the model of the code, model checking runs with virtually no further human input, making it highly cost-effective. To illustrate with some made-up numbers: if the industry standard practices (such as testing and security reviews) eliminate 80% of the bugs, and "heavyweight" formal verification eliminates 99.99%, with TLA+ you can eliminate 90% with a fraction of the effort of the heavyweight verification.
 
@@ -31,4 +31,4 @@ We have used TLA+ to create the following models that can be interesting for dap
 
 To find out more on why and how you can apply TLA+ to your canisters and dapps, including an in-depth guide to modeling canisters, refer to our series of blog posts ([1](https://medium.com/dfinity/eliminating-smart-contract-bugs-with-tla-e986aeb6da24), [2](https://medium.com/dfinity/weeding-out-the-bugs-with-tla-models-3606045bf24e), [3](https://mynosefroze.com/blog/2023-08-09-tla_for_canisters)). You can also look at the [DFINITY-produced TLA+ models](https://github.com/dfinity/formal-models) for examples and techniques.
 
-<!-- Upstream: dfinity/portal — building-apps/security/formal-verification.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/formal-verification.mdx -->

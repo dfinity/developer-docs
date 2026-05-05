@@ -626,4 +626,4 @@ If an app is served through `raw.icp0.io` in addition to `icp0.io`, an adversary
 
 - Check in the canister's `http_request` method if the request came through raw. If so, return an error and do not serve any assets.
 
-<!-- Upstream: dfinity/portal — building-apps/security/data-integrity-and-authenticity.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/data-integrity-and-authenticity.mdx -->

@@ -91,4 +91,4 @@ A canister could be rendered unusable and impossible to upgrade. For example, du
 
 - See the "Backup and recovery" section in [how to audit an Internet Computer canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
 
-<!-- Upstream: dfinity/portal — building-apps/security/data-storage.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/data-storage.mdx -->

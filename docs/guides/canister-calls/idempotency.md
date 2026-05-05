@@ -118,4 +118,4 @@ Another approach applicable to ledgers (such as ICRC-1 or ICP) is to perform tra
 
 [^2]: More precisely, the ledger also allows for a small time drift of `created_at_time` into the future, which has to be taken into account when clearing the deduplication window.
 
-<!-- Upstream: dfinity/portal — building-apps/best-practices/idempotency.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/best-practices/idempotency.mdx -->

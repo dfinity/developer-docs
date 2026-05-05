@@ -5,7 +5,7 @@ description: "The 11 properties of message execution on ICP, covering atomicity,
 
 ## Asynchronous messaging model
 
-ICP relies on an asynchronous messaging model. Compared to synchronous messaging like on Ethereum, this provides performance advantages because multiple calls can be executed concurrently — and also in parallel, when multiple canisters are involved. However, asynchronous message execution can also lead to sometimes unexpected or unintuitive behavior. Therefore, it is important to understand the properties of message execution. Potential security issues that arise in this model, such as reentrancy bugs, are discussed in the [security best practices on inter-canister calls](../guides/security/inter-canister-calls.md).
+ICP relies on an asynchronous messaging model. Compared to synchronous messaging like on Ethereum, this provides performance advantages because multiple calls can be executed concurrently, and also in parallel, when multiple canisters are involved. However, asynchronous message execution can also lead to sometimes unexpected or unintuitive behavior. Therefore, it is important to understand the properties of message execution. Potential security issues that arise in this model, such as reentrancy bugs, are discussed in the [security best practices on inter-canister calls](../guides/security/inter-canister-calls.md).
 
 The [community conversation on security best practices](https://www.youtube.com/watch?v=PneRzDmf_Xw&list=PLuhDt1vhGcrez-f3I0_hvbwGZHZzkZ7Ng&index=2&t=4s) also discusses the messaging properties.
 
@@ -19,7 +19,7 @@ A **message execution** is a set of consecutive instructions that a subnet execu
 
 - **Property 1**: Only a single message execution is run at a time per canister. Message execution within a single canister is atomic and sequential, and never parallel.
 
-Note that parallel message execution over multiple canisters is possible — this property talks about just a single canister.
+Note that parallel message execution over multiple canisters is possible; this property talks about just a single canister.
 
 - **Property 2**: Each downstream call that a canister makes, query or update, triggers a message. When using `await` on the response from an inter-canister call, the code after the `await` (the callback, highlighted in blue) is executed as a separate message execution.
 
@@ -75,4 +75,4 @@ This property only gives a guarantee on when the request messages are executed, 
 
 For more details, refer to the [IC Interface Specification abstract behavior](./ic-interface-spec/abstract-behavior.md) which defines message execution in more detail.
 
-<!-- Upstream: dfinity/portal — references/message-execution-properties.mdx -->
+<!-- Upstream: sync from dfinity/portal — references/message-execution-properties.mdx -->

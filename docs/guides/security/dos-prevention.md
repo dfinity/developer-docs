@@ -59,4 +59,4 @@ An attacker will target expensive calls to drain the cycles balance or available
 - Be aware of attacks targeting high cycles-consuming calls.
 - See the "Cycle balance drain attacks section" in [How to audit an ICP canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
 
-<!-- Upstream: dfinity/portal — building-apps/security/dos.mdx -->
+<!-- Upstream: sync from dfinity/portal — building-apps/security/dos.mdx -->
