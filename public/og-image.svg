@@ -23,7 +23,7 @@
   <!-- Tagline -->
   <text x="80" y="358"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-    font-size="32" font-weight="400" fill="#a29a8d">Build tamperproof full-stack applications</text>
+    font-size="32" font-weight="400" fill="#a29a8d">Build tamperproof fullstack applications</text>
   <text x="80" y="402"
     font-family="Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
     font-size="32" font-weight="400" fill="#a29a8d">on the Internet Computer.</text>
