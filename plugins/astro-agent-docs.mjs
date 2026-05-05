@@ -105,7 +105,15 @@ function cleanMarkdown(raw, isMdx = false) {
   }
   body = body.replace(/\n{3,}/g, "\n\n").trim();
   const title = data.title ? `# ${data.title}\n\n` : "";
-  return BOM + title + LLMS_TXT_DIRECTIVE + body + "\n";
+  // Include hero text for splash pages — rendered in HTML but not in the content body.
+  let heroText = "";
+  if (data.hero?.title) {
+    heroText += data.hero.title.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() + "\n\n";
+  }
+  if (data.hero?.tagline) {
+    heroText += data.hero.tagline + "\n\n";
+  }
+  return BOM + title + heroText + LLMS_TXT_DIRECTIVE + body + "\n";
 }
 
 /**
