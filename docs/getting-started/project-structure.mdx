@@ -72,7 +72,7 @@ Beyond canisters, `icp.yaml` can also define **networks** (where to deploy) and 
 | `local` | `local` (managed, localhost:8000) | Local development |
 | `ic` | `ic` (connected, https://icp-api.io) | Mainnet production |
 
-You only need to add custom networks or environments when you have staging environments, testnets, or other deployment targets. See the [icp-cli configuration reference](https://cli.internetcomputer.org/) for the full schema.
+You only need to add custom networks or environments when you have staging environments, testnets, or other deployment targets. See the [icp-cli configuration reference](https://cli.internetcomputer.org/0.2/reference/configuration#networks) for the full schema.
 
 ## Canister configuration (canister.yaml)
 
@@ -147,7 +147,7 @@ icp project show
 
 This outputs the effective configuration, including all expanded recipe steps and implicit defaults.
 
-Recipes are Handlebars templates hosted at [dfinity/icp-cli-recipes](https://github.com/dfinity/icp-cli-recipes). You can also create local or remote recipes for custom build patterns. See the [icp-cli recipes documentation](https://cli.internetcomputer.org/) for details.
+Recipes are Handlebars templates hosted at [dfinity/icp-cli-recipes](https://github.com/dfinity/icp-cli-recipes). You can also create local or remote recipes for custom build patterns. See the [icp-cli recipes documentation](https://cli.internetcomputer.org/0.2/guides/creating-recipes) for details.
 
 ## The .icp/ directory
 
@@ -238,14 +238,14 @@ Bindings are generated TypeScript (or Rust) code that provides type-safe access 
 
 In the hello-world template, the frontend's build step runs `npm run generate --prefix app`, which uses `@icp-sdk/bindgen` to generate TypeScript bindings from the backend's `backend.did` file.
 
-For a deep dive on binding generation, see [Binding generation](../guides/canister-calls/binding-generation.md).
+For a deep dive on binding generation, see [Binding generation](../guides/canister-calls/candid.md#binding-generation).
 
 ## Next steps
 
 - [What next?](choose-your-path.md): pick a development path based on what you want to build
-- [Binding generation](../guides/canister-calls/binding-generation.md): deep dive on generating type-safe client code
+- [Binding generation](../guides/canister-calls/candid.md#binding-generation): deep dive on generating type-safe client code
 - [Asset canister](../guides/frontends/asset-canister.md): how the frontend recipe and asset upload work
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): build, deploy, upgrade, and manage canisters
-- [icp-cli reference](https://cli.internetcomputer.org/): full CLI and configuration documentation
+- [icp-cli reference](https://cli.internetcomputer.org/0.2/reference/cli): full CLI and configuration documentation
 
 {/* Upstream: informed by dfinity/icp-cli docs/concepts/project-model.md, docs/concepts/recipes.md, docs/concepts/binding-generation.md, docs/concepts/canister-discovery.md */}

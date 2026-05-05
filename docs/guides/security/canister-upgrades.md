@@ -124,7 +124,7 @@ fn pre_upgrade() {
 }
 ```
 
-When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API (see [Management canister reference](../../references/management-canister.md)) bypasses the hook) but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
+When `pre_upgrade` traps due to instruction exhaustion, the canister cannot be upgraded. The `skip_pre_upgrade` flag (an emergency escape hatch via the management canister's `install_code` API (see [Management canister reference](../../references/management-canister.md#install_code)) bypasses the hook) but anything the hook would have saved is lost. Use stable structures so the upgrade path cannot brick itself under load.
 
 ## Candid interface compatibility
 
@@ -342,7 +342,7 @@ See [Access management](access-management.md) for detailed controller management
 ## Next steps
 
 - [Data persistence](../backends/data-persistence.md): stable structures and upgrade patterns in depth
-- [Canister lifecycle](../canister-management/lifecycle.md): the full upgrade sequence and install modes
+- [Canister lifecycle](../canister-management/lifecycle.md#upgrade-a-canister): the full upgrade sequence and install modes
 - [Canister snapshots](../canister-management/snapshots.md): create and restore snapshots
 - [Testing strategies](../testing/strategies.md): test upgrade scenarios before deploying to mainnet
 - [Access management](access-management.md): manage controllers and prevent lock-out

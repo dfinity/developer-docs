@@ -11,7 +11,7 @@ This guide shows you how to configure your framework's build pipeline, wire up t
 
 ## Prerequisites
 
-- [icp-cli](https://cli.internetcomputer.org/) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
+- [icp-cli](https://cli.internetcomputer.org/0.2/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
 - A backend canister deployed (or a static-only site with no backend)
 - Familiarity with [asset canisters](asset-canister.md)
 
@@ -182,7 +182,7 @@ If your Vue app calls `getCanisterEnv()` to read canister IDs, add the same `ser
 
 ## Authentication
 
-Authentication with Internet Identity is framework-agnostic. The `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md) for integration steps.
+Authentication with Internet Identity is framework-agnostic. The `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md#frontend-integration) for integration steps.
 
 ## Svelte and SvelteKit
 

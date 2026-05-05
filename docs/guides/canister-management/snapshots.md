@@ -180,6 +180,6 @@ icp canister status my-canister -e ic
 
 - [Canister lifecycle](lifecycle.md): Understand how snapshots fit into the upgrade workflow
 - [Canister upgrades security](../security/canister-upgrades.md): Security considerations when using snapshot-based rollbacks
-- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/): Full command reference for all snapshot subcommands
+- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/0.2/guides/canister-snapshots): Full command reference for all snapshot subcommands
 
 <!-- Upstream: informed by dfinity/icp-cli docs/guides/canister-snapshots.md; dfinity/portal docs/building-apps/canister-management/snapshots.mdx -->

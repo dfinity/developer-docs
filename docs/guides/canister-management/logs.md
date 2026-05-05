@@ -405,6 +405,7 @@ async fn main() -> Result<()> {
 
 - [Canister lifecycle](lifecycle.md): configure log visibility and memory limits when creating or deploying a canister
 - [Testing strategies](../testing/strategies.md): use canister logs as part of your debugging workflow
-- [CLI reference](https://cli.internetcomputer.org/): full documentation for `icp canister logs` and `icp canister settings update`
+- [CLI reference: `icp canister logs`](https://cli.internetcomputer.org/0.2/reference/cli#icp-canister-logs): full command flags and options
+- [CLI reference: `icp canister settings update`](https://cli.internetcomputer.org/0.2/reference/cli#icp-canister-settings-update): full command flags and options
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/logs.mdx, docs/building-apps/canister-management/backtraces.mdx, docs/building-apps/advanced/canister-access-logs.mdx; dfinity/examples — rust/canister_logs, motoko/canister_logs, rust/query_stats, motoko/query_stats; dfinity/cdk-rs — ic-cdk/src/api.rs, ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/icp-cli — docs/reference/cli.md, docs/reference/canister-settings.md -->

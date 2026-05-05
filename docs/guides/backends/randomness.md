@@ -226,6 +226,6 @@ Note: this example predates `mo:core` and uses the older `Random.Finite` API. Th
 - [Verifiable Randomness (concept)](../../concepts/verifiable-randomness.md): how the IC's threshold VRF works
 - [Management Canister](../../references/management-canister.md): `raw_rand` API reference
 - [Data Integrity](../security/data-integrity.md): using randomness in a secure application design
-- [Inter-canister calls](../canister-calls/inter-canister-calls.md): async patterns and reentrancy
+- [Inter-canister calls](../canister-calls/inter-canister-calls.md#reentrancy): async patterns and reentrancy
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/integrations/randomness.mdx; dfinity/icskills — skills/canister-security/SKILL.md; dfinity/examples — motoko/random_maze; caffeinelabs/motoko-core — src/Random.mo -->

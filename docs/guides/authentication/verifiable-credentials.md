@@ -49,7 +49,7 @@ The relying party and Internet Identity communicate through [`window.postMessage
 }
 ```
 
-The relying party then sends a `request_credential` message (see [Relying party](#requesting-a-credential) below).
+The relying party then sends a `request_credential` message (see [Relying party](#implementing-a-relying-party) below).
 
 ## Implementing an issuer
 

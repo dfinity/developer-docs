@@ -929,7 +929,7 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
     - `algorithm: 0 → bip340secp256k1, 1 → ed25519`
     - `vetkd_curve: 0 → bls12_381`
 
-    See [`sign_with_ecdsa`](./management-canister.md#ic-sign_with_ecdsa), [`sign_with_schnorr`](./management-canister.md#ic-sign_with_schnorr) and [`vetkd_encrypted_key`](#ic-vetkd_encrypted_key) for more information.
+    See [`sign_with_ecdsa`](./management-canister.md#ic-sign_with_ecdsa), [`sign_with_schnorr`](./management-canister.md#ic-sign_with_schnorr) and [`vetkd_derive_key`](./management-canister.md#ic-vetkd_derive_key) for more information.
 
     These system calls trap if `src` + `size` or `dst` + 16 exceed the size of the WebAssembly memory. Otherwise, they return an `i32` with the following meaning:
     - `0`: Success. The result can be found at the memory address `dst`.

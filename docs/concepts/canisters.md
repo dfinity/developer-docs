@@ -62,7 +62,7 @@ Each canister has two storage regions:
 
 **Heap memory** is standard Wasm linear memory. It holds your program's heap-allocated data: variables, data structures, and anything your code allocates at runtime. Both 32-bit and 64-bit Wasm memory are supported. Heap memory is cleared when you upgrade the canister's Wasm module.
 
-**Stable memory** is a separate address space accessed through the [system API](../references/ic-interface-spec/canister-interface.md). It survives upgrades, making it the right place for any data that must persist long-term. Libraries like `StableBTreeMap` (Rust) or the [`core`](https://mops.one/core/docs) persistent data structures (Motoko) let you work with stable memory through familiar abstractions.
+**Stable memory** is a separate address space accessed through the [system API](../references/ic-interface-spec/canister-interface.md#system-api-stable-memory). It survives upgrades, making it the right place for any data that must persist long-term. Libraries like `StableBTreeMap` (Rust) or the [`core`](https://mops.one/core/docs) persistent data structures (Motoko) let you work with stable memory through familiar abstractions.
 
 After a message executes successfully, the system atomically commits all memory changes. If execution traps (fails), no changes are committed. The canister's state rolls back to what it was before that message.
 

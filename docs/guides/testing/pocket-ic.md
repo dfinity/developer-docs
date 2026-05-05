@@ -377,7 +377,7 @@ PocketIC runs on macOS and Linux. Windows is not currently supported for standal
 
 ## Connecting to a running network for testing
 
-For end-to-end tests that need a full network with all system canisters, use a containerized network instead of PocketIC. See the [icp-cli containerized networks documentation](https://cli.internetcomputer.org/) for how to configure Docker-based test networks in `icp.yaml`.
+For end-to-end tests that need a full network with all system canisters, use a containerized network instead of PocketIC. See the [icp-cli containerized networks documentation](https://cli.internetcomputer.org/0.2/guides/containerized-networks) for how to configure Docker-based test networks in `icp.yaml`.
 
 The containerized network is appropriate when:
 

@@ -568,7 +568,7 @@ The supported annotations are:
 
 -   `oneway` indicates that this function returns no response, intended for fire-and-forget scenarios.
 
-For more information about parameter naming, see [Naming arguments and results](../guides/canister-calls/candid.md#service-naming).
+For more information about parameter naming, see [Naming arguments and results](../guides/canister-calls/candid.md#the-did-file).
 
 #### Type syntax
 ``` candid
@@ -589,7 +589,7 @@ func "aaaaa-aa".create_canister
 ```
 
 #### Subtypes
-The following modifications to a function type change it to a subtype as discussed in the rules for [service upgrades](../guides/canister-calls/candid.md#upgrades):
+The following modifications to a function type change it to a subtype as discussed in the rules for [service upgrades](../guides/canister-calls/candid.md#safe-interface-upgrades):
 
 -   The result type list may be extended.
 
@@ -645,7 +645,7 @@ type F4 = shared query () -> async Text;
 
 Services may want to pass around references to not just individual functions (using the [`func` type](#type-func)), but references to whole services. In this case, Candid types can be used to declare the complete interface of such a service.
 
-See [Candid service descriptions](../guides/canister-calls/candid.md#candid-service-descriptions) for more details on the syntax of a service type.
+See [Candid service descriptions](../guides/canister-calls/candid.md#the-did-file) for more details on the syntax of a service type.
 
 #### Type syntax
 ``` candid
@@ -667,7 +667,7 @@ service: "aaaaa-aa"
 #### Subtypes
 The subtypes of a service type are those service types that possibly have additional methods and where the type of an existing method is changed to a subtype.
 
-This is exactly the same principle as discussed for upgrade rules in [service upgrades](../guides/canister-calls/candid.md#upgrades).
+This is exactly the same principle as discussed for upgrade rules in [service upgrades](../guides/canister-calls/candid.md#safe-interface-upgrades).
 
 #### Supertypes
 The supertypes of a service type are those service types that may have some methods removed, and the type of existing methods is changed to a supertype.
@@ -818,9 +818,9 @@ All types
 None, as this type has no values.
 <!--
 Link replacements from portal source (portal used absolute paths):
-  - /building-apps/interact-with-canisters/candid/candid-concepts#service-naming → ../guides/canister-calls/candid.md#service-naming
-  - /building-apps/interact-with-canisters/candid/candid-concepts#upgrades → ../guides/canister-calls/candid.md#upgrades (×2)
-  - /building-apps/interact-with-canisters/candid/candid-concepts#candid-service-descriptions → ../guides/canister-calls/candid.md#candid-service-descriptions
+  - /building-apps/interact-with-canisters/candid/candid-concepts#service-naming → ../guides/canister-calls/candid.md#the-did-file
+  - /building-apps/interact-with-canisters/candid/candid-concepts#upgrades → ../guides/canister-calls/candid.md#safe-interface-upgrades (×2)
+  - /building-apps/interact-with-canisters/candid/candid-concepts#candid-service-descriptions → ../guides/canister-calls/candid.md#the-did-file
 Other changes from portal source:
   - `# Candid` H1 removed (Starlight renders frontmatter title as H1; duplicate would produce two H1s)
 -->

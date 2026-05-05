@@ -93,7 +93,7 @@ type TransferError = variant {
 | `icrc1:decimals` | `Nat` | `8` |
 | `icrc1:fee` | `Nat` | `10000` |
 
-For a few well-known ledger canister IDs and index canisters, see [Ledgers](../guides/digital-assets/ledgers.md#well-known-token-ledgers). For a broader overview of tokens on ICP, see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens).
+For a few well-known ledger canister IDs and index canisters, see [Ledgers](../guides/digital-assets/ledgers.md#well-known-ledgers). For a broader overview of tokens on ICP, see the [ICP Dashboard token list](https://dashboard.internetcomputer.org/tokens).
 
 [Read the full ICRC-1 standard](https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1)
 

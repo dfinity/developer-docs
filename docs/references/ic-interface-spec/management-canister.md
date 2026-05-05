@@ -789,9 +789,9 @@ This method returns all metadata of a snapshot identified by `snapshot_id` of th
 
 The returned metadata of a snapshot contain:
 
-- the "source" of the snapshot, i.e., whether the snapshot was created by taking the canister state using the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or by (snapshot) metadata upload using the method [`upload_canister_snapshot_metadata`](#ic_upload_canister_snapshot_metadata);
+- the "source" of the snapshot, i.e., whether the snapshot was created by taking the canister state using the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or by (snapshot) metadata upload using the method [`upload_canister_snapshot_metadata`](#ic-upload_canister_snapshot_metadata);
 
-- the timestamp at which the snapshot was created, i.e., the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or [`upload_canister_snapshot_metadata`](#ic_upload_canister_snapshot_metadata) executed;
+- the timestamp at which the snapshot was created, i.e., the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or [`upload_canister_snapshot_metadata`](#ic-upload_canister_snapshot_metadata) executed;
 
 - the size of the canister WASM (in bytes);
 
@@ -801,7 +801,7 @@ The returned metadata of a snapshot contain:
 
 - hashes of chunks in the WASM chunk store;
 
-- the [canister version](./canister-interface.md#system-api-canister-version) when the snapshot was created, i.e., the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or [`upload_canister_snapshot_metadata`](#ic_upload_canister_snapshot_metadata) executed;
+- the [canister version](./canister-interface.md#system-api-canister-version) when the snapshot was created, i.e., the method [`take_canister_snapshot`](#ic-take_canister_snapshot) or [`upload_canister_snapshot_metadata`](#ic-upload_canister_snapshot_metadata) executed;
 
 - the [certified data](./canister-interface.md#system-api-certified-data);
 

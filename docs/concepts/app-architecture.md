@@ -71,7 +71,7 @@ For maximum throughput, distribute canisters across multiple [subnets](network-o
 
 ## Data storage
 
-Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](../guides/backends/data-persistence.md): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
+Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](../guides/backends/data-persistence.md#store-data-durably): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
 
 - **Motoko:** the [`core` standard library](https://mops.one/core/docs) includes persistent data structures designed for upgrade-safe storage.
 - **Rust:** [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) provides `StableBTreeMap` and other structures for stable memory.

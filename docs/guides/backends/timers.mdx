@@ -163,7 +163,7 @@ fn init() {
 }
 ```
 
-See [Canister lifecycle](../canister-management/lifecycle.md) for init and upgrade hook details.
+See [Canister lifecycle](../canister-management/lifecycle.md#what-happens-during-an-upgrade) for init and upgrade hook details.
 
 ## Timers after upgrades
 
@@ -215,7 +215,7 @@ Timer tasks are added to the canister's input queue. If the canister or subnet i
 
 The canister output queue is limited to 500 messages. This caps how many timers can fire in a single round. The CDK also enforces internal rate limits (250 concurrent timer calls globally, 5 per interval timer).
 
-See [Cycles and costs](../../references/cycles-costs.md) for current pricing.
+See [Cycles and costs](../../references/cycles-costs.md#cost-table) for current pricing.
 
 ## Heartbeats (legacy)
 
@@ -243,7 +243,7 @@ The CDK timers library (`ic-cdk-timers` for Rust, `mo:core/Timer` for Motoko) bu
 3. In `canister_global_timer`, runs each expired task as a self-canister call to isolate tasks from each other and from the library code
 4. Reschedules recurring tasks at the end of their execution
 
-For protocol internals, see [Timers](../../concepts/timers.md) and the [IC interface specification](../../references/ic-interface-spec/index.md).
+For protocol internals, see [Timers](../../concepts/timers.md) and the [IC interface specification](../../references/ic-interface-spec/canister-interface.md#global-timer).
 
 ## Frequently asked questions
 
@@ -277,8 +277,8 @@ For a complete working example with cycle tracking and multiple timers:
 
 ## Next steps
 
-- [Canister lifecycle](../canister-management/lifecycle.md): init, pre/post-upgrade hooks
+- [Canister lifecycle](../canister-management/lifecycle.md#what-happens-during-an-upgrade): init, pre/post-upgrade hooks
 - [Timers (concept)](../../concepts/timers.md): how the IC protocol timer works
-- [Cycles and costs](../../references/cycles-costs.md): current pricing
+- [Cycles and costs](../../references/cycles-costs.md#cost-table): current pricing
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, docs/building-apps/network-features/time-and-timestamps.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, and caffeinelabs/motoko-core src/Timer.mo */}

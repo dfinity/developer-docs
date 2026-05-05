@@ -27,7 +27,7 @@ Common root causes:
 - **Integer division by zero**: the canister attempted to divide by zero. Inspect the canister code for any division operations.
 - **Unreachable**: typically produced when a Rust canister panics. Rust canisters using `ic-cdk` macros automatically convert panics to `ic0.trap` calls with a human-readable message including the file, line, and panic reason.
 
-To fix this error, test the canister to identify unhandled errors. Review the [canister trapping guide](../guides/canister-management/lifecycle.md) for detailed guidance on traps during upgrades and inter-canister calls.
+To fix this error, test the canister to identify unhandled errors. Review the [canister trapping guide](../guides/canister-management/lifecycle.md#trapping-and-error-handling) for detailed guidance on traps during upgrades and inter-canister calls.
 
 ### Trapped explicitly
 
@@ -38,7 +38,7 @@ The canister aborted execution by calling the `ic0.trap` system API.
 Canister called `ic0.trap` with message: <Canister error message>
 ```
 
-When encountering an error, canisters may choose to fail with an error message by calling the [`ic0.trap` API](./ic-interface-spec/canister-interface.md). The Rust and Motoko CDKs insert calls to this API when panicking.
+When encountering an error, canisters may choose to fail with an error message by calling the [`ic0.trap` API](./ic-interface-spec/canister-interface.md#system-api-imports). The Rust and Motoko CDKs insert calls to this API when panicking.
 
 To fix this error, test the canister to determine which inputs trigger panics. Review the error message embedded in the trap to identify the source of the failure.
 
@@ -159,7 +159,7 @@ Canister cannot grow memory by 65536 bytes due to insufficient cycles.
 
 Canisters pay for their memory each round. Growing memory requires that the canister have enough cycles to pay for the increased usage. For operations like uploading a Wasm chunk, taking a snapshot, or installing code, the error message may include an "At least X additional cycles are required" suffix indicating the shortfall.
 
-To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md).
+To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md#topping-up-canisters).
 
 ### Reserved cycles limit exceeded in memory grow
 
@@ -211,7 +211,7 @@ Canister cannot grow message memory by 10240 bytes due to insufficient cycles.
 
 Sending a message to another canister reserves space in subnet memory for the message and its response. This error means the canister doesn't have enough cycles to pay for that memory without freezing.
 
-To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md).
+To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md#topping-up-canisters).
 
 ### Insufficient cycles in compute allocation
 
@@ -224,7 +224,7 @@ Cannot increase compute allocation to 50 due to insufficient cycles. At least 10
 
 Canisters pay for compute allocation. This error means an attempt was made to increase the compute allocation beyond what the canister can currently pay for.
 
-To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md).
+To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md#topping-up-canisters).
 
 ### Insufficient cycles in memory allocation
 
@@ -237,7 +237,7 @@ Cannot increase memory allocation to 40000000000 due to insufficient cycles. At 
 
 Canisters pay for memory allocation. This error means an attempt was made to increase the memory allocation beyond what the canister can currently pay for.
 
-To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md).
+To fix this error, top up the canister with more cycles. See the [cycles management guide](../guides/canister-management/cycles-management.md#topping-up-canisters).
 
 ### Install code not enough cycles
 
@@ -248,7 +248,7 @@ A canister doesn't have enough cycles to execute an install message.
 Canister installation failed with `Canister xxx-xxx is out of cycles: please top up the canister with at least 10000000000 additional cycles`.
 ```
 
-To fix this error, top up the canister with additional cycles before retrying the installation. See the [cycles management guide](../guides/canister-management/cycles-management.md).
+To fix this error, top up the canister with additional cycles before retrying the installation. See the [cycles management guide](../guides/canister-management/cycles-management.md#topping-up-canisters).
 
 ### Create canister not enough cycles
 
@@ -558,7 +558,7 @@ There was an attempt to install code on a canister that already has code install
 Canister xxx-xxx cannot be installed because the canister is not empty. Try installing with mode='reinstall' instead.
 ```
 
-Installing a Wasm module is only for canisters that have no existing state. If the intention is to update the Wasm module while preserving state, use an [upgrade](../guides/canister-management/lifecycle.md) instead. If the intention is to overwrite the canister state entirely, use `reinstall` mode.
+Installing a Wasm module is only for canisters that have no existing state. If the intention is to update the Wasm module while preserving state, use an [upgrade](../guides/canister-management/lifecycle.md#upgrade-a-canister) instead. If the intention is to overwrite the canister state entirely, use `reinstall` mode.
 
 ### Delete canister not stopped
 

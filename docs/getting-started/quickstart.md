@@ -37,7 +37,7 @@ icp --version
 ic-wasm --version
 ```
 
-> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/guides/installation/) are also available.
+> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/0.2/guides/installation) are also available.
 
 ## Create a project
 
@@ -130,6 +130,6 @@ Each canister name maps to a directory containing its own `canister.yaml` with b
 - [Choose your path](choose-your-path.md): pick a development path based on what you want to build
 - [Concepts: Canisters](../concepts/canisters.md): learn what canisters are and how they work
 - [AI coding agents](../guides/ai-coding-agents.md): use ICP skills to build on the Internet Computer with AI
-- [icp-cli documentation](https://cli.internetcomputer.org/): full CLI reference and guides
+- [icp-cli documentation](https://cli.internetcomputer.org/0.2/): full CLI reference and guides
 
 <!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->

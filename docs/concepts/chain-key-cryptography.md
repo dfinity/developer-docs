@@ -52,7 +52,7 @@ Each scheme is backed by a pair of management canister methods:
 - **Public key retrieval** (`ecdsa_public_key`, `schnorr_public_key`): returns a canister's public key for a given derivation path.
 - **Signing** (`sign_with_ecdsa`, `sign_with_schnorr`): computes a threshold signature using the canister's derived key.
 
-See the [Management canister reference](../references/management-canister.md) for the full API, and the [IC interface specification](../references/ic-interface-spec/index.md) for the authoritative protocol-level details.
+See the [Management canister reference](../references/management-canister.md#chain-key-signing) for the full API, and the [IC interface specification](../references/ic-interface-spec/index.md) for the authoritative protocol-level details.
 
 ### Key derivation
 

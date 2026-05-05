@@ -69,7 +69,7 @@ settings:
 
 A value of `50` means the canister gets 50% of an execution core and is scheduled at least every other round. A value of `100` means the canister runs every round.
 
-Compute allocation incurs a rental fee based on time and allocation percentage, regardless of whether the canister actually executes. This increases idle [cycle](../../concepts/cycles.md) consumption. See [cycles costs](../../references/cycles-costs.md) for pricing details.
+Compute allocation incurs a rental fee based on time and allocation percentage, regardless of whether the canister actually executes. This increases idle [cycle](../../concepts/cycles.md) consumption. See [cycles costs](../../references/cycles-costs.md#compute-allocation) for pricing details.
 
 ### Memory allocation
 
@@ -90,7 +90,7 @@ Supported suffixes: `kb` (1,000), `kib` (1,024), `mb` (1,000,000), `mib` (1,048,
 
 When set, the canister draws new Wasm and stable memory from the pre-allocated pool. If usage exceeds the allocation, additional memory is allocated on demand and may fail if the subnet is at capacity.
 
-Like compute allocation, memory allocation incurs a rental fee based on time and allocated amount, regardless of actual usage. See [cycles costs](../../references/cycles-costs.md) for pricing.
+Like compute allocation, memory allocation incurs a rental fee based on time and allocated amount, regardless of actual usage. See [cycles costs](../../references/cycles-costs.md#storage-reservation) for pricing.
 
 ### Freezing threshold
 
@@ -332,7 +332,7 @@ icp canister settings update backend -e ic --freezing-threshold 90d
 
 Additional flags: `--reserved-cycles-limit`, `--wasm-memory-threshold`, `--log-memory-limit`, `--add-environment-variable`. Run `icp canister settings update --help` for the full list.
 
-For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/).
+For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/0.2/reference/cli#icp-canister-settings-update).
 
 ## Updating settings programmatically
 
@@ -454,7 +454,7 @@ How you configure controllers depends on the trust model for your canister:
 
 - [Canister lifecycle](lifecycle.md): Create, deploy, upgrade, stop, and delete canisters.
 - [Cycles management](cycles-management.md): Monitor and top up cycle balances.
-- [Cycles costs reference](../../references/cycles-costs.md): Pricing for compute and memory allocation.
+- [Cycles costs reference](../../references/cycles-costs.md#compute-allocation): Pricing for compute and memory allocation.
 - [Management canister reference](../../references/management-canister.md): Full interface specification.
 
 {/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/settings.mdx, docs/building-apps/canister-management/control.mdx, docs/references/_attachments/ic.did (snapshot_visibility field); dfinity/icp-cli) docs/reference/canister-settings.md, docs/reference/cli.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

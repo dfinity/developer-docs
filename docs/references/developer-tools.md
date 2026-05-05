@@ -18,9 +18,9 @@ Key features:
 - **Environments**: named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
 - **Project scaffolding**: `icp new` bootstraps new projects from official templates
 
-For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/).
+For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/0.2/).
 
-Advanced: [creating recipes](https://cli.internetcomputer.org/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/guides/creating-templates) are documented on the CLI docs site.
+Advanced: [creating recipes](https://cli.internetcomputer.org/0.2/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/0.2/guides/creating-templates) are documented on the CLI docs site.
 
 icp-cli collects anonymous usage telemetry. Opt out with `icp settings telemetry false` or `DO_NOT_TRACK=1`.
 

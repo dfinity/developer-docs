@@ -93,6 +93,6 @@ Timers introduce two security-relevant properties developers should understand:
 
 - [Timers guide](../guides/backends/timers.md): practical API usage for Rust and Motoko
 - [Canisters](canisters.md): the canister execution model
-- [IC interface specification](../references/ic-interface-spec/index.md): the protocol-level timer definition
+- [IC interface specification](../references/ic-interface-spec/canister-interface.md#global-timer): the protocol-level timer definition
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, caffeinelabs/motoko doc/md/core/Timer.md -->

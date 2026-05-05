@@ -57,7 +57,7 @@ icp cycles balance -n ic
 # Output: ~5T cycles
 ```
 
-**Budget guidance:** Plan for 1–2T cycles per canister as a starting balance. A simple backend canister with moderate traffic costs roughly 0.1–0.5T cycles per month, though this varies with storage and call volume. See the [cycles costs reference](../../references/cycles-costs.md) for per-operation pricing.
+**Budget guidance:** Plan for 1–2T cycles per canister as a starting balance. A simple backend canister with moderate traffic costs roughly 0.1–0.5T cycles per month, though this varies with storage and call volume. See the [cycles costs reference](../../references/cycles-costs.md#cost-table) for per-operation pricing.
 
 ## Checking canister cycle balances
 
@@ -348,7 +348,7 @@ icp deploy -e staging
 icp deploy -e production
 ```
 
-Each environment maintains separate canister IDs. Mainnet IDs are stored in `.icp/data/mappings/<environment>.ids.json` and should be committed to version control. See [Managing environments](https://cli.internetcomputer.org/) for full configuration options.
+Each environment maintains separate canister IDs. Mainnet IDs are stored in `.icp/data/mappings/<environment>.ids.json` and should be committed to version control. See [Managing environments](https://cli.internetcomputer.org/0.2/guides/managing-environments) for full configuration options.
 
 ## Production deployment checklist
 
@@ -411,9 +411,9 @@ icp canister top-up backend --amount 1T -n ic
 
 - [Canister settings](settings.md): Freezing threshold, memory allocation, compute allocation
 - [Canister lifecycle](lifecycle.md): Create, install, upgrade, and delete canisters
-- [Cycles costs reference](../../references/cycles-costs.md): Exact cost tables per operation
+- [Cycles costs reference](../../references/cycles-costs.md#cost-table): Exact cost tables per operation
 - [Cycles](../../concepts/cycles.md): Why canisters pay for execution
 - [Reproducible builds](reproducible-builds.md): Verify your WASM is trustworthy before deploying
-- [icp-cli docs](https://cli.internetcomputer.org/): Full command reference
+- [icp-cli docs](https://cli.internetcomputer.org/0.2/reference/cli#icp-cycles): Full command reference for `icp cycles` and `icp canister top-up`
 
 {/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/topping-up.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; dfinity/icp-cli) docs/guides/deploying-to-mainnet.md, docs/guides/tokens-and-cycles.md, docs/guides/managing-environments.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

@@ -61,7 +61,7 @@ The following threats are your responsibility to mitigate:
 
 Every update method is publicly callable. If you do not check the caller, anyone can invoke admin functions, drain funds, or corrupt state. The anonymous principal (`2vxsx-fae`) is a particularly common gap: it must be explicitly rejected in any authenticated endpoint, because otherwise it acts as a shared identity that anyone can use.
 
-See [Access management](../guides/security/access-management.md) for implementation patterns.
+See [Access management](../guides/security/access-management.md#reject-anonymous-callers) for implementation patterns.
 
 ### Reentrancy and async interleaving
 
