@@ -17,7 +17,26 @@ A canister endpoint is idempotent if executing it multiple times is equivalent t
 
 Given an idempotent endpoint, you can implement retries from an external application by retrying the call until you observe a certified response, either a replied or rejected status; see the illustration below. If such a response is ever observed, it's sure that the transaction has been executed at least once, which, thanks to idempotency, has the same result as executing it exactly once. However, the application may not be willing to wait for a response indefinitely, and a timeout could be implemented. Upon timeout, an error should be displayed to the user instructing them to wait until the latest message that has been sent has expired (as defined by the request's `ingress_expiry`) and then manually check the status of the transaction. Ideally, timeouts should be rare and not occur during normal operation.
 
-![Retrying an idempotent call](/img/docs/retry_idempotency.png)
+```plantuml
+actor User
+participant "Web Browser" as Browser
+participant Agent
+participant "Boundary Node" as BN
+participant "IC Node" as IC
+
+User -> Browser: Start transaction
+
+loop until certified response or timeout
+  Browser -> Agent: idempotent call
+  Agent -> BN: call & subsequent read_state calls
+  BN -> IC
+  IC --> BN
+  BN --> Agent: certified response or error
+  Agent --> Browser: certified response or error
+end
+
+Browser --> User: certified response\nor timeout error message
+```
 
 The situation is similar for bounded-wait inter-canister calls. Given an idempotent endpoint, the calling canister can keep retrying until a response other than `SYS_UNKNOWN` is observed or give up after a timeout if waiting indefinitely is not an option.
 
