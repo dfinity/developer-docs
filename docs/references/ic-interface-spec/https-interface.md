@@ -735,7 +735,7 @@ A typical request would be (written in [CBOR diagnostic notation](https://www.rf
 
 ### CDDL description of requests and responses {#api-cddl}
 
-This section summarizes the format of the CBOR data passed to and from the entry points described above. You can also [download the file](_attachments/requests.cddl) and see [CDDL](./index.md#cddl) for more information.
+This section summarizes the format of the CBOR data passed to and from the entry points described above. You can also [download the file](/references/_attachments/requests.cddl) and see [CDDL](./index.md#cddl) for more information.
 
 ### Ordering guarantees
 

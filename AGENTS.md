@@ -331,16 +331,20 @@ grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 | Local file | Source | Affects |
 |-----------|--------|---------|
 | `public/reference/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/references/management-canister.md` |
+| `public/references/_attachments/certificates.cddl` | `.sources/portal/docs/references/_attachments/certificates.cddl` | Downloadable CDDL linked from `docs/references/ic-interface-spec/certification.md` |
+| `public/references/_attachments/requests.cddl` | `.sources/portal/docs/references/_attachments/requests.cddl` | Downloadable CDDL linked from `docs/references/ic-interface-spec/https-interface.md` |
+| `public/references/_attachments/http-gateway.did` | `.sources/portal/docs/references/_attachments/http-gateway.did` | Downloadable Candid interface linked from `docs/references/http-gateway-spec.md` |
 | `docs/references/ic-interface-spec/` | `.sources/portal/docs/references/ic-interface-spec.md` | IC interface spec split into 7 focused pages — apply portal diffs by section (see checklist below) |
 | `docs/references/http-gateway-spec.md` | `.sources/portal/docs/references/http-gateway-protocol-spec.md` | HTTP Gateway spec — apply portal diff as a patch on every bump |
 
 **Portal bump checklist (run on every portal bump):**
 
-**Step 1 — `ic.did`:**
+**Step 1 — `ic.did` and `_attachments/`:**
 1. `diff public/reference/ic.did .sources/portal/docs/references/_attachments/ic.did`
 2. If changed: `cp .sources/portal/docs/references/_attachments/ic.did public/reference/ic.did`
 3. Review diff for new/changed/removed methods
 4. Update `docs/references/management-canister.md` and any affected guides
+5. For each of `certificates.cddl`, `requests.cddl`, `http-gateway.did`: `diff public/references/_attachments/<file> .sources/portal/docs/references/_attachments/<file>` — if changed, copy the updated file to `public/references/_attachments/`
 
 **Step 2 — `ic-interface-spec/`:** The spec is now split into 7 files under `docs/references/ic-interface-spec/`. Each file maps to a section of the portal source:
 
@@ -383,6 +387,7 @@ git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md | g
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/interface-spec-changelog.md
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/http-gateway-protocol-spec.md
 git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/ic.did
+git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/certificates.cddl docs/references/_attachments/requests.cddl docs/references/_attachments/http-gateway.did
 ```
 
 ## Planning artifacts (`.docs-plan/`)
