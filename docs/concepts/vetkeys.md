@@ -99,7 +99,6 @@ The vetKD management canister API is live on mainnet. The `ic-vetkeys` Rust crat
 
 ## Next steps
 
-- [Encryption with VetKeys](../guides/security/encryption.md): implement encrypted storage, IBE, and the full end-to-end key derivation flow
 - [Chain-Key Cryptography](chain-key-cryptography.md): the threshold cryptographic foundation that vetKeys build on
 - [Security](security.md): where vetKeys fit in the broader canister security model
 
