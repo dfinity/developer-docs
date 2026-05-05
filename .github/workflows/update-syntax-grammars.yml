@@ -5,20 +5,23 @@ on:
     - cron: "0 9 * * 1" # every Monday at 09:00 UTC
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   update-grammars:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          client-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_CLIENT_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
+
       - name: Fetch latest vscode-motoko release
         id: release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           tag=$(gh api repos/dfinity/vscode-motoko/releases/latest --jq '.tag_name')
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -27,7 +30,7 @@ jobs:
       - name: Check if PR already exists for this release
         id: existing
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           tag="${{ steps.release.outputs.tag }}"
           branch="chore/update-syntax-grammars-${tag}"
@@ -80,13 +83,13 @@ jobs:
       - name: Create pull request
         if: steps.existing.outputs.skip == 'false' && steps.diff.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           tag="${{ steps.release.outputs.tag }}"
           branch="chore/update-syntax-grammars-${tag}"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "pr-automation-bot-public[bot]"
+          git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
           git checkout -b "$branch"
           git add syntaxes/
           git commit -m "chore: update Motoko and Candid grammars to vscode-motoko ${tag}"
