@@ -1,5 +1,5 @@
 ---
-title: "Security Best Practices: Canister Upgrades"
+title: "Canister Upgrade Security"
 description: "Security best practices for canister upgrade hooks, panics during upgrades, and timer reinstatement."
 sidebar:
   order: 9
