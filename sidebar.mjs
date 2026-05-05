@@ -129,6 +129,7 @@ export const sidebar = [
       { slug: "references/cycles-costs" },
       { slug: "references/subnet-types" },
       { slug: "references/execution-errors" },
+      { slug: "references/message-execution-properties" },
       { slug: "references/http-gateway-spec" },
       { slug: "references/candid-spec" },
       { slug: "references/internet-identity-spec" },
