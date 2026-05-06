@@ -24,7 +24,7 @@ Chain-key cryptography is not a single algorithm but a protocol suite. The main 
 
 ### Distributed key generation (DKG)
 
-Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a novel DKG protocol that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing**: transferring key material to a new set of nodes when subnet membership changes: without ever reconstructing the private key. Resharing also runs periodically within a subnet to defend against adaptive attackers: each resharing invalidates all previously obtained shares, so compromising nodes over time does not help an adversary accumulate enough shares to forge signatures.
+Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a novel DKG protocol that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing**: transferring key material to a new set of nodes when subnet membership changes (for example, during node rotation), without ever reconstructing the private key. Resharing ensures that shares held by removed nodes become useless, so the subnet's signing ability is preserved across membership changes while old shares cannot be exploited.
 
 ### Threshold BLS signatures
 

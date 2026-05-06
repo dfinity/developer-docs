@@ -5,17 +5,17 @@ sidebar:
   order: 11
 ---
 
-Query calls on ICP return results immediately without going through consensus. This means the response comes from a single replica, and a client cannot inherently distinguish a legitimate response from a fabricated one. Certified data solves this: by embedding cryptographic certificates in query responses, canisters can prove that their response reflects state that was committed through consensus — without the client needing to replay any blockchain history.
+Query calls on ICP return results immediately without going through consensus. This means the response comes from a single replica, and a client cannot inherently distinguish a legitimate response from a fabricated one. Certified data solves this: by embedding cryptographic certificates in query responses, canisters can prove that their response reflects state that was committed through consensus, without the client needing to replay any blockchain history.
 
 ## The verification problem
 
 On most blockchains, clients that want to verify data without trusting a single node must do significant work. Bitcoin's Simplified Payment Verification downloads and validates block headers. Ethereum's light clients maintain a chain of committee hashes and verify Merkle proofs against the state root. Both approaches require ongoing synchronization and are impractical for mobile or web applications that need fast, lightweight verification.
 
-ICP takes a different approach: instead of requiring clients to maintain any blockchain state, the protocol produces a certificate that can be verified with a single signature check against a **single, stable public key** — the Internet Computer's root public key. This key never changes (it was fixed at genesis and is published in the NNS governance system), so any client can embed it and immediately verify any certificate it receives.
+ICP takes a different approach: instead of requiring clients to maintain any blockchain state, the protocol produces a certificate that can be verified with a single signature check against a **single, stable public key** (the Internet Computer's root public key). This key never changes (it was fixed at genesis and is published in the NNS governance system), so any client can embed it and immediately verify any certificate it receives.
 
 ## How certificates are produced
 
-Each subnet holds a threshold BLS signing key. The corresponding subnet public key is registered on the NNS and derivable from the IC root public key. At each consensus round, the subnet computes a **certified state tree** — a hash tree representing the replicated state of all canisters on that subnet — and signs the root hash of this tree with its threshold BLS key.
+Each subnet holds a threshold BLS signing key. The corresponding subnet public key is registered on the NNS and derivable from the IC root public key. At each consensus round, the subnet computes a **certified state tree**: a hash tree representing the replicated state of all canisters on that subnet — and signs the root hash of this tree with its threshold BLS key.
 
 The signed root is included in the subnet's **certified state**, which is available to every replica. When a canister wants to certify a response, it embeds a piece of certified state in the response, along with a Merkle path (witness) proving that the certified piece is included under the signed root.
 
@@ -35,7 +35,7 @@ The interface through which canisters participate in this mechanism is **certifi
 
 The 32-byte limitation is not a problem in practice. Applications use standard data structures like [Merkle trees](https://en.wikipedia.org/wiki/Merkle_tree) to commit to arbitrarily large amounts of data in a single 32-byte root hash. The canister stores the full data structure locally and returns a Merkle witness (a path from the root to the requested value) alongside the certificate in each query response. The client verifies both the certificate signature and the witness together.
 
-This pattern allows canisters to provide both fast responses (query, no consensus delay) and cryptographic authentication — a combination not natively available in most blockchain systems.
+This pattern allows canisters to provide both fast responses (query, no consensus delay) and cryptographic authentication, a combination not natively available in most blockchain systems.
 
 ## Applications
 
