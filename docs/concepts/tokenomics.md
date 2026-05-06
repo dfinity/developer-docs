@@ -1,0 +1,71 @@
+---
+title: "Tokenomics"
+description: "How ICP tokens work: uses, governance rewards, supply dynamics, and SNS token economics"
+sidebar:
+  order: 13
+---
+
+ICP's economic model is built around two native tokens: **ICP** and **cycles**. They serve distinct purposes: ICP is a governance and value transfer token; cycles are a stable-cost computational fuel that canisters consume to run. This separation keeps developer costs predictable regardless of ICP market price.
+
+## ICP token uses
+
+ICP has four protocol-level uses:
+
+**1. Governance participation.** ICP holders stake tokens to create [neurons](governance.md#neurons-and-voting-power) in the NNS governance system. Neurons vote on proposals and earn voting rewards in return. Staking longer increases voting power and rewards, creating an incentive for long-term alignment with the network.
+
+**2. Cycle conversion.** ICP can be burned to mint cycles through the Cycles Minting Canister (CMC). Cycles are pegged to the XDR basket of currencies at a rate of 1 trillion cycles = 1 XDR. This means developer infrastructure costs are stable in fiat terms even as ICP's market price changes. See [Cycles](cycles.md) for details.
+
+**3. Node provider rewards.** Nodes that run the Internet Computer are owned by independent node providers. These providers are compensated in newly minted ICP. Rewards are specified in XDR and converted to ICP based on a 30-day moving average exchange rate, so providers receive stable real-world compensation regardless of price fluctuations.
+
+**4. SNS decentralization swaps.** Users can commit ICP to participate in the decentralization swap of an SNS DAO. In return they receive the SNS's governance tokens at a uniform price. The ICP raised enters the DAO treasury under NNS control and funds future development and operations.
+
+Beyond these protocol uses, ICP functions as a medium of exchange and can be used to pay for services, NFTs, subscriptions, and other on-chain activity.
+
+## Governance rewards and maturity
+
+Any ICP holder can stake tokens in a neuron to participate in NNS governance. Each day the NNS calculates a voting reward pot and distributes it among eligible neurons proportionally to their voting power and participation.
+
+Reward rate schedule:
+- **At genesis:** rewards are calibrated to distribute roughly 10% of total supply per year in annualized terms.
+- **Over 8 years:** the rate declines to approximately 5% per year.
+
+Rewards accumulate as **maturity** within the neuron, not as liquid ICP. Maturity can be converted to ICP (spawning), which at that point triggers the actual minting. This deferred minting means the total supply grows only when neurons choose to realize rewards, giving holders flexibility over when to enter circulation.
+
+The daily reward amount is fixed (independent of total staked ICP), so lower overall participation means each participant earns a higher share. This self-regulating mechanism incentivizes participation.
+
+## Supply dynamics
+
+ICP has both inflationary and deflationary mechanisms:
+
+**Inflationary:**
+- New ICP is minted to pay node provider rewards.
+- New ICP is minted when neurons spawn voting rewards as maturity.
+
+**Deflationary:**
+- ICP is burned when converted to cycles.
+- ICP transaction fees are burned.
+- Failed NNS proposals result in a small fee charged to the proposing neuron.
+
+The net effect on supply depends on market conditions: when cycle demand is high (more computation), more ICP is burned. When governance participation is high, more ICP is minted. The [NNS dashboard](https://dashboard.internetcomputer.org/governance) shows live estimates of supply, staking, and annualized voting rewards.
+
+## SNS tokenomics
+
+Each SNS DAO deploys its own governance token alongside its canister, with a tokenomics configuration set at launch. The mechanics are similar to the NNS: staking for voting power, configurable voting reward minting, transaction fee burning, and a treasury for DAO-controlled spending.
+
+Key parameters a team configures for their SNS:
+
+- **Initial token allocation**: how tokens are split between the decentralization swap (community), DAO treasury, seed funders, and the development team. The SNS framework requires that at least as many tokens are allocated to the swap as to the seed funders and development team combined.
+- **Voting power**: teams can weight voting power by staking duration to encourage long-term commitment. The configuration must prevent the founding team from holding more than 50% of initial voting power.
+- **Reward rate**: whether and at what rate the SNS mints new tokens for governance participation.
+- **Transaction fees**: a per-transfer fee that is burned, creating deflationary pressure.
+
+SNS tokenomics is entirely configurable and independent of the NNS ICP tokenomics model. Two SNS DAOs can have very different economic designs.
+
+## Next steps
+
+- [Governance](governance.md): NNS neurons, proposals, voting, and the SNS framework
+- [Cycles](cycles.md): how cycle costs work and how ICP converts to cycles
+- [Token ledgers](token-ledgers.md): how ICP and other token balances are tracked
+- [Launching an SNS](../guides/governance/launching.md): the decentralization swap process
+
+<!-- Upstream: learn hub staging: tokens-governance/tokens-governance.md, tokens-governance/tokenomics.md, sns/tokenomics.md -->

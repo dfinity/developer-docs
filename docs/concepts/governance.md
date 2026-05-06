@@ -78,7 +78,7 @@ Neurons that vote (directly or through following) earn voting rewards. The proto
 
 Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with a modulation of ±5% applied to the mint amount) or merge maturity back into their stake to compound future rewards.
 
-The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See the [ICP tokenomics overview](https://learn.internetcomputer.org/hc/en-us/articles/34090810571284) for details on the reward rate schedule.
+The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See [Tokenomics](tokenomics.md) for details on the reward rate schedule and supply dynamics.
 
 ## The Service Nervous System
 
