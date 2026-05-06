@@ -177,7 +177,7 @@ Minter -> DOGE: send DOGE to doge_address
 
 ## Next steps
 
-- [Chain fusion overview](../../concepts/chain-fusion.md): understand how ICP integrates with external blockchains
+- [Chain fusion overview](../../concepts/chain-fusion/index.md): understand how ICP integrates with external blockchains
 - [Bitcoin integration](bitcoin.md): the same UTXO-based integration with complete code examples
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): how threshold ECDSA signatures work
 - [Chain-key tokens](../digital-assets/chain-key-tokens.md): ckBTC, ckETH, and upcoming ckDOGE

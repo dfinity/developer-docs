@@ -16,7 +16,7 @@ This design has several consequences for developers:
 - **Fast verification.** Clients verify subnet responses with a single public key check. There is no need to download block headers or maintain a light client.
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified variables](../guides/backends/certified-variables.md).
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
-- **Cross-chain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion.md).
+- **Cross-chain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
 
 ## Core protocols
 
@@ -91,7 +91,7 @@ For signing costs, see [Cycles costs](../references/cycles-costs.md).
 
 ## Supported chains
 
-Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion.md#supported-chains).
+Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion/index.md#supported-chains).
 
 ## Chain evolution
 
@@ -103,7 +103,7 @@ For more on how upgrades work at the protocol level, see the [Chain Evolution](h
 
 ## Next steps
 
-- [Chain Fusion](chain-fusion.md): how canisters use chain-key signatures to interact with other blockchains
+- [Chain Fusion](chain-fusion/index.md): how canisters use chain-key signatures to interact with other blockchains
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
 - [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API
