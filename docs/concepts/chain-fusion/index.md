@@ -123,7 +123,7 @@ Chain Fusion enables application patterns that are difficult or impossible with 
 - [Ethereum integration](ethereum.md): Ethereum, EVM chains, and the EVM RPC canister
 - [Solana integration](solana.md): the SOL RPC canister
 - [Chain-key tokens](chain-key-tokens.md): architecture of trustless cross-chain tokens
-- [Exchange rate canister](exchange-rate-canister.md): on-chain oracle for asset prices
+- [Exchange rate canister](exchange-rate-canister.md): onchain oracle for asset prices
 - [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build with BTC on ICP
 - [Ethereum guide](../../guides/chain-fusion/ethereum.md): interact with Ethereum and EVM chains
 - [Chain-key cryptography](../chain-key-cryptography.md): the threshold signing protocols behind Chain Fusion

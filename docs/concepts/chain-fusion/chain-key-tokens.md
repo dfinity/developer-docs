@@ -3,22 +3,22 @@ title: "Chain-Key Tokens"
 description: "Trustless 1:1 representations of external blockchain assets on ICP"
 ---
 
-Chain-key tokens are ICP tokens backed 1:1 by assets native to another blockchain. ckBTC represents bitcoin, ckETH represents ether, ckUSDC represents USDC on Ethereum, and so on. Each token is fully backed by the underlying asset — held in a canister-controlled address on the origin chain — and all minting and burning happens entirely onchain, with no third-party custodian.
+Chain-key tokens are ICP tokens backed 1:1 by assets native to another blockchain. ckBTC represents bitcoin, ckETH represents ether, ckUSDC represents USDC on Ethereum, and so on. Each token is fully backed by the underlying asset (held in a canister-controlled address on the origin chain), and all minting and burning happens entirely onchain, with no third-party custodian.
 
 ## Why chain-key tokens instead of wrapped tokens
 
 Traditional wrapped tokens depend on an off-chain custodian that holds the underlying asset and instructs a token contract to mint or burn the wrapped version. If the custodian is compromised, hacked, or goes out of business, the backing can be lost entirely. Additionally, nothing prevents a dishonest custodian from using the custodied assets for other purposes, risking a depeg.
 
-Chain-key tokens eliminate the custodian. The underlying assets are held by a minter canister at a blockchain address derived from a chain-key key — an address no single party controls. Minting and burning are triggered by verifiable onchain events (confirmed Bitcoin UTXOs, Ethereum event logs), and the minter signs withdrawal transactions using threshold cryptography distributed across a subnet's nodes.
+Chain-key tokens eliminate the custodian. The underlying assets are held by a minter canister at a blockchain address derived from a chain-key key, an address no single party controls. Minting and burning are triggered by verifiable onchain events (confirmed Bitcoin UTXOs, Ethereum event logs), and the minter signs withdrawal transactions using threshold cryptography distributed across a subnet's nodes.
 
 ## Architecture
 
 Every chain-key token uses a set of canisters:
 
-1. **Minter** — manages the underlying asset on the origin chain. It controls the deposit address (or Ethereum helper contract), detects incoming deposits, instructs the ledger to mint tokens, and signs and submits withdrawals when tokens are burned.
-2. **Ledger** — an ICRC-1/ICRC-2 compliant token ledger. It records all balances and executes mint, burn, and transfer operations.
-3. **Index** — provides indexed access to ledger transactions, enabling efficient lookup of an account's transaction history.
-4. **Archive** (optional) — stores historical transaction data that has been offloaded from the ledger to keep it compact.
+1. **Minter**: manages the underlying asset on the origin chain. It controls the deposit address (or Ethereum helper contract), detects incoming deposits, instructs the ledger to mint tokens, and signs and submits withdrawals when tokens are burned.
+2. **Ledger**: an ICRC-1/ICRC-2 compliant token ledger. It records all balances and executes mint, burn, and transfer operations.
+3. **Index**: provides indexed access to ledger transactions, enabling efficient lookup of an account's transaction history.
+4. **Archive** (optional): stores historical transaction data that has been offloaded from the ledger to keep it compact.
 
 All canisters in a chain-key token system are controlled by the NNS, making the token governance fully decentralized.
 

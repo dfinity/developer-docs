@@ -13,7 +13,7 @@ Canisters on ICP can interact with Ethereum and any EVM-compatible chain (Polygo
 
 **Submitting Ethereum transactions.** The signed transaction is submitted via the EVM RPC canister's `eth_sendRawTransaction` endpoint, which relays it to multiple JSON-RPC providers for broadcast.
 
-This flow — query, sign, submit — lets canisters call any Ethereum smart contract, hold ETH or ERC-20 tokens, and participate in DeFi protocols entirely from onchain ICP code.
+This flow (query, sign, submit) lets canisters call any Ethereum smart contract, hold ETH or ERC-20 tokens, and participate in DeFi protocols entirely from onchain ICP code.
 
 ## EVM RPC canister
 
@@ -25,8 +25,8 @@ For each Candid-RPC method (such as `eth_getTransactionReceipt` or `eth_getBlock
 
 Results are returned in one of two forms:
 
-- **Consistent** — all queried providers returned the same result. This is the expected case for finalized data.
-- **Inconsistent** — providers returned different results. The caller receives the full set of results and can decide how to handle the discrepancy (for example, by waiting for more confirmations or querying additional providers).
+- **Consistent**: all queried providers returned the same result. This is the expected case for finalized data.
+- **Inconsistent**: providers returned different results. The caller receives the full set of results and can decide how to handle the discrepancy (for example, by waiting for more confirmations or querying additional providers).
 
 Callers can override the defaults: specifying a different number of providers, listing concrete providers to use, or setting a minimum agreement threshold.
 
@@ -34,18 +34,18 @@ Callers can override the defaults: specifying a different number of providers, l
 
 The EVM RPC canister supports the standard JSON-RPC Ethereum API, including:
 
-- `eth_getBlockByNumber`, `eth_getBlockByHash` — block data
-- `eth_getTransactionCount`, `eth_getTransactionByHash`, `eth_getTransactionReceipt` — transaction data
-- `eth_getLogs` — event logs (used to detect deposits for chain-key tokens)
-- `eth_feeHistory`, `eth_gasPrice` — fee estimation
-- `eth_sendRawTransaction` — broadcast a signed transaction
-- `eth_call` — call a smart contract read function
+- `eth_getBlockByNumber`, `eth_getBlockByHash`: block data
+- `eth_getTransactionCount`, `eth_getTransactionByHash`, `eth_getTransactionReceipt`: transaction data
+- `eth_getLogs`: event logs (used to detect deposits for chain-key tokens)
+- `eth_feeHistory`, `eth_gasPrice`: fee estimation
+- `eth_sendRawTransaction`: broadcast a signed transaction
+- `eth_call`: call a smart contract read function
 
 Beyond Ethereum mainnet, the canister also has partial support for Polygon, Avalanche, and other popular EVM networks.
 
 ## Chain-key Ether and ERC-20 tokens
 
-ckETH and ckERC20 tokens (such as ckUSDC and ckUSDT) are chain-key tokens backed 1:1 by assets on Ethereum. They follow the same architecture as ckBTC — a minter canister plus an ICRC-1/ICRC-2 ledger canister — but use a different deposit mechanism.
+ckETH and ckERC20 tokens (such as ckUSDC and ckUSDT) are chain-key tokens backed 1:1 by assets on Ethereum. They follow the same architecture as ckBTC (a minter canister plus an ICRC-1/ICRC-2 ledger canister) but use a different deposit mechanism.
 
 **Deposits.** Because ICP cannot observe Ethereum state directly (unlike Bitcoin, which uses a native adapter), ckETH uses a helper smart contract deployed on Ethereum. Users send ETH or ERC-20 tokens to this helper contract, which emits an event. The ckETH minter periodically queries the event log via the EVM RPC canister to discover deposits and mints the corresponding chain-key tokens.
 

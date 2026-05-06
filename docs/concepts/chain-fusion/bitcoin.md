@@ -3,13 +3,13 @@ title: "Bitcoin Integration"
 description: "How ICP connects to Bitcoin natively: the adapter, the Bitcoin canister, the checker canister, and ckBTC"
 ---
 
-ICP's Bitcoin integration lets canisters hold Bitcoin addresses, query balances and UTXOs, and sign and broadcast Bitcoin transactions — all without bridges or custodians. This page covers the protocol architecture: the Bitcoin adapter, the Bitcoin canister, the Bitcoin checker canister, and chain-key Bitcoin (ckBTC).
+ICP's Bitcoin integration lets canisters hold Bitcoin addresses, query balances and UTXOs, and sign and broadcast Bitcoin transactions, all without bridges or custodians. This page covers the protocol architecture: the Bitcoin adapter, the Bitcoin canister, the Bitcoin checker canister, and chain-key Bitcoin (ckBTC).
 
 ## Architecture
 
 The integration has two layers:
 
-**Protocol layer.** ICP nodes run a _Bitcoin adapter_, a process separate from the replica that speaks the Bitcoin peer-to-peer protocol. The adapter connects to Bitcoin nodes, downloads blocks, and relays pending transactions. It keeps the replica informed about the latest Bitcoin state. Inside the replica, the _Bitcoin canister_ — a canister running on a dedicated system subnet — processes blocks from the adapter, maintains the UTXO set for all Bitcoin addresses, and exposes a low-level API to other canisters.
+**Protocol layer.** ICP nodes run a _Bitcoin adapter_, a process separate from the replica that speaks the Bitcoin peer-to-peer protocol. The adapter connects to Bitcoin nodes, downloads blocks, and relays pending transactions. It keeps the replica informed about the latest Bitcoin state. Inside the replica, the _Bitcoin canister_ (a canister running on a dedicated system subnet) processes blocks from the adapter, maintains the UTXO set for all Bitcoin addresses, and exposes a low-level API to other canisters.
 
 **Signing layer.** Each canister can derive its own Bitcoin addresses through [chain-key signatures](../chain-key-cryptography.md). Because Bitcoin addresses are tied to ECDSA or Schnorr public keys, and the protocol can produce threshold signatures for those keys, a canister can authorize Bitcoin transactions without any node ever holding the full private key.
 
@@ -19,10 +19,10 @@ Together, these two layers give a canister the ability to receive bitcoin, check
 
 The Bitcoin canister exposes three main endpoints accessible through the management canister:
 
-- `bitcoin_get_balance` — returns the balance of any Bitcoin address.
-- `bitcoin_get_utxos` — returns the unspent transaction outputs (UTXOs) for a given address. This is the primary input when constructing a Bitcoin transaction.
-- `bitcoin_get_current_fee_percentiles` — returns recent fee rates so a canister can estimate an appropriate miner fee.
-- `bitcoin_send_transaction` — broadcasts a signed transaction to the Bitcoin network via the adapter.
+- `bitcoin_get_balance`: returns the balance of any Bitcoin address.
+- `bitcoin_get_utxos`: returns the unspent transaction outputs (UTXOs) for a given address. This is the primary input when constructing a Bitcoin transaction.
+- `bitcoin_get_current_fee_percentiles`: returns recent fee rates so a canister can estimate an appropriate miner fee.
+- `bitcoin_send_transaction`: broadcasts a signed transaction to the Bitcoin network via the adapter.
 
 A typical flow for a canister spending bitcoin is: fetch UTXOs for its address, select inputs, build the transaction, call `sign_with_ecdsa` (or `sign_with_schnorr` for Taproot) for each input, then call `bitcoin_send_transaction`.
 
@@ -32,8 +32,8 @@ The Bitcoin checker canister (`oltsj-fqaaa-aaaar-qal5q-cai`) screens Bitcoin add
 
 Two primary endpoints are available:
 
-- `check_address` — checks a single Bitcoin address against the SDN list. This is a simple lookup with no cycle cost.
-- `check_transaction` — checks all input addresses of a transaction. The canister fetches the transaction and each of its inputs via HTTPS outcalls, derives the input addresses, and checks each one against the SDN list. Because of the HTTPS outcalls, at least 40 billion cycles must be attached; unused cycles are refunded. `check_transaction_str` accepts the transaction ID as a string instead of a blob.
+- `check_address`: checks a single Bitcoin address against the SDN list. This is a simple lookup with no cycle cost.
+- `check_transaction`: checks all input addresses of a transaction. The canister fetches the transaction and each of its inputs via HTTPS outcalls, derives the input addresses, and checks each one against the SDN list. Because of the HTTPS outcalls, at least 40 billion cycles must be attached; unused cycles are refunded. `check_transaction_str` accepts the transaction ID as a string instead of a blob.
 
 Both endpoints return `Passed` or `Failed`. The canister itself is controlled by the NNS, so its SDN list can only be updated via a governance proposal.
 
@@ -45,7 +45,7 @@ ckBTC transactions settle in seconds and cost a fraction of a satoshi, making it
 
 ### Canisters
 
-Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/subnet/pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeq5-fk5o7-yae), both controlled by the NNS root canister:
+Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/subnet/pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae), both controlled by the NNS root canister:
 
 | Canister | ID |
 |----------|-----|
