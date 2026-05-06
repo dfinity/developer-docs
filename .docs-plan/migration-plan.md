@@ -397,3 +397,23 @@ languages/rust/index.md
 - **All icp-cli commands, flags, and installation instructions must be verified** against the icp-cli repo source (`dfinity/icp-cli`, `docs/reference/cli.md`). Never guess CLI syntax — fetch with: `gh api repos/dfinity/icp-cli/contents/docs/reference/cli.md --jq '.content' | base64 -d`
 - Each stub page contains `<!-- Content Brief -->`, `<!-- Source Material -->`, and `<!-- Cross-Links -->` HTML comments — read these before writing.
 - After completing a page, open a PR with a `## Sync recommendation` section and link it to the corresponding GitHub Issue.
+
+---
+
+## Learn Hub migration batches
+
+Nine content PRs to migrate learn.internetcomputer.org articles into `docs/`. Source staging files are in `.migration/learn-hub/`. Full article-to-file mapping and cross-link instructions: `.docs-plan/learn-hub-navigation.md`. Per-batch agent workflow: `.docs-plan/learn-hub-migration.md`.
+
+| Batch | Branch | Target files | Effort |
+|---|---|---|---|
+| 1 — Protocol stack | `docs/concepts-protocol-stack` | `concepts/protocol/index.md`, `consensus.md`, `peer-to-peer.md`, `message-routing.md`, `execution.md`, `state-synchronization.md` | Large |
+| 2 — Node infrastructure | `docs/concepts-node-infrastructure` | `concepts/node-infrastructure.md` | Medium |
+| 3 — Edge infrastructure | `docs/concepts-edge-infrastructure` | `concepts/edge-infrastructure.md` | Medium |
+| 4 — Evolution & scaling | `docs/concepts-evolution-scaling` | `concepts/evolution-scaling.md` | Small–medium |
+| 5 — Chain Fusion deep dives | `docs/concepts-chain-fusion-deep-dives` | `concepts/chain-fusion/index.md` (moved), `bitcoin.md`, `ethereum.md`, `solana.md`, `dogecoin.md`, `exchange-rate-canister.md`, `chain-key-tokens.md` | Large |
+| 6 — Cryptography deep dives | `docs/concepts-cryptography-deep-dives` | `concepts/certified-data.md`, expand `concepts/chain-key-cryptography.md` | Medium |
+| 7 — Governance deep dives | `docs/concepts-governance-deep-dives` | expand `concepts/governance.md`, `concepts/sns-framework.md`, `references/nns-proposal-types.md`, `references/sns-dao-settings.md` | Large |
+| 8 — Tokens & ledgers | `docs/concepts-tokens-ledgers` | `concepts/tokenomics.md`, `concepts/token-ledgers.md`, expand `concepts/cycles.md` | Medium |
+| 9 — Canister concept fillers | `docs/concepts-canister-fillers` | `concepts/principals.md`, expand `concepts/canisters.md` | Medium |
+
+Recommended order: batches 1–4 can run in parallel. Batch 8 before batch 7 (governance links to tokenomics). Batches 5, 6, 9 independent.
