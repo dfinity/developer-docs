@@ -24,11 +24,11 @@ This shared codebase has two benefits. First, NNS voters review the code once an
 
 Launching an SNS is a one-time process that transfers control of an application from its original developers to a DAO community.
 
-**Step 1 — NNS proposal:** The developer submits a `CreateServiceNervousSystem` proposal to the NNS, specifying the initial token distribution, decentralization swap parameters, initial governance settings, and the canisters to be governed. If the NNS community approves the proposal, the launch proceeds automatically.
+**Step 1: NNS proposal:** The developer submits a `CreateServiceNervousSystem` proposal to the NNS, specifying the initial token distribution, decentralization swap parameters, initial governance settings, and the canisters to be governed. If the NNS community approves the proposal, the launch proceeds automatically.
 
-**Step 2 — SNS canisters deployed:** The NNS uses SNS-W to deploy a fresh set of SNS canisters. The dapp's canisters are transferred to SNS Root as their controller.
+**Step 2: SNS canisters deployed:** The NNS uses SNS-W to deploy a fresh set of SNS canisters. The app's canisters are transferred to SNS Root as their controller.
 
-**Step 3 — Decentralization swap:** A swap window opens where users can send ICP to the SNS Swap canister. At the end of the window (or earlier if the maximum is reached), each contributor receives a proportional share of a fixed SNS token allocation as staked neurons. The ICP collected becomes the DAO treasury. All swap participants receive a basket of neurons with configurable dissolve delays.
+**Step 3: Decentralization swap:** A swap window opens where users can send ICP to the SNS Swap canister. At the end of the window (or earlier if the maximum is reached), each contributor receives a proportional share of a fixed SNS token allocation as staked neurons. The ICP collected becomes the DAO treasury. All swap participants receive a basket of neurons with configurable dissolve delays.
 
 The swap has a minimum and maximum ICP threshold:
 - If the minimum is not met when the window closes, the swap fails: all ICP is refunded and control of the app reverts to the original fallback controllers.
@@ -36,7 +36,7 @@ The swap has a minimum and maximum ICP threshold:
 
 **Optional Neurons' Fund participation:** The launch proposal can request matched funding from the Neurons' Fund, which contributes ICP proportional to direct participation up to a cap.
 
-After a successful swap, the SNS DAO is fully functional: the community governs the dapp through the governance canister and no single entity retains privileged control.
+After a successful swap, the SNS DAO is fully functional: the community governs the app through the governance canister and no single entity retains privileged control.
 
 ## SNS canisters
 
@@ -46,7 +46,7 @@ Each SNS consists of five core canisters and a variable number of archive canist
 |---|---|
 | **Governance** | Stores proposals and neurons; executes adopted proposals; calculates voting power and rewards. |
 | **Ledger** | ICRC-1 token ledger for the SNS's governance token. |
-| **Root** | Sole controller of the governed dapp canisters; orchestrates canister upgrades. |
+| **Root** | Sole controller of the governed app canisters; orchestrates canister upgrades. |
 | **Swap** | Runs the decentralization swap during launch. |
 | **Index** | Organizes ledger transactions by account for wallet and explorer queries. |
 | **Archive** (one or more) | Stores historical ledger blocks as the ledger grows. |
@@ -77,7 +77,7 @@ SNS proposals are assigned to one of seven built-in topics. Each topic is classi
 **Critical topics** (require broader consensus):
 | Topic | Description |
 |---|---|
-| Critical Dapp Operations | Adding or removing governed dapp canisters, executing critical dapp logic. |
+| Critical Dapp Operations | Adding or removing governed app canisters, executing critical app logic. |
 | DAO Community Settings | Tokenomics and branding changes: token name, symbol, description. |
 | Treasury and Asset Management | Moving treasury funds, managing liquidity pools, disbursing DAO-owned neurons. |
 
@@ -86,8 +86,8 @@ Critical proposals pass only if at least 20% of total voting power votes yes and
 **Non-critical topics** (standard thresholds):
 | Topic | Description |
 |---|---|
-| Application Business Logic | Custom proposals specific to the governed dapp. |
-| Dapp Canister Management | Upgrading registered dapp canisters and frontend assets. |
+| Application Business Logic | Custom proposals specific to the governed app. |
+| Dapp Canister Management | Upgrading registered app canisters and frontend assets. |
 | Governance | Community polls with no immediate code effect. |
 | SNS Framework Management | Upgrading and managing the SNS framework canisters. |
 
@@ -99,12 +99,12 @@ All SNS DAOs include a standard set of built-in proposal types:
 - Motion proposals for community polls.
 - Proposals to change governance settings and SNS metadata.
 - Proposals to upgrade the SNS framework canisters.
-- Proposals to register or deregister governed dapp canisters.
+- Proposals to register or deregister governed app canisters.
 - Proposals to transfer treasury funds or mint new tokens.
 
 ### Custom proposals
 
-Each SNS can register **custom proposals** (also called generic proposals) that call a specific method on a canister with specified arguments. This enables dapp-specific governance: an orchestrator canister upgrade, moderator election, or any other operation the DAO should control.
+Each SNS can register **custom proposals** (also called generic proposals) that call a specific method on a canister with specified arguments. This enables app-specific governance: an orchestrator canister upgrade, moderator election, or any other operation the DAO should control.
 
 Custom proposals require a validation method: when a custom proposal is submitted, the governance canister calls the validator first, and only proceeds if it succeeds. Custom proposals must be registered through a governance proposal before they can be used, giving the community a chance to audit the function being added. Each custom proposal must be assigned a topic when registered.
 
@@ -120,7 +120,7 @@ The formula between `t_start` and `t_start + t_delta` is: `R(t) = r_min + (r_max
 
 If `VotingRewardsParameters` is not set at all, voting rewards are disabled.
 
-User rewards (distributing existing treasury tokens to active dapp users) are a separate mechanism: an SNS-controlled canister holds a token reserve and pays out rewards according to its own logic.
+User rewards (distributing existing treasury tokens to active app users) are a separate mechanism: an SNS-controlled canister holds a token reserve and pays out rewards according to its own logic.
 
 ## Next steps
 

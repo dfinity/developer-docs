@@ -2,7 +2,7 @@
 title: "Governance"
 description: "How ICP is governed: the NNS, SNS for app governance, neurons, proposals, and economics fundamentals"
 sidebar:
-  order: 13
+  order: 14
 ---
 
 The Internet Computer Protocol uses two governance systems: the **Network Nervous System (NNS)** governs the protocol itself, and the **Service Nervous System (SNS)** provides a framework for app developers to hand control of their applications to a community-governed SNS.
@@ -39,16 +39,16 @@ A neuron is a governance participant created by locking ICP in the NNS governanc
 
 **Key neuron attributes:**
 
-- **Stake**: The amount of ICP locked. Minimum stake to submit proposals is 10 ICP with at least 6 months of dissolve delay.
+- **Stake**: The amount of ICP locked. The minimum to create a neuron is 1 ICP. To submit or vote on proposals, a neuron needs at least 6 months of dissolve delay.
 - **Dissolve delay**: A waiting period (up to 8 years) that must expire before locked ICP can be retrieved. Longer dissolve delay grants more voting power.
 - **Age**: How long the neuron has been non-dissolving. Older neurons earn an age bonus on voting power.
 - **State**: A neuron is either locked (non-dissolving), dissolving, or dissolved (ready to disburse).
 
-**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 2x at 8 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network. <!-- Needs human verification: NNS neuron voting power bonus percentages (2x at 8 years, 1.25x at 4 years): these match SNS default parameters in the sns-launch skill but are not explicitly stated in the portal NNS source material -->
+**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 2x at 8 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network.
 
 **Liquid democracy (following):** Neurons can delegate their votes to other neurons on specific proposal topics. A neuron that doesn't vote directly inherits the vote of its followed neurons. This allows passive participation while still counting toward quorum.
 
-**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron that meets the general proposal prerequisite (at least 10 ICP staked with 6 months dissolve delay) and has at least 25 ICP staked can submit a `RegisterKnownNeuron` proposal.
+**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron with at least 6 months of dissolve delay and at least 25 ICP staked can submit a `RegisterKnownNeuron` proposal.
 
 ## Proposals
 
@@ -88,7 +88,7 @@ Unlike the NNS, which is a singleton governing the entire protocol, each SNS is 
 
 ### SNS canisters
 
-An SNS consists of six canisters deployed by SNS-W (the SNS Wasm modules canister, `qaa6y-5yaaa-aaaaa-aaafa-cai`):
+An SNS consists of five core canisters plus a variable number of archive canisters, all deployed by SNS-W (the SNS Wasm modules canister, `qaa6y-5yaaa-aaaaa-aaafa-cai`):
 
 | Canister | Purpose |
 |----------|---------|
@@ -97,7 +97,7 @@ An SNS consists of six canisters deployed by SNS-W (the SNS Wasm modules caniste
 | **Root** | Sole controller of all app canisters post-launch |
 | **Swap** | Runs the decentralization swap (ICP for SNS assets) |
 | **Index** | Transaction indexing for the SNS ledger |
-| **Archive** | Historical transaction storage |
+| **Archive** (one or more, spawned as needed) | Historical ledger block storage; new archive canisters are created automatically as the ledger grows |
 
 Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS asset holders.
 

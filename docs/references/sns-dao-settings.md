@@ -51,6 +51,7 @@ All reward settings live inside a single nested field: **`voting_rewards_paramet
 
 | Parameter | Full field name | Description |
 |---|---|---|
+| round duration | `round_duration_seconds` | Length of a single reward distribution round, in seconds. Rewards are distributed to voting neurons at the end of each round. Default: 86,400 (1 day). |
 | r\_max | `initial_reward_rate_basis_points` | Starting annualized reward rate as a fraction of total supply, in basis points (100 = 1%). |
 | r\_min | `final_reward_rate_basis_points` | Floor reward rate after the transition period, in basis points. Set to 0 to end issuance after `t_delta`. |
 | t\_delta | `reward_rate_transition_duration_seconds` | Duration of the quadratic decline from r\_max to r\_min, in seconds. |
