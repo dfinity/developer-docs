@@ -30,10 +30,12 @@ One exception: if a page mentions a specific system canister by name (exchange r
 
 Find your batch in `.docs-plan/learn-hub-navigation.md`. Each batch has a name (e.g. "Batch 1 — Protocol stack") and a branch name (e.g. `docs/concepts-protocol-stack`).
 
+All batch PRs target `infra/learn-hub-migration-prep`, not `main`. The prep branch accumulates all migration content so the full result can be previewed before anything merges to `main`.
+
 ```bash
 git fetch origin
 git ls-remote origin docs/<slug>   # if output is empty, branch doesn't exist yet
-git checkout -b docs/<slug> origin/main
+git checkout -b docs/<slug> origin/infra/learn-hub-migration-prep
 ```
 
 ---
@@ -235,7 +237,10 @@ Examples:
 
 ```bash
 git push -u origin docs/<slug>
-gh pr create --title "docs: <descriptive title>" --body "$(cat <<'EOF'
+gh pr create \
+  --base infra/learn-hub-migration-prep \
+  --title "docs: <descriptive title>" \
+  --body "$(cat <<'EOF'
 ## Summary
 - <bullet: what pages were created or expanded>
 - <bullet: what cross-links were updated>
@@ -279,11 +284,18 @@ EOF
 )"
 ```
 
-Once a human approves disposal, open the final cleanup PR:
+Once a human approves disposal, open the final cleanup PR (also targeting `infra/learn-hub-migration-prep`):
 1. Delete `.migration/learn-hub/` entirely (including the reviewed skip files)
-2. In CLAUDE.md: remove the "Learn Hub is being retired" note from the `internetcomputer.org/docs/` rule (replace it with just "explain inline or link to `docs/concepts/`")
+2. In CLAUDE.md: remove the "Learn Hub is being retired" note from the `internetcomputer.org/docs/` rule (replace with just "explain inline or link to `docs/concepts/`")
 3. In `.docs-plan/decisions.md`: mark the 2026-05-06 entry as fully reflected, then remove it
 4. Run `npm run build` and push
+
+After the final cleanup PR merges into `infra/learn-hub-migration-prep`, a maintainer:
+1. Rebases `infra/learn-hub-migration-prep` on `main` to pick up any drift
+2. Marks PR #208 ready for review
+3. Merges to `main`
+
+**Keeping the prep branch in sync with main:** If `main` receives commits during the migration window (e.g. guide updates, bug fixes), periodically rebase or merge `main` into `infra/learn-hub-migration-prep` to avoid a large conflict at the end. This is a maintainer task — batch PR authors do not need to worry about it.
 
 ---
 
