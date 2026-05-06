@@ -18,7 +18,7 @@ ls .agents/skills/technical-documentation/SKILL.md .agents/skills/icp-brand-voic
 
 Load before writing:
 - `technical-documentation` — doc structure, quality criteria, review checklist
-- `icp-brand-voice` — banned terms, preferred vocabulary, tone
+- `icp-brand-voice` — **critical for migration work.** Learn Hub articles were written for a broad audience and routinely use terms the brand voice rules ban or require reframing: "smart contracts", "blockchain", "Web3", "decentralized application", and similar. Migrating without applying these rules imports the jargon wholesale. Every sentence adapted from a staging file must pass the brand voice filter.
 
 Do **not** load icskills. The icskills provide implementation patterns: canister IDs, SDK API signatures, code examples. Learn Hub content is pure concept and explanation — no code, no canister calls, no SDK usage. The staging file is the source; icskills add nothing here.
 
