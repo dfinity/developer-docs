@@ -67,7 +67,7 @@ Each resource category is metered and charged differently:
 
 **Memory** is charged at regular intervals (not every consensus round). The protocol tracks total memory in use and deducts from the canister's cycle balance periodically.
 
-**Computation** is charged at the time the instructions execute. ICP counts the number of WebAssembly instructions processed while handling a message. There is an upper bound on instructions per consensus round. If a message exceeds this limit, execution is paused and resumes in the next round; the cycles consumed each round are charged at round end. This is the mechanism behind [deterministic time slicing](protocol/execution.md#deterministic-time-slicing).
+**Computation** is charged at the time the instructions execute. ICP counts the number of WebAssembly instructions processed while handling a message. There is an upper bound on instructions per consensus round. If a message exceeds this limit, execution is paused and resumes in the next round; the cycles consumed each round are charged at round end. This is the mechanism behind deterministic time slicing.
 
 **Messaging** costs are charged to the sending canister. Ingress messages (user to canister) are charged to the receiving canister. Each inter-canister call has a fixed base cost plus a per-byte variable cost. The calling canister also prepays the maximum-size reply cost upfront; if the actual reply is smaller, the difference is refunded.
 

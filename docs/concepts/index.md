@@ -33,5 +33,5 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 - **[Security Model](security.md)**: Canister isolation, trust boundaries, and the threat model for app developers.
 - **[Governance](governance.md)**: The NNS, SNS for app governance, neurons, and proposals.
-- **[Tokenomics](tokenomics.md)**: ICP token uses, voting rewards, supply dynamics, and SNS token economics.
-- **[Token Ledgers](token-ledgers.md)**: How ICRC and ICP token ledgers work, address formats, and scaling architecture.
+- **[Network Economics](network-economics.md)**: ICP token uses, voting rewards, supply dynamics, and SNS token economics.
+- **[Ledgers](ledgers.md)**: How ICRC and ICP token ledgers work, address formats, and scaling architecture.

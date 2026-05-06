@@ -18,7 +18,7 @@ A ledger canister is the authoritative source of truth for a token. It:
 
 Unlike a traditional bank, ledger canisters are publicly readable: anyone can query transaction history through explorers and verify balances independently.
 
-There is no single global ledger on ICP. Each token is managed by its own ledger canister, deployed and governed by whoever controls that token. The ICP utility token has its own ledger. Every ICRC-standard token has its own ledger. [Chain-key tokens](chain-fusion/chain-key-tokens.md) such as ckBTC and ckETH each have their own ledger canisters.
+There is no single global ledger on ICP. Each token is managed by its own ledger canister, deployed and governed by whoever controls that token. The ICP utility token has its own ledger. Every ICRC-standard token has its own ledger. [Chain-key tokens](chain-fusion.md) such as ckBTC and ckETH each have their own ledger canisters.
 
 ## Two ledger designs
 
@@ -26,7 +26,7 @@ ICP has two ledger designs in common use, each with a different address format.
 
 ### ICP ledger
 
-The ICP ledger manages the native ICP utility token. It uses an address format called an **AccountIdentifier** — a 32-byte hash derived from a principal ID and an optional subaccount. AccountIdentifiers are displayed as 64-character hex strings.
+The ICP ledger manages the native ICP utility token. It uses an address format called an **AccountIdentifier**: a 32-byte hash derived from a principal ID and an optional subaccount. AccountIdentifiers are displayed as 64-character hex strings.
 
 ### ICRC token ledgers
 
@@ -68,6 +68,6 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 - [Digital assets guide](../guides/digital-assets/ledgers.md): ICRC-1/2 API usage, transfer examples, balance queries
 - [Tokenomics](tokenomics.md): how the ICP token and SNS tokens are economically designed
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
-- [Chain-key tokens](chain-fusion/chain-key-tokens.md): ckBTC, ckETH, and other 1:1 backed token ledgers
+- [Chain-key tokens](chain-fusion.md): ckBTC, ckETH, and other 1:1 backed token ledgers
 
 <!-- Upstream: learn hub staging: tokens-governance/how-token-ledgers-work-on-the-internet-computer.md -->
