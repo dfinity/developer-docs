@@ -45,7 +45,7 @@ This produces one block per round (approximately every 1 second). Update calls a
 
 Query calls skip consensus entirely: a single node handles the request and returns its local state, which is why queries are fast (milliseconds) but provide weaker authenticity guarantees than update calls.
 
-For a deeper dive into the consensus protocol and other protocol internals, see the [Learn Hub](https://learn.internetcomputer.org).
+For a deeper dive into the consensus protocol and other protocol internals, see [Protocol Stack](protocol/index.md).
 
 ## Boundary nodes
 

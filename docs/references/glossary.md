@@ -171,8 +171,8 @@ means of which a number of [nodes](#node) can reach agreement
 about a value or state.
 
 Consensus is a core component of the [replica](#replica)
-software. The [consensus](https://learn.internetcomputer.org/hc/en-us/articles/34207558615956-Consensus) layer selects [messages](#message)
-from the [peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) artifact pool and pulls messages from the
+software. The [consensus](../concepts/protocol/consensus.md) layer selects [messages](#message)
+from the [peer-to-peer](../concepts/protocol/peer-to-peer.md) artifact pool and pulls messages from the
 cross-network streams of other [subnets](#subnet) and
 organizes them into a [batch](#batch), which is delivered to
 the [message routing](#message-routing) layer.
@@ -360,7 +360,7 @@ another or from a user to a canister.
 
 #### message routing
 
-The **[message routing](https://learn.internetcomputer.org/hc/en-us/articles/34208241927316-Message-Routing)** layer receives [batches](#batch) from
+The **[message routing](../concepts/protocol/message-routing.md)** layer receives [batches](#batch) from
 the [consensus](#consensus) layer and inducts them into the
 [induction pool](#induction-pool). Message routing then
 schedules a set of [canisters](#canister) to execute messages
@@ -483,18 +483,18 @@ Each [canister](#canister) has an **output queue** of
 
 #### peer-to-peer (P2P)
 
-In common usage, **[peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer)** (P2P) computing or networking is a
+In common usage, **[peer-to-peer](../concepts/protocol/peer-to-peer.md)** (P2P) computing or networking is a
 distributed application architecture that partitions workload across a
 network of equally privileged computer [nodes](#node) so that
 participants can contribute resources such as processing power, disk
 storage, or network bandwidth to handle application workload.
 
-The **[peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) layer** collects and disseminates
+The **[peer-to-peer](../concepts/protocol/peer-to-peer.md) layer** collects and disseminates
 [messages](#message) and artifacts from users and from other
 nodes.
 
 The [nodes](#node) of a [subnet](#subnet) form a
-dedicated [peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) broadcast network that facilitates the secure
+dedicated [peer-to-peer](../concepts/protocol/peer-to-peer.md) broadcast network that facilitates the secure
 **bounded-time/eventual delivery** broadcast of artifacts (such as
 [ingress messages](#ingress-message), control messages, and
 their signature shares). The [consensus](#consensus) layer
