@@ -5,7 +5,7 @@ sidebar:
   order: 12
 ---
 
-See also: [Edge Infrastructure](../concepts/edge-infrastructure.md) — conceptual overview of API boundary nodes, HTTP gateways, and asset certification.
+See also: [Edge Infrastructure](../concepts/edge-infrastructure.md): conceptual overview of API boundary nodes, HTTP gateways, and asset certification.
 
 ## Introduction
 
