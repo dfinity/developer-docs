@@ -4,6 +4,34 @@ Record decisions that constrain future work — things an agent needs to know th
 
 ---
 
+## 2026-05-06: Learn Hub migration — structure, staging, and sequencing
+
+**Context:** `learn.internetcomputer.org` (a Zendesk Help Center with ~86 articles) is being retired. Developer-relevant content must move into this docs site before the site goes down. Issues #187 and #190 document the full gap analysis. About 27 articles are end-user content (NNS dapp UI, wallet flows, network stats, vision/history) and are explicitly out of scope for developer docs.
+
+**Decision:**
+
+1. **`concepts/` subdirectory structure.** The flat 14-file layout cannot absorb ~20 additional pages cleanly. Add two subdirectories:
+   - `docs/concepts/protocol/` — six protocol-layer pages (consensus, P2P, message routing, execution, state sync, overview)
+   - `docs/concepts/chain-fusion/` — per-chain architecture pages; the existing `concepts/chain-fusion.md` moves to `concepts/chain-fusion/index.md`
+   - All other new pages stay flat under `docs/concepts/` (node-infrastructure, edge-infrastructure, evolution-scaling, certified-data, principals, tokenomics, token-ledgers, sns-framework)
+
+2. **Source staging.** All Learn Hub articles are committed as raw Markdown into `.migration/learn-hub/`, preserving the original category/section folder structure, before any content PRs are opened. Each batch PR reads from the staging files, writes proper docs pages, and deletes the staging files in the same commit. When `.migration/learn-hub/` is empty, the directory is removed and the migration is done. Each migrated page uses `<!-- Upstream: informed by Learn Hub article "<title>" (migrated, source retired) -->` — no ongoing sync relationship. PR sync recommendation: `hand-written`.
+
+3. **End-user articles are out of scope.** All articles under "What is ICP?" (marketing/vision), "How can I use ICP? / Governance" (NNS dapp UI flows), "How can I use ICP? / Tokens & wallets" (quill/wallet how-tos), and "How can I use ICP? / Network stats" are not migrated into developer docs. Their disposition (NNS dapp help, IC dashboard help, marketing site) is handled outside this repo.
+
+4. **Batched PRs.** One `infra/learn-hub-migration-prep` PR does structural setup (staging files, decisions, navigation map, sidebar config, CLAUDE.md rule updates). Then 9 content PRs (`docs/<slug>`) migrate topic batches. See `.docs-plan/learn-hub-navigation.md` for the full batch-to-file mapping.
+
+5. **CLAUDE.md rule retirement.** Two rules reference Learn Hub and must be updated once all batch PRs are merged:
+   - The "never duplicate Learn Hub" line in the "Never" section must drop the Learn Hub reference.
+   - The "link to Learn Hub or explain inline" line in the "Never link to old docs" decision (2026-03-13 below) must be replaced with an instruction to link internally.
+   After the final batch PR merges, open a follow-up `infra/` PR to make these two edits.
+
+**Rationale:** Staging files in `.migration/learn-hub/` give every agent a stable, repo-local source to read before writing — consistent with the `.sources/` discipline for all other upstream content. Deleting staging files in the same PR as the content write makes progress unambiguous and prevents the staging directory from drifting out of sync. Subdirectories in `concepts/` are needed for the sidebar to remain navigable; two subdirs (not five) keeps the nesting shallow.
+
+**When to revisit:** Once `.migration/learn-hub/` is deleted in the final content PR, update this entry to "fully reflected in codebase" and remove it.
+
+---
+
 ## 2026-04-27: CLI and language tabs are always separate
 
 **Context:** Some pages were mixing CLI commands into the same `<Tabs syncKey="lang">` group as Motoko and Rust code. Other pages (e.g. `cycles-management.mdx`, `lifecycle.mdx`) kept CLI as standalone blocks with language tabs appearing separately. The mixed approach creates an awkward tab for users who just want a quick CLI command.
