@@ -16,10 +16,13 @@ ls .agents/skills/technical-documentation/SKILL.md .agents/skills/icp-brand-voic
 # If broken symlinks: git submodule update --init --depth 1
 ```
 
-Load these before writing:
-- `technical-documentation`
-- `icp-brand-voice`
-- The relevant icskill for the batch topic (see CLAUDE.md skills table)
+Load before writing:
+- `technical-documentation` — doc structure, quality criteria, review checklist
+- `icp-brand-voice` — banned terms, preferred vocabulary, tone
+
+Do **not** load icskills. The icskills provide implementation patterns: canister IDs, SDK API signatures, code examples. Learn Hub content is pure concept and explanation — no code, no canister calls, no SDK usage. The staging file is the source; icskills add nothing here.
+
+One exception: if a page mentions a specific system canister by name (exchange rate canister, ckBTC minter, etc.), verify its canister ID against `docs/references/chain-key-canister-ids.md` directly — no need to load the full skill for a single lookup.
 
 ---
 
