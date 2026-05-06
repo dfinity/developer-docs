@@ -9,7 +9,7 @@ The Internet Computer is designed to adapt to changing demands. When more resour
 
 In any large-scale distributed system, individual nodes will fail due to hardware outages, network issues, or attacks. ICP is fault-tolerant: the protocol continues making progress as long as fewer than one third of the nodes in a subnet are faulty (including Byzantine failures, where nodes behave arbitrarily rather than simply going offline).
 
-When a node fails, the subnet continues producing blocks. The failed node can recover automatically using the [state synchronization protocol](protocol/state-synchronization.md). The consensus protocol is divided into epochs, each comprising several hundred consensus rounds. At the start of each epoch, all nodes create a checkpoint and a catch-up package (CUP). A CUP contains the replicated state hash and enough context for any node to resume consensus from that point. The CUP is signed by at least two thirds of the subnet's nodes.
+When a node fails, the subnet continues producing blocks. The failed node can recover automatically using the state synchronization protocol. The consensus protocol is divided into epochs, each comprising several hundred consensus rounds. At the start of each epoch, all nodes create a checkpoint and a catch-up package (CUP). A CUP contains the replicated state hash and enough context for any node to resume consensus from that point. The CUP is signed by at least two thirds of the subnet's nodes.
 
 When a failed or newly joined node comes back online, it:
 
@@ -71,8 +71,6 @@ To trigger a protocol upgrade, anyone submits an NNS proposal to update the regi
 
 ## Further reading
 
-- [Protocol Stack](protocol/index.md) — the four-layer architecture that runs inside each subnet
-- [State synchronization](protocol/state-synchronization.md) — catch-up packages and how nodes rejoin
-- [Chain-key cryptography](chain-key-cryptography.md) — the key management underlying subnet creation and XNet messaging
+- [Chain-key cryptography](chain-key-cryptography.md): the key management underlying subnet creation and XNet messaging
 
 <!-- Upstream: informed by Learn Hub articles "Evolution & Scaling", "Fault Tolerance", "Subnet Creation", "Chain Evolution" (migrated, source retired) -->
