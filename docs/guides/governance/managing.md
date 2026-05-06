@@ -121,7 +121,7 @@ type NervousSystemParameters = record {
 };
 ```
 
-For a description of each parameter and its effect, see the Learn Hub [DAO Settings](https://learn.internetcomputer.org/hc/en-us/articles/34142964565396) article.
+For a description of each parameter and its effect, see the [SNS DAO settings reference](../../references/sns-dao-settings.md).
 
 ### ManageSnsMetadata
 
@@ -617,7 +617,7 @@ Neurons are the staking units that give token holders voting power and a share o
 
 The SNS neuron staking flow is a two-step process: first transfer SNS tokens to the governance canister using the derived subaccount, then call `claim_or_refresh_neuron_from_account` on the SNS governance canister to claim the neuron. Note that this is distinct from NNS neuron staking, which uses NNS governance and the ICP ledger.
 
-For information on neurons, dissolve delays, voting power bonuses, and reward mechanics, see the Learn Hub articles on [SNS Neurons](https://learn.internetcomputer.org/hc/en-us/articles/34084687583252) and [SNS Rewards](https://learn.internetcomputer.org/hc/en-us/articles/34143058069396).
+For information on neurons, dissolve delays, voting power bonuses, and reward mechanics, see [SNS framework](../../concepts/sns-framework.md#sns-neurons).
 
 ### Querying neuron state
 

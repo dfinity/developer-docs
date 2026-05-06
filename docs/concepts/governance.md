@@ -143,10 +143,72 @@ When an app is governed by an SNS, the original developers no longer have direct
 
 Developers preparing for an SNS launch should ensure their codebase is stable, open-sourced, and reproducibly buildable before the decentralization swap. The NNS community votes on the creation proposal and expects evidence of product-market fit, sound asset economics, and a realistic roadmap.
 
+## Neuron hotkeys
+
+A neuron's **controller** is the principal with full authority over the neuron. A controller can perform any operation: increase dissolve delay, start or stop dissolving, disburse the stake, and more. Because the private key of the controller principal must be kept highly secure (typically in cold storage), neurons can also have **hotkeys**: additional principals with a limited permission set.
+
+Hotkeys can:
+- Vote on proposals (directly or by confirming following).
+- Set or change following rules.
+- Submit proposals.
+- Read all neuron fields, including non-public information.
+
+Hotkeys cannot modify the stake, change the dissolve delay, or disburse the neuron. Up to 15 hotkeys are allowed per neuron. A common pattern is to set a hardware wallet as the controller and use a software wallet as a hotkey for day-to-day voting.
+
+## Following rules in detail
+
+When a neuron follows a group of other neurons on a topic, it casts its vote once a threshold in the followee group is reached:
+
+- It votes **adopt** if more than half of the followees vote yes.
+- It votes **reject** if at least half of the followees vote no.
+- It casts no vote if neither threshold is met.
+
+A neuron can follow at most 15 neurons per topic. A **catch-all** following rule covers topics with no explicit setting, but does not apply to the *SNS & Community Fund* and *Governance* topics, which must be explicitly configured.
+
+**Periodic confirmation:** A neuron that never votes directly must confirm its following settings at least once every 6 months. If it fails to do so, voting power is linearly reduced over the following month until it reaches zero, and all following settings are reset. This prevents inactive neurons from accumulating rewards without genuine participation.
+
+## Voting thresholds and proposal decision
+
+NNS proposals can be decided two ways:
+
+- **Absolute majority (at any time):** If more than half of the total voting power recorded at proposal creation votes yes, the proposal is immediately adopted. Likewise, a no absolute majority immediately rejects it.
+- **Simple majority at deadline:** When the voting period ends (4 to 8 days, depending on wait-for-quiet), the proposal passes if the yes vote constitutes both a simple majority of cast votes and at least 3% of the total voting power. If the 3% quorum is not met, the proposal is rejected even if a majority of participants voted yes.
+
+The 3% quorum prevents low-turnout proposals from passing on a handful of votes.
+
+## Maturity operations
+
+Maturity accumulated from voting rewards is not transferable and is not immediately liquid. Neuron holders have three options:
+
+- **Disburse (previously: spawn):** Start a 7-day process that burns the maturity and mints new ICP. The exact amount is subject to maturity modulation: the mint multiplier is computed from 30-day moving averages of the ICP/XDR conversion rate over the preceding 4 weeks, bounded to ±5%. This introduces a small amount of uncertainty (the maturity modulation can move ±1.25% from one week to the next) that discourages timing the market.
+- **Stake maturity:** Add maturity to the neuron's staked balance, increasing its voting power immediately. Staked maturity is locked alongside the ICP stake and converts back to unstaked maturity when the neuron dissolves.
+- **Auto-stake maturity:** Automatically stake all new maturity as it accrues, compounding voting power without manual intervention.
+
+## Voting rewards formula
+
+The NNS distributes rewards daily from a reward pool. The annualized pool size as a percentage of total ICP supply follows this schedule:
+
+- For years 0–8 after genesis: `R(t) = 5% + 5% × [(G + 8y − t) / 8y]²`
+- After year 8: `R(t) = 5%`
+
+where G is the genesis timestamp and t is the current time. This quadratic decline starts at approximately 10% in year 1 and converges to 5%. The daily pool is `total_supply × R(t) / 365.25`.
+
+Each neuron receives a share of the pool proportional to its voting power multiplied by the fraction of eligible proposals it voted on (weighted by the reward weight of each proposal topic). If no proposals settle on a given day, rewards roll over to the next distribution.
+
+## The Neurons' Fund
+
+The Neurons' Fund (NF) is a mechanism that allows NNS neurons to allocate maturity toward the decentralization swaps of new SNS DAOs. Participation is opt-in: a neuron holder can join or leave the NF at any time.
+
+When an SNS swap runs, NF contributions scale with direct participation through a matching function. NF neurons receive SNS neurons in return, with the same hotkeys copied so that holders can vote in the new SNS governance without exposing their cold-storage keys.
+
+**Note:** The Neurons' Fund was temporarily disabled by [NNS proposal 135970](https://dashboard.internetcomputer.org/proposal/135970). The design described above reflects the intended behavior when it is re-enabled; details may change.
+
 ## Next steps
 
 - [Launch an SNS](../guides/governance/launching.md): step-by-step guide to decentralizing your app
 - [Manage a live SNS](../guides/governance/managing.md): proposals, upgrades, and treasury management after launch
+- [SNS framework](sns-framework.md): detailed architecture, neurons, proposals, and reward scheme
+- [NNS proposal types reference](../references/nns-proposal-types.md): all proposal topics and types
 - [System canisters reference](../references/system-canisters.md): NNS canister IDs and interfaces
 
-<!-- Upstream: informed by dfinity/portal (docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills: sns-launch/SKILL.md) -->
+<!-- Upstream: informed by dfinity/portal (docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills: sns-launch/SKILL.md); informed by Learn Hub articles "Overview", "Neurons", "Proposals", "Neuron Attributes", "Neurons' Fund (NF)", "Voting Rewards" (migrated, source retired) -->
