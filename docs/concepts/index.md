@@ -13,6 +13,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 - **[Application Architecture](app-architecture.md)**: How ICP applications are structured: canisters, frontends, and inter-canister communication.
 - **[Canisters](canisters.md)**: Programs that run WebAssembly, hold state, serve HTTP, and pay for their own compute.
 - **[Protocol Stack](protocol/index.md)**: The four-layer architecture (peer-to-peer, consensus, message routing, execution) and protocol internals including performance benchmarks.
+- **[Principals](principals.md)**: The identity model: users, canisters, anonymous calls, and canister control.
 
 ## Core capabilities
 

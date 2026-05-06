@@ -70,7 +70,7 @@ For a deeper dive, see [Orthogonal persistence](orthogonal-persistence.md).
 
 ## Canister IDs and principals
 
-Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](https://learn.internetcomputer.org/hc/en-us/articles/34250491785108): the same type of identifier used for users: and serves as the canister's address on the network.
+Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](principals.md): the same type of identifier used for users, and serves as the canister's address on the network.
 
 To send a message to a canister, you include its canister ID in the message header. The network routes the message to the correct subnet and places it in the canister's input queue for processing.
 
@@ -114,11 +114,22 @@ Under the hood, each canister maintains several components:
 - **Controllers list**: the set of principals authorized to manage the canister.
 - **Settings**: configurable parameters like compute allocation, memory allocation, and the freezing threshold (the cycles balance below which the canister stops accepting new messages to avoid running out).
 
+## Inter-canister messaging and error handling
+
+Canisters communicate by sending **requests** to other canisters and registering a **callback** to be invoked when the callee sends a response. The network guarantees that every request receives a reply: if a callee becomes unreachable or explicitly rejects a call, the Internet Computer synthesizes a reject response and delivers it to the caller's callback. Callbacks are never dropped.
+
+This bidirectional request/reply model is one way canisters differ from pure actors in classical actor-based systems, which typically use one-way fire-and-forget messages.
+
+**Trap behavior with outgoing calls:** When a canister processes a message, it may send outgoing requests before completing. Each time a canister sends a request, the network records a commit point. If the canister later traps while awaiting a response, its state reverts to what it was immediately after that last outgoing request was dispatched, not to the beginning of the original incoming message. This means any state changes made after the last outgoing call are rolled back, while changes made before it are preserved.
+
+This has a practical implication: if a canister modifies state and then makes an inter-canister call in the same message, it must account for the possibility that subsequent code (including the callback handler) will see the state as it was when the call was sent.
+
 ## Next steps
 
 - [Cycles](cycles.md): how canisters pay for computation
+- [Principals](principals.md): the identity model and canister controllers
 - [App architecture](app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx; informed by Learn Hub articles "Canister Smart Contracts", "Computational Model" (migrated, source retired) -->
