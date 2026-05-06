@@ -14,7 +14,7 @@ On most blockchains, verifying state requires replaying transactions or trusting
 This design has several consequences for developers:
 
 - **Fast verification.** Clients verify subnet responses with a single public key check. There is no need to download block headers or maintain a light client.
-- **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified variables](../guides/backends/certified-variables.md).
+- **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified data](certified-data.md) for the conceptual explanation and [Certified variables](../guides/backends/certified-variables.md) for the implementation guide.
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
 
@@ -53,6 +53,14 @@ Each scheme is backed by a pair of management canister methods:
 - **Signing** (`sign_with_ecdsa`, `sign_with_schnorr`): computes a threshold signature using the canister's derived key.
 
 See the [Management canister reference](../references/management-canister.md#chain-key-signing) for the full API, and the [IC interface specification](../references/ic-interface-spec/index.md) for the authoritative protocol-level details.
+
+#### Why threshold ECDSA is harder than threshold BLS
+
+Threshold signing for BLS is straightforward because BLS signature shares can be combined non-interactively: each node signs independently and the shares are aggregated with no further communication. ECDSA has no such property; producing a threshold ECDSA signature requires a multi-round interactive protocol among the signing nodes.
+
+Existing threshold ECDSA protocols in academic literature all assume either a synchronous network (messages must arrive within a bounded time) or offer no robustness against node crashes. Neither assumption is acceptable for ICP: security and liveness must hold over an asynchronous network with up to one-third of nodes faulty. ICP implements a novel threshold ECDSA protocol that is both asynchronous and robust, with formal security proofs published in [protocol design](https://eprint.iacr.org/2022/506) and [security analysis](https://eprint.iacr.org/2021/1330) papers.
+
+Threshold Schnorr (including Ed25519) protocols are simplified variants of the ECDSA signing protocol. They inherit the same asynchronous-network and robustness properties.
 
 ### Key derivation
 
@@ -104,8 +112,9 @@ For more on how upgrades work at the protocol level, see [Chain evolution](evolu
 ## Next steps
 
 - [Chain Fusion](chain-fusion/index.md): how canisters use chain-key signatures to interact with other chains
+- [Certified data](certified-data.md): how the subnet's threshold BLS key enables certified query responses
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
 - [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API
 
-<!-- Upstream: informed by dfinity/portal docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; learn hub staging: chain-key-cryptography/chain-key-cryptography.md, chain-key-cryptography/subnet-keys-and-subnet-signatures.md, chain-key-cryptography/chain-key-signatures.md -->
