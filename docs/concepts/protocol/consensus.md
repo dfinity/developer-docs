@@ -45,7 +45,7 @@ This rule guarantees that if a block is finalized in a given round, no other not
 
 ## Further reading
 
-- [Protocol Stack](index.md) — how consensus fits into the four-layer architecture
+- [Protocol Stack](index.md): how consensus fits into the four-layer architecture
 - [DFINITY Consensus blog post](https://medium.com/dfinity/achieving-consensus-on-the-internet-computer-ee9fbfbafcbc)
 - [Consensus white paper](https://eprint.iacr.org/2021/632.pdf)
 - [Extended abstract published at PODC '22](https://assets.ctfassets.net/ywqk17d3hsnp/1Gutwfrd1lMgiUBJZGCdUG/d3ea7730aba0a4b793741681463239f5/podc-2022-cr.pdf)

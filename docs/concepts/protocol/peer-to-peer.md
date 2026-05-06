@@ -25,7 +25,7 @@ To prevent denial-of-service attacks, nodes connect only with other nodes in the
 
 ## Further reading
 
-- [Protocol Stack](index.md) — how P2P fits into the four-layer architecture
+- [Protocol Stack](index.md): how P2P fits into the four-layer architecture
 - [Abortable Broadcast paper](https://arxiv.org/abs/2410.22080)
 
 <!-- Upstream: informed by Learn Hub article "Peer to peer" (migrated, source retired) -->

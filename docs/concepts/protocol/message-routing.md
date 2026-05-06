@@ -64,7 +64,7 @@ The time to compute a checkpoint certification is linear in the number of change
 
 ## Further reading
 
-- [Protocol Stack](index.md) — how message routing fits into the four-layer architecture
-- [State synchronization](state-synchronization.md) — how catch-up packages are used by joining nodes
+- [Protocol Stack](index.md): how message routing fits into the four-layer architecture
+- [State synchronization](state-synchronization.md): how catch-up packages are used by joining nodes
 
 <!-- Upstream: informed by Learn Hub article "Message Routing" (migrated, source retired) -->

@@ -11,10 +11,10 @@ Messages on ICP are analogous to transactions on other blockchains. A message ad
 
 Each node runs a replica process structured in four layers:
 
-1. [Peer-to-peer](peer-to-peer.md) — secure and reliable message broadcast between nodes
-2. [Consensus](consensus.md) — agreement on which messages to process and in what order
-3. [Message routing](message-routing.md) — delivery of messages to canister input queues and state certification
-4. [Execution](execution.md) — deterministic execution of canister code
+1. [Peer-to-peer](peer-to-peer.md): secure and reliable message broadcast between nodes
+2. [Consensus](consensus.md): agreement on which messages to process and in what order
+3. [Message routing](message-routing.md): delivery of messages to canister input queues and state certification
+4. [Execution](execution.md): deterministic execution of canister code
 
 The lower two layers (peer-to-peer and consensus) are responsible for agreeing, each round, on a block of messages. The upper two layers (message routing and execution) deterministically process that block on every node.
 
@@ -33,10 +33,10 @@ To allow nodes to efficiently join a running subnet or catch up after downtime, 
 
 ## Further reading
 
-- [Consensus](consensus.md) — block making, notarization, and finalization in detail
-- [Peer-to-peer](peer-to-peer.md) — Abortable Broadcast and QUIC transport
-- [Message routing](message-routing.md) — induction, XNet streaming, and state certification
-- [Execution](execution.md) — WebAssembly execution, deterministic time slicing, and cycles
-- [State synchronization](state-synchronization.md) — catch-up packages and incremental sync
+- [Consensus](consensus.md): block making, notarization, and finalization in detail
+- [Peer-to-peer](peer-to-peer.md): Abortable Broadcast and QUIC transport
+- [Message routing](message-routing.md): induction, XNet streaming, and state certification
+- [Execution](execution.md): WebAssembly execution, deterministic time slicing, and cycles
+- [State synchronization](state-synchronization.md): catch-up packages and incremental sync
 
 <!-- Upstream: informed by Learn Hub article "Blockchain Protocol" (migrated, source retired) -->

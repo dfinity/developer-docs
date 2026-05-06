@@ -65,7 +65,7 @@ The tradeoff is the trust model: a single node executes the query, so a compromi
 
 ## Further reading
 
-- [Protocol Stack](index.md) — how execution fits into the four-layer architecture
+- [Protocol Stack](index.md): how execution fits into the four-layer architecture
 - [Usenix ATC paper on the ICP execution environment](https://www.usenix.org/system/files/atc23-arutyunyan.pdf)
 
 <!-- Upstream: informed by Learn Hub article "Execution Layer" (migrated, source retired) -->

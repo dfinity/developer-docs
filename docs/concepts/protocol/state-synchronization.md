@@ -19,13 +19,13 @@ Without state synchronization, joining a busy subnet would be impractical. A nod
 
 A node that was temporarily offline may still hold an older checkpoint. In this case, only the chunks that differ from its local checkpoint need to be downloaded, which can significantly reduce the volume of data transferred.
 
-The blockchain state is organized as a Merkle tree and can reach up to a terabyte in size. A recovering node first requests the children of the root of the state tree from its peers. It then recursively downloads only the subtrees that differ from its local state, skipping the parts it already has.
+The subnet state is organized as a Merkle tree and can reach up to a terabyte in size. A recovering node first requests the children of the root of the state tree from its peers. It then recursively downloads only the subtrees that differ from its local state, skipping the parts it already has.
 
 This incremental approach ensures that a recovering node transfers the minimum amount of data needed to rejoin the subnet, rather than downloading the full state again.
 
 ## Further reading
 
-- [Message routing](message-routing.md) — how checkpoints and state certification work
-- [Peer-to-peer](peer-to-peer.md) — the broadcast layer used to transfer checkpoint chunks
+- [Message routing](message-routing.md): how checkpoints and state certification work
+- [Peer-to-peer](peer-to-peer.md): the broadcast layer used to transfer checkpoint chunks
 
 <!-- Upstream: informed by Learn Hub article "State Synchronization" (migrated, source retired) -->
