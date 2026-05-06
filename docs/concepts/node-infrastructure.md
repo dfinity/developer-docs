@@ -86,6 +86,6 @@ When a new GuestOS is approved by the NNS, the upgrade process runs the old and 
 
 ## Further reading
 
-- [Protocol Stack](protocol/index.md) — the replica software that runs inside GuestOS
+- [Protocol Stack](protocol/index.md): the replica software that runs inside GuestOS
 
 <!-- Upstream: informed by Learn Hub articles "Overview" (Node Infrastructure), "Trusted Execution Environments" (migrated, source retired) -->
