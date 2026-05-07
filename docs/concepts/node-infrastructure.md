@@ -26,10 +26,10 @@ HostOS runs directly on the physical hardware. Its sole purpose is to configure 
 
 - Launches the GuestOS virtual machine
 - Manages hardware resource allocation
-- Handles GuestOS upgrades pushed by the NNS
+- Handles GuestOS upgrades pushed by the Network Nervous System (NNS)
 - Provides a security boundary between the physical hardware and the ICP software stack
 
-HostOS is intentionally minimal. It treats the GuestOS as an untrusted workload running in a virtual machine, which limits what a compromised GuestOS can do to the host and what the host can do to the guest.
+HostOS is intentionally minimal. It treats the GuestOS as an untrusted process running in a virtual machine, which limits what a compromised GuestOS can do to the host and what the host can do to the guest.
 
 ### GuestOS
 
