@@ -55,9 +55,8 @@ jobs:
           icp identity default preview-deploy
 
           # Request preview canister from the pool
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           pip install icp-py-core "cbor2<6"
-          canister_id=$(python3 .github/workflows/scripts/request-canister.py $pull_number)
+          canister_id=$(python3 .github/workflows/scripts/request-canister.py ${{ github.event.pull_request.number }})
 
           # Override canister ID mapping for ic environment
           echo "{\"frontend\":\"$canister_id\"}" > .icp/data/mappings/ic.ids.json

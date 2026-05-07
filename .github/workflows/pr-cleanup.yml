@@ -18,9 +18,8 @@ jobs:
         with:
           python-version: "3.10"
       - run: |
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           pip install icp-py-core "cbor2<6"
-          python3 .github/workflows/scripts/release-canister.py $pull_number
+          python3 .github/workflows/scripts/release-canister.py ${{ github.event.pull_request.number }}
         env:
           POOL_CONTROLLER_IDENTITY: ${{ secrets.POOL_CONTROLLER_IDENTITY }}
           POOL_CANISTER_ID: ${{ secrets.POOL_CANISTER_ID }}
