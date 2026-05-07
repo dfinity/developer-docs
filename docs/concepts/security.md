@@ -87,7 +87,7 @@ See [Upgrade safety](../guides/security/canister-upgrades.md) for patterns that 
 
 ### Controller risk
 
-Canister controllers can change the code, extract funds, or delete the canister at any time. If a single person or team controls a canister that holds user assets, users must trust that entity completely. For applications where this trust is unacceptable, control can be transferred to a DAO (such as an [SNS](../guides/governance/launching.md)) or the canister can be made immutable by removing all controllers.
+Canister controllers can change the code, extract funds, or delete the canister at any time. If a single person or team controls a canister that holds user assets, users must trust that entity completely. For applications where this trust is unacceptable, control can be transferred to an [SNS](../guides/governance/launching.md) or the canister can be made immutable by removing all controllers.
 
 Users can verify a canister's controllers through the IC dashboard or by querying the canister's information via a `read_state` request.
 

@@ -364,4 +364,4 @@ See [Frontend certification](../../guides/frontends/certification.md) for the as
 - [IC Interface Specification: Certified Data](../../references/ic-interface-spec/canister-interface.md#system-api-certified-data): the certified data system API
 - [IC Interface Specification: Certification](../../references/ic-interface-spec/certification.md): certificate format and delegation
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/security/data-integrity-and-authenticity.mdx; dfinity/icskills — skills/certified-variables/SKILL.md; dfinity/cdk-rs — library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs; caffeinelabs/motoko-core — src/CertifiedData.mo; dfinity/examples — motoko/cert-var; dfinity/response-verification — README.md -->
+<!-- Upstream: informed by dfinity/portal (docs/building-apps/security/data-integrity-and-authenticity.mdx); dfinity/icskills (skills/certified-variables/SKILL.md); dfinity/cdk-rs (library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs); caffeinelabs/motoko-core (src/CertifiedData.mo); dfinity/examples (motoko/cert-var); dfinity/response-verification (README.md) -->

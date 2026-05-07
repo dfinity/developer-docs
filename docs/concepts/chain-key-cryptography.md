@@ -9,7 +9,7 @@ Chain-key cryptography is a set of threshold cryptographic protocols that underp
 
 ## Why threshold cryptography matters
 
-On most blockchains, verifying state requires replaying transactions or trusting a full node. On ICP, verifying a response means checking **one signature against one public key**: regardless of how many nodes produced it. This is possible because each subnet holds a threshold BLS key: any sufficiently large subset of nodes can produce a valid signature, but no smaller group can forge one.
+On traditional distributed networks, verifying state requires replaying transactions or trusting a full node. On ICP, verifying a response means checking **one signature against one public key**: regardless of how many nodes produced it. This is possible because each subnet holds a threshold BLS key: any sufficiently large subset of nodes can produce a valid signature, but no smaller group can forge one.
 
 This design has several consequences for developers:
 
@@ -99,7 +99,11 @@ For signing costs, see [Cycles costs](../references/cycles-costs.md).
 
 ## Supported chains
 
+<<<<<<< HEAD
 Any chain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion/index.md#supported-chains).
+=======
+Any chain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key digital assets, see [Chain Fusion: Supported chains](chain-fusion.md#supported-chains).
+>>>>>>> cd6cbbb (docs(cryptography): apply brand voice fixes to cryptography deep-dive pages)
 
 ## Chain evolution
 
@@ -117,4 +121,4 @@ For more on how upgrades work at the protocol level, see [Chain evolution](evolu
 - [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API
 
-<!-- Upstream: informed by dfinity/portal docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; learn hub staging: chain-key-cryptography/chain-key-cryptography.md, chain-key-cryptography/subnet-keys-and-subnet-signatures.md, chain-key-cryptography/chain-key-signatures.md -->
+<!-- Upstream: informed by dfinity/portal (docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx); informed by Learn Hub articles "Chain-Key Cryptography", "Subnet Keys and Subnet Signatures", "Chain-Key Signatures" (migrated, source retired) -->
