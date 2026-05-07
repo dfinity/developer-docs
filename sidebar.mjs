@@ -243,7 +243,7 @@ export const sidebar = [
         collapsed: true,
         autogenerate: { directory: "references/ic-interface-spec" },
       },
-      { slug: "references/http-gateway-spec" },
+      { slug: "references/http-gateway-protocol-spec" },
       { slug: "references/internet-identity-spec" },
       { slug: "references/glossary" },
     ],

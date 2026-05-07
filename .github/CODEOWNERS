@@ -7,7 +7,7 @@
 # Interface specification — additional required reviewers for spec files and attachments.
 # GitHub CODEOWNERS: last matching rule wins, so these override the wildcard above.
 docs/references/ic-interface-spec/* @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
-docs/references/http-gateway-spec.md @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
+docs/references/http-gateway-protocol-spec.md @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
 public/references/ic.did @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
 public/references/certificates.cddl @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
 public/references/requests.cddl @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx

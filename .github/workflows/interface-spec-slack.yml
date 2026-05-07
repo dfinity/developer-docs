@@ -8,7 +8,7 @@ on:
       - .github/workflows/interface-spec-tag.yml
       - .github/workflows/interface-spec-slack.yml
       - docs/references/ic-interface-spec/**
-      - docs/references/http-gateway-spec.md
+      - docs/references/http-gateway-protocol-spec.md
       - public/references/certificates.cddl
       - public/references/requests.cddl
       - public/references/http-gateway.did
