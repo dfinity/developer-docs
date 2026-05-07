@@ -30,7 +30,7 @@ The ICP ledger manages the native ICP digital asset. It uses an address format c
 
 ### ICRC ledgers
 
-Most fungible digital assets on ICP (including chain-key digital assets like ckBTC and ckETH) use the ICRC standard. ICRC ledgers use a two-part account format:
+Most fungible digital assets on ICP (including chain-key tokens like ckBTC and ckETH) use the ICRC standard. ICRC ledgers use a two-part account format:
 
 - **Principal**: the identity of the holder (a user principal or canister principal).
 - **Subaccount** (optional): a 32-byte value that lets a single principal manage many internal accounts.
