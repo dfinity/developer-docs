@@ -82,7 +82,7 @@ The reward rate declines over time as the protocol matures, converging toward a 
 
 ## The Service Nervous System
 
-The SNS is a governance framework that allows app developers to create a community-governed SNS for their application. When an app is governed by an SNS, asset holders vote on proposals to upgrade the app's canisters, manage treasury funds, and adjust governance parameters.
+The SNS is a governance framework that allows app developers to create a community-governed SNS for their application. When an app is governed by an SNS, digital asset holders vote on proposals to upgrade the app's canisters, manage treasury funds, and adjust governance parameters.
 
 Unlike the NNS, which is a singleton governing the entire protocol, each SNS is a separate set of canisters specific to one app. SNSes live on a dedicated SNS subnet.
 
@@ -95,25 +95,25 @@ An SNS consists of five core canisters plus a variable number of archive caniste
 | **Governance** | Proposal submission, voting, neuron management |
 | **Ledger** | SNS asset transfers (ICRC-1 standard) |
 | **Root** | Sole controller of all app canisters post-launch |
-| **Swap** | Runs the decentralization swap (ICP for SNS assets) |
+| **Swap** | Runs the decentralization swap (ICP for SNS digital assets) |
 | **Index** | Transaction indexing for the SNS ledger |
 | **Archive** (one or more, spawned as needed) | Historical ledger block storage; new archive canisters are created automatically as the ledger grows |
 
-Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS asset holders.
+Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS digital asset holders.
 
 ### Digital asset economics
 
-Each SNS has its own governance asset. The initial distribution is defined in the SNS configuration file and includes:
+Each SNS has its own governance digital asset. The initial distribution is defined in the SNS configuration file and includes:
 
-- **Developer neurons**: Assets allocated to the original developers and seed funders, typically with vesting periods and dissolve delays to signal long-term commitment.
-- **Treasury**: Assets owned by the SNS governance canister, spendable by governance proposal.
-- **Swap allocation**: Assets sold during the decentralization swap in exchange for ICP.
+- **Developer neurons**: Digital assets allocated to the original developers and seed funders, typically with vesting periods and dissolve delays to signal long-term commitment.
+- **Treasury**: Digital assets owned by the SNS governance canister, spendable by governance proposal.
+- **Swap allocation**: Digital assets sold during the decentralization swap in exchange for ICP.
 
 The SNS ledger implements the ICRC-1 standard. SNS neurons work similarly to NNS neurons: stake governs voting power, dissolve delay grants a bonus (up to 2x at the configured maximum), and age grants an additional bonus.
 
 ### The decentralization swap
 
-The decentralization swap is the mechanism by which SNS assets are distributed to the public. Participants send ICP to the SNS Swap canister during the swap window; when the swap closes, the exchange rate is determined and participants receive SNS assets in a basket of neurons with vesting schedules.
+The decentralization swap is the mechanism by which SNS digital assets are distributed to the public. Participants send ICP to the SNS Swap canister during the swap window; when the swap closes, the exchange rate is determined and participants receive SNS digital assets in a basket of neurons with vesting schedules.
 
 The swap has minimum and maximum ICP participation thresholds. If the minimum is not reached, the swap fails: all ICP is refunded and control of the app returns to the original developers (via the fallback controllers defined in the configuration). If the maximum is reached before the end time, the swap closes early.
 
@@ -126,7 +126,7 @@ SNS governance mirrors the NNS design but is customized per app:
 | Aspect | NNS | SNS |
 |--------|-----|-----|
 | What it governs | Protocol and network | A specific app |
-| Digital asset | ICP | Project-specific ICRC-1 asset |
+| Digital asset | ICP | Project-specific ICRC-1 digital asset |
 | Governance canisters | Singleton on NNS subnet | Per-app on SNS subnet |
 | Launch authority | N/A (pre-existing) | NNS must approve creation |
 | Proposal types | Protocol updates, subnet management, economics | App upgrades, treasury transfers, parameter changes |
@@ -138,10 +138,10 @@ When an app is governed by an SNS, the original developers no longer have direct
 - **Upgrades require proposals**: All changes to app canisters must go through SNS governance votes. Development slows down compared to centralized control.
 - **Treasury spending requires votes**: Any use of SNS treasury funds requires a governance proposal.
 - **Upgrade path is transparent**: Community members can verify new canister wasm modules before voting. Reproducible builds allow independent verification.
-- **Responsibility is distributed**: Post-launch, the development team typically continues leading the project but must engage the community of asset holders for major decisions.
+- **Responsibility is distributed**: Post-launch, the development team typically continues leading the project but must engage the community of digital asset holders for major decisions.
 - **Custom proposals**: Apps can register custom proposal types (generic functions) that allow the SNS to call specific canister methods, enabling fine-grained governance without unrestricted code upgrades.
 
-Developers preparing for an SNS launch should ensure their codebase is stable, open-sourced, and reproducibly buildable before the decentralization swap. The NNS community votes on the creation proposal and expects evidence of product-market fit, sound asset economics, and a realistic roadmap.
+Developers preparing for an SNS launch should ensure their codebase is stable, open-sourced, and reproducibly buildable before the decentralization swap. The NNS community votes on the creation proposal and expects evidence of product-market fit, sound digital asset economics, and a realistic roadmap.
 
 ## Neuron hotkeys
 
@@ -197,7 +197,7 @@ Each neuron receives a share of the pool proportional to its voting power multip
 
 ## The Neurons' Fund
 
-The Neurons' Fund (NF) is a mechanism that allows NNS neurons to allocate maturity toward the decentralization swaps of new SNS DAOs. Participation is opt-in: a neuron holder can join or leave the NF at any time.
+The Neurons' Fund (NF) is a mechanism that allows NNS neurons to allocate maturity toward the decentralization swaps of new SNS instances. Participation is opt-in: a neuron holder can join or leave the NF at any time.
 
 When an SNS swap runs, NF contributions scale with direct participation through a matching function. NF neurons receive SNS neurons in return, with the same hotkeys copied so that holders can vote in the new SNS governance without exposing their cold-storage keys.
 

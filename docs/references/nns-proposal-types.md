@@ -25,7 +25,7 @@ Manages SNS canister code and the SNS Wasm modules canister (SNS-W, `qaa6y-5yaaa
 | `InstallCode` | Same as in ProtocolCanisterManagement, targeting SNS canisters. |
 | `UpdateCanisterSettings` | Same as in ProtocolCanisterManagement, targeting SNS canisters. |
 | `StopOrStartCanister` | Same as in ProtocolCanisterManagement, targeting SNS canisters. |
-| `AddSnsWasm` | Add a new SNS canister Wasm to SNS-W, making it available for SNS DAOs to upgrade to. |
+| `AddSnsWasm` | Add a new SNS canister Wasm to SNS-W, making it available for SNS instances to upgrade to. |
 | `InsertSnsWasmUpgradePathEntries` | Insert custom upgrade path entries into SNS-W for all SNSes or for a specific SNS. |
 
 ## Topic: ApplicationCanisterManagement
@@ -77,11 +77,11 @@ Reward weight: 20. Covers SNS decentralization swaps and the Neurons' Fund.
 
 | Proposal type | Description |
 |---|---|
-| `CreateServiceNervousSystem` | Install a new SNS DAO and specify all settings: initial token distribution, decentralization swap conditions, initial governance parameters, and Neurons' Fund contribution. |
+| `CreateServiceNervousSystem` | Install a new SNS and specify all settings: initial digital asset distribution, decentralization swap conditions, initial governance parameters, and Neurons' Fund contribution. |
 
 ## Topic: NetworkEconomics
 
-Economic parameters for the network and NNS DAO settings.
+Economic parameters for the network and NNS governance settings.
 
 | Proposal type | Description |
 |---|---|
