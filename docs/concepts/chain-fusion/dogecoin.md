@@ -13,7 +13,7 @@ Canister-controlled Dogecoin addresses are derived from chain-key ECDSA public k
 
 ## Chain-key DOGE (ckDOGE)
 
-ckDOGE is the chain-key token representing Dogecoin on ICP, backed 1:1 by real DOGE held in a canister-controlled address. The minter-plus-ledger architecture is the same as [ckBTC](bitcoin.md#chain-key-bitcoin-ckbtc): users deposit DOGE to a minter-controlled address, the minter mints ckDOGE on the ledger, and withdrawals trigger an onchain Dogecoin transaction signed with threshold ECDSA.
+ckDOGE is the chain-key digital asset representing Dogecoin on ICP, backed 1:1 by real DOGE held in a canister-controlled address. The minter-plus-ledger architecture is the same as [ckBTC](bitcoin.md#chain-key-bitcoin-ckbtc): users deposit DOGE to a minter-controlled address, the minter mints ckDOGE on the ledger, and withdrawals trigger an onchain Dogecoin transaction signed with threshold ECDSA.
 
 ## Next steps
 

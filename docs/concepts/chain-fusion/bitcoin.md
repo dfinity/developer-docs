@@ -39,7 +39,7 @@ Both endpoints return `Passed` or `Failed`. The canister itself is controlled by
 
 ## Chain-key Bitcoin (ckBTC)
 
-ckBTC is a token on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped tokens, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
+ckBTC is a digital asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
 
 ckBTC transactions settle in seconds and cost a fraction of a satoshi, making it practical for high-frequency or low-value transfers that would be uneconomical on Bitcoin directly.
 
@@ -52,7 +52,7 @@ Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/s
 | ckBTC minter | `mqygn-kiaaa-aaaar-qaadq-cai` |
 | ckBTC ledger | `mxzaz-hqaaa-aaaar-qaada-cai` |
 
-The **ledger** is an ICRC-1/ICRC-2 compliant token ledger. It records all ckBTC balances and handles transfers. The transfer fee is 0.0000001 ckBTC (10 satoshi), sent to the minter's fee subaccount.
+The **ledger** is an ICRC-1/ICRC-2 compliant digital asset ledger. It records all ckBTC balances and handles transfers. The transfer fee is 0.0000001 ckBTC (10 satoshi), sent to the minter's fee subaccount.
 
 The **minter** manages the BTC side: it controls Bitcoin addresses, tracks UTXOs, triggers minting when deposits arrive, and signs and submits Bitcoin transactions when users withdraw.
 

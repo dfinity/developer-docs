@@ -5,20 +5,20 @@ sidebar:
   order: 10
 ---
 
-Chain Fusion is ICP's approach to cross-chain interoperability. Instead of relying on bridges or oracles, canisters interact with other blockchains directly: they can read state, hold assets, and sign and submit transactions on Bitcoin, Ethereum, Solana, and dozens of other chains. All of this runs onchain with the same trust assumptions as the Internet Computer itself.
+Chain Fusion is ICP's approach to crosschain interoperability. Instead of relying on bridges or oracles, canisters interact with other networks directly: they can read state, hold assets, and sign and submit transactions on Bitcoin, Ethereum, Solana, and dozens of other chains. All of this runs onchain with the same trust assumptions as the Internet Computer itself.
 
 The foundation is [chain-key cryptography](../chain-key-cryptography.md). Each canister can derive keys for external signature schemes (ECDSA and Schnorr) and request threshold signatures from the protocol. This means a canister can control a Bitcoin address, an Ethereum account, or a Solana wallet: without any single node ever holding the private key.
 
 ## Why Chain Fusion matters
 
-Most cross-chain solutions introduce a trusted intermediary: a bridge, a multisig, or an oracle network. If that intermediary is compromised, funds are at risk. ICP eliminates this layer entirely.
+Most crosschain solutions introduce a trusted intermediary: a bridge, a multisig, or an oracle network. If that intermediary is compromised, funds are at risk. ICP eliminates this layer entirely.
 
 A canister interacting with Bitcoin or Ethereum has no external dependency beyond the target chain itself. The signing happens inside the protocol through a threshold cryptographic ceremony distributed across subnet nodes. This gives developers several advantages:
 
-- **No bridges.** Canisters hold assets directly on external chains. There is no wrapped token that can depeg, no bridge contract that can be exploited.
+- **No bridges.** Canisters hold assets directly on external chains. There is no wrapped asset that can depeg, no bridge contract that can be exploited.
 - **No oracles.** Canisters can read external chain state themselves: either through a direct protocol integration (Bitcoin) or by querying RPC providers via [HTTPS outcalls](../https-outcalls.md).
-- **Full autonomy.** Canisters can schedule cross-chain actions using [timers](../../guides/backends/timers.md), enabling use cases like automated trading, periodic liquidations, or cronjob services: all without external triggers.
-- **Familiar UX.** Because ICP has low-cost computation and [canisters pay for their own cycles](../cycles.md), users can interact with cross-chain apps through a standard browser without installing a wallet.
+- **Full autonomy.** Canisters can schedule crosschain actions using [timers](../../guides/backends/timers.md), enabling use cases like automated trading, periodic liquidations, or cronjob services: all without external triggers.
+- **Familiar UX.** Because ICP has low-cost computation and [canisters pay for their own cycles](../cycles.md), users can interact with crosschain apps through a standard browser without installing a wallet.
 
 ## How it works
 
@@ -26,7 +26,7 @@ Chain Fusion combines three protocol-level capabilities:
 
 ### 1. Chain-key signatures
 
-Canisters request threshold ECDSA or Schnorr signatures from the management canister. The protocol derives a unique key for each canister and signs messages without ever reconstructing the private key. This lets canisters control addresses on any blockchain that uses a supported signature scheme.
+Canisters request threshold ECDSA or Schnorr signatures from the management canister. The protocol derives a unique key for each canister and signs messages without ever reconstructing the private key. This lets canisters control addresses on any chain that uses a supported signature scheme.
 
 Two schemes are available:
 
@@ -66,19 +66,19 @@ The combination of signing, reading, and submitting creates three integration pa
 
 Direct integration provides the strongest trust guarantees. The only assumption is that a supermajority of subnet nodes are honest. RPC-based integration adds the assumption that at least one of the queried RPC providers returns correct data, which is mitigated by querying multiple independent providers and comparing results.
 
-## Chain-key tokens
+## Chain-key digital assets
 
-Chain-key tokens are digital twins of native assets from other blockchains (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each token is backed 1:1 by the native asset, which is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
+Chain-key digital assets are digital twins of native assets from other chains (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is backed 1:1 by the native asset, which is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
 
-These tokens implement the [ICRC-2](../../guides/digital-assets/ledgers.md) token standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP token. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
+These digital assets implement the [ICRC-2](../../guides/digital-assets/ledgers.md) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP digital asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
 
-For details on chain-key token architecture, see [Chain-key tokens](chain-key-tokens.md). For integration guides, see the [Chain-key tokens guide](../../guides/digital-assets/chain-key-tokens.md).
+For details on chain-key digital asset architecture, see [Chain-key digital assets](chain-key-tokens.md). For integration guides, see the [Chain-key digital assets guide](../../guides/digital-assets/chain-key-tokens.md).
 
 ## Supported chains
 
-Any blockchain whose transactions use ECDSA (secp256k1), Schnorr (BIP340 over secp256k1), or Ed25519 signatures can be integrated with ICP. The following table lists chains with established integrations or community-built tooling:
+Any chain whose transactions use ECDSA (secp256k1), Schnorr (BIP340 over secp256k1), or Ed25519 signatures can be integrated with ICP. The following table lists chains with established integrations or community-built tooling:
 
-| Chain | Signature scheme | Integration method | Chain-key token |
+| Chain | Signature scheme | Integration method | Chain-key digital asset |
 |-------|-----------------|-------------------|-----------------|
 | Bitcoin | ECDSA, Schnorr | Direct | ckBTC |
 | Ethereum | ECDSA | EVM RPC canister | ckETH, ckERC20 |
@@ -104,7 +104,7 @@ Several reusable canisters and protocol APIs are available for building Chain Fu
 - **Bitcoin API.** The management canister exposes `bitcoin_get_utxos`, `bitcoin_get_balance`, and `bitcoin_send_transaction`: a direct protocol-level integration with no intermediary. See [Bitcoin integration](bitcoin.md) and the [Bitcoin guide](../../guides/chain-fusion/bitcoin.md).
 - **EVM RPC canister** (`7hfb6-caaaa-aaaar-qadga-cai`). A canister providing a typed Candid interface for Ethereum and EVM-compatible chains. Queries multiple RPC providers and returns consensus results. See [Ethereum integration](ethereum.md) and the [Ethereum guide](../../guides/chain-fusion/ethereum.md).
 - **SOL RPC canister.** A similar canister for Solana, providing typed access to Solana's JSON-RPC API. See [Solana integration](solana.md) and the [Solana guide](../../guides/chain-fusion/solana.md).
-- **Chain-key tokens.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20: trustless 1:1 representations of external assets on ICP. See [Chain-key tokens](chain-key-tokens.md) and the [integration guide](../../guides/digital-assets/chain-key-tokens.md).
+- **Chain-key digital assets.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20: trustless 1:1 representations of external assets on ICP. See [Chain-key digital assets](chain-key-tokens.md) and the [integration guide](../../guides/digital-assets/chain-key-tokens.md).
 - **Chain Fusion Signer.** A reusable canister that exposes threshold signature APIs directly to web apps and CLI users, with cycle payments via ICRC-2 approval. [OISY Wallet](https://oisy.com) is a prominent production example: a multichain wallet built on ICP that uses the Chain Fusion Signer to manage keys for Bitcoin, Ethereum, and other chains. See the [chain-fusion-signer repository](https://github.com/dfinity/chain-fusion-signer).
 
 ## Example use cases
@@ -113,8 +113,8 @@ Chain Fusion enables application patterns that are difficult or impossible with 
 
 - **Trustless cronjob service.** A canister monitors an Ethereum contract via the EVM RPC canister and triggers loan liquidations or batch settlements automatically using timers. No Gelato or Chainlink Keepers needed.
 - **Multichain wallet.** A single canister controls addresses on Bitcoin, Ethereum, and Solana simultaneously. Users interact through a web frontend served from ICP without installing chain-specific wallets.
-- **Tamperproof frontend.** An immutable or DAO-governed frontend for an Ethereum smart contract, hosted on ICP as a certified asset. Users interact with the Ethereum contract through the ICP-hosted UI.
-- **Cross-chain lending.** A lending protocol that accepts Bitcoin as collateral (held in a canister-controlled BTC address) and issues stablecoins as ICRC-2 tokens.
+- **Tamperproof frontend.** An immutable or community-governed frontend for an Ethereum smart contract, hosted on ICP as a certified asset. Users interact with the Ethereum contract through the ICP-hosted UI.
+- **Crosschain lending.** A lending protocol that accepts Bitcoin as collateral (held in a canister-controlled BTC address) and issues stablecoins as ICRC-2 digital assets.
 - **Data relay.** A canister fetches real-world data via HTTPS outcalls and posts it to a smart contract on another chain: replacing centralized oracle networks.
 
 ## Next steps
@@ -122,11 +122,11 @@ Chain Fusion enables application patterns that are difficult or impossible with 
 - [Bitcoin integration](bitcoin.md): how the Bitcoin adapter and ckBTC work
 - [Ethereum integration](ethereum.md): Ethereum, EVM chains, and the EVM RPC canister
 - [Solana integration](solana.md): the SOL RPC canister
-- [Chain-key tokens](chain-key-tokens.md): architecture of trustless cross-chain tokens
+- [Chain-key digital assets](chain-key-tokens.md): architecture of trustless crosschain digital assets
 - [Exchange rate canister](exchange-rate-canister.md): onchain oracle for asset prices
 - [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build with BTC on ICP
 - [Ethereum guide](../../guides/chain-fusion/ethereum.md): interact with Ethereum and EVM chains
 - [Chain-key cryptography](../chain-key-cryptography.md): the threshold signing protocols behind Chain Fusion
 - [HTTPS outcalls](../https-outcalls.md): make HTTP requests from canisters
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx, docs/building-apps/chain-fusion/evm-rpc/how-it-works.mdx; learn hub staging: chain-fusion/chain-fusion.md -->
+<!-- Upstream: informed by dfinity/portal (docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx, docs/building-apps/chain-fusion/evm-rpc/how-it-works.mdx); informed by Learn Hub article "Chain Fusion" (migrated, source retired) -->
