@@ -3,9 +3,9 @@ title: "Protocol Stack"
 description: "The four-layer architecture that every ICP subnet runs: peer-to-peer, consensus, message routing, and execution."
 ---
 
-The Internet Computer is created by the Internet Computer Protocol (ICP), from which its utility token derives its name. ICP consists of multiple subnets, with each subnet running its own instance of the protocol stack. Each subnet hosts canisters and executes messages sent to them by users or by other canisters (which may be hosted on the same or a different subnet).
+The Internet Computer is created by the Internet Computer Protocol (ICP), which gives the network its name. ICP consists of multiple subnets, with each subnet running its own instance of the protocol stack. Each subnet hosts canisters and executes messages sent to them by users or by other canisters (which may be hosted on the same or a different subnet).
 
-Messages on ICP are analogous to transactions on other blockchains. A message addressed to a canister is executed by every node in the corresponding subnet. Execution updates the canister state. To keep state in sync across all nodes, every node must execute the same messages in the same order: fully deterministically. This replicated state machine property is the core of what makes ICP a trustworthy execution environment.
+A message addressed to a canister is executed by every node in the corresponding subnet. Execution updates the canister state. To keep state in sync across all nodes, every node must execute the same messages in the same order: fully deterministically. This replicated state machine property is the core of what makes ICP a trustworthy execution environment.
 
 ## Four-layer architecture
 

@@ -13,7 +13,7 @@ ICP's consensus is designed to meet three requirements:
 
 ## Cryptographic finality
 
-ICP provides cryptographic finality rather than probabilistic finality. Probabilistic finality (as used by Bitcoin-like protocols) considers a block final only after enough subsequent blocks have built on top of it. ICP avoids this approach for two reasons: probabilistic finality is a weak guarantee, and it would substantially increase the time before a transaction can be trusted.
+ICP provides cryptographic finality rather than probabilistic finality. Probabilistic finality considers a block final only after enough subsequent blocks have built on top of it. ICP avoids this approach for two reasons: probabilistic finality is a weak guarantee, and it would substantially increase the time before a message response can be trusted.
 
 The ICP consensus protocol achieves cryptographic finality while making minimal assumptions about the network. Safety does not depend on any bound on message delivery time (the protocol only assumes an asynchronous network). For a globally distributed network, synchrony is not a realistic assumption. When messages do arrive promptly, the protocol makes progress with good latency. Correctness is always guaranteed regardless of message delays, as long as fewer than one third of subnet nodes are faulty.
 

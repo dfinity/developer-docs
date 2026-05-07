@@ -1,6 +1,6 @@
 ---
 title: "Execution Layer"
-description: "How ICP deterministically executes canister code using WebAssembly, deterministic time slicing, concurrent execution, and the reverse gas model."
+description: "How ICP deterministically executes canister code using WebAssembly, deterministic time slicing, and concurrent execution."
 ---
 
 The execution layer is the topmost layer of the ICP core protocol stack. It is responsible for executing canister code after message routing has inducted messages into canister input queues. Code runs in a [WebAssembly](https://webassembly.org/) (Wasm) virtual machine deployed on every subnet node. Wasm bytecode executes deterministically and at near-native speed, both of which are essential properties for a replicated system.
@@ -35,7 +35,7 @@ One of the execution layer's key responsibilities is managing canister bytecode 
 
 ICP node machines are equipped with high-end SSD storage and substantial RAM to hold large amounts of replicated canister state and Wasm code.
 
-Memory pages representing canister state are persisted to SSD automatically by the execution layer. This **orthogonal persistence** frees developers from explicitly managing reads and writes to storage, which dramatically simplifies canister development compared to traditional blockchains. The full canister state is always available on the heap or in stable memory:
+Memory pages representing canister state are persisted to SSD automatically by the execution layer. This **orthogonal persistence** frees developers from explicitly managing reads and writes to storage. The full canister state is always available on the heap or in stable memory:
 
 - **Heap memory** is cleared when canister code is upgraded. State intended to survive upgrades must be moved to stable memory before the upgrade and restored afterward.
 - **Stable memory** persists across code upgrades. Large state should be kept in stable memory directly to avoid the cost and risk of copying it back and forth at upgrade time.
@@ -48,7 +48,7 @@ Each round, the subnet produces a fresh threshold BLS signature. This signature 
 
 ## Cycles accounting
 
-Executing a canister consumes network resources. These resources are paid for with **cycles**. Each canister holds a local cycles account. Ensuring the account is funded is the responsibility of the canister's maintainer (a developer, a group, or a decentralized autonomous organization): users never pay for sending messages to canisters. This model is called the **reverse gas model**.
+Executing a canister consumes network resources. These resources are paid for with **cycles**. Each canister holds a local cycles account. The canister itself pays for its own storage and computation: users never send cycles with their messages. Ensuring the cycles account is funded is the responsibility of the canister's maintainer (a developer, a team, or a community-governed application).
 
 When canister Wasm code is installed or upgraded, it is instrumented with instruction-counting code. This allows the exact number of cycles to be charged for each message execution in a fully deterministic way, so every node charges the same amount and replicated state machine properties are preserved.
 
