@@ -5,6 +5,8 @@ on:
 
 jobs:
   build:
+    # only run in forks — non-fork PRs get a build via preview-deployment.yml
+    if: github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read

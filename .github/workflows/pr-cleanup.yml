@@ -1,0 +1,34 @@
+name: PR Cleanup
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  release_preview_canister:
+    # do not run in forks
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pr-${{ github.event.pull_request.number || github.event.number }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
+        with:
+          python-version: "3.10"
+      - run: |
+          pip install icp-py-core "cbor2<6"
+          python3 .github/workflows/scripts/release-canister.py ${{ github.event.pull_request.number }}
+        env:
+          POOL_CONTROLLER_IDENTITY: ${{ secrets.POOL_CONTROLLER_IDENTITY }}
+          POOL_CANISTER_ID: ${{ secrets.POOL_CANISTER_ID }}
+
+      - uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        with:
+          script: |
+            const comments = require('./.github/workflows/scripts/comments.cjs');
+            const maybeComment = await comments.get(context, github);
+            if (maybeComment) {
+              await comments.delete(context, github, maybeComment.id);
+            }
