@@ -1,3 +1,5 @@
+const MARKER = '<!-- pr-preview -->';
+
 exports.get = async function (context, github) {
   const comments = await github.rest.issues.listComments({
     issue_number: context.issue.number,
@@ -6,7 +8,7 @@ exports.get = async function (context, github) {
   });
 
   return comments.data.find(
-    (c) => c.user.login === 'github-actions[bot]' && c.user.type === 'Bot'
+    (c) => c.user.login === 'github-actions[bot]' && c.user.type === 'Bot' && c.body.includes(MARKER)
   );
 };
 
@@ -15,7 +17,7 @@ exports.create = function (context, github, body) {
     issue_number: context.issue.number,
     owner: context.repo.owner,
     repo: context.repo.repo,
-    body,
+    body: `${MARKER}\n${body}`,
   });
 };
 
@@ -24,7 +26,7 @@ exports.update = function (context, github, id, body) {
     owner: context.repo.owner,
     repo: context.repo.repo,
     comment_id: id,
-    body,
+    body: `${MARKER}\n${body}`,
   });
 };
 
