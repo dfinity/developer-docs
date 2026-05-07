@@ -93,4 +93,4 @@ As deposits accumulate, the minter manages a growing set of UTXOs. Too many smal
 - [Chain Fusion overview](index.md): integration patterns and supported chains
 - [Chain-key cryptography](../chain-key-cryptography.md): threshold ECDSA and Schnorr signing
 
-<!-- Upstream: learn hub staging: chain-fusion/bitcoin-integration.md, chain-fusion/bitcoin-checker-canister.md, chain-fusion/chain-key-bitcoin.md -->
+<!-- Upstream: informed by Learn Hub articles "Bitcoin Integration", "Bitcoin Checker Canister", "Chain-Key Bitcoin" (migrated, source retired) -->

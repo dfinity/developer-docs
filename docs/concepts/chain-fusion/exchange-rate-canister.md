@@ -53,4 +53,4 @@ If the XRC receives largely inconsistent rates from exchanges, it returns an `Ex
 - [HTTPS outcalls](../https-outcalls.md): how the XRC fetches external data
 - [XRC Candid interface](https://github.com/dfinity/exchange-rate-canister/blob/main/src/xrc/xrc.did)
 
-<!-- Upstream: learn hub staging: chain-fusion/exchange-rate-canister.md -->
+<!-- Upstream: informed by Learn Hub articles "Exchange Rate Canister" (migrated, source retired) -->

@@ -66,4 +66,4 @@ The security of a chain-key token rests on two properties:
 - [Chain-key tokens guide](../../guides/digital-assets/chain-key-tokens.md): how to integrate chain-key tokens into an application
 - [Chain-key cryptography](../chain-key-cryptography.md): the threshold signing that makes chain-key tokens possible
 
-<!-- Upstream: learn hub staging: chain-fusion/chain-key-tokens.md -->
+<!-- Upstream: informed by Learn Hub articles "Chain-Key Tokens" (migrated, source retired) -->

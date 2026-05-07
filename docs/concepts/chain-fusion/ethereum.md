@@ -61,4 +61,4 @@ For a full description of chain-key token architecture, see [Chain-key tokens](c
 - [Chain-key cryptography](../chain-key-cryptography.md): threshold ECDSA signing
 - [Chain-key tokens](chain-key-tokens.md): ckETH and ckERC20 architecture
 
-<!-- Upstream: learn hub staging: chain-fusion/ethereum-integration.md, chain-fusion/evm-rpc-canister.md -->
+<!-- Upstream: informed by Learn Hub articles "Ethereum Integration", "EVM RPC Canister" (migrated, source retired) -->
