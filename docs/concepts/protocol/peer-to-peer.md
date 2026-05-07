@@ -21,7 +21,7 @@ The Abortable Broadcast implementation relies on a transport component built on 
 
 ## Security
 
-To prevent denial-of-service attacks, nodes connect only with other nodes in the same subnet. Subnet membership is managed by the Network Nervous System (NNS). The NNS registry canister acts as a service discovery mechanism for the P2P layer, enabling encrypted and authenticated communication between nodes through TLS.
+To prevent denial-of-service attacks, nodes connect only with other nodes in the same subnet. Subnet membership is managed by the [Network Nervous System (NNS)](../../references/glossary.md#network-nervous-system-nns). The NNS registry canister acts as a service discovery mechanism for the P2P layer, enabling encrypted and authenticated communication between nodes through TLS.
 
 ## Further reading
 

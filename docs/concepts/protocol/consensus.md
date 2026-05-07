@@ -25,9 +25,9 @@ A consensus round has three phases.
 
 ### Block making
 
-In every round, one or more nodes called block makers propose a block. Each block contains a reference to a notarized block from the previous round, ingress messages submitted by users, and XNet messages received from other subnets.
+In every round, one or more nodes called [block makers](../../references/glossary.md#block-maker) propose a block. Each block contains a reference to a notarized block from the previous round, ingress messages submitted by users, and XNet messages received from other subnets.
 
-Block makers are selected through a random permutation of subnet nodes, using randomness derived from a random beacon produced by [chain-key cryptography](../chain-key-cryptography.md). The permutation assigns a rank to each node. The lowest-rank node acts as the primary block maker and broadcasts its proposal to all subnet nodes.
+Block makers are selected through a random permutation of subnet nodes, using randomness derived from a [random beacon](../../references/glossary.md#random-beacon) produced by [chain-key cryptography](../chain-key-cryptography.md). The permutation assigns a rank to each node. The lowest-rank node acts as the primary block maker and broadcasts its proposal to all subnet nodes.
 
 If the primary block maker is faulty or the network is slow and no notarized block appears within a timeout, nodes of increasing rank step in to propose blocks. The protocol guarantees that one block eventually gets notarized in every round.
 

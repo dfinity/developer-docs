@@ -35,7 +35,7 @@ One of the execution layer's key responsibilities is managing canister bytecode 
 
 ICP node machines are equipped with high-end SSD storage and substantial RAM to hold large amounts of replicated canister state and Wasm code.
 
-Memory pages representing canister state are persisted to SSD automatically by the execution layer. This **orthogonal persistence** frees developers from explicitly managing reads and writes to storage. The full canister state is always available on the heap or in stable memory:
+Memory pages representing canister state are persisted to SSD automatically by the execution layer. This [**orthogonal persistence**](../orthogonal-persistence.md) frees developers from explicitly managing reads and writes to storage. The full canister state is always available on the heap or in stable memory:
 
 - **Heap memory** is cleared when canister code is upgraded. State intended to survive upgrades must be moved to stable memory before the upgrade and restored afterward.
 - **Stable memory** persists across code upgrades. Large state should be kept in stable memory directly to avoid the cost and risk of copying it back and forth at upgrade time.
@@ -48,7 +48,7 @@ Each round, the subnet produces a fresh threshold BLS signature. This signature 
 
 ## Cycles accounting
 
-Executing a canister consumes network resources. These resources are paid for with **cycles**. Each canister holds a local cycles account. The canister itself pays for its own storage and computation: users never send cycles with their messages. Ensuring the cycles account is funded is the responsibility of the canister's maintainer (a developer, a team, or a community-governed application).
+Executing a canister consumes network resources. These resources are paid for with [**cycles**](../../references/glossary.md#cycle). Each canister holds a local cycles account. The canister itself pays for its own storage and computation: users never send cycles with their messages. Ensuring the cycles account is funded is the responsibility of the canister's maintainer (a developer, a team, or a community-governed application).
 
 When canister Wasm code is installed or upgraded, it is instrumented with instruction-counting code. This allows the exact number of cycles to be charged for each message execution in a fully deterministic way, so every node charges the same amount and replicated state machine properties are preserved.
 
@@ -59,7 +59,7 @@ Cycles are also charged for:
 
 ## Query execution
 
-Query calls (non-replicated execution) are executed by a single node and return a response synchronously. Unlike update calls, queries cannot change the replicated state of the subnet: they are read operations on one replica. Queries execute concurrently across multiple threads on a single node, and all nodes in the subnet can serve different queries concurrently, so query throughput scales linearly with subnet size.
+[Query calls](../../references/glossary.md#query) (non-replicated execution) are executed by a single node and return a response synchronously. Unlike update calls, queries cannot change the replicated state of the subnet: they are read operations on one replica. Queries execute concurrently across multiple threads on a single node, and all nodes in the subnet can serve different queries concurrently, so query throughput scales linearly with subnet size.
 
 The tradeoff is the trust model: a single node executes the query, so a compromised node could return an arbitrary result. For critical data, use update calls (which produce responses certified by the subnet) or [certified variables](../../guides/backends/certified-variables.md).
 

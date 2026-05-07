@@ -5,7 +5,7 @@ description: "How ICP nodes join or re-join a subnet by downloading certified ch
 
 State synchronization allows nodes to join a running subnet or recover from downtime without replaying every message ever executed. Instead, the protocol creates periodic certified checkpoints that capture a complete snapshot of the subnet state. A node that needs to catch up downloads a recent checkpoint and replays only the blocks produced since that checkpoint.
 
-Checkpoints are certified by the subnet through a signature over a Merkle-tree manifest (see [Message routing: per-checkpoint certification](message-routing.md#per-checkpoint-certification)). They are made available to other nodes via the [peer-to-peer layer](peer-to-peer.md) as part of a **catch-up package**.
+Checkpoints are certified by the subnet through a signature over a Merkle-tree manifest (see [Message routing: per-checkpoint certification](message-routing.md#per-checkpoint-certification)). They are made available to other nodes via the [peer-to-peer layer](peer-to-peer.md) as part of a [**catch-up package**](../../references/glossary.md#catch-up-package-cup).
 
 ## Joining nodes
 

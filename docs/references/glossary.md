@@ -48,6 +48,10 @@ referred to as one **e8**.
 A **batch** is a collection of [messages](#message) whose
 order is agreed upon by [consensus](#consensus).
 
+#### block maker
+
+A **block maker** is a [node](#node) selected by the [consensus](#consensus) protocol to propose a block in a given round. Block makers are chosen through a random permutation of [subnet](#subnet) nodes using randomness from the [random beacon](#random-beacon). The lowest-ranked node acts as the primary block maker; higher-ranked nodes step in if the primary fails to produce a notarized block within the timeout.
+
 #### beneficiary
 
 The **beneficiary** of an [account](#account) is the [principal](#principal) who owns the [balance](#balance) of the account. The beneficiary of an
@@ -209,6 +213,10 @@ A **data center** (DC) is a physical site that hosts
 [nodes](#node) which contribute to the [Internet Computer](#internet-computer-protocol-icp). It includes the hardware and
 software infrastructure required for node deployment.
 Data centers are nodes that are selected and vetted by the [NNS](#network-nervous-system-nns).
+
+#### Deterministic Time Slicing (DTS)
+
+**Deterministic Time Slicing** (DTS) is a mechanism in the [execution layer](../concepts/protocol/execution.md) that allows a long-running canister computation to span multiple [consensus](#consensus) rounds. Instead of timing out, a computation that exceeds the per-round instruction limit is paused at the end of a round and automatically resumed in the next. DTS is transparent to canisters and requires no special canister code.
 
 #### dissolve delay
 
@@ -474,6 +482,10 @@ Node providers are selected and vetted by the [NNS](#network-nervous-system-nns)
 
 ## O
 
+#### orthogonal persistence
+
+**Orthogonal persistence** is the storage model used by the ICP [execution layer](../concepts/protocol/execution.md). Canister memory pages are persisted to disk automatically after each round without requiring explicit read or write operations. Developers can treat canister state as always in memory; the runtime handles persistence transparently. See the [orthogonal persistence concept page](../concepts/orthogonal-persistence.md) for details.
+
 #### output queue
 
 Each [canister](#canister) has an **output queue** of
@@ -545,6 +557,10 @@ preserved. Queries are synchronous and can be made to any
 
 ## R
 
+#### random beacon
+
+The **random beacon** is a source of cryptographic randomness produced each [consensus](#consensus) round using threshold BLS signatures. Every [subnet](#subnet) node contributes a signature share; when enough shares are combined, a verifiable random value is produced. The random beacon is used to select [block makers](#block-maker) and other randomized elements of the consensus protocol.
+
 #### replica
 
 The **replica** an instance of software containing all the protocol components
@@ -604,6 +620,10 @@ regular ledger [account](#account) (i.e., any ledger account
 except the [ICP supply account](#icp-supply-account)) to
 another regular ledger account.
 
+#### Trusted Execution Environment (TEE)
+
+A **Trusted Execution Environment** (TEE) is a hardware-enforced isolation mechanism that protects the memory and state of a virtual machine from the host operating system and hypervisor. ICP uses AMD SEV-SNP as its TEE technology on supported nodes, providing memory encryption, VM launch measurements, and attestation reports that allow external parties to verify the exact software a node is running. See the [node infrastructure concept page](../concepts/node-infrastructure.md#trusted-execution-environments) for details.
+
 ## U
 
 #### user
@@ -644,6 +664,10 @@ neuron owners.
 stack-based virtual machine.
 
 ## X
+
+#### XNet
+
+**XNet** is the cross-subnet messaging stream used to deliver [messages](#message) between [canisters](#canister) on different [subnets](#subnet). XNet messages produced by the [execution layer](../concepts/protocol/execution.md) are certified by the originating subnet using [chain-key](#chain-key) cryptography and validated by [block makers](#block-maker) on the receiving subnet before being included in a block.
 
 #### XDR
 

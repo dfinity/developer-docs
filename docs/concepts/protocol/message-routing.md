@@ -18,7 +18,7 @@ Although the layer is named for message routing, state certification is equally 
 
 Whenever consensus produces a finalized block, it hands the block to message routing. This marks the transition between the lower and upper halves of the protocol stack: the lower two layers agree on a block, and the upper two layers process it deterministically.
 
-Message routing extracts ingress messages (submitted by users) and XNet messages (sent by canisters on other subnets) from the block. Each message is placed into the input queue of its target canister. This process is called **induction**, and all queues together are called the **induction pool**. After induction, message routing triggers the execution layer, which schedules and executes messages from the pool.
+Message routing extracts [ingress messages](../../references/glossary.md#ingress-message) (submitted by users) and [XNet](../../references/glossary.md#xnet) messages (sent by canisters on other subnets) from the block. Each message is placed into the input queue of its target canister. This process is called **induction**, and all queues together are called the [**induction pool**](../../references/glossary.md#induction-pool). After induction, message routing triggers the execution layer, which schedules and executes messages from the pool.
 
 Message routing and execution modify subnet state in a deterministic way: every honest node makes the same state changes, preserving the replicated state machine properties of the subnet.
 
@@ -50,7 +50,7 @@ At the end of each round (when all messages have been executed or the cycles lim
 - XNet messages queued for other subnets
 - Canister metadata (module hashes and certified variables)
 
-These certified responses can be read and validated against the subnet's public key by users. Each subnet's public key is in turn certified by the NNS, so a certified response can be verified against a single root of trust: the NNS public key. This provides a powerful alternative to reading transaction logs, as responses are authenticated by the network rather than by a centralized server.
+These certified responses can be read and validated against the subnet's public key by users. Each subnet's public key is in turn certified by the [Network Nervous System (NNS)](../../references/glossary.md#network-nervous-system-nns), so a certified response can be verified against a single root of trust: the NNS public key. This provides a powerful alternative to reading transaction logs, as responses are authenticated by the network rather than by a centralized server.
 
 Per-round state certification enables secure, verifiable inter-subnet communication, which is a core enabler of ICP's scalability across many subnets.
 
@@ -58,7 +58,7 @@ Per-round state certification enables secure, verifiable inter-subnet communicat
 
 Not all state is certified every round. Canister Wasm code and written memory pages are certified only at checkpoints, which are periodic snapshots of the entire replicated state persisted to disk.
 
-Checkpoints are created roughly every 10 minutes. For each checkpoint, the subnet computes a certification over a Merkle-tree manifest. Certification is incremental: only the pages that changed since the last checkpoint need to be processed, and their changes are propagated up the tree. The root hash of the manifest is signed by the subnet, forming a **catch-up package** that new or recovering nodes can use to join without replaying the full block history.
+Checkpoints are created roughly every 10 minutes. For each checkpoint, the subnet computes a certification over a Merkle-tree manifest. Certification is incremental: only the pages that changed since the last checkpoint need to be processed, and their changes are propagated up the tree. The root hash of the manifest is signed by the subnet, forming a [**catch-up package**](../../references/glossary.md#catch-up-package-cup) that new or recovering nodes can use to join without replaying the full block history.
 
 The time to compute a checkpoint certification is linear in the number of changed memory pages, not the total state size. This matters as subnets can hold terabytes of state: a full recertification of that volume at each checkpoint interval would be impractical.
 
