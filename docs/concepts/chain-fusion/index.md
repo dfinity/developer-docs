@@ -66,19 +66,19 @@ The combination of signing, reading, and submitting creates three integration pa
 
 Direct integration provides the strongest trust guarantees. The only assumption is that a supermajority of subnet nodes are honest. RPC-based integration adds the assumption that at least one of the queried RPC providers returns correct data, which is mitigated by querying multiple independent providers and comparing results.
 
-## Chain-key digital assets
+## Chain-key tokens
 
-Chain-key digital assets are digital twins of native assets from other chains (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is backed 1:1 by the native asset, which is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
+Chain-key tokens are ICP-native assets backed 1:1 by assets native to another chain (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
 
-These digital assets implement the [ICRC-2](../../guides/digital-assets/ledgers.md) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP digital asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
+These tokens implement the [ICRC-2](../../guides/digital-assets/ledgers.md) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
 
-For details on chain-key digital asset architecture, see [Chain-key digital assets](chain-key-tokens.md). For integration guides, see the [Chain-key digital assets guide](../../guides/digital-assets/chain-key-tokens.md).
+For details on chain-key token architecture, see [Chain-key tokens](chain-key-tokens.md). For integration guides, see the [Chain-key tokens guide](../../guides/digital-assets/chain-key-tokens.md).
 
 ## Supported chains
 
 Any chain whose transactions use ECDSA (secp256k1), Schnorr (BIP340 over secp256k1), or Ed25519 signatures can be integrated with ICP. The following table lists chains with established integrations or community-built tooling:
 
-| Chain | Signature scheme | Integration method | Chain-key digital asset |
+| Chain | Signature scheme | Integration method | Chain-key token |
 |-------|-----------------|-------------------|-----------------|
 | Bitcoin | ECDSA, Schnorr | Direct | ckBTC |
 | Ethereum | ECDSA | EVM RPC canister | ckETH, ckERC20 |
@@ -104,7 +104,7 @@ Several reusable canisters and protocol APIs are available for building Chain Fu
 - **Bitcoin API.** The management canister exposes `bitcoin_get_utxos`, `bitcoin_get_balance`, and `bitcoin_send_transaction`: a direct protocol-level integration with no intermediary. See [Bitcoin integration](bitcoin.md) and the [Bitcoin guide](../../guides/chain-fusion/bitcoin.md).
 - **EVM RPC canister** (`7hfb6-caaaa-aaaar-qadga-cai`). A canister providing a typed Candid interface for Ethereum and EVM-compatible chains. Queries multiple RPC providers and returns consensus results. See [Ethereum integration](ethereum.md) and the [Ethereum guide](../../guides/chain-fusion/ethereum.md).
 - **SOL RPC canister.** A similar canister for Solana, providing typed access to Solana's JSON-RPC API. See [Solana integration](solana.md) and the [Solana guide](../../guides/chain-fusion/solana.md).
-- **Chain-key digital assets.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20: trustless 1:1 representations of external assets on ICP. See [Chain-key digital assets](chain-key-tokens.md) and the [integration guide](../../guides/digital-assets/chain-key-tokens.md).
+- **Chain-key tokens.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20: trustless 1:1 representations of external assets on ICP. See [Chain-key tokens](chain-key-tokens.md) and the [integration guide](../../guides/digital-assets/chain-key-tokens.md).
 - **Chain Fusion Signer.** A reusable canister that exposes threshold signature APIs directly to web apps and CLI users, with cycle payments via ICRC-2 approval. [OISY Wallet](https://oisy.com) is a prominent production example: a multichain wallet built on ICP that uses the Chain Fusion Signer to manage keys for Bitcoin, Ethereum, and other chains. See the [chain-fusion-signer repository](https://github.com/dfinity/chain-fusion-signer).
 
 ## Example use cases
@@ -122,7 +122,7 @@ Chain Fusion enables application patterns that are difficult or impossible with 
 - [Bitcoin integration](bitcoin.md): how the Bitcoin adapter and ckBTC work
 - [Ethereum integration](ethereum.md): Ethereum, EVM chains, and the EVM RPC canister
 - [Solana integration](solana.md): the SOL RPC canister
-- [Chain-key digital assets](chain-key-tokens.md): architecture of trustless crosschain digital assets
+- [Chain-key tokens](chain-key-tokens.md): architecture of trustless crosschain assets
 - [Exchange rate canister](exchange-rate-canister.md): onchain oracle for asset prices
 - [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build with BTC on ICP
 - [Ethereum guide](../../guides/chain-fusion/ethereum.md): interact with Ethereum and EVM chains

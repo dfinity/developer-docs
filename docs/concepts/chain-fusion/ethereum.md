@@ -36,22 +36,22 @@ The EVM RPC canister supports the standard JSON-RPC Ethereum API, including:
 
 - `eth_getBlockByNumber`, `eth_getBlockByHash`: block data
 - `eth_getTransactionCount`, `eth_getTransactionByHash`, `eth_getTransactionReceipt`: transaction data
-- `eth_getLogs`: event logs (used to detect deposits for chain-key digital assets)
+- `eth_getLogs`: event logs (used to detect deposits for chain-key tokens)
 - `eth_feeHistory`, `eth_gasPrice`: fee estimation
 - `eth_sendRawTransaction`: broadcast a signed transaction
 - `eth_call`: call a smart contract read function
 
 Beyond Ethereum mainnet, the canister also has partial support for Polygon, Avalanche, and other popular EVM networks.
 
-## Chain-key Ether and ERC-20 digital assets
+## Chain-key Ether and ERC-20 tokens
 
-ckETH and ckERC20 digital assets (such as ckUSDC and ckUSDT) are chain-key digital assets backed 1:1 by assets on Ethereum. They follow the same architecture as ckBTC (a minter canister plus an ICRC-1/ICRC-2 ledger canister) but use a different deposit mechanism.
+ckETH and ckERC20 tokens (such as ckUSDC and ckUSDT) are chain-key tokens backed 1:1 by assets on Ethereum. They follow the same architecture as ckBTC (a minter canister plus an ICRC-1/ICRC-2 ledger canister) but use a different deposit mechanism.
 
-**Deposits.** Because ICP cannot observe Ethereum state directly (unlike Bitcoin, which uses a native adapter), ckETH uses a helper smart contract deployed on Ethereum. Users send ETH or ERC-20 assets to this helper contract, which emits an event. The ckETH minter periodically queries the event log via the EVM RPC canister to discover deposits and mints the corresponding chain-key digital assets.
+**Deposits.** Because ICP cannot observe Ethereum state directly (unlike Bitcoin, which uses a native adapter), ckETH uses a helper smart contract deployed on Ethereum. Users send ETH or ERC-20 assets to this helper contract, which emits an event. The ckETH minter periodically queries the event log via the EVM RPC canister to discover deposits and mints the corresponding chain-key tokens.
 
-**Withdrawals.** The user approves the minter to burn their chain-key digital assets (via ICRC-2), then calls the withdrawal endpoint. The minter burns the digital assets, signs an Ethereum transaction using chain-key ECDSA, and submits it via the EVM RPC canister.
+**Withdrawals.** The user approves the minter to burn their chain-key tokens (via ICRC-2), then calls the withdrawal endpoint. The minter burns the tokens, signs an Ethereum transaction using chain-key ECDSA, and submits it via the EVM RPC canister.
 
-For a full description of chain-key digital asset architecture, see [Chain-key digital assets](chain-key-tokens.md).
+For a full description of chain-key token architecture, see [Chain-key tokens](chain-key-tokens.md).
 
 ## Next steps
 
@@ -59,6 +59,6 @@ For a full description of chain-key digital asset architecture, see [Chain-key d
 - [Chain Fusion overview](index.md): integration patterns and supported chains
 - [HTTPS outcalls](../https-outcalls.md): how canisters reach external HTTP endpoints
 - [Chain-key cryptography](../chain-key-cryptography.md): threshold ECDSA signing
-- [Chain-key digital assets](chain-key-tokens.md): ckETH and ckERC20 architecture
+- [Chain-key tokens](chain-key-tokens.md): ckETH and ckERC20 architecture
 
 <!-- Upstream: informed by Learn Hub articles "Ethereum Integration", "EVM RPC Canister" (migrated, source retired) -->

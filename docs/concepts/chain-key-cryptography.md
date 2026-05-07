@@ -91,7 +91,7 @@ For signing costs, see [Cycles costs](../references/cycles-costs.md).
 
 ## Supported chains
 
-Any chain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key digital assets, see [Chain Fusion: Supported chains](chain-fusion/index.md#supported-chains).
+Any chain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion/index.md#supported-chains).
 
 ## Chain evolution
 

@@ -19,7 +19,7 @@ Solana uses Ed25519 signatures. Canisters can derive Ed25519 public keys and req
 
 ## Chain-key SOL (ckSOL)
 
-ckSOL is the chain-key digital asset representing SOL on ICP. Like ckETH, it is backed 1:1 by SOL held in a canister-controlled Solana address. The minter canister monitors Solana deposits via the SOL RPC canister and mints ICRC-1/ICRC-2 compliant ckSOL digital assets on ICP. Withdrawals follow the same pattern: burn ckSOL, sign a Solana transfer using chain-key Ed25519, and broadcast via the SOL RPC canister.
+ckSOL is the chain-key token representing SOL on ICP. Like ckETH, it is backed 1:1 by SOL held in a canister-controlled Solana address. The minter canister monitors Solana deposits via the SOL RPC canister and mints ICRC-1/ICRC-2 compliant ckSOL tokens on ICP. Withdrawals follow the same pattern: burn ckSOL, sign a Solana transfer using chain-key Ed25519, and broadcast via the SOL RPC canister.
 
 ## Next steps
 

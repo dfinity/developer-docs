@@ -52,7 +52,7 @@ Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/s
 | ckBTC minter | `mqygn-kiaaa-aaaar-qaadq-cai` |
 | ckBTC ledger | `mxzaz-hqaaa-aaaar-qaada-cai` |
 
-The **ledger** is an ICRC-1/ICRC-2 compliant digital asset ledger. It records all ckBTC balances and handles transfers. The transfer fee is 0.0000001 ckBTC (10 satoshi), sent to the minter's fee subaccount.
+The **ledger** is an [ICRC-1/ICRC-2](../../references/icrc-standards.md) compliant ledger. It records all ckBTC balances and handles transfers. The transfer fee is 0.0000001 ckBTC (10 satoshi), sent to the minter's fee subaccount.
 
 The **minter** manages the BTC side: it controls Bitcoin addresses, tracks UTXOs, triggers minting when deposits arrive, and signs and submits Bitcoin transactions when users withdraw.
 
