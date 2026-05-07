@@ -5,11 +5,11 @@ sidebar:
   order: 14
 ---
 
-Every digital asset on ICP is managed by a **ledger canister**: a canister that defines who owns a given digital asset and permanently logs every transfer and balance change. This page explains how ledgers are structured, how they scale, and what the different address formats mean.
+Every digital asset on ICP is managed by a **ledger canister**: a canister that records ownership and permanently logs every transfer and balance change. This page explains how ledgers are structured, how they scale, and what the different address formats mean.
 
 ## What a ledger canister does
 
-A ledger canister is the authoritative source of truth for a digital asset. It:
+A ledger canister is the authoritative source of truth for an asset. It:
 
 - Records the current balance of every account.
 - Logs every transfer, mint, and burn operation in an append-only transaction history.
@@ -18,7 +18,7 @@ A ledger canister is the authoritative source of truth for a digital asset. It:
 
 Unlike a traditional bank, ledger canisters are publicly readable: anyone can query transaction history through explorers and verify balances independently.
 
-There is no single global ledger on ICP. Each digital asset is managed by its own ledger canister, deployed and governed by whoever controls that canister. ICP has its own ledger. Every [ICRC](../references/icrc-standards.md)-standard digital asset has its own ledger. [Chain-key tokens](chain-fusion.md) such as ckBTC and ckETH each have their own ledger canisters.
+There is no single global ledger on ICP. Each asset is managed by its own ledger canister, deployed and governed by whoever controls that canister. ICP has its own ledger. Every [ICRC](../references/icrc-standards.md)-standard asset has its own ledger. [Chain-key tokens](chain-fusion.md) such as ckBTC and ckETH each have their own ledger canisters.
 
 ## Two ledger designs
 
@@ -26,18 +26,18 @@ ICP has two ledger designs in common use, each with a different address format.
 
 ### ICP ledger
 
-The ICP ledger manages the native ICP digital asset. It uses an address format called an **AccountIdentifier**: a 32-byte hash derived from a principal ID and an optional subaccount. AccountIdentifiers are displayed as 64-character hex strings.
+The ICP ledger manages the native ICP asset. It uses an address format called an **AccountIdentifier**: a 32-byte hash derived from a principal ID and an optional subaccount. AccountIdentifiers are displayed as 64-character hex strings.
 
 ### ICRC ledgers
 
-Most fungible digital assets on ICP (including chain-key tokens like ckBTC and ckETH) use the ICRC standard. ICRC ledgers use a two-part account format:
+Most fungible assets on ICP (including chain-key tokens like ckBTC and ckETH) use the ICRC standard. ICRC ledgers use a two-part account format:
 
 - **Principal**: the identity of the holder (a user principal or canister principal).
 - **Subaccount** (optional): a 32-byte value that lets a single principal manage many internal accounts.
 
 This model gives wallets and services flexibility: a single canister can track individual user balances in separate subaccounts without deploying a separate canister per user.
 
-The [ICRC](../references/icrc-standards.md) standard defines a family of interfaces. ICRC-1 covers basic transfers. ICRC-2 adds approval and transfer-from semantics (like ERC-20 allowances). ICRC-3 standardizes the transaction log format. All DFINITY-maintained digital asset ledgers implement at least ICRC-1 and ICRC-2. See [Digital assets guide](../guides/digital-assets/ledgers.md) for the API.
+The [ICRC](../references/icrc-standards.md) standard defines a family of interfaces. ICRC-1 covers basic transfers. ICRC-2 adds approval and transfer-from semantics (like ERC-20 allowances). ICRC-3 standardizes the transaction log format. All DFINITY-maintained asset ledgers implement at least ICRC-1 and ICRC-2. See [Digital assets guide](../guides/digital-assets/ledgers.md) for the API.
 
 ## How transactions are recorded
 
@@ -66,7 +66,7 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 ## Next steps
 
 - [Digital assets guide](../guides/digital-assets/ledgers.md): ICRC-1/2 API usage, transfer examples, balance queries
-- [Tokenomics](tokenomics.md): how ICP and SNS digital assets are economically designed
+- [Tokenomics](tokenomics.md): how ICP and SNS assets are economically designed
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
 - [Chain-key tokens](chain-fusion.md): ckBTC, ckETH, and other 1:1 backed asset ledgers
 
