@@ -15,7 +15,7 @@ ICP takes a different approach: instead of requiring clients to maintain any blo
 
 ## How certificates are produced
 
-Each subnet holds a threshold BLS signing key. The corresponding subnet public key is registered on the NNS and derivable from the IC root public key. At each consensus round, the subnet computes a **certified state tree**: a hash tree representing the replicated state of all canisters on that subnet — and signs the root hash of this tree with its threshold BLS key.
+Each subnet holds a threshold BLS signing key. The corresponding subnet public key is registered on the NNS and derivable from the IC root public key. At each consensus round, the subnet computes a **certified state tree**: a hash tree representing the replicated state of all canisters on that subnet, then signs the root hash of this tree with its threshold BLS key.
 
 The signed root is included in the subnet's **certified state**, which is available to every replica. When a canister wants to certify a response, it embeds a piece of certified state in the response, along with a Merkle path (witness) proving that the certified piece is included under the signed root.
 
@@ -57,4 +57,4 @@ The unique-signature property of BLS is also essential here: for a given message
 - [Chain-key cryptography](chain-key-cryptography.md): the threshold BLS signatures that power this system
 - [Network overview](network-overview.md): how subnet nodes produce the certified state tree
 
-<!-- Upstream: learn hub staging: chain-key-cryptography/certified-communication.md -->
+<!-- Upstream: informed by Learn Hub article "Certified Communication" (migrated, source retired) -->
