@@ -8,7 +8,7 @@ import base64
 # Interact with preview canister pool: https://github.com/dfinity/preview-canister-pool
 #
 
-private_key = base64.b64decode(os.environ["IDENTITY_PREVIEW"]).decode("utf-8")
+private_key = base64.b64decode(os.environ["POOL_CONTROLLER_IDENTITY"]).decode("utf-8")
 pool_id = os.environ["POOL_CANISTER_ID"]
 
 identity = Identity.from_pem(private_key)
