@@ -70,4 +70,4 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
 - [Chain-key tokens](chain-fusion.md): ckBTC, ckETH, and other 1:1 backed token ledgers
 
-<!-- Upstream: learn hub staging: tokens-governance/how-token-ledgers-work-on-the-internet-computer.md -->
+<!-- Upstream: informed by Learn Hub article "How Token Ledgers Work on the Internet Computer" (migrated, source retired) -->

@@ -68,4 +68,4 @@ SNS tokenomics is entirely configurable and independent of the NNS ICP tokenomic
 - [Token ledgers](token-ledgers.md): how ICP and other token balances are tracked
 - [Launching an SNS](../guides/governance/launching.md): the decentralization swap process
 
-<!-- Upstream: learn hub staging: tokens-governance/tokens-governance.md, tokens-governance/tokenomics.md, sns/tokenomics.md -->
+<!-- Upstream: informed by Learn Hub articles "Tokens and Governance", "Tokenomics", "SNS Tokenomics" (migrated, source retired) -->
