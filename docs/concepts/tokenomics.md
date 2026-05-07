@@ -65,7 +65,7 @@ SNS tokenomics is entirely configurable and independent of the NNS ICP tokenomic
 
 - [Governance](governance.md): NNS neurons, proposals, voting, and the SNS framework
 - [Cycles](cycles.md): how cycle costs work and how ICP converts to cycles
-- [Ledgers](token-ledgers.md): how ICP and other digital asset balances are tracked
+- [Ledgers](ledgers.md): how ICP and other digital asset balances are tracked
 - [Launching an SNS](../guides/governance/launching.md): the decentralization swap process
 
 <!-- Upstream: informed by Learn Hub articles "Tokens and Governance", "Tokenomics", "SNS Tokenomics" (migrated, source retired) -->
