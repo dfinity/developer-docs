@@ -11,7 +11,7 @@ IC-OS is not a single operating system but a layered stack of three systems, eac
 
 ### SetupOS
 
-SetupOS is used once: when initializing a new node for the first time. A node provider boots from a USB drive containing SetupOS, which automatically:
+SetupOS is used once: when initializing a new node for the first time. A [node provider](../references/glossary.md#node-provider) boots from a USB drive containing SetupOS, which automatically:
 
 - Verifies that the hardware meets ICP node requirements
 - Tests network connectivity
@@ -26,7 +26,7 @@ HostOS runs directly on the physical hardware. Its sole purpose is to configure 
 
 - Launches the GuestOS virtual machine
 - Manages hardware resource allocation
-- Handles GuestOS upgrades pushed by the Network Nervous System (NNS)
+- Handles GuestOS upgrades pushed by the [Network Nervous System (NNS)](../references/glossary.md#network-nervous-system-nns)
 - Provides a security boundary between the physical hardware and the ICP software stack
 
 HostOS is intentionally minimal. It treats the GuestOS as an untrusted process running in a virtual machine, which limits what a compromised GuestOS can do to the host and what the host can do to the guest.
@@ -35,7 +35,7 @@ HostOS is intentionally minimal. It treats the GuestOS as an untrusted process r
 
 GuestOS runs inside a virtual machine on top of HostOS. This is where the ICP software actually executes. GuestOS:
 
-- Runs the replica process (implementing the four-layer protocol stack)
+- Runs the [replica](../references/glossary.md#replica) process (implementing the four-layer protocol stack)
 - Executes canisters and manages their state
 - Participates in consensus with other nodes in the subnet
 - Manages cryptographic key material and threshold signature operations
