@@ -1,6 +1,6 @@
 ---
-title: "Tokenomics"
-description: "ICP and SNS economics: uses, governance rewards, supply dynamics, and SNS asset configuration"
+title: "Network Economics"
+description: "How the Internet Computer's economic model works: ICP uses, governance rewards, supply dynamics, and SNS asset configuration"
 sidebar:
   order: 13
 ---
@@ -48,9 +48,9 @@ ICP has both inflationary and deflationary mechanisms:
 
 The net effect on supply depends on market conditions: when cycle demand is high (more computation), more ICP is burned. When governance participation is high, more ICP is minted. The [NNS dashboard](https://dashboard.internetcomputer.org/governance) shows live estimates of supply, staking, and annualized voting rewards.
 
-## SNS tokenomics
+## SNS economics
 
-Each SNS deploys its own governance asset alongside its canister, with a tokenomics configuration set at launch. The mechanics are similar to the NNS: staking for voting power, configurable voting reward minting, transaction fee burning, and a treasury for SNS-controlled spending.
+Each SNS deploys its own governance asset alongside its canister, with an economics configuration set at launch. The mechanics are similar to the NNS: staking for voting power, configurable voting reward minting, transaction fee burning, and a treasury for SNS-controlled spending.
 
 Key parameters a team configures for their SNS:
 
@@ -59,7 +59,7 @@ Key parameters a team configures for their SNS:
 - **Reward rate**: whether and at what rate the SNS mints new assets for governance participation.
 - **Transaction fees**: a per-transfer fee that is burned, creating deflationary pressure.
 
-SNS tokenomics is entirely configurable and independent of the NNS ICP tokenomics model. Two SNS instances can have very different economic designs.
+SNS economics is entirely configurable and independent of the NNS economic model. Two SNS instances can have very different economic designs.
 
 ## Next steps
 

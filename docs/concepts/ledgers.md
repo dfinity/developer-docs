@@ -66,7 +66,7 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 ## Next steps
 
 - [Digital assets guide](../guides/digital-assets/ledgers.md): ICRC-1/2 API usage, transfer examples, balance queries
-- [Tokenomics](tokenomics.md): how ICP and SNS assets are economically designed
+- [Network economics](network-economics.md): how ICP and SNS assets are economically designed
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
 - [Chain-key tokens](chain-fusion.md): ckBTC, ckETH, and other 1:1 backed asset ledgers
 
