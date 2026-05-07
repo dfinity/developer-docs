@@ -622,7 +622,7 @@ another regular ledger account.
 
 #### Trusted Execution Environment (TEE)
 
-A **Trusted Execution Environment** (TEE) is a hardware-enforced isolation mechanism that protects the memory and state of a virtual machine from the host operating system and hypervisor. ICP uses AMD SEV-SNP as its TEE technology on supported nodes, providing memory encryption, VM launch measurements, and attestation reports that allow external parties to verify the exact software a node is running. See the [node infrastructure concept page](../concepts/node-infrastructure.md#trusted-execution-environments) for details.
+A **Trusted Execution Environment** (TEE) is a hardware-enforced isolation mechanism that protects the memory and state of a virtual machine from the host operating system and hypervisor. ICP uses AMD SEV-SNP as its TEE technology on supported nodes, providing memory encryption, VM launch measurements, and attestation reports that allow external parties to verify the exact software a node is running.
 
 ## U
 
