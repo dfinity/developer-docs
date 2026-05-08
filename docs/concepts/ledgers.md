@@ -18,7 +18,7 @@ A ledger canister is the authoritative source of truth for an asset. It:
 
 Unlike a traditional bank, ledger canisters are publicly readable: anyone can query transaction history through explorers and verify balances independently.
 
-There is no single global ledger on ICP. Each asset is managed by its own ledger canister, deployed and governed by whoever controls that canister. ICP has its own ledger. Every [ICRC](../references/icrc-standards.md)-standard asset has its own ledger. [Chain-key tokens](chain-fusion.md) such as ckBTC and ckETH each have their own ledger canisters.
+There is no single global ledger on ICP. Each asset is managed by its own ledger canister, deployed and governed by whoever controls that canister. ICP has its own ledger. Every [ICRC](../references/icrc-standards.md)-standard asset has its own ledger. [Chain-key tokens](chain-fusion/index.md#chain-key-tokens) such as ckBTC and ckETH each have their own ledger canisters.
 
 ## Two ledger designs
 
@@ -68,6 +68,6 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 - [Digital assets guide](../guides/digital-assets/ledgers.md): ICRC-1/2 API usage, transfer examples, balance queries
 - [Network economics](network-economics.md): how ICP and SNS assets are economically designed
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
-- [Chain-key tokens](chain-fusion.md): ckBTC, ckETH, and other 1:1 backed asset ledgers
+- [Chain-key tokens](chain-fusion/index.md#chain-key-tokens): ckBTC, ckETH, and other 1:1 backed asset ledgers
 
 <!-- Upstream: informed by Learn Hub article "How Token Ledgers Work on the Internet Computer" (migrated, source retired) -->
