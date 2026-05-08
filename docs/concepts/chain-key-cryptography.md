@@ -17,6 +17,7 @@ This design has several consequences for developers:
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified data](certified-data.md) for the conceptual explanation and [Certified variables](../guides/backends/certified-variables.md) for the implementation guide.
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
+- **Onchain encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making onchain encryption practical. See [VetKeys](vetkeys.md).
 
 ## Core protocols
 
@@ -24,7 +25,7 @@ Chain-key cryptography is not a single algorithm but a protocol suite. The main 
 
 ### Distributed key generation (DKG)
 
-Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a novel DKG protocol that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing**: transferring key material to a new set of nodes when subnet membership changes (for example, during node rotation), without ever reconstructing the private key. Resharing ensures that shares held by removed nodes become useless, so the subnet's signing ability is preserved across membership changes while old shares cannot be exploited.
+Before a subnet can sign anything, its nodes must collectively generate a key whose shares are distributed among them. ICP uses a [novel DKG protocol](https://eprint.iacr.org/2021/339) that works over an **asynchronous network** and tolerates up to one-third of nodes being faulty. The same protocol handles **key resharing**: transferring key material to a new set of nodes when subnet membership changes (for example, during node rotation), without ever reconstructing the private key. Resharing ensures that shares held by removed nodes become useless, so the subnet's signing ability is preserved across membership changes while old shares cannot be exploited.
 
 ### Threshold BLS signatures
 
@@ -82,7 +83,7 @@ Under high load, pre-signatures may be temporarily exhausted and signing request
 
 ## Deployed keys
 
-The following master keys are deployed at the time of writing. The NNS can add new keys or change subnet assignments via proposals, so consult the [IC dashboard](https://dashboard.internetcomputer.org) for the current state.
+The following master keys are deployed at the time of writing. The Network Nervous System (NNS) can add new keys or change subnet assignments via proposals, so consult the [IC dashboard](https://dashboard.internetcomputer.org) for the current state.
 
 | Key ID | Scheme | Purpose | Signing subnet |
 |--------|--------|---------|----------------|

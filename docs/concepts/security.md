@@ -15,7 +15,7 @@ Canisters execute in two modes, each with different trust properties:
 
 **Update calls** go through consensus. Every node on the subnet executes the same code against the same state and must agree on the result. This makes update calls tamper-proof: a single malicious node cannot alter the outcome. The tradeoff is latency (~2 seconds).
 
-**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree: clients then verify the subnet's signature to confirm the response hasn't been tampered with.
+**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree: clients then verify the subnet's signature to confirm the response hasn't been tampered with. See [Certified data](certified-data.md) for how this mechanism works.
 
 This distinction is the most important security boundary on the IC. Any data returned by a query call that is not backed by a certificate should be treated as unverified.
 
