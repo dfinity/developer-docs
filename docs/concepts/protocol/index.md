@@ -33,8 +33,8 @@ To allow nodes to efficiently join a running subnet or catch up after downtime, 
 
 ## Further reading
 
-- [Consensus](consensus.md): block making, notarization, and finalization in detail
 - [Peer-to-peer](peer-to-peer.md): Abortable Broadcast and QUIC transport
+- [Consensus](consensus.md): block making, notarization, and finalization in detail
 - [Message routing](message-routing.md): induction, XNet streaming, and state certification
 - [Execution](execution.md): WebAssembly execution, deterministic time slicing, and cycles
 - [State synchronization](state-synchronization.md): catch-up packages and incremental sync
