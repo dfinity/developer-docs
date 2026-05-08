@@ -180,6 +180,7 @@ Because the integrity checker is part of the initramdisk, a malicious actor cann
 
 ## Further reading
 
-- [Glossary: replica](../references/glossary.md#replica): the software stack that runs inside GuestOS
+- [Protocol Stack](protocol/index.md): the four-layer architecture (peer-to-peer, consensus, message routing, execution) that runs inside GuestOS
+- [Glossary: replica](../references/glossary.md#replica): the replica process that implements the protocol stack
 
 <!-- Upstream: informed by Learn Hub articles "Overview" (Node Infrastructure), "Trusted Execution Environments" (migrated, source retired) -->
