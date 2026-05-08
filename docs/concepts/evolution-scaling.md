@@ -45,7 +45,7 @@ In the worst case, the subnet hosting the NNS canisters itself can fail. Because
 
 ICP scales horizontally by creating new subnets. Each subnet hosts thousands of canisters and processes messages independently. Adding a subnet adds proportional capacity to the network: more canisters, more storage, more throughput.
 
-![ICP nodes divided into subnets, each subnet runs a separate blockchain](/concepts/evolution-scaling/add-new-subnet.webp)
+![ICP nodes divided into subnets, each running an independent consensus protocol](/concepts/evolution-scaling/add-new-subnet.webp)
 
 Subnets on the Internet Computer communicate using cross-subnet (XNet) messaging. A canister on any subnet can send asynchronous messages to any canister on any other subnet. XNet messages are included in the receiving subnet's consensus blocks and authenticated using [chain-key cryptography](chain-key-cryptography.md). This loosely coupled architecture means newly created subnets can immediately exchange messages with all existing subnets, without a central bottleneck.
 
@@ -59,7 +59,7 @@ Subnets on the Internet Computer communicate using cross-subnet (XNet) messaging
 
 3. **Community vote.** Anyone who has staked ICP can vote on the proposal. If a majority approve, the NNS registry canister records the new subnet configuration and instructs the NNS subnet to generate the initial cryptographic key material for the subnet using chain-key cryptography.
 
-4. **Subnet genesis.** Each selected node's orchestrator sees the new subnet record in the registry, downloads the correct replica software, and starts the replica with the genesis catch-up package. The nodes form the new subnet blockchain and begin accepting messages.
+4. **Subnet genesis.** Each selected node's orchestrator sees the new subnet record in the registry, downloads the correct replica software, and starts the replica with the genesis catch-up package. The nodes form the subnet and begin accepting messages.
 
 ## Chain evolution
 
@@ -74,7 +74,7 @@ The NNS registry stores the complete configuration of the Internet Computer, inc
 Upgrades roll out on a per-subnet basis. Within a subnet, all nodes must switch to the new protocol version simultaneously to avoid a fork. This coordination is achieved using epochs:
 
 - The consensus protocol divides time into epochs, each several hundred rounds long.
-- At each epoch boundary, nodes produce a summary block containing the configuration (including replica version and cryptographic key material) to use for the next epoch.
+- The first block of each epoch is a summary block containing the configuration (including replica version and cryptographic key material) for both the current epoch and the next one. Nodes therefore know the upcoming version from the start of the current epoch, not at the last moment.
 - If the registry indicates a new replica version for the upcoming epoch, all nodes download it in advance.
 
 ![Protocol upgrade happens at epoch boundaries; all nodes switch simultaneously](/concepts/evolution-scaling/protocol-transition.webp)
@@ -88,6 +88,8 @@ Upgrades roll out on a per-subnet basis. Within a subnet, all nodes must switch 
 - The new replica resumes consensus immediately from the handed-off state.
 
 Blocks and consensus artifacts are tagged with the protocol version that produced them. A replica only processes artifacts from its own version, except CUPs (which must be readable by both the pre-upgrade and post-upgrade replica).
+
+The registry records the desired configuration, not the current running version. A subnet may continue running an older version until the CUP handoff completes. Nodes determine the actual current version by querying peers for the highest valid CUP.
 
 ### Upgrade governance
 
