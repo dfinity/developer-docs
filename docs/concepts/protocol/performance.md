@@ -7,7 +7,7 @@ sidebar:
 
 ICP is designed to run applications at web speed. This page explains the key performance metrics, how the protocol architecture determines them, and the figures measured on mainnet and in synthetic experiments.
 
-Performance numbers are point-in-time snapshots. Engineers maintaining this page should refresh mainnet figures by querying the [IC metrics API](https://ic-api.internetcomputer.org/api/v3/metrics/) and verifying synthetic results against current hardware and protocol parameters. Live network statistics are always available on the [IC dashboard](https://dashboard.internetcomputer.org).
+Performance numbers are point-in-time snapshots. Engineers maintaining this page should refresh mainnet figures using the [IC Dashboard APIs](../../references/ic-dashboard-api.md): the `daily_stats` endpoint for throughput and the `metrics` endpoint (`instruction-rate`) for MIEPS. Live network statistics are always available on the [IC dashboard](https://dashboard.internetcomputer.org).
 
 ## Metrics
 
@@ -77,6 +77,7 @@ Network latency is a floor for consensus latency: a consensus round requires mul
 
 - [Execution layer](execution.md): WebAssembly execution, DTS, and cycles accounting
 - [Consensus](consensus.md): how blocks are proposed, notarized, and finalized
+- [IC Dashboard APIs](../../references/ic-dashboard-api.md): REST APIs for querying live network metrics, throughput, and governance data
 - [IC dashboard](https://dashboard.internetcomputer.org): live network statistics including per-subnet MIEPS and latency
 - [Usenix ATC 2023 paper](https://www.usenix.org/system/files/atc23-arutyunyan.pdf): design and performance measurements of the ICP execution layer
 
