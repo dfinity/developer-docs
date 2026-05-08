@@ -122,7 +122,7 @@ The formula between `t_start` and `t_start + t_delta` is: `R(t) = r_min + (r_max
 
 If `VotingRewardsParameters` is not set at all, voting rewards are disabled.
 
-User rewards — distributing existing treasury assets to active app users — are a separate mechanism: an SNS-controlled canister holds an asset reserve and pays out rewards according to its own logic.
+User rewards (distributing existing treasury assets to active app users) are a separate mechanism: an SNS-controlled canister holds an asset reserve and pays out rewards according to its own logic.
 
 ## Next steps
 

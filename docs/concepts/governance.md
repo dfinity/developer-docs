@@ -101,7 +101,7 @@ An SNS consists of five core canisters plus a variable number of archive caniste
 
 Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS asset holders.
 
-### Initial asset distribution
+### Initial asset allocation
 
 Each SNS has its own governance digital asset. The initial distribution is defined in the SNS configuration file and includes:
 
