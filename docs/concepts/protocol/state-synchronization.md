@@ -7,8 +7,6 @@ sidebar:
 
 State synchronization allows nodes to join a running subnet or recover from downtime without replaying every message ever executed. Instead, the protocol creates periodic certified checkpoints that capture a complete snapshot of the subnet state. A node that needs to catch up downloads a recent checkpoint and replays only the blocks produced since that checkpoint.
 
-![State synchronization: a catching-up node downloads a certified checkpoint then replays only recent blocks](/concepts/protocol/state-sync.webp)
-
 Checkpoints are certified by the subnet through a signature over a Merkle-tree manifest (see [Message routing: per-checkpoint certification](message-routing.md#per-checkpoint-certification)). They are made available to other nodes via the [peer-to-peer layer](peer-to-peer.md) as part of a [**catch-up package**](../../references/glossary.md#catch-up-package-cup).
 
 ## Joining nodes
@@ -26,6 +24,8 @@ A node that was temporarily offline may still hold an older checkpoint. In this 
 The subnet state is organized as a Merkle tree and can reach up to a terabyte in size. A recovering node first requests the children of the root of the state tree from its peers. It then recursively downloads only the subtrees that differ from its local state, skipping the parts it already has.
 
 This incremental approach ensures that a recovering node transfers the minimum amount of data needed to rejoin the subnet, rather than downloading the full state again.
+
+![The catching-up replica only syncs the parts of the replicated state that differ from the up-to-date replica](/concepts/protocol/state-sync.webp)
 
 ## Further reading
 

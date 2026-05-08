@@ -7,8 +7,6 @@ sidebar:
 
 The consensus protocol allows every node in a subnet to agree on which messages to process and in what order. Each subnet runs its own independent instance of the protocol. The output of each consensus round is a single finalized block of ordered messages that every node then executes deterministically, producing the same state transition on each.
 
-![Consensus collects ingress messages, XNet messages, and protocol messages into an ordered block](/concepts/protocol/consensus_orders_messages.webp)
-
 ICP's consensus is designed to meet three requirements:
 
 - **Low latency.** Blocks are finalized in roughly one second, achieving near-instant finality.
@@ -17,31 +15,39 @@ ICP's consensus is designed to meet three requirements:
 
 ## Cryptographic finality
 
-ICP provides cryptographic finality rather than probabilistic finality. Probabilistic finality considers a block final only after enough subsequent blocks have built on top of it. ICP avoids this approach for two reasons: probabilistic finality is a weak guarantee, and it would substantially increase the time before a message response can be trusted.
+ICP provides cryptographic finality rather than probabilistic finality. Probabilistic finality considers a block final only after enough subsequent blocks have built on top of it. ICP avoids this approach for two reasons: probabilistic finality is a very weak guarantee, and it would substantially increase the time before a message response can be trusted.
 
 The ICP consensus protocol achieves cryptographic finality while making minimal assumptions about the network. Safety does not depend on any bound on message delivery time (the protocol only assumes an asynchronous network). For a globally distributed network, synchrony is not a realistic assumption. When messages do arrive promptly, the protocol makes progress with good latency. Correctness is always guaranteed regardless of message delays, as long as fewer than one third of subnet nodes are faulty.
 
 ## Consensus rounds
 
+![Consensus round yields an ordered sequence of messages](/concepts/protocol/consensus_orders_messages.webp)
+
 The protocol maintains a tree of notarized blocks, with a special genesis block at the root. The protocol proceeds in rounds. Each round adds at least one new notarized block to the tree as a child of a notarized block from the previous round. When things proceed normally, exactly one notarized block is added and it is immediately finalized. Once a block is finalized, all of its ancestors are implicitly finalized. The protocol guarantees a unique chain of finalized blocks. This chain is the output of consensus.
 
-A consensus round has three phases.
+At a high level, each round has three phases:
+
+- **Block making.** At least one node (the block maker) proposes a block by broadcasting it to all nodes in the subnet. When things go right there is only one block maker, but sometimes there may be several.
+- **Notarization.** For a block to become notarized, at least two thirds of the nodes must validate and support its notarization.
+- **Finalization.** For a block to become finalized, at least two thirds of the nodes must support its finalization. A node supports finalization only if it did not support notarization of any other block in that round, which guarantees that a finalized block has no competing notarized block.
 
 ### Block making
 
-In every round, one or more nodes called [block makers](../../references/glossary.md#block-maker) propose a block. Each block contains a reference to a notarized block from the previous round, ingress messages submitted by users, and XNet messages received from other subnets.
+In every round, one or more nodes called [block makers](../../references/glossary.md#block-maker) propose a block. Each block contains a reference to a notarized block from the previous round, ingress messages submitted by users (received directly or via P2P from other nodes), and XNet messages received from other subnets.
 
 Block makers are selected through a random permutation of subnet nodes, using randomness derived from a [random beacon](../../references/glossary.md#random-beacon) produced by [chain-key cryptography](../chain-key-cryptography.md). The permutation assigns a rank to each node. The lowest-rank node acts as the primary block maker and broadcasts its proposal to all subnet nodes.
 
 If the primary block maker is faulty or the network is slow and no notarized block appears within a timeout, nodes of increasing rank step in to propose blocks. The protocol guarantees that one block eventually gets notarized in every round.
 
-![Block maker selection: the lowest-rank node proposes first; higher-rank nodes step in on timeout](/concepts/protocol/block_maker.webp)
+![Block maker constructs a new block and broadcasts it to the subnet](/concepts/protocol/block_maker.webp)
 
 ### Notarization
 
 When a node receives a block proposal, it validates it for syntactic correctness. If valid, the node broadcasts the block along with a notarization share: a BLS multi-signature share. A block becomes notarized when at least two thirds of subnet nodes have submitted notarization shares for it. These shares can be aggregated into a compact notarization.
 
 If the primary block maker's proposal is notarized within the timeout, a node will not support the notarization of any other block in that round. Otherwise, a node may support notarization of blocks from higher-rank block makers (but only up to the highest rank it has already committed to).
+
+![Notarization support of increasing-rank block proposals in a round](/concepts/protocol/consensus_notarization.webp)
 
 ### Finalization
 
