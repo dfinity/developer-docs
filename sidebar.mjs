@@ -119,6 +119,8 @@ export const sidebar = [
       { slug: "concepts/vetkeys" },
       { slug: "concepts/security" },
       { slug: "concepts/governance" },
+      { slug: "concepts/network-economics" },
+      { slug: "concepts/ledgers" },
     ],
   },
   { slug: "references/developer-tools", label: "Developer Tools" },

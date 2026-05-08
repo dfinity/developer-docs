@@ -1,11 +1,11 @@
 ---
 title: "Governance"
-description: "How ICP is governed: the NNS, SNS for app governance, neurons, proposals, and tokenomics fundamentals"
+description: "How ICP is governed: the NNS, SNS for app governance, neurons, proposals, and economics fundamentals"
 sidebar:
   order: 13
 ---
 
-The Internet Computer Protocol uses two governance systems: the **Network Nervous System (NNS)** governs the protocol itself, and the **Service Nervous System (SNS)** provides a framework for app developers to hand control of their applications to a community-owned DAO.
+The Internet Computer Protocol uses two governance systems: the **Network Nervous System (NNS)** governs the protocol itself, and the **Service Nervous System (SNS)** provides a framework for app developers to hand control of their applications to a community-governed SNS.
 
 Understanding both systems is important for developers. NNS proposals can affect canister behavior (for example, proposals that update system canisters or modify subnet configurations). SNS gives developers a standardized path to decentralize their app.
 
@@ -19,13 +19,13 @@ Decisions made through the NNS include:
 - Creating and managing subnets (adding capacity, changing subnet membership)
 - Setting economic parameters such as the ICP-to-cycles conversion rate
 - Authorizing new node providers and their hardware
-- Creating new SNS DAOs for apps
+- Creating new SNS instances for apps
 
 The NNS governance canister (`rrkah-fqaaa-aaaaa-aaaaq-cai`) is the entry point for all proposal submissions and voting. See [system canisters](../references/system-canisters.md) for the full list of NNS canister IDs.
 
-## ICP tokens and the ledger
+## ICP and the ledger
 
-ICP is the native utility token of the Internet Computer. It plays three roles:
+ICP is the native digital asset of the Internet Computer. It plays three roles:
 
 - **Governance participation**: ICP can be locked into neurons to vote on proposals and earn voting rewards.
 - **Compute fuel**: ICP can be converted into cycles, which power canister computation and storage. The NNS sets the ICP-to-cycles conversion rate to keep cycle costs stable in fiat terms (anchored to the IMF SDR).
@@ -35,7 +35,7 @@ The ICP ledger, hosted within the NNS, records all ICP balances. Each account ha
 
 ## Neurons
 
-A neuron is a governance participant created by locking ICP tokens in the NNS governance canister. Neurons are the atomic units of voting power.
+A neuron is a governance participant created by locking ICP in the NNS governance canister. Neurons are the atomic units of voting power.
 
 **Key neuron attributes:**
 
@@ -68,7 +68,7 @@ An NNS proposal is a governance action submitted by a neuron and voted on by the
 - *UpgradeNnsCanister* and *UpgradeRootCanister*: Update protocol canisters. May change interfaces developers rely on.
 - *CreateSubnet* / *AddNodeToSubnet*: Affect where canisters run.
 - *UpdateCanisterSettings* for NNS canisters: Can change the behavior of system canisters.
-- *CreateServiceNervousSystem*: Authorizes a new SNS DAO, launching the decentralization process for an app.
+- *CreateServiceNervousSystem*: Authorizes a new SNS, launching the decentralization process for an app.
 
 See [system canisters](../references/system-canisters.md) for the full list of NNS proposal topics and types.
 
@@ -78,11 +78,11 @@ Neurons that vote (directly or through following) earn voting rewards. The proto
 
 Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with a modulation of ±5% applied to the mint amount) or merge maturity back into their stake to compound future rewards.
 
-The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See the [ICP tokenomics overview](https://learn.internetcomputer.org/hc/en-us/articles/34090810571284) for details on the reward rate schedule.
+The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See [Network economics](network-economics.md) for details on the reward rate schedule and supply dynamics.
 
 ## The Service Nervous System
 
-The SNS is a governance framework that allows app developers to create a community-owned DAO for their application. When an app is governed by an SNS, token holders vote on proposals to upgrade the app's canisters, manage treasury funds, and adjust governance parameters.
+The SNS is a governance framework that allows app developers to create a community-governed SNS for their application. When an app is governed by an SNS, asset holders vote on proposals to upgrade the app's canisters, manage treasury funds, and adjust governance parameters.
 
 Unlike the NNS, which is a singleton governing the entire protocol, each SNS is a separate set of canisters specific to one app. SNSes live on a dedicated SNS subnet.
 
@@ -93,27 +93,27 @@ An SNS consists of six canisters deployed by SNS-W (the SNS Wasm modules caniste
 | Canister | Purpose |
 |----------|---------|
 | **Governance** | Proposal submission, voting, neuron management |
-| **Ledger** | SNS token transfers (ICRC-1 standard) |
+| **Ledger** | SNS asset transfers (ICRC-1 standard) |
 | **Root** | Sole controller of all app canisters post-launch |
-| **Swap** | Runs the decentralization swap (ICP for SNS tokens) |
+| **Swap** | Runs the decentralization swap (ICP for SNS assets) |
 | **Index** | Transaction indexing for the SNS ledger |
 | **Archive** | Historical transaction storage |
 
-Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS token holders.
+Once an SNS is live, the SNS Root canister is the sole controller of the app's canisters. Upgrades happen through governance proposals voted on by SNS asset holders.
 
-### Token economics
+### Digital asset economics
 
-Each SNS has its own governance token. The initial token distribution is defined in the SNS configuration file and includes:
+Each SNS has its own governance asset. The initial distribution is defined in the SNS configuration file and includes:
 
-- **Developer neurons**: Tokens allocated to the original developers and seed funders, typically with vesting periods and dissolve delays to signal long-term commitment.
-- **Treasury**: Tokens owned by the SNS governance canister, spendable by DAO proposal.
-- **Swap allocation**: Tokens sold during the decentralization swap in exchange for ICP.
+- **Developer neurons**: Assets allocated to the original developers and seed funders, typically with vesting periods and dissolve delays to signal long-term commitment.
+- **Treasury**: Assets owned by the SNS governance canister, spendable by governance proposal.
+- **Swap allocation**: Assets sold during the decentralization swap in exchange for ICP.
 
-The SNS ledger implements the ICRC-1 token standard. SNS neurons work similarly to NNS neurons: stake governs voting power, dissolve delay grants a bonus (up to 2x at the configured maximum), and age grants an additional bonus.
+The SNS ledger implements the ICRC-1 standard. SNS neurons work similarly to NNS neurons: stake governs voting power, dissolve delay grants a bonus (up to 2x at the configured maximum), and age grants an additional bonus.
 
 ### The decentralization swap
 
-The decentralization swap is the mechanism by which SNS tokens are distributed to the public. Participants send ICP to the SNS Swap canister during the swap window; when the swap closes, the exchange rate is determined and participants receive SNS tokens in a basket of neurons with vesting schedules.
+The decentralization swap is the mechanism by which SNS assets are distributed to the public. Participants send ICP to the SNS Swap canister during the swap window; when the swap closes, the exchange rate is determined and participants receive SNS assets in a basket of neurons with vesting schedules.
 
 The swap has minimum and maximum ICP participation thresholds. If the minimum is not reached, the swap fails: all ICP is refunded and control of the app returns to the original developers (via the fallback controllers defined in the configuration). If the maximum is reached before the end time, the swap closes early.
 
@@ -126,7 +126,7 @@ SNS governance mirrors the NNS design but is customized per app:
 | Aspect | NNS | SNS |
 |--------|-----|-----|
 | What it governs | Protocol and network | A specific app |
-| Token | ICP | Project-specific ICRC-1 token |
+| Digital asset | ICP | Project-specific ICRC-1 asset |
 | Governance canisters | Singleton on NNS subnet | Per-app on SNS subnet |
 | Launch authority | N/A (pre-existing) | NNS must approve creation |
 | Proposal types | Protocol updates, subnet management, economics | App upgrades, treasury transfers, parameter changes |
@@ -136,12 +136,12 @@ SNS governance mirrors the NNS design but is customized per app:
 When an app is governed by an SNS, the original developers no longer have direct control. Key implications:
 
 - **Upgrades require proposals**: All changes to app canisters must go through SNS governance votes. Development slows down compared to centralized control.
-- **Treasury spending requires votes**: Any use of DAO funds requires a governance proposal.
+- **Treasury spending requires votes**: Any use of SNS treasury funds requires a governance proposal.
 - **Upgrade path is transparent**: Community members can verify new canister wasm modules before voting. Reproducible builds allow independent verification.
-- **Responsibility is distributed**: Post-launch, the development team typically continues leading the project but must engage the token-holding community for major decisions.
-- **Custom proposals**: Apps can register custom proposal types (generic functions) that allow the DAO to call specific canister methods, enabling fine-grained governance without unrestricted code upgrades.
+- **Responsibility is distributed**: Post-launch, the development team typically continues leading the project but must engage the community of asset holders for major decisions.
+- **Custom proposals**: Apps can register custom proposal types (generic functions) that allow the SNS to call specific canister methods, enabling fine-grained governance without unrestricted code upgrades.
 
-Developers preparing for an SNS launch should ensure their codebase is stable, open-sourced, and reproducibly buildable before the decentralization swap. The NNS community votes on the creation proposal and expects evidence of product-market fit, sound tokenomics, and a realistic roadmap.
+Developers preparing for an SNS launch should ensure their codebase is stable, open-sourced, and reproducibly buildable before the decentralization swap. The NNS community votes on the creation proposal and expects evidence of product-market fit, sound asset economics, and a realistic roadmap.
 
 ## Next steps
 
@@ -149,4 +149,4 @@ Developers preparing for an SNS launch should ensure their codebase is stable, o
 - [Manage a live SNS](../guides/governance/managing.md): proposals, upgrades, and treasury management after launch
 - [System canisters reference](../references/system-canisters.md): NNS canister IDs and interfaces
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills — sns-launch/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal (docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills: sns-launch/SKILL.md) -->

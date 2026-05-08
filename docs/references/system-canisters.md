@@ -196,7 +196,7 @@ Key differences from cycles wallets:
 - Transfers and balance queries use ICRC-1/ICRC-2 methods
 - Compatible with any ICRC-1 tooling
 
-For the interface specification, see the [cycles ledger specification](https://github.com/dfinity/cycles-ledger/blob/main/INTERFACE_SPECIFICATION.md).
+For the full interface, see the [cycles ledger Candid file](https://github.com/dfinity/cycles-ledger/blob/main/cycles-ledger/cycles-ledger.did).
 
 ## Cycles ledger index
 
