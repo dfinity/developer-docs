@@ -17,7 +17,7 @@ The Internet Computer exposes five public REST APIs for querying live network st
 
 ## IC API
 
-**`https://ic-api.internetcomputer.org/api/v3/`** — general network data across 40 endpoint groups.
+**`https://ic-api.internetcomputer.org/api/v3/`**: general network data across 40 endpoint groups.
 
 | Group | What it returns |
 |-------|----------------|
@@ -40,7 +40,7 @@ Full endpoint reference: [ic-api.internetcomputer.org/api/v3/swagger](https://ic
 
 ## Metrics API
 
-**`https://metrics-api.internetcomputer.org/api/v1/`** — time-series metrics, organized by topic.
+**`https://metrics-api.internetcomputer.org/api/v1/`**: time-series metrics, organized by topic.
 
 | Group | What it returns |
 |-------|----------------|
@@ -61,7 +61,7 @@ Full endpoint reference: [metrics-api.internetcomputer.org/api/v1/docs](https://
 
 ## ICRC API
 
-**`https://icrc-api.internetcomputer.org/api/v1/`** — data for any ICRC-standard token. Requires the token's ledger canister ID as a path parameter.
+**`https://icrc-api.internetcomputer.org/api/v1/`**: data for any ICRC-standard token. Requires the token's ledger canister ID as a path parameter.
 
 | Group | What it returns |
 |-------|----------------|
@@ -82,7 +82,7 @@ Full endpoint reference: [icrc-api.internetcomputer.org/docs](https://icrc-api.i
 
 ## Ledger API
 
-**`https://ledger-api.internetcomputer.org/api/v1/`** — data for the ICP ledger specifically. For other ICRC tokens, use the [ICRC API](#icrc-api) instead.
+**`https://ledger-api.internetcomputer.org/api/v1/`**: data for the ICP ledger specifically. For other ICRC tokens, use the [ICRC API](#icrc-api) instead.
 
 | Group | What it returns |
 |-------|----------------|
@@ -96,7 +96,7 @@ Full endpoint reference: [ledger-api.internetcomputer.org/swagger-ui/](https://l
 
 ## SNS API
 
-**`https://sns-api.internetcomputer.org/api/v1/`** — data for all SNS instances deployed on ICP.
+**`https://sns-api.internetcomputer.org/api/v1/`**: data for all SNS instances deployed on ICP.
 
 | Group | What it returns |
 |-------|----------------|
