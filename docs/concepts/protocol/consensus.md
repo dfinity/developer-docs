@@ -1,6 +1,8 @@
 ---
 title: "Consensus"
 description: "How ICP subnets reach agreement on message ordering through block making, notarization, and finalization."
+sidebar:
+  order: 2
 ---
 
 The consensus protocol allows every node in a subnet to agree on which messages to process and in what order. Each subnet runs its own independent instance of the protocol. The output of each consensus round is a single finalized block of ordered messages that every node then executes deterministically, producing the same state transition on each.

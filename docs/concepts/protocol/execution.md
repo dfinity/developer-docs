@@ -1,6 +1,8 @@
 ---
 title: "Execution Layer"
 description: "How ICP deterministically executes canister code using WebAssembly, deterministic time slicing, and concurrent execution."
+sidebar:
+  order: 4
 ---
 
 The execution layer is the topmost layer of the ICP core protocol stack. It is responsible for executing canister code after message routing has inducted messages into canister input queues. Code runs in a [WebAssembly](https://webassembly.org/) (Wasm) virtual machine deployed on every subnet node. Wasm bytecode executes deterministically and at near-native speed, both of which are essential properties for a replicated system.

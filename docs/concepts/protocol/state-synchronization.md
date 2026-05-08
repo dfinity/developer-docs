@@ -1,6 +1,8 @@
 ---
 title: "State Synchronization"
 description: "How ICP nodes join or re-join a subnet by downloading certified checkpoints instead of replaying the full block history."
+sidebar:
+  order: 5
 ---
 
 State synchronization allows nodes to join a running subnet or recover from downtime without replaying every message ever executed. Instead, the protocol creates periodic certified checkpoints that capture a complete snapshot of the subnet state. A node that needs to catch up downloads a recent checkpoint and replays only the blocks produced since that checkpoint.

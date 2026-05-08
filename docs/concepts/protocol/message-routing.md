@@ -1,6 +1,8 @@
 ---
 title: "Message Routing"
 description: "How ICP routes messages between canisters across subnets, certifies subnet state, and enables secure cross-subnet communication."
+sidebar:
+  order: 3
 ---
 
 Message routing is the lower of the two upper layers of the ICP protocol stack. It sits above consensus and below execution, orchestrating the flow of messages from finalized blocks into canister input queues, triggering execution, routing the resulting inter-canister messages, and certifying subnet state.

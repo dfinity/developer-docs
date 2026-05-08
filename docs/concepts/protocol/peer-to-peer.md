@@ -1,6 +1,8 @@
 ---
 title: "Peer-to-Peer Layer"
 description: "How ICP nodes broadcast artifacts and exchange protocol messages using the Abortable Broadcast primitive and QUIC transport."
+sidebar:
+  order: 1
 ---
 
 The peer-to-peer (P2P) layer is the bottommost layer in the ICP protocol stack. It is responsible for secure and reliable communication between the nodes of a subnet, providing the foundation on which all higher protocol layers depend.
