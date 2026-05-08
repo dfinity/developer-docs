@@ -37,6 +37,10 @@ Technical reference material for ICP development. These pages cover exact specif
 - **[Candid Specification](candid-spec.md)**: The Candid interface description language: type system, encoding, and subtyping rules.
 - **[Internet Identity Specification](internet-identity-spec.md)**: Delegation chains, passkey management, and canister signatures.
 
+## Network observability
+
+- **[IC Dashboard APIs](ic-dashboard-api.md)**: Five public REST APIs for querying live network state: metrics, governance, ICRC tokens, ICP ledger, and SNS data.
+
 ## Other
 
 - **[Glossary](glossary.md)**: Definitions of ICP-specific terms: canister, cycle, principal, subnet, and more.
