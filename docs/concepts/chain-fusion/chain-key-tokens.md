@@ -26,9 +26,9 @@ All canisters in a chain-key token system are controlled by the NNS, making the 
 
 The minting process differs slightly by chain:
 
-**Bitcoin-based tokens (ckBTC, ckDOGE).** The user requests a deposit address from the minter. This is a chain-key ECDSA address controlled by the minter. The user sends the underlying asset to this address on the Bitcoin or Dogecoin network. Once the transaction reaches the required confirmation threshold (6 confirmations for ckBTC), the user calls `update_balance` on the minter. The minter verifies the deposit via the Bitcoin canister and mints the corresponding amount on the ledger.
+**Bitcoin-based tokens (ckBTC, ckDOGE).** The user requests a deposit address from the minter. This is a chain-key ECDSA address controlled by the minter. The user sends the underlying asset to this address on the Bitcoin or Dogecoin network. Once the transaction reaches the required confirmation threshold (4 confirmations for ckBTC), the user calls `update_balance` on the minter. The minter verifies the deposit via the Bitcoin canister and mints the corresponding amount on the ledger.
 
-**EVM-based tokens (ckETH, ckERC20).** A helper smart contract deployed on Ethereum receives deposits. When a user sends ETH or an ERC-20 asset to the helper contract, it emits an event. The minter periodically queries these event logs via the [EVM RPC canister](ethereum.md) and mints the corresponding chain-key tokens on the ICP ledger.
+**EVM-based tokens (ckETH, ckERC20).** A helper smart contract deployed on Ethereum receives deposits. When a user sends ETH or an ERC-20 asset to the helper contract, it emits an event. The minter periodically queries these event logs via the EVM RPC canister (see [Ethereum integration](ethereum.md)) and mints the corresponding chain-key tokens on the ICP ledger.
 
 ## Burning (redeeming underlying assets)
 
