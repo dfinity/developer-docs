@@ -149,31 +149,11 @@ ckDOGE is a 1:1 DOGE-backed token on ICP. The ckDOGE minter holds real DOGE and 
 
 ### Deposit (DOGE to ckDOGE)
 
-```plantuml
-actor User
-participant "ckDOGE Minter" as Minter
-participant "Dogecoin Network" as DOGE
-
-User -> Minter: get_doge_address(account)
-Minter --> User: doge_address
-User -> DOGE: send DOGE to doge_address
-User -> Minter: update_balance(account)
-Minter --> User: ckDOGE minted to ICRC-1 account
-```
+For a flow diagram, see [Dogecoin integration](../../concepts/chain-fusion/dogecoin.md#depositing-doge-doge-to-ckdoge).
 
 ### Withdrawal (ckDOGE to DOGE)
 
-```plantuml
-actor User
-participant "ckDOGE Ledger" as Ledger
-participant "ckDOGE Minter" as Minter
-participant "Dogecoin Network" as DOGE
-
-User -> Ledger: icrc2_approve(spender=minter, amount)
-User -> Minter: retrieve_doge_with_approval(doge_address, amount)
-Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
-Minter -> DOGE: send DOGE to doge_address
-```
+For a flow diagram, see [Dogecoin integration](../../concepts/chain-fusion/dogecoin.md#withdrawing-doge-ckdoge-to-doge).
 
 ## Next steps
 

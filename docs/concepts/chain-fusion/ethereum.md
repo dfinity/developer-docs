@@ -21,6 +21,24 @@ The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system-level canister 
 
 ### Multi-provider architecture
 
+```plantuml
+participant "Your Canister" as Canister
+participant "EVM RPC Canister" as EVM
+participant "Provider 1" as P1
+participant "Provider 2" as P2
+participant "Provider N" as PN
+
+Canister -> EVM: eth_getBlockByNumber(chain, args) + cycles
+EVM -> P1: JSON-RPC (HTTPS outcall)
+EVM -> P2: JSON-RPC (HTTPS outcall)
+EVM -> PN: JSON-RPC (HTTPS outcall)
+P1 --> EVM: response
+P2 --> EVM: response
+PN --> EVM: response
+note right of EVM: consensus check (≥2/3 nodes agree)
+EVM --> Canister: Consistent(result) + refund excess cycles
+```
+
 For each Candid-RPC method (such as `eth_getTransactionReceipt` or `eth_getBlockByNumber`), the EVM RPC canister sends the request to at least three independent JSON-RPC providers by default and compares the results. Supported providers include [CloudFlare](https://www.cloudflare.com/), [Alchemy](https://www.alchemy.com/), [Ankr](https://www.ankr.com/), and [BlockPI](https://blockpi.io/).
 
 Results are returned in one of two forms:

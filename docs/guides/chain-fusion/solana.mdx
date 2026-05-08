@@ -20,19 +20,7 @@ Two ICP features enable Solana integration:
 
 ## SOL RPC canister
 
-The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet and handles Solana JSON-RPC calls on your behalf. When your canister calls it:
-
-```plantuml
-participant "Your Canister" as Canister
-participant "SOL RPC Canister" as SolRpc
-participant "Solana Providers" as Providers
-participant "Solana" as SOL
-
-Canister -> SolRpc: request(json_rpc, max_response_bytes) + cycles
-SolRpc -> Providers: HTTPS outcalls to multiple providers
-Providers --> SolRpc: aggregated responses
-SolRpc --> Canister: result + refund excess cycles
-```
+The SOL RPC canister (`2xib7-jqaaa-aaaar-qai6q-cai`) is deployed on ICP mainnet and handles Solana JSON-RPC calls on your behalf. For a flow diagram, see [Solana integration](../../concepts/chain-fusion/solana.md#sol-rpc-canister). When your canister calls it:
 
 1. Your canister sends a JSON-RPC request with cycles attached.
 2. The SOL RPC canister fans the request out to multiple Solana RPC providers via HTTPS outcalls.
@@ -346,39 +334,11 @@ ckSOL is a 1:1 SOL-backed token on ICP. The ckSOL minter holds real SOL via chai
 
 ### Deposit (SOL to ckSOL)
 
-```plantuml
-actor User
-participant "ckSOL Minter" as Minter
-participant "ckSOL Ledger" as Ledger
-participant "SOL RPC Canister" as SolRpc
-participant "Solana" as SOL
-
-User -> Minter: get_deposit_address(owner, subaccount)
-Minter --> User: deposit_address
-User -> SOL: transfer SOL to deposit_address
-User -> Minter: process_deposit(owner, subaccount, tx_signature)
-Minter -> SolRpc: fetch & verify transaction
-Minter -> Ledger: mint ckSOL (amount - deposit_fee)
-Minter --> User: Minted { block_index, minted_amount }
-```
+For a flow diagram, see [Solana integration](../../concepts/chain-fusion/solana.md#depositing-sol-sol-to-cksol).
 
 ### Withdrawal (ckSOL to SOL)
 
-```plantuml
-actor User
-participant "ckSOL Minter" as Minter
-participant "ckSOL Ledger" as Ledger
-participant "Solana" as SOL
-
-User -> Ledger: icrc2_approve(spender=minter, amount)
-User -> Minter: withdraw(sol_address, amount)
-Minter -> Ledger: burn via icrc2_transfer_from(user, amount)
-Minter --> User: burn_block_index
-note right of Minter: processed asynchronously
-Minter -> SOL: submit SOL transfer (chain-key Ed25519)
-User -> Minter: withdrawal_status(burn_block_index)
-Minter --> User: TxFinalized
-```
+For a flow diagram, see [Solana integration](../../concepts/chain-fusion/solana.md#withdrawing-sol-cksol-to-sol).
 
 ## Current status and limitations
 

@@ -15,6 +15,34 @@ Canister-controlled Dogecoin addresses are derived from chain-key ECDSA public k
 
 ckDOGE is the chain-key token representing Dogecoin on ICP, backed 1:1 by real DOGE held in a canister-controlled address. The minter-plus-ledger architecture is the same as [ckBTC](bitcoin.md#chain-key-bitcoin-ckbtc): users deposit DOGE to a minter-controlled address, the minter mints ckDOGE on the ledger, and withdrawals trigger an onchain Dogecoin transaction signed with threshold ECDSA.
 
+### Depositing DOGE (DOGE to ckDOGE)
+
+```plantuml
+actor User
+participant "ckDOGE Minter" as Minter
+participant "Dogecoin Network" as DOGE
+
+User -> Minter: get_doge_address(account)
+Minter --> User: doge_address
+User -> DOGE: send DOGE to doge_address
+User -> Minter: update_balance(account)
+Minter --> User: ckDOGE minted to ICRC-1 account
+```
+
+### Withdrawing DOGE (ckDOGE to DOGE)
+
+```plantuml
+actor User
+participant "ckDOGE Ledger" as Ledger
+participant "ckDOGE Minter" as Minter
+participant "Dogecoin Network" as DOGE
+
+User -> Ledger: icrc2_approve(spender=minter, amount)
+User -> Minter: retrieve_doge_with_approval(doge_address, amount)
+Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
+Minter -> DOGE: send DOGE to doge_address
+```
+
 ## Next steps
 
 - [Bitcoin integration](bitcoin.md): detailed description of the shared adapter and canister architecture
