@@ -99,7 +99,7 @@ The same threshold cryptographic infrastructure that enables signing also enable
 
 Combined with the NNS governance system, this enables **autonomous protocol upgrades**: the NNS approves an upgrade, the orchestrator on each node downloads the new replica software, and the subnet transitions at the next epoch boundary: all while preserving canister state and maintaining the same public key.
 
-For more on how upgrades work at the protocol level, see the [Chain Evolution](https://learn.internetcomputer.org/hc/en-us/articles/34210120121748) article on the Learn Hub.
+For more on how upgrades work at the protocol level, see [Chain evolution](evolution-scaling.md#chain-evolution).
 
 ## Next steps
 

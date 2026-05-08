@@ -170,7 +170,7 @@ artifacts from the Internet Computer.
 
 #### consensus
 
-In distributed computing, **consensus** is a [fault-tolerant](https://learn.internetcomputer.org/hc/en-us/articles/34210647901460-Fault-Tolerance) mechanism by
+In distributed computing, **consensus** is a [fault-tolerant](../concepts/evolution-scaling.md#fault-tolerance) mechanism by
 means of which a number of [nodes](#node) can reach agreement
 about a value or state.
 
