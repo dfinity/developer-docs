@@ -26,7 +26,7 @@ For details on subnet types and how to choose one, see [Subnet types](../referen
 
 ## Nodes
 
-Each physical machine in the network is a **node**. Nodes run software called the **replica**, which implements the ICP protocol stack: consensus, message routing, execution, and state management.
+Each physical machine in the network is a **node**. Nodes run software called the **replica**, which implements the ICP [protocol stack](protocol/index.md): peer-to-peer, consensus, message routing, and execution.
 
 Nodes are owned by **node providers**: independent entities who operate the hardware. Node providers are voted into the network by the governance system (NNS) and must meet specific hardware requirements. This process, called **deterministic decentralization**, ensures that subnet membership is diverse across operators, geographies, and jurisdictions.
 
@@ -34,18 +34,9 @@ As a developer, you don't interact with individual nodes directly. The protocol 
 
 ## Consensus
 
-Each subnet runs a four-phase consensus protocol:
+Each subnet runs a consensus protocol that produces one finalized block per round, approximately every 1 second. ICP provides cryptographic (not probabilistic) finality: once your update call returns, the state change is committed. Query calls skip consensus entirely: a single node handles the request, which is why queries are fast but carry weaker authenticity guarantees than update calls.
 
-1. **Block making.** A designated block maker proposes a block of messages to execute.
-2. **Notarization.** A threshold of nodes validates and signs the proposed block.
-3. **Finalization.** Once a notarized block has no competing blocks, it is finalized.
-4. **Execution.** All nodes execute the messages in the finalized block deterministically, reaching the same resulting state.
-
-This produces one block per round (approximately every 1 second). Update calls achieve the rapid finality described above because there is no need to wait for multiple block confirmations.
-
-Query calls skip consensus entirely: a single node handles the request and returns its local state, which is why queries are fast (milliseconds) but provide weaker authenticity guarantees than update calls.
-
-For a deeper dive into the consensus protocol and other protocol internals, see the [Learn Hub](https://learn.internetcomputer.org).
+For how the protocol achieves this (block making, notarization, finalization, and the other layers), see [Protocol Stack](protocol/index.md).
 
 ## Boundary nodes
 
