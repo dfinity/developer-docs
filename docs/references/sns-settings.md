@@ -3,7 +3,7 @@ title: "SNS Settings"
 description: "Reference for all SNS nervous system parameters (NervousSystemParameters)"
 ---
 
-Each SNS is customized through its **nervous system parameters**, also called SNS settings. These parameters govern voting power calculation, governance rules, digital asset economics, and reward behavior. Parameters are set at launch and can be changed by governance proposal at any time.
+Each SNS is customized through its **nervous system parameters**, also called SNS settings. These parameters govern voting power calculation, governance rules, asset economics, and reward behavior. Parameters are set at launch and can be changed by governance proposal at any time.
 
 For background, see [SNS framework](../concepts/sns-framework.md).
 
@@ -11,7 +11,7 @@ For background, see [SNS framework](../concepts/sns-framework.md).
 
 | Parameter | Type | Description |
 |---|---|---|
-| `neuron_minimum_stake_e8s` | `nat64` | Minimum number of e8s (10⁻⁸ of the SNS digital asset) that can be staked in a neuron. Must be larger than `transaction_fee_e8s`. |
+| `neuron_minimum_stake_e8s` | `nat64` | Minimum number of e8s (10⁻⁸ of the SNS asset) that can be staked in a neuron. Must be larger than `transaction_fee_e8s`. |
 | `max_number_of_neurons` | `nat64` | Maximum number of neurons allowed. New neurons are blocked once this ceiling is reached. Ceiling: 200,000. |
 | `max_number_of_principals_per_neuron` | `nat64` | Maximum number of principals that can hold permissions for a single neuron. |
 | `neuron_claimer_permissions` | permission set | The set of permissions automatically granted to the principal that claims a new neuron. |

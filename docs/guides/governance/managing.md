@@ -121,7 +121,7 @@ type NervousSystemParameters = record {
 };
 ```
 
-For a description of each parameter and its effect, see the [SNS DAO settings reference](../../references/sns-dao-settings.md).
+For a description of each parameter and its effect, see the [SNS settings reference](../../references/sns-settings.md).
 
 ### ManageSnsMetadata
 
