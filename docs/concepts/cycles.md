@@ -61,6 +61,41 @@ When a canister allocates new storage bytes on a subnet that is more than 750 Gi
 
 Every canister is replicated across all nodes on its subnet. Costs scale with subnet size: a 34-node subnet charges `34/13` times the base rate compared to a 13-node subnet. Choosing a 13-node subnet minimizes cost; 34-node subnets offer higher replication and security for sensitive workloads.
 
+## How charging works
+
+Each resource category is metered and charged differently:
+
+**Memory** is charged at regular intervals (not every consensus round). The protocol tracks total memory in use and deducts from the canister's cycle balance periodically.
+
+**Computation** is charged at the time the instructions execute. ICP counts the number of WebAssembly instructions processed while handling a message. There is an upper bound on instructions per consensus round. If a message exceeds this limit, execution is paused and resumes in the next round; the cycles consumed each round are charged at round end. This is the mechanism behind deterministic time slicing.
+
+**Messaging** costs are charged to the sending canister. Ingress messages (user to canister) are charged to the receiving canister. Each inter-canister call has a fixed base cost plus a per-byte variable cost. The calling canister also prepays the maximum-size reply cost upfront; if the actual reply is smaller, the difference is refunded.
+
+**Special features** (HTTPS outcalls, threshold signatures, Bitcoin API calls) charge the calling canister an additional amount on top of standard messaging costs. These features require extra protocol-level work and are priced accordingly.
+
+## Cycles ledger
+
+The **cycles ledger** (`um5iw-rqaaa-aaaaq-qaaba-cai`) is an NNS-controlled canister on the uzr34 system subnet that provides a shared cycles balance for principals. It complies with the ICRC-1, ICRC-2, and ICRC-3 standards, so cycles can be transferred, approved, and spent using the same interfaces as any other token. An accompanying index canister (`ul4oc-4iaaa-aaaaq-qaabq-cai`) runs on the same subnet.
+
+The cycles ledger replaces the old cycles wallet model: instead of each developer deploying and managing their own cycles wallet canister, everyone shares the same ledger. Cycles are credited to a principal ID and subaccount just like any ICRC token.
+
+![Cycles ledger architecture: the ledger interacts with the CMC and user canisters to provide deposit, withdraw, and canister creation](/concepts/cycles/cycles-ledger-architecture.png)
+
+Key operations:
+
+- **`deposit`**: credits attached cycles to a given account (principal + optional subaccount). Minimum 100M cycles must be attached; the 100M cycle fee is deducted.
+- **`withdraw`**: sends cycles to a canister. The cycles are removed from the sender's ledger balance.
+- **`withdraw_from`**: same as `withdraw`, but uses an ICRC-2 approval to draw from a different account.
+- **`create_canister`**: creates a new canister funded from the caller's cycles ledger balance. Delegates to the CMC, which handles subnet placement.
+- **`create_canister_from`**: same as `create_canister`, but uses an ICRC-2 approval to draw funds from a different account.
+
+Every state-changing operation (each block created) costs 100M cycles as a fee. The full interface specification is available in the [cycles ledger reference](../references/system-canisters.md#cycles-ledger).
+
+The cycles ledger does not support calling arbitrary canisters with cycles attached, because open call contexts can cause the ledger to become stuck. Two patterns address this:
+
+- **Top up the target canister first**: if you control the canister, transfer cycles to it using `withdraw` or `icp canister top-up`, then let the canister attach cycles internally from its own balance. This is the preferred pattern for canisters you deploy and control.
+- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles) for the how-to.
+
 ## Developer responsibility
 
 **Topping up**: canisters burn cycles continuously for storage and on every update call. Developers must monitor balances and keep canisters funded. A canister that runs out of cycles freezes immediately and stops responding to all calls.
@@ -83,7 +118,9 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 ## Related
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
+- [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for attaching cycles from the CLI
+- [Cycles ledger reference](../references/system-canisters.md#cycles-ledger): canister IDs, interface specification, and CMC integration
 - [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; learn hub staging: canister-smart-contracts/cycles.md, canister-smart-contracts/cycles-ledger.md -->
