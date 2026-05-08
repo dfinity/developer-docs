@@ -19,7 +19,7 @@ ICP has four protocol-level uses:
 
 **4. SNS decentralization swaps.** Users can commit ICP to participate in the decentralization swap of an SNS. In return they receive the SNS's governance assets at a uniform price. The ICP raised enters the SNS treasury under NNS control and funds future development and operations.
 
-Beyond these protocol uses, ICP functions as a medium of exchange and can be used to pay for services, NFTs, subscriptions, and other onchain activity.
+Beyond these protocol uses, ICP also functions as a medium of exchange: applications built on ICP can accept ICP as payment for subscriptions, digital goods, and services.
 
 ## Governance rewards and maturity
 
