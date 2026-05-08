@@ -10,6 +10,8 @@ The edge infrastructure has two main components:
 - **API boundary nodes** handle IC API requests (query and update calls) and route them to the correct subnet.
 - **HTTP gateways** translate standard HTTP requests from browsers and other clients into IC API calls and translate responses back into HTTP.
 
+![ICP edge infrastructure: browsers connect through HTTP gateways and API boundary nodes to subnet replicas](/concepts/edge-infrastructure/edge-infrastructure.png)
+
 ## API boundary nodes
 
 API boundary nodes are the globally distributed public interface of the Internet Computer. They receive IC API requests and route them to nodes on the appropriate subnet, providing seamless access to canisters without relying on centralized infrastructure.
@@ -24,6 +26,8 @@ Beyond routing, API boundary nodes perform several additional functions:
 API boundary nodes are an integral part of the network, governed by the NNS. Any addition, removal, or upgrade of API boundary nodes requires an NNS proposal, ensuring transparency. They run on hardware owned by independent node providers, similar to replica nodes.
 
 All API boundary nodes run a service called `ic-boundary`. The network uses a single VM image for both replica and API boundary nodes: the orchestrator component on each node determines its role by launching either `ic-replica` or `ic-boundary`.
+
+Around 20 API boundary nodes are currently deployed worldwide. An up-to-date list is available on the [IC dashboard](https://dashboard.internetcomputer.org/nodes?s=100&type=ApiBoundary).
 
 ## HTTP gateways
 
@@ -63,6 +67,8 @@ For practical guidance on certifying canister responses, see [Certified variable
 ## Further reading
 
 - [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md): detailed protocol definition
+- [ic-http-gateway library](https://github.com/dfinity/http-gateway/tree/main/packages/ic-http-gateway): the main implementation of the HTTP Gateway Protocol
+- [response-verification](https://github.com/dfinity/response-verification): libraries for certifying canister responses to work with the HTTP gateway protocol
 - [Certified variables guide](../guides/backends/certified-variables.md): how to certify canister responses
 - [Chain-key cryptography](chain-key-cryptography.md): the signature mechanism underlying certification
 
