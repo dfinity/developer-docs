@@ -5,6 +5,8 @@ sidebar:
   order: 12
 ---
 
+See also: [Edge Infrastructure](../concepts/edge-infrastructure.md): conceptual overview of API boundary nodes, HTTP gateways, and asset certification.
+
 ## Introduction
 
 The HTTP Gateway Protocol is an extension of the Internet Computer Protocol that allows conventional HTTP clients to interact with the Internet Computer network. This is important for software such as web browsers to be able to fetch and render client-side canister code, including HTML, CSS, and JavaScript as well as other static assets such as images or videos. The HTTP Gateway does this by translating between standard HTTP requests and [API canister calls](./ic-interface-spec/https-interface.md#http-interface) that the Internet Computer Protocol will understand.
