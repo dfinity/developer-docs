@@ -38,5 +38,6 @@ To allow nodes to efficiently join a running subnet or catch up after downtime, 
 - [Message routing](message-routing.md): induction, XNet streaming, and state certification
 - [Execution](execution.md): WebAssembly execution, deterministic time slicing, and cycles
 - [State synchronization](state-synchronization.md): catch-up packages and incremental sync
+- [Performance](performance.md): throughput, latency, and mainnet benchmark figures
 
 <!-- Upstream: informed by Learn Hub article "Blockchain Protocol" (migrated, source retired) -->

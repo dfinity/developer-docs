@@ -353,6 +353,10 @@ in geographically distributed [data centers](#data-center).
 
 ## L
 
+#### latency
+
+**Latency** is the time between submitting a call to a canister and receiving a response. Update call latency is bounded by consensus finality: typically 1–2 seconds on a 13-node subnet. Query call latency is dominated by network round-trip time to a single node: typically 100–200ms. See [Performance](../concepts/protocol/performance.md) for measured values.
+
 #### ledger canister
 
 The **ledger canister** is a [system canister](#system-canister) whose main role is to store
@@ -365,6 +369,10 @@ The **ledger canister** is a [system canister](#system-canister) whose main role
 
 A **message** is data sent from one [canister](#canister) to
 another or from a user to a canister.
+
+#### MIEPS
+
+**MIEPS** (Millions of Instructions Executed Per Second) is the primary throughput metric for ICP compute capacity. It counts replicated Wasm instructions executed per second across all subnets, excluding query calls. A single subnet can execute up to 8 billion instructions per second (8,000 MIEPS). See [Performance](../concepts/protocol/performance.md) for measured network-wide values.
 
 #### message routing
 
@@ -619,6 +627,10 @@ A **transfer transaction** is the process of transferring ICP from any
 regular ledger [account](#account) (i.e., any ledger account
 except the [ICP supply account](#icp-supply-account)) to
 another regular ledger account.
+
+#### throughput
+
+**Throughput** is the number of messages a subnet can process per second. It is measured separately for update calls (replicated, consensus-required) and [query calls](#query) (non-replicated, single-node). Update throughput is bounded by consensus capacity and scales by adding subnets. Query throughput scales linearly with the number of nodes in a subnet, since each node independently handles queries. See [Performance](../concepts/protocol/performance.md) for measured values.
 
 #### Trusted Execution Environment (TEE)
 
