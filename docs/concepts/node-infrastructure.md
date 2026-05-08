@@ -50,10 +50,10 @@ Trusted Execution Environments (TEEs) address this by enforcing hardware-level i
 
 ICP uses AMD's **Secure Encrypted Virtualization with Secure Nested Paging (SEV-SNP)** as its TEE technology. SEV-SNP provides four capabilities that together make it possible to trust a GuestOS running on a potentially compromised host:
 
-1. **Memory encryption** — protection of GuestOS memory from unauthorized reads or writes by the host
-2. **VM launch measurements** — cryptographic fingerprints that capture how the VM was initialized
-3. **Attestation reports** — verifiable evidence that a VM is running inside a genuine SEV-SNP TEE with a specific configuration
-4. **Sealing keys** — hardware-derived keys that allow data to be securely encrypted for persistent storage
+1. **Memory encryption**: protection of GuestOS memory from unauthorized reads or writes by the host
+2. **VM launch measurements**: cryptographic fingerprints that capture how the VM was initialized
+3. **Attestation reports**: verifiable evidence that a VM is running inside a genuine SEV-SNP TEE with a specific configuration
+4. **Sealing keys**: hardware-derived keys that allow data to be securely encrypted for persistent storage
 
 ![Securing the Internet Computer with Trusted Execution Environments](/concepts/node-infrastructure/tee-overview.jpg)
 
@@ -65,13 +65,13 @@ SEV-SNP encrypts all memory pages of the GuestOS virtual machine using keys prot
 
 A VM launch measurement is a cryptographic fingerprint of the GuestOS at the moment it starts. The SEV-SNP secure processor computes this measurement from the CPU model and firmware, the guest kernel, the initial ramdisk, and the kernel command-line parameters. Any single-byte change to the GuestOS software or configuration produces a different measurement.
 
-The kernel command-line parameters included in the measurement contain, among other things, the expected hash of the root filesystem, which is verified during early boot. Any modification to the GuestOS — whether in code, configuration, or filesystem contents — therefore leads to a different launch measurement.
+The kernel command-line parameters included in the measurement contain, among other things, the expected hash of the root filesystem, which is verified during early boot. Any modification to the GuestOS (whether in code, configuration, or filesystem contents) therefore leads to a different launch measurement.
 
 For each GuestOS release, the expected launch measurement can be computed in advance and published as part of the release. Nodes running the same GuestOS version produce identical measurements, which provides a basis for verifying that a node is running approved software.
 
 ### Attestation reports
 
-An attestation report is a signed document produced by the SEV-SNP secure processor. It contains the VM's launch measurement and the CPU's unique hardware identifier, signed by AMD's root of trust. This gives any verifier — whether another node or an external party — the ability to confirm that:
+An attestation report is a signed document produced by the SEV-SNP secure processor. It contains the VM's launch measurement and the CPU's unique hardware identifier, signed by AMD's root of trust. This gives any verifier (whether another node or an external party) the ability to confirm that:
 
 - The VM is running inside a genuine SEV-SNP TEE
 - The specific software and configuration that were loaded match an approved GuestOS release
@@ -121,7 +121,7 @@ With SEV-SNP, LUKS passphrases for each encrypted partition are now derived from
 
 ![SEV-SNP key derivation](/concepts/node-infrastructure/tee-key-derivation.svg)
 
-On reboot, the GuestOS requests the sealing key from the SEV-SNP secure processor. As long as the launch measurement has not changed, the same sealing key is returned, allowing the node to decrypt the partitions. If the launch measurement changes — for example after an upgrade — a different sealing key is generated and the encrypted partitions can no longer be accessed. This is where the upgrade process and remote attestation come in.
+On reboot, the GuestOS requests the sealing key from the SEV-SNP secure processor. As long as the launch measurement has not changed, the same sealing key is returned, allowing the node to decrypt the partitions. If the launch measurement changes (for example after an upgrade), a different sealing key is generated and the encrypted partitions can no longer be accessed. This is where the upgrade process and remote attestation come in.
 
 ## GuestOS upgrades
 
@@ -141,7 +141,7 @@ This process ensures that disk access transfers only to a verified, NNS-approved
 
 ## Emergency recovery
 
-TEE-enabled GuestOSes are designed to lock everyone out — including node operators — unless a specific, governance-gated recovery process is followed. Recovery is never automatic and always requires an NNS proposal approved by the community. Historically, emergency recoveries have occurred only a few times, and during 2025 not a single one was necessary.
+TEE-enabled GuestOSes are designed to lock everyone out (including node operators) unless a specific, governance-gated recovery process is followed. Recovery is never automatic and always requires an NNS proposal approved by the community. Historically, emergency recoveries have occurred only a few times, and during 2025 not a single one was necessary.
 
 ### Manual rollback
 
@@ -153,7 +153,7 @@ Manual rollback is the first option when a node fails after an upgrade. The dual
 
 ### Recovery-GuestOS
 
-When neither partition set boots, manual rollback is insufficient. The encrypted partitions can only be decrypted by a GuestOS with the original launch measurement, so no other GuestOS version can access the data — including a fixed one.
+When neither partition set boots, manual rollback is insufficient. The encrypted partitions can only be decrypted by a GuestOS with the original launch measurement, so no other GuestOS version can access the data, including a fixed one.
 
 The Internet Computer solves this with a Recovery-GuestOS: a specially crafted image that keeps the same kernel, initramdisk, and kernel command-line as the broken GuestOS (preserving the launch measurement) while replacing the root filesystem with a fixed version. The table below shows how this differs from a standard upgrade image:
 
@@ -164,7 +164,7 @@ The Internet Computer solves this with a Recovery-GuestOS: a specially crafted i
 | Root filesystem hash matches `root_hash` kernel parameter | yes | no |
 | Boot partition contains NNS proposal with root filesystem hash | no | yes |
 
-Because the root hash in the kernel command-line no longer matches the recovery root filesystem, a special override is needed: the `BlessAlternativeGuestOsVersion` NNS proposal. During early boot, if the actual root hash does not match the expected hash in the kernel command-line, the integrity checker looks for this proposal. If present, valid, and listing the specific node's chip ID, the recovery root filesystem is mounted while preserving the original launch measurement — and therefore the same disk encryption key.
+Because the root hash in the kernel command-line no longer matches the recovery root filesystem, a special override is needed: the `BlessAlternativeGuestOsVersion` NNS proposal. During early boot, if the actual root hash does not match the expected hash in the kernel command-line, the integrity checker looks for this proposal. If present, valid, and listing the specific node's chip ID, the recovery root filesystem is mounted while preserving the original launch measurement, and therefore the same disk encryption key.
 
 The full process:
 
