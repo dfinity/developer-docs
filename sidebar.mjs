@@ -81,6 +81,7 @@ export const sidebar = [
       { slug: "concepts/canisters" },
       { slug: "concepts/app-architecture" },
       { slug: "concepts/node-infrastructure" },
+      { slug: "concepts/edge-infrastructure" },
       {
         label: "Protocol Stack",
         collapsed: true,
