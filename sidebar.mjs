@@ -102,6 +102,7 @@ export const sidebar = [
       { slug: "concepts/verifiable-randomness" },
       { slug: "concepts/https-outcalls" },
       { slug: "concepts/chain-key-cryptography" },
+      { slug: "concepts/certified-data" },
       {
         label: "Chain Fusion",
         collapsed: true,
