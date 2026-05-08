@@ -15,7 +15,7 @@ ICP has four protocol-level uses:
 
 **2. Cycle conversion.** ICP can be burned to mint cycles through the Cycles Minting Canister (CMC). Cycles are pegged to the XDR basket of currencies at a rate of 1 trillion cycles = 1 XDR. This means developer infrastructure costs are stable in fiat terms even as ICP's market price changes. See [Cycles](cycles.md) for details.
 
-**3. Node provider rewards.** Nodes that run the Internet Computer are owned by independent node providers. These providers are compensated in newly minted ICP. Rewards are specified in XDR and converted to ICP based on a 30-day moving average exchange rate, so providers receive stable real-world compensation regardless of price fluctuations.
+**3. Node provider rewards.** Nodes that run the Internet Computer are owned by independent node providers. These providers are compensated in newly minted ICP. Rewards are specified in XDR and converted to ICP based on a 30-day moving average exchange rate, so providers receive stable real-world compensation regardless of price fluctuations. The Cycles Minting Canister (CMC) fetches the ICP/XDR rate every 5 minutes from the exchange rate canister, which aggregates rates from external sources. It uses the start-of-day rates for the past 30 days to compute the moving average. The current conversion rate is available on the [ICP dashboard](https://dashboard.internetcomputer.org/network) and from the [CMC metrics endpoint](https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics).
 
 **4. SNS decentralization swaps.** Users can commit ICP to participate in the decentralization swap of an SNS. In return they receive the SNS's governance assets at a uniform price. The ICP raised enters the SNS treasury under NNS control and funds future development and operations.
 
@@ -45,6 +45,8 @@ ICP has both inflationary and deflationary mechanisms:
 - ICP is burned when converted to cycles.
 - ICP transaction fees are burned.
 - Failed NNS proposals result in a small fee charged to the proposing neuron.
+
+![ICP supply dynamics: governance rewards and node provider rewards increase supply; cycle conversion and transaction fees reduce it](/concepts/network-economics/deflation-inflation.png)
 
 The net effect on supply depends on market conditions: when cycle demand is high (more computation), more ICP is burned. When governance participation is high, more ICP is minted. The [NNS dashboard](https://dashboard.internetcomputer.org/governance) shows live estimates of supply, staking, and annualized voting rewards.
 

@@ -79,6 +79,8 @@ The **cycles ledger** (`um5iw-rqaaa-aaaaq-qaaba-cai`) is an NNS-controlled canis
 
 The cycles ledger replaces the old cycles wallet model: instead of each developer deploying and managing their own cycles wallet canister, everyone shares the same ledger. Cycles are credited to a principal ID and subaccount just like any ICRC token.
 
+![Cycles ledger architecture: the ledger interacts with the CMC and user canisters to provide deposit, withdraw, and canister creation](/concepts/cycles/cycles-ledger-architecture.png)
+
 Key operations:
 
 - **`deposit`**: credits attached cycles to a given account (principal + optional subaccount). Minimum 100M cycles must be attached; the 100M cycle fee is deducted.
@@ -86,7 +88,12 @@ Key operations:
 - **`withdraw_from`**: same as `withdraw`, but uses an ICRC-2 approval to draw from a different account.
 - **`create_canister`**: creates a new canister funded from the caller's cycles ledger balance. Delegates to the CMC, which handles subnet placement.
 
-Every state-changing operation (each block created) costs 100M cycles as a fee. The cycles ledger does not support calling arbitrary canisters with cycles attached, because open call contexts can cause the ledger to become stuck. If you need to call a canister with cycles, top up the canister first and let it manage its own balance.
+Every state-changing operation (each block created) costs 100M cycles as a fee. The full interface specification is available in the [cycles ledger reference](../references/system-canisters.md#cycles-ledger).
+
+The cycles ledger does not support calling arbitrary canisters with cycles attached, because open call contexts can cause the ledger to become stuck. Two patterns address this:
+
+- **Top up the target canister first**: if you control the canister, transfer cycles to it using `withdraw` or `icp canister top-up`, then let the canister attach cycles internally from its own balance. This is the preferred pattern for canisters you deploy and control.
+- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles) for the how-to.
 
 ## Developer responsibility
 
@@ -110,6 +117,8 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 ## Related
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
+- [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for attaching cycles from the CLI
+- [Cycles ledger reference](../references/system-canisters.md#cycles-ledger): canister IDs, interface specification, and CMC integration
 - [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
