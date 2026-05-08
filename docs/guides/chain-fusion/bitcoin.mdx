@@ -31,23 +31,7 @@ ckBTC is the recommended path for most developers. The ckBTC minter canister hol
 
 ### Deposit flow (BTC to ckBTC)
 
-```plantuml
-actor User
-participant "ckBTC Minter" as Minter
-participant "Bitcoin Checker" as KYT
-participant "ckBTC Ledger" as Ledger
-participant "Bitcoin Network" as BTC
-
-User -> Minter: get_btc_address(owner, subaccount)
-Minter --> User: btc_address
-User -> BTC: send BTC to btc_address
-note right of BTC: 4 confirmations required
-User -> Minter: update_balance(owner, subaccount)
-Minter -> KYT: check UTXO
-KYT --> Minter: ok
-Minter -> Ledger: mint ckBTC (amount - kyt_fee)
-Minter --> User: MintedUtxos
-```
+For a flow diagram, see [Bitcoin integration](../../concepts/chain-fusion/bitcoin.md#converting-btc-to-ckbtc).
 
 1. Call `get_btc_address` on the minter with the user's principal and subaccount. This returns a unique Bitcoin address controlled by the minter via threshold ECDSA.
 2. Send BTC to that address from any Bitcoin wallet.
@@ -245,24 +229,9 @@ async fn transfer(to: Principal, amount: Nat) -> Result<Nat, TransferError> {
 
 ### Withdraw (ckBTC to BTC)
 
-```plantuml
-actor User
-participant "ckBTC Ledger" as Ledger
-participant "ckBTC Minter" as Minter
-participant "Bitcoin Checker" as KYT
-participant "Bitcoin Network" as BTC
+For a flow diagram, see [Bitcoin integration](../../concepts/chain-fusion/bitcoin.md#converting-ckbtc-to-btc).
 
-User -> Ledger: icrc2_approve(spender=minter, amount)
-User -> Minter: retrieve_btc_with_approval(btc_address, amount)
-Minter -> KYT: check destination address
-KYT --> Minter: ok
-Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
-Minter --> User: block_index
-note right of Minter: processed asynchronously
-Minter -> BTC: submit signed transaction
-```
-
-Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. Before burning ckBTC, the minter runs a KYT check on the destination Bitcoin address. The Bitcoin transaction is submitted asynchronously — the minter batches pending requests to optimize miner fees. Track status with `retrieve_btc_status_v2(block_index)`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
+Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. Before burning ckBTC, the minter runs a KYT check on the destination Bitcoin address. The Bitcoin transaction is submitted asynchronously: the minter batches pending requests to optimize miner fees. Track status with `retrieve_btc_status_v2(block_index)`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -1172,12 +1141,12 @@ docker stop bitcoind && docker rm bitcoind
 
 ## Next steps
 
-- [Chain fusion overview](../../concepts/chain-fusion.md): understand how ICP integrates with external blockchains
+- [Chain fusion overview](../../concepts/chain-fusion/index.md): understand how ICP integrates with external blockchains
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): learn how threshold ECDSA and Schnorr signatures work
 - [Chain-key tokens](../digital-assets/chain-key-tokens.md): explore ckBTC, ckETH, and other chain-key tokens
 - [Ethereum integration](ethereum.md): apply similar patterns for Ethereum
 - [Management canister reference](../../references/management-canister.md): full API reference for `sign_with_ecdsa`, `sign_with_schnorr`, and other management canister methods (note: the `bitcoin_*` methods in the management canister are deprecated; use the Bitcoin canister directly)
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
-- [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
+- [Bitcoin integration](../../concepts/chain-fusion/bitcoin.md): protocol-level details of how ICP connects to Bitcoin
 
 {/* Upstream: informed by dfinity/portal (docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx); dfinity/icskills (skills/ckbtc/SKILL.md); dfinity/icp-cli-templates (bitcoin-starter/); dfinity/cdk-rs (ic-cdk-bitcoin-canister 0.2); dfinity/examples (rust/basic_bitcoin/src/common.rs, rust/basic_bitcoin/src/service/get_utxos.rs, rust/basic_bitcoin/src/service/get_blockchain_info.rs, rust/basic_bitcoin/basic_bitcoin.did, motoko/basic_bitcoin/src/basic_bitcoin/src/BitcoinApi.mo) */}
