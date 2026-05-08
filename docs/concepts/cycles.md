@@ -87,6 +87,7 @@ Key operations:
 - **`withdraw`**: sends cycles to a canister. The cycles are removed from the sender's ledger balance.
 - **`withdraw_from`**: same as `withdraw`, but uses an ICRC-2 approval to draw from a different account.
 - **`create_canister`**: creates a new canister funded from the caller's cycles ledger balance. Delegates to the CMC, which handles subnet placement.
+- **`create_canister_from`**: same as `create_canister`, but uses an ICRC-2 approval to draw funds from a different account.
 
 Every state-changing operation (each block created) costs 100M cycles as a fee. The full interface specification is available in the [cycles ledger reference](../references/system-canisters.md#cycles-ledger).
 
