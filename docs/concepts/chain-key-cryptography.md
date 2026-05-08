@@ -73,7 +73,7 @@ Derivation is transparent: it happens inside the protocol as part of the signing
 
 Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline**: no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or network address without a live ICP connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
 
-<!-- ic-pub-key: known issue: @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release; update all references when that happens. -->
+<!-- ic-pub-key: the missing .d.ts issue (dfinity/ic-pub-key#197) is closed and fixed. Package may still move to the @icp-sdk/ namespace in a future release; update all references when that happens. -->
 
 ### Pre-signatures
 

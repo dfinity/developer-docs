@@ -11,7 +11,7 @@ Query calls on ICP return results immediately without going through consensus. T
 
 Traditional verification approaches require significant client-side work. Bitcoin's Simplified Payment Verification downloads and validates block headers. Ethereum's light clients maintain a chain of committee hashes and verify Merkle proofs against the state root. Both approaches require ongoing synchronization and are impractical for mobile or web applications that need fast, lightweight verification.
 
-ICP takes a different approach: instead of requiring clients to track any chain state, the protocol produces a certificate that can be verified with a single signature check against a **single, stable public key** (the Internet Computer's root public key). This key never changes (it was fixed at genesis and is published in the Network Nervous System (NNS) governance system), so any client can embed it and immediately verify any certificate it receives.
+ICP takes a different approach: instead of requiring clients to track any chain state, the protocol produces a certificate that can be verified with a single signature check against a **single, stable public key** (the Internet Computer's root public key). This key never changes (it was fixed at genesis and is embedded in ICP client libraries), so any client can embed it and immediately verify any certificate it receives.
 
 ## How certificates are produced
 
