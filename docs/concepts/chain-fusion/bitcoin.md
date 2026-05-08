@@ -53,6 +53,24 @@ For canister IDs, minter parameters, and endpoint reference, see [ckBTC minter](
 
 ### Converting BTC to ckBTC
 
+```plantuml
+actor User
+participant "ckBTC Minter" as Minter
+participant "Bitcoin Checker" as KYT
+participant "ckBTC Ledger" as Ledger
+participant "Bitcoin Network" as BTC
+
+User -> Minter: get_btc_address(owner, subaccount)
+Minter --> User: btc_address
+User -> BTC: send BTC to btc_address
+note right of BTC: 4 confirmations required
+User -> Minter: update_balance(owner, subaccount)
+Minter -> KYT: check UTXO
+KYT --> Minter: ok
+Minter -> Ledger: mint ckBTC (amount - kyt_fee)
+Minter --> User: MintedUtxos
+```
+
 1. The user calls `get_btc_address` on the minter to receive a deposit address (a P2WPKH address) tied to their principal.
 2. The user sends bitcoin to that address on the Bitcoin network.
 3. After 4 confirmations, the user calls `update_balance` on the minter.
@@ -61,6 +79,23 @@ For canister IDs, minter parameters, and endpoint reference, see [ckBTC minter](
 The 4-confirmation requirement protects against Bitcoin chain reorganizations.
 
 ### Converting ckBTC to BTC
+
+```plantuml
+actor User
+participant "ckBTC Ledger" as Ledger
+participant "ckBTC Minter" as Minter
+participant "Bitcoin Checker" as KYT
+participant "Bitcoin Network" as BTC
+
+User -> Ledger: icrc2_approve(spender=minter, amount)
+User -> Minter: retrieve_btc_with_approval(btc_address, amount)
+Minter -> KYT: check destination address
+KYT --> Minter: ok
+Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
+Minter --> User: block_index
+note right of Minter: processed asynchronously
+Minter -> BTC: submit signed transaction
+```
 
 The recommended flow uses ICRC-2 approval:
 
