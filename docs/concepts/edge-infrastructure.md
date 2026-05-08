@@ -46,7 +46,7 @@ When a browser opens a URL hosted by a canister, the following happens:
 5. The HTTP gateway receives the canister's response, verifies the certificate (see Asset certification below), and constructs a standard HTTP response.
 6. The browser receives the HTTP response and renders the page.
 
-Canisters that serve HTTP must implement the Canister HTTP Interface defined in the HTTP Gateway Protocol Specification. The main implementation of the protocol is the [ic-http-gateway library](https://github.com/dfinity/http-gateway/tree/main/packages/ic-http-gateway).
+Canisters that serve HTTP must implement the Canister HTTP Interface defined in the HTTP Gateway Protocol Specification. The main implementation of the protocol is the [ic-http-gateway library](https://github.com/dfinity/ic-http-gateway-protocol/tree/main/packages/ic-http-gateway-protocol).
 
 ## Asset certification
 
@@ -67,7 +67,7 @@ For practical guidance on certifying canister responses, see [Certified variable
 ## Further reading
 
 - [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md): detailed protocol definition
-- [ic-http-gateway library](https://github.com/dfinity/http-gateway/tree/main/packages/ic-http-gateway): the main implementation of the HTTP Gateway Protocol
+- [ic-http-gateway library](https://github.com/dfinity/ic-http-gateway-protocol/tree/main/packages/ic-http-gateway-protocol): the main implementation of the HTTP Gateway Protocol
 - [response-verification](https://github.com/dfinity/response-verification): libraries for certifying canister responses to work with the HTTP gateway protocol
 - [Certified variables guide](../guides/backends/certified-variables.md): how to certify canister responses
 - [Chain-key cryptography](chain-key-cryptography.md): the signature mechanism underlying certification
