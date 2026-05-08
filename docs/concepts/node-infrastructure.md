@@ -50,6 +50,8 @@ Trusted Execution Environments (TEEs) address this by enforcing hardware-level i
 
 ICP uses AMD's **Secure Encrypted Virtualization with Secure Nested Paging (SEV-SNP)** as its TEE technology. SEV-SNP provides four capabilities that together make it possible to trust a GuestOS running on a potentially compromised host.
 
+![Securing the Internet Computer with Trusted Execution Environments](/concepts/node-infrastructure/tee-overview.jpg)
+
 ### Memory encryption
 
 SEV-SNP encrypts all memory pages of the GuestOS virtual machine using keys protected by the CPU's secure processor. A host that gains full control of the machine can only read encrypted blobs from the GuestOS memory: canister state, cryptographic key shares, and other sensitive runtime data remain confidential.
@@ -67,7 +69,12 @@ An attestation report is a signed document produced by the SEV-SNP secure proces
 - The VM is running inside a genuine SEV-SNP TEE
 - The specific software and configuration that were loaded match an approved GuestOS release
 
-ICP uses attestation during GuestOS upgrades (nodes attest each other before exchanging disk encryption keys) and exposes attestation endpoints for external verification through API boundary nodes.
+![SEV-SNP attestation report](/concepts/node-infrastructure/tee-attestation-report.svg)
+
+ICP uses attestation in two ways:
+
+- **Node-to-node attestation.** Before sensitive data or secrets are shared between nodes, SEV-SNP-enabled nodes attest each other. This is integral to the upgrade process (see below) and will be extended to all network connections as SEV-SNP adoption expands: each node pair attests the other at connection establishment, ensuring secrets are only exchanged with verified nodes.
+- **External attestation.** SEV-SNP-equipped nodes expose a dedicated attestation endpoint for external verification. Access is restricted by firewall rules and is only available through API boundary nodes. This allows IC users and external parties to verify that the nodes serving them are running TEE-enabled GuestOSes.
 
 ### Sealing keys
 
@@ -78,11 +85,33 @@ A sealing key is derived from two inputs: the CPU's unique hardware identifier a
 
 ICP uses sealing keys to encrypt the GuestOS disk partitions that contain sensitive runtime data. This ensures that even if an attacker copies the disk to another machine, the data cannot be decrypted: the sealing key depends on the specific CPU and the exact GuestOS configuration.
 
-## Disk encryption and upgrades
+## Disk encryption
 
-GuestOS disk partitions containing sensitive data (canister state, cryptographic material) are encrypted using keys derived from the SEV-SNP sealing key. Each node maintains two partition sets (A and B), allowing a new GuestOS version to be prepared in the inactive set while the current version continues running.
+Each node maintains two partition sets (A and B). This dual layout allows a new GuestOS version to be prepared in the inactive set while the current version continues running. Only partitions holding sensitive data are encrypted: the `var` partitions (runtime data private to the active GuestOS) and the `store` partition (persistent data shared across GuestOS versions). System partitions (`boot`, `root`, `config`) are not encrypted: root filesystem integrity is covered by the root hash embedded in the kernel command-line, which is part of the VM launch measurement.
 
-When a new GuestOS is approved by the NNS, the upgrade process runs the old and new GuestOS instances in parallel. They mutually attest each other using SEV-SNP before the old GuestOS shares the disk encryption key with the new one over an encrypted channel. This ensures that disk access is transferred only to a verified, NNS-approved GuestOS version.
+LUKS passphrases for each encrypted partition are derived from the SEV-SNP sealing key using HKDF, so each partition gets a unique passphrase that is tied to both the CPU and the exact GuestOS version.
+
+![SEV-SNP key derivation](/concepts/node-infrastructure/tee-key-derivation.svg)
+
+## GuestOS upgrades
+
+When a new GuestOS is approved by the NNS, the upgrade process runs the old and new GuestOS instances in parallel using the A/B partition layout:
+
+1. The new GuestOS image is downloaded into the inactive partition set while the current GuestOS continues running.
+2. A temporary **Upgrade VM** boots the new GuestOS. It cannot yet access the encrypted partitions because its sealing key (derived from the new launch measurement) differs from the current one.
+3. The Upgrade VM sends its SEV-SNP attestation report to the running GuestOS. The running GuestOS verifies the report against the NNS registry to confirm the new GuestOS is an approved release.
+4. Once verified, the running GuestOS shares the disk encryption key with the Upgrade VM over an encrypted channel. The Upgrade VM re-encrypts the partitions with a key derived from its own sealing key.
+5. Both VMs shut down. The node boots into the upgraded GuestOS, which can now access the encrypted data using its own derived key.
+
+This process ensures that disk access transfers only to a verified, NNS-approved GuestOS version.
+
+## Emergency recovery
+
+TEE-enabled GuestOSes are designed to lock everyone out, including node providers, unless a specific recovery process is followed. Recovery is never automatic and always requires an NNS proposal approved by the community.
+
+**Manual rollback** is the first option when a node fails after an upgrade. Because the previous GuestOS version still resides on the inactive partition set, node providers can switch back to it via the HostOS limited console without breaking TEE guarantees.
+
+**Recovery-GuestOS** is used when manual rollback is insufficient, for example when neither partition set boots. The challenge is that the encrypted partitions can only be decrypted by a GuestOS with the original launch measurement. To address this, the Internet Computer supports a specially crafted Recovery-GuestOS that keeps the same kernel, initramdisk, and kernel command-line as the broken GuestOS (preserving the launch measurement) but replaces the root filesystem with a fixed version. The mismatch between the root hash in the kernel command-line and the actual recovery root filesystem is allowed only if a `BlessAlternativeGuestOsVersion` NNS proposal is present, approved by the community, and lists the specific node's chip ID. This ensures that recovery access is always governance-gated and auditable.
 
 ## Further reading
 
