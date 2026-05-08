@@ -27,7 +27,7 @@ The execution layer is designed to execute multiple canisters concurrently on di
 
 ## Deterministic time slicing
 
-Each execution round is synchronized with block production, which happens roughly once per second. The current per-round instruction limit is approximately 2 billion instructions given present node hardware.
+Each execution round is synchronized with block production, which happens roughly once per second. The current per-round instruction limit is approximately 2 billion instructions per canister given present node hardware.
 
 For longer computations (up to 20 billion instructions, or up to 200 billion for code installation), ICP uses **Deterministic Time Slicing (DTS)**. DTS pauses a long-running computation at the end of a round and resumes it in the next, allowing a task to span multiple rounds without slowing block creation. DTS is automatic and transparent to canisters: no special canister code is needed.
 
