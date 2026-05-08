@@ -24,7 +24,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 ## Cryptography and cross-chain
 
 - **[Chain-Key Cryptography](chain-key-cryptography.md)**: Threshold signatures that enable cross-chain integration, fast finality, and chain evolution.
-- **[Chain Fusion](chain-fusion.md)**: How ICP connects to Bitcoin, Ethereum, Solana, and other blockchains natively.
+- **[Chain Fusion](chain-fusion/index.md)**: How ICP connects to Bitcoin, Ethereum, Solana, and other blockchains natively.
 - **[VetKeys](vetkeys.md)**: Verifiable encrypted threshold key derivation for onchain encryption and secret management.
 
 ## Trust and governance

@@ -1,11 +1,11 @@
 ---
 title: "Chain-Key Cryptography"
-description: "Threshold signatures that enable cross-chain integration, fast verification, and chain evolution"
+description: "Threshold signatures that enable crosschain integration, fast verification, and chain evolution"
 sidebar:
   order: 9
 ---
 
-Chain-key cryptography is a set of threshold cryptographic protocols that underpin the Internet Computer. Instead of any single node holding a private key, keys are split into shares distributed across the nodes of a [subnet](network-overview.md). Nodes collaboratively sign messages without ever reconstructing the full key: and this single capability enables everything from fast response verification to canisters signing transactions on Bitcoin, Ethereum, and dozens of other blockchains.
+Chain-key cryptography is a set of threshold cryptographic protocols that underpin the Internet Computer. Instead of any single node holding a private key, keys are split into shares distributed across the nodes of a [subnet](network-overview.md). Nodes collaboratively sign messages without ever reconstructing the full key: and this single capability enables everything from fast response verification to canisters signing transactions on Bitcoin, Ethereum, and dozens of other chains.
 
 ## Why threshold cryptography matters
 
@@ -16,7 +16,7 @@ This design has several consequences for developers:
 - **Fast verification.** Clients verify subnet responses with a single public key check. There is no need to download block headers or maintain a light client.
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified variables](../guides/backends/certified-variables.md).
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
-- **Cross-chain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external blockchains. This is the foundation of [Chain Fusion](chain-fusion.md).
+- **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
 
 ## Core protocols
 
@@ -37,7 +37,7 @@ BLS was chosen for two properties:
 
 ### Chain-key signatures (threshold ECDSA and Schnorr)
 
-Chain-key signatures extend threshold cryptography beyond ICP's internal operations. They let canisters hold keys for external signature schemes and sign arbitrary messages, which means canisters can control accounts on other blockchains.
+Chain-key signatures extend threshold cryptography beyond ICP's internal operations. They let canisters hold keys for external signature schemes and sign arbitrary messages, which means canisters can control accounts on other chains.
 
 Two signature schemes are supported, with the Schnorr API offering two algorithm variants:
 
@@ -62,9 +62,9 @@ For ECDSA and BIP340, key derivation uses a generalized form of [BIP-32](https:/
 
 Derivation is transparent: it happens inside the protocol as part of the signing and public-key-retrieval APIs. You provide a derivation path and the protocol handles the rest.
 
-Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline**: no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or blockchain address without a live ICP connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
+Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline**: no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or network address without a live ICP connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
 
-<!-- ic-pub-key: known issue — @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release — update all references when that happens. -->
+<!-- ic-pub-key: known issue: @dfinity/ic-pub-key v1.0.1 npm package is missing .d.ts type declarations (https://github.com/dfinity/ic-pub-key/issues/197); verify this is fixed before editing TypeScript examples. Package may also move to the @icp-sdk/ namespace in a future release; update all references when that happens. -->
 
 ### Pre-signatures
 
@@ -91,7 +91,7 @@ For signing costs, see [Cycles costs](../references/cycles-costs.md).
 
 ## Supported chains
 
-Any blockchain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion.md#supported-chains).
+Any chain whose transaction authentication uses ECDSA (secp256k1) or Schnorr signatures (BIP340 over secp256k1, or Ed25519) can be integrated with ICP through chain-key signatures. For the full list of supported chains with integration methods and chain-key tokens, see [Chain Fusion: Supported chains](chain-fusion/index.md#supported-chains).
 
 ## Chain evolution
 
@@ -103,7 +103,7 @@ For more on how upgrades work at the protocol level, see the [Chain Evolution](h
 
 ## Next steps
 
-- [Chain Fusion](chain-fusion.md): how canisters use chain-key signatures to interact with other blockchains
+- [Chain Fusion](chain-fusion/index.md): how canisters use chain-key signatures to interact with other chains
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
 - [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API

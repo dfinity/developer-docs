@@ -38,8 +38,38 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 - `bitcoin_send_transaction`: submits a signed Bitcoin transaction
 - `bitcoin_get_current_fee_percentiles`: returns fee percentiles in millisatoshi/vbyte
 - `bitcoin_get_block_headers`: returns block headers for a range of heights
+- `get_blockchain_info`: returns chain tip height, block hash, timestamp, difficulty, and UTXO count
 
-For integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
+### Cycle costs
+
+All Bitcoin canister calls require cycles attached. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
+
+| Endpoint | Testnet / Regtest | Mainnet |
+|---|---|---|
+| `bitcoin_get_balance` | 40,000,000 | 100,000,000 |
+| `bitcoin_get_utxos` | 4,000,000,000 | 10,000,000,000 |
+| `bitcoin_send_transaction` (base) | 2,000,000,000 | 5,000,000,000 |
+| `bitcoin_send_transaction` (per byte) | 8,000,000 | 20,000,000 |
+| `bitcoin_get_current_fee_percentiles` | 40,000,000 | 100,000,000 |
+| `bitcoin_get_block_headers` | 4,000,000,000 | 10,000,000,000 |
+| `get_blockchain_info` | 40,000,000 | 100,000,000 |
+
+For integration patterns and code examples, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
+
+## Dogecoin canister
+
+The Dogecoin canister is a system-level canister that connects ICP to the Dogecoin network using the same architecture as the Bitcoin integration. It syncs blocks from the Dogecoin peer-to-peer network, maintains the UTXO set, and exposes an API for querying Dogecoin state and submitting transactions.
+
+For the current canister ID, see the [Dogecoin canister repository](https://github.com/dfinity/dogecoin-canister).
+
+### Key endpoints
+
+- `dogecoin_get_utxos`: returns UTXOs for a Dogecoin address
+- `dogecoin_get_balance`: returns the balance of a Dogecoin address in koinu (1 DOGE = 100,000,000 koinu)
+- `dogecoin_get_current_fee_percentiles`: returns fee percentiles from recent Dogecoin transactions
+- `dogecoin_send_transaction`: submits a signed transaction to the Dogecoin network
+
+For integration patterns, see the [Dogecoin guide](../guides/chain-fusion/dogecoin.md).
 
 ## ckBTC minter
 
@@ -68,6 +98,16 @@ For canister IDs, see [Chain-Key Token Canister IDs: ckBTC](chain-key-canister-i
 - `retrieve_btc_status_v2_by_account(account)`: returns statuses for all recent withdrawal requests from the given account
 - `get_minter_info`: returns current minter parameters
 - `get_events(start, length)`: returns the minter's internal event log
+
+### Withdrawal fee
+
+The minter fee for a Bitcoin withdrawal transaction is `146 × inputs + 4 × outputs + 26` satoshi. This formula covers the cost of threshold ECDSA signatures and Bitcoin transaction broadcasting. When multiple withdrawal requests are batched into one transaction, the fee is split among all outputs.
+
+<!-- Needs DeFi team verification: minter fee formula and UTXO consolidation parameters below were sourced from Learn Hub (now retired) and have not yet been independently verified against the live minter code. -->
+
+### UTXO consolidation
+
+As deposits accumulate, the minter manages a growing set of UTXOs. If the UTXO count exceeds 10,000, the minter periodically creates consolidation transactions that merge the 1,000 smallest UTXOs into 2 new outputs, funded from the minter's fee subaccount. This prevents the UTXO set from growing large enough to make withdrawals impossible (a Bitcoin transaction is limited to 100 KB).
 
 ### KYT checker
 
@@ -191,6 +231,28 @@ By default, the canister requires all providers to agree (`Equality` consensus).
 
 For integration examples, see the [Ethereum guide](../guides/chain-fusion/ethereum.md).
 
+## SOL RPC canister
+
+The SOL RPC canister proxies JSON-RPC calls to the Solana network via HTTPS outcalls. It follows the same pattern as the EVM RPC canister: each request is forwarded to multiple independent RPC providers and the results are compared for consensus before being returned to the caller. No API keys are required.
+
+| Field | Value |
+|---|---|
+| Canister ID | [`2xib7-jqaaa-aaaar-qai6q-cai`](https://dashboard.internetcomputer.org/canister/2xib7-jqaaa-aaaar-qai6q-cai) |
+| Source | [dfinity/sol-rpc-canister](https://github.com/dfinity/sol-rpc-canister) |
+
+### Built-in RPC providers
+
+| Provider |
+|---|
+| [Alchemy](https://www.alchemy.com/) |
+| [Ankr](https://www.ankr.com/) |
+| [Chainstack](https://chainstack.com/) |
+| [dRPC](https://drpc.org/) |
+| [Helius](https://www.helius.dev/) |
+| [PublicNode](https://publicnode.com/) |
+
+For integration examples, see the [Solana guide](../guides/chain-fusion/solana.md).
+
 ## Exchange rate canister (XRC)
 
 The exchange rate canister (XRC) uses HTTPS outcalls to fetch cryptocurrency and foreign exchange rates from major exchanges. It runs on the `uzr34` system subnet and is used by the cycles minting canister (CMC) to convert ICP to cycles at a stable XDR-pegged price.
@@ -293,6 +355,7 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 | ckDOGE Minter | `eqltq-xqaaa-aaaar-qb3vq-cai` | DOGE ↔ ckDOGE minting and burning |
 | ckSOL Minter | `lh22c-kyaaa-aaaar-qb5nq-cai` | SOL ↔ ckSOL minting and burning |
 | EVM RPC | `7hfb6-caaaa-aaaar-qadga-cai` | Ethereum JSON-RPC proxy |
+| SOL RPC | `2xib7-jqaaa-aaaar-qai6q-cai` | Solana JSON-RPC proxy |
 | Exchange Rate (XRC) | `uf6dk-hyaaa-aaaaq-qaaaq-cai` | Crypto and forex exchange rates |
 | SNS-W | `qaa6y-5yaaa-aaaaa-aaafa-cai` | SNS deployment and upgrades |
 
