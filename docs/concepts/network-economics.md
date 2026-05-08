@@ -11,7 +11,7 @@ ICP's economic model is built around two native assets: **ICP** and **cycles**. 
 
 ICP has four protocol-level uses:
 
-**1. Governance participation.** ICP holders stake ICP to create [neurons](governance.md#neurons-and-voting-power) in the NNS governance system. Neurons vote on proposals and earn voting rewards in return. Staking longer increases voting power and rewards, creating an incentive for long-term alignment with the network.
+**1. Governance participation.** ICP holders stake ICP to create [neurons](governance.md#neurons) in the Network Nervous System (NNS) governance system. Neurons vote on proposals and earn voting rewards in return. Staking longer increases voting power and rewards, creating an incentive for long-term alignment with the network.
 
 **2. Cycle conversion.** ICP can be burned to mint cycles through the Cycles Minting Canister (CMC). Cycles are pegged to the XDR basket of currencies at a rate of 1 trillion cycles = 1 XDR. This means developer infrastructure costs are stable in fiat terms even as ICP's market price changes. See [Cycles](cycles.md) for details.
 
