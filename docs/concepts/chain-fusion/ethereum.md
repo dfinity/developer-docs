@@ -17,7 +17,7 @@ This flow (query, sign, submit) lets canisters call any Ethereum smart contract,
 
 ## EVM RPC canister
 
-The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system-level canister that acts as a gateway between ICP canisters and Ethereum JSON-RPC APIs. It is controlled by the NNS, so its behavior cannot be changed by any single party.
+The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system-level canister that acts as a gateway between ICP canisters and Ethereum JSON-RPC APIs. It is controlled by the NNS, so its behavior cannot be changed by any single party. For supported chains, built-in providers, and cycle costs, see [EVM RPC canister](../../references/protocol-canisters.md#evm-rpc-canister).
 
 ### Multi-provider architecture
 
@@ -49,9 +49,7 @@ ckETH and ckERC20 tokens (such as ckUSDC and ckUSDT) are chain-key tokens backed
 
 **Deposits.** Because ICP cannot observe Ethereum state directly (unlike Bitcoin, which uses a native adapter), ckETH uses a helper smart contract deployed on Ethereum. Users send ETH or ERC-20 assets to this helper contract, which emits an event. The ckETH minter periodically queries the event log via the EVM RPC canister to discover deposits and mints the corresponding chain-key tokens.
 
-**Withdrawals.** The user approves the minter to burn their chain-key tokens (via ICRC-2), then calls the withdrawal endpoint. The minter burns the tokens, signs an Ethereum transaction using chain-key ECDSA, and submits it via the EVM RPC canister.
-
-For a full description of chain-key token architecture, see [Chain-key tokens](chain-key-tokens.md).
+For full minting, redemption, and security model details, see [Chain-key tokens](chain-key-tokens.md).
 
 ## Next steps
 

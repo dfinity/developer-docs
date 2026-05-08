@@ -51,6 +51,7 @@ If the XRC receives largely inconsistent rates from exchanges, it returns an `Ex
 
 - [Chain Fusion overview](index.md): integration patterns and supported chains
 - [HTTPS outcalls](../https-outcalls.md): how the XRC fetches external data
+- [XRC reference](../../references/protocol-canisters.md#exchange-rate-canister-xrc): canister ID, interface, and cycle costs
 - [XRC Candid interface](https://github.com/dfinity/exchange-rate-canister/blob/main/src/xrc/xrc.did)
 
 <!-- Upstream: informed by Learn Hub articles "Exchange Rate Canister" (migrated, source retired) -->

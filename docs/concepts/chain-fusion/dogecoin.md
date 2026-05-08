@@ -19,6 +19,9 @@ ckDOGE is the chain-key token representing Dogecoin on ICP, backed 1:1 by real D
 
 - [Bitcoin integration](bitcoin.md): detailed description of the shared adapter and canister architecture
 - [Dogecoin canister documentation](https://dfinity.github.io/dogecoin-canister/)
+- [Dogecoin guide](../../guides/chain-fusion/dogecoin.md): code examples and canister API
 - [Chain Fusion overview](index.md): integration patterns and supported chains
+- [Dogecoin canister reference](../../references/protocol-canisters.md#dogecoin-canister): API endpoints
+- [Chain-Key Token Canister IDs: ckDOGE](../../references/chain-key-canister-ids.md#ckdoge): ckDOGE minter and ledger IDs
 
 <!-- Upstream: informed by Learn Hub articles "Dogecoin Integration" (migrated, source retired) -->

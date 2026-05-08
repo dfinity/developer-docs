@@ -65,5 +65,7 @@ The security of a chain-key token rests on two properties:
 - [Chain Fusion overview](index.md): the full landscape of ICP crosschain capabilities
 - [Chain-key tokens guide](../../guides/digital-assets/chain-key-tokens.md): how to integrate chain-key tokens into an application
 - [Chain-key cryptography](../chain-key-cryptography.md): the threshold signing that makes chain-key tokens possible
+- [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md): minter, ledger, and index IDs for all chain-key tokens
+- [Protocol canisters reference](../../references/protocol-canisters.md): minter parameters and endpoints for ckBTC, ckETH, ckDOGE, and ckSOL
 
 <!-- Upstream: informed by Learn Hub articles "Chain-Key Tokens" (migrated, source retired) -->

@@ -27,5 +27,7 @@ ckSOL is the chain-key token representing SOL on ICP. Like ckETH, it is backed 1
 - [Chain Fusion overview](index.md): integration patterns and supported chains
 - [Ethereum integration](ethereum.md): the EVM RPC canister for comparison
 - [Chain-key cryptography](../chain-key-cryptography.md): Ed25519 threshold Schnorr signing
+- [SOL RPC canister reference](../../references/protocol-canisters.md#sol-rpc-canister): canister ID and provider list
+- [Chain-Key Token Canister IDs: ckSOL](../../references/chain-key-canister-ids.md#cksol): ckSOL minter and ledger IDs
 
 <!-- Upstream: informed by Learn Hub articles "SOL RPC Canister" (migrated, source retired) -->

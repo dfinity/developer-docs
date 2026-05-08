@@ -17,14 +17,18 @@ Together, these two layers give a canister the ability to receive bitcoin, check
 
 ## Bitcoin canister API
 
-The Bitcoin canister exposes three main endpoints accessible through the management canister:
+The Bitcoin canister exposes endpoints accessible directly by other canisters:
 
 - `bitcoin_get_balance`: returns the balance of any Bitcoin address.
 - `bitcoin_get_utxos`: returns the unspent transaction outputs (UTXOs) for a given address. This is the primary input when constructing a Bitcoin transaction.
 - `bitcoin_get_current_fee_percentiles`: returns recent fee rates so a canister can estimate an appropriate miner fee.
 - `bitcoin_send_transaction`: broadcasts a signed transaction to the Bitcoin network via the adapter.
+- `bitcoin_get_block_headers`: returns raw block headers for a range of heights.
+- `get_blockchain_info`: returns current chain state including tip height, block hash, timestamp, difficulty, and UTXO count.
 
 A typical flow for a canister spending bitcoin is: fetch UTXOs for its address, select inputs, build the transaction, call `sign_with_ecdsa` (or `sign_with_schnorr` for Taproot) for each input, then call `bitcoin_send_transaction`.
+
+For canister IDs, cycle costs, and the full interface specification, see [Bitcoin canisters](../../references/protocol-canisters.md#bitcoin-canisters).
 
 ## Bitcoin checker canister
 
@@ -39,31 +43,22 @@ Both endpoints return `Passed` or `Failed`. The canister itself is controlled by
 
 ## Chain-key Bitcoin (ckBTC)
 
-ckBTC is a digital asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
+ckBTC is an asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
 
-ckBTC transactions settle in seconds and cost a fraction of a satoshi, making it practical for high-frequency or low-value transfers that would be uneconomical on Bitcoin directly.
+ckBTC transactions settle in seconds with minimal fees, making it practical for high-frequency or low-value transfers that would be uneconomical on Bitcoin directly.
 
-### Canisters
+Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/subnet/pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae), both controlled by the NNS root canister. The **ledger** is an [ICRC-1/ICRC-2](../../references/icrc-standards.md) compliant ledger that records all ckBTC balances and handles transfers. The **minter** manages the BTC side: it controls Bitcoin addresses, tracks UTXOs, triggers minting when deposits arrive, and signs and submits Bitcoin transactions when users withdraw.
 
-Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/subnet/pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae), both controlled by the NNS root canister:
-
-| Canister | ID |
-|----------|-----|
-| ckBTC minter | `mqygn-kiaaa-aaaar-qaadq-cai` |
-| ckBTC ledger | `mxzaz-hqaaa-aaaar-qaada-cai` |
-
-The **ledger** is an [ICRC-1/ICRC-2](../../references/icrc-standards.md) compliant ledger. It records all ckBTC balances and handles transfers. The transfer fee is 0.0000001 ckBTC (10 satoshi), sent to the minter's fee subaccount.
-
-The **minter** manages the BTC side: it controls Bitcoin addresses, tracks UTXOs, triggers minting when deposits arrive, and signs and submits Bitcoin transactions when users withdraw.
+For canister IDs, minter parameters, and endpoint reference, see [ckBTC minter](../../references/protocol-canisters.md#ckbtc-minter) and [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md#ckbtc).
 
 ### Converting BTC to ckBTC
 
 1. The user calls `get_btc_address` on the minter to receive a deposit address (a P2WPKH address) tied to their principal.
 2. The user sends bitcoin to that address on the Bitcoin network.
-3. After 6 confirmations, the user calls `update_balance` on the minter.
-4. The minter fetches UTXOs for the deposit address via `bitcoin_get_utxos` and checks each new UTXO with the Bitcoin checker canister. UTXOs that pass the check are minted as ckBTC into the user's ledger account (minus the 100-satoshi checker fee). UTXOs that fail the check are quarantined.
+3. After 4 confirmations, the user calls `update_balance` on the minter.
+4. The minter fetches UTXOs for the deposit address via `bitcoin_get_utxos` and checks each new UTXO with the Bitcoin checker canister. UTXOs that pass the check are minted as ckBTC into the user's ledger account (minus a KYT fee). UTXOs that fail the check are quarantined.
 
-The 6-confirmation requirement protects against Bitcoin chain reorganizations.
+The 4-confirmation requirement protects against Bitcoin chain reorganizations.
 
 ### Converting ckBTC to BTC
 
@@ -72,25 +67,17 @@ The recommended flow uses ICRC-2 approval:
 1. The user calls `icrc2_approve` on the ckBTC ledger, authorizing the minter to withdraw the desired amount.
 2. The user calls `retrieve_btc_with_approval` on the minter, specifying the amount and destination Bitcoin address.
 3. The minter checks the destination address with the Bitcoin checker canister. If it passes, the minter burns the ckBTC from the user's account and queues a Bitcoin withdrawal.
-4. The minter periodically batches pending requests: it selects UTXOs, builds a Bitcoin transaction, signs each input using threshold ECDSA, and submits via `bitcoin_send_transaction`.
+4. The minter periodically batches pending requests, selects UTXOs, builds a Bitcoin transaction, signs each input using threshold ECDSA, and submits via `bitcoin_send_transaction`.
 
-Requests are batched to reduce Bitcoin miner fees: if at least 20 requests accumulate or the oldest request is 10 minutes old, the minter creates a single transaction serving up to 100 requests.
-
-The minimum withdrawal amount is 0.0005 BTC (50,000 satoshi) to ensure the fee remains proportionally small.
-
-### Minter fee
-
-The minter fee for a withdrawal transaction is `146 × inputs + 4 × outputs + 26` satoshi. This formula covers the cost of threshold ECDSA signatures and transaction broadcasting. The fee is split among all outputs in a batch transaction.
-
-### UTXO consolidation
-
-As deposits accumulate, the minter manages a growing set of UTXOs. Too many small UTXOs can make large withdrawals impossible (a Bitcoin transaction is limited to 100 KB). When the UTXO count exceeds 10,000, the minter periodically creates _consolidation transactions_ that merge the 1,000 smallest UTXOs into 2 new outputs, funded from the minter's fee account.
+Requests are batched to reduce Bitcoin miner fees. For the minimum withdrawal amount, fee formula, and UTXO consolidation behavior, see [ckBTC minter](../../references/protocol-canisters.md#ckbtc-minter).
 
 ## Next steps
 
-- [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build Bitcoin transactions from a canister
+- [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build Bitcoin transactions from a canister, with code and development setup
 - [Dogecoin integration](dogecoin.md): Bitcoin fork integration using the same architecture
 - [Chain Fusion overview](index.md): integration patterns and supported chains
 - [Chain-key cryptography](../chain-key-cryptography.md): threshold ECDSA and Schnorr signing
+- [Protocol canisters reference](../../references/protocol-canisters.md#bitcoin-canisters): canister IDs, cycle costs, and API details
+- [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md#ckbtc): full ckBTC canister ID table including index and testnet
 
 <!-- Upstream: informed by Learn Hub articles "Bitcoin Integration", "Bitcoin Checker Canister", "Chain-Key Bitcoin" (migrated, source retired) -->
