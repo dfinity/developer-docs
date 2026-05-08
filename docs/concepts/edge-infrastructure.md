@@ -23,7 +23,7 @@ Beyond routing, API boundary nodes perform several additional functions:
 - **Caching.** Some query responses are cached to reduce latency for frequently accessed data.
 - **Security enforcement.** API boundary nodes implement safeguards that protect both themselves and the core protocol from abuse.
 
-API boundary nodes are an integral part of the network, governed by the NNS. Any addition, removal, or upgrade of API boundary nodes requires an NNS proposal, ensuring transparency. They run on hardware owned by independent node providers, similar to replica nodes.
+API boundary nodes are an integral part of the network, governed by the Network Nervous System (NNS). Any addition, removal, or upgrade of API boundary nodes requires an NNS proposal, ensuring transparency. They run on hardware owned by independent node providers, similar to replica nodes.
 
 All API boundary nodes run a service called `ic-boundary`. The network uses a single VM image for both replica and API boundary nodes: the orchestrator component on each node determines its role by launching either `ic-replica` or `ic-boundary`.
 
