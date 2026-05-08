@@ -45,7 +45,7 @@ In the worst case, the subnet hosting the NNS canisters itself can fail. Because
 
 ICP scales horizontally by creating new subnets. Each subnet hosts thousands of canisters and processes messages independently. Adding a subnet adds proportional capacity to the network: more canisters, more storage, more throughput.
 
-![ICP nodes divided into subnets — each subnet runs a separate blockchain](/concepts/evolution-scaling/add-new-subnet.webp)
+![ICP nodes divided into subnets, each subnet runs a separate blockchain](/concepts/evolution-scaling/add-new-subnet.webp)
 
 Subnets on the Internet Computer communicate using cross-subnet (XNet) messaging. A canister on any subnet can send asynchronous messages to any canister on any other subnet. XNet messages are included in the receiving subnet's consensus blocks and authenticated using [chain-key cryptography](chain-key-cryptography.md). This loosely coupled architecture means newly created subnets can immediately exchange messages with all existing subnets, without a central bottleneck.
 
@@ -69,7 +69,7 @@ ICP upgrades its protocol approximately once per week, driven by NNS governance.
 
 The NNS registry stores the complete configuration of the Internet Computer, including the replica version each subnet should run. A version change in the registry triggers the upgrade process.
 
-![The NNS registry implements versioning — each configuration change creates a new version](/concepts/evolution-scaling/registry-versions.webp)
+![The NNS registry implements versioning: each configuration change creates a new version](/concepts/evolution-scaling/registry-versions.webp)
 
 Upgrades roll out on a per-subnet basis. Within a subnet, all nodes must switch to the new protocol version simultaneously to avoid a fork. This coordination is achieved using epochs:
 
@@ -77,7 +77,7 @@ Upgrades roll out on a per-subnet basis. Within a subnet, all nodes must switch 
 - At each epoch boundary, nodes produce a summary block containing the configuration (including replica version and cryptographic key material) to use for the next epoch.
 - If the registry indicates a new replica version for the upcoming epoch, all nodes download it in advance.
 
-![Protocol upgrade happens at epoch boundaries — all nodes switch simultaneously](/concepts/evolution-scaling/protocol-transition.webp)
+![Protocol upgrade happens at epoch boundaries; all nodes switch simultaneously](/concepts/evolution-scaling/protocol-transition.webp)
 
 - At the epoch boundary, the nodes stop processing update calls and produce empty blocks until the summary block is finalized, executed, and the state is certified. Query calls continue normally during this pause.
 - All nodes produce a CUP containing the state needed to resume at the new version, signed by more than two thirds of the subnet.
