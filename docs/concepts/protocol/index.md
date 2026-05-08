@@ -16,6 +16,8 @@ Each node runs a replica process structured in four layers:
 3. [Message routing](message-routing.md): delivery of messages to canister input queues and state certification
 4. [Execution](execution.md): deterministic execution of canister code
 
+![The four layers of the ICP protocol stack: peer-to-peer, consensus, message routing, and execution](/concepts/protocol/core_protocol_layers.webp)
+
 The lower two layers (peer-to-peer and consensus) are responsible for agreeing, each round, on a block of messages. The upper two layers (message routing and execution) deterministically process that block on every node.
 
 At the start of a round, all honest nodes hold identical state: the replicated state of the subnet, which includes the current state of every canister hosted there. By executing the messages in a finalized block in a completely deterministic way, every node reaches the same resulting state.
