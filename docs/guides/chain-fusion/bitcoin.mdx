@@ -231,7 +231,7 @@ async fn transfer(to: Principal, amount: Nat) -> Result<Nat, TransferError> {
 
 For a flow diagram, see [Bitcoin integration](../../concepts/chain-fusion/bitcoin.md#converting-ckbtc-to-btc).
 
-Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. Before burning ckBTC, the minter runs a KYT check on the destination Bitcoin address. The Bitcoin transaction is submitted asynchronously — the minter batches pending requests to optimize miner fees. Track status with `retrieve_btc_status_v2(block_index)`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
+Withdrawal is a two-step process: approve the minter to spend your ckBTC, then call `retrieve_btc_with_approval`. Before burning ckBTC, the minter runs a KYT check on the destination Bitcoin address. The Bitcoin transaction is submitted asynchronously: the minter batches pending requests to optimize miner fees. Track status with `retrieve_btc_status_v2(block_index)`. The minimum withdrawal is 50,000 satoshis (0.0005 BTC).
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -1147,6 +1147,6 @@ docker stop bitcoind && docker rm bitcoind
 - [Ethereum integration](ethereum.md): apply similar patterns for Ethereum
 - [Management canister reference](../../references/management-canister.md): full API reference for `sign_with_ecdsa`, `sign_with_schnorr`, and other management canister methods (note: the `bitcoin_*` methods in the management canister are deprecated; use the Bitcoin canister directly)
 - [Bitcoin canister API specification](https://github.com/dfinity/bitcoin-canister/blob/master/INTERFACE_SPECIFICATION.md): detailed API documentation
-- [Bitcoin integration (Learn Hub)](https://learn.internetcomputer.org/hc/en-us/articles/34211154520084): protocol-level details of how ICP connects to Bitcoin
+- [Bitcoin integration](../../concepts/chain-fusion/bitcoin.md): protocol-level details of how ICP connects to Bitcoin
 
 {/* Upstream: informed by dfinity/portal (docs/build-on-btc/*, docs/references/bitcoin-how-it-works.mdx, docs/references/cycles-cost-formulas.mdx); dfinity/icskills (skills/ckbtc/SKILL.md); dfinity/icp-cli-templates (bitcoin-starter/); dfinity/cdk-rs (ic-cdk-bitcoin-canister 0.2); dfinity/examples (rust/basic_bitcoin/src/common.rs, rust/basic_bitcoin/src/service/get_utxos.rs, rust/basic_bitcoin/src/service/get_blockchain_info.rs, rust/basic_bitcoin/basic_bitcoin.did, motoko/basic_bitcoin/src/basic_bitcoin/src/BitcoinApi.mo) */}

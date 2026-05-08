@@ -76,5 +76,6 @@ For full minting, redemption, and security model details, see [Chain-key tokens]
 - [HTTPS outcalls](../https-outcalls.md): how canisters reach external HTTP endpoints
 - [Chain-key cryptography](../chain-key-cryptography.md): threshold ECDSA signing
 - [Chain-key tokens](chain-key-tokens.md): ckETH and ckERC20 architecture
+- [Chain-Key Token Canister IDs](../../references/chain-key-canister-ids.md#cketh): ckETH minter, ledger, and index IDs
 
 <!-- Upstream: informed by Learn Hub articles "Ethereum Integration", "EVM RPC Canister" (migrated, source retired) -->

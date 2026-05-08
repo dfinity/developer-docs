@@ -42,7 +42,7 @@ See [Chain-key cryptography](../chain-key-cryptography.md) for details on the th
 
 A canister needs to read the state of an external chain to verify events, check balances, or monitor smart contracts. ICP supports two models:
 
-- **Direct integration.** The protocol runs a native adapter that connects to the external chain's peer-to-peer network. Bitcoin uses this model: ICP nodes run a Bitcoin adapter that syncs blocks directly, so canisters can query UTXOs and submit transactions through the management canister's Bitcoin API without any intermediary.
+- **Direct integration.** The protocol runs a native adapter that connects to the external chain's peer-to-peer network. Bitcoin uses this model: ICP nodes run a Bitcoin adapter that syncs blocks directly, so canisters can query UTXOs and submit transactions through the Bitcoin canister API without any intermediary.
 
 - **RPC integration.** For chains without a direct integration, canisters use [HTTPS outcalls](../https-outcalls.md) to query RPC providers. The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) provides a typed Candid interface for Ethereum and EVM-compatible chains. It sends each request to at least three independent RPC providers and returns either a `Consistent` result (all providers agree) or an `Inconsistent` result that the caller can handle. Solana has a similar dedicated canister (SOL RPC). For other chains, canisters can make raw HTTPS outcalls to any JSON-RPC endpoint.
 
@@ -50,7 +50,7 @@ A canister needs to read the state of an external chain to verify events, check 
 
 Once a canister has signed a transaction, it needs to submit it to the target chain. The submission path depends on the integration model:
 
-- **Bitcoin:** The signed transaction is submitted through the management canister's `bitcoin_send_transaction` API, which broadcasts it via the Bitcoin adapter.
+- **Bitcoin:** The signed transaction is submitted through the Bitcoin canister's `bitcoin_send_transaction` API, which broadcasts it via the Bitcoin adapter.
 - **Ethereum and EVM chains:** The signed transaction is submitted via the EVM RPC canister's `eth_sendRawTransaction` endpoint, which relays it to RPC providers.
 - **Other chains:** The canister submits the transaction by making an HTTPS outcall to the chain's RPC endpoint.
 
@@ -70,7 +70,7 @@ Direct integration provides the strongest trust guarantees. The only assumption 
 
 Chain-key tokens are ICP-native assets backed 1:1 by assets native to another chain (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
 
-These tokens implement the [ICRC-2](../../guides/digital-assets/ledgers.md) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
+These tokens implement the [ICRC-2](../../guides/digital-assets/ledgers.md#approve-and-transfer-from-icrc-2) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
 
 For details on chain-key token architecture, see [Chain-key tokens](chain-key-tokens.md). For integration guides, see the [Chain-key tokens guide](../../guides/digital-assets/chain-key-tokens.md).
 
@@ -101,7 +101,7 @@ This is not exhaustive. If a chain uses a supported signature scheme and has RPC
 
 Several reusable canisters and protocol APIs are available for building Chain Fusion applications:
 
-- **Bitcoin API.** The management canister exposes `bitcoin_get_utxos`, `bitcoin_get_balance`, and `bitcoin_send_transaction`: a direct protocol-level integration with no intermediary. See [Bitcoin integration](bitcoin.md) and the [Bitcoin guide](../../guides/chain-fusion/bitcoin.md).
+- **Bitcoin API.** The Bitcoin canister exposes `bitcoin_get_utxos`, `bitcoin_get_balance`, and `bitcoin_send_transaction`: a direct protocol-level integration with no intermediary. See [Bitcoin integration](bitcoin.md) and the [Bitcoin guide](../../guides/chain-fusion/bitcoin.md).
 - **EVM RPC canister** (`7hfb6-caaaa-aaaar-qadga-cai`). A canister providing a typed Candid interface for Ethereum and EVM-compatible chains. Queries multiple RPC providers and returns consensus results. See [Ethereum integration](ethereum.md) and the [Ethereum guide](../../guides/chain-fusion/ethereum.md).
 - **SOL RPC canister.** A similar canister for Solana, providing typed access to Solana's JSON-RPC API. See [Solana integration](solana.md) and the [Solana guide](../../guides/chain-fusion/solana.md).
 - **Chain-key tokens.** Minter and ledger canisters that implement ckBTC, ckETH, and ckERC20: trustless 1:1 representations of external assets on ICP. See [Chain-key tokens](chain-key-tokens.md) and the [integration guide](../../guides/digital-assets/chain-key-tokens.md).

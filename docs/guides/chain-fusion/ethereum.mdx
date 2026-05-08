@@ -585,7 +585,7 @@ Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers quer
 **Practical guidance:**
 
 - Send 10,000,000,000 cycles (10B) as a starting budget. Unused cycles are refunded.
-- Typical calls cost 100M--1B cycles (approximately $0.0001--$0.001 USD).
+- Typical calls cost 100M to 1B cycles (approximately $0.0001 to $0.001 USD).
 - Use `requestCost` to get an exact estimate before making a raw JSON-RPC call.
 - The Candid-RPC methods (like `eth_getBlockByNumber`) automatically retry with larger response sizes if needed, consuming more cycles from your budget.
 

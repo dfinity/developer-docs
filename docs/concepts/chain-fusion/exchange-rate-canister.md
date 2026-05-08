@@ -29,15 +29,7 @@ The response is a `GetExchangeRateResult` variant (`Ok: ExchangeRate` or `Err: E
 
 ## Cycle cost
 
-Every request must include **1 billion cycles**. The actual cost depends on the request type:
-
-| Request type | Actual cost |
-|---|---|
-| Served from cache, or both assets are fiat | 20M cycles |
-| One asset is fiat or USDT | 260M cycles |
-| Both assets are cryptocurrencies | 500M cycles |
-
-Unused cycles are refunded. At least 1M cycles are charged even on error, to prevent denial-of-service attacks.
+Every request must include **1 billion cycles**. Unused cycles are refunded. At least 1M cycles are charged even on error, to prevent denial-of-service attacks. For the full cost breakdown by request type, see [Exchange rate canister (XRC)](../../references/protocol-canisters.md#exchange-rate-canister-xrc).
 
 ## How rates are computed
 
