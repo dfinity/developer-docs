@@ -114,7 +114,7 @@ The control structure can take several forms:
 |---|---|---|
 | Centralized | A single developer's principal | Full developer control; standard during development |
 | Multi-signature | A multi-signer wallet like [Orbit](https://orbitwallet.io/) | Requires multiple keys to approve any change |
-| SNS-governed | An SNS governance canister | Upgrades require a governance proposal voted on by token holders |
+| SNS-governed | An SNS governance canister | Upgrades require a governance proposal voted on by asset holders |
 | No controller | Empty controller list | Immutable canister; code can never be changed |
 
 If a canister has **no controllers**, it is immutable: no one can change its code or settings. This is a strong trust guarantee for users. Immutability can be verified on the [ICP Dashboard](https://dashboard.internetcomputer.org).
