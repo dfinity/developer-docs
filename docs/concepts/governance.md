@@ -21,7 +21,7 @@ Decisions made through the NNS include:
 - Authorizing new node providers and their hardware
 - Creating new SNS instances for apps
 
-The NNS governance canister (`rrkah-fqaaa-aaaaa-aaaaq-cai`) is the entry point for all proposal submissions and voting. See [system canisters](../references/system-canisters.md) for the full list of NNS canister IDs.
+The NNS governance canister (`rrkah-fqaaa-aaaaa-aaaaq-cai`) is the entry point for all proposal submissions and voting. See [system canisters](../references/system-canisters.md) for the full list of NNS-controlled canisters and their IDs.
 
 ## ICP and the ledger
 
@@ -209,6 +209,6 @@ When an SNS swap runs, NF contributions scale with direct participation through 
 - [Manage a live SNS](../guides/governance/managing.md): proposals, upgrades, and treasury management after launch
 - [SNS framework](sns-framework.md): detailed architecture, neurons, proposals, and reward scheme
 - [NNS proposal types reference](../references/nns-proposal-types.md): all proposal topics and types
-- [System canisters reference](../references/system-canisters.md): NNS canister IDs and interfaces
+- [System canisters reference](../references/system-canisters.md): NNS-controlled canisters, their IDs, and interfaces
 
 <!-- Upstream: informed by dfinity/portal (docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills: sns-launch/SKILL.md); informed by Learn Hub articles "Overview", "Neurons", "Proposals", "Neuron Attributes", "Neurons' Fund (NF)", "Voting Rewards" (migrated, source retired) -->
