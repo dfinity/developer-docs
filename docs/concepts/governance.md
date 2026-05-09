@@ -7,7 +7,7 @@ sidebar:
 
 The Internet Computer Protocol uses two governance systems: the **Network Nervous System (NNS)** governs the protocol itself, and the **Service Nervous System (SNS)** provides a framework for app developers to hand control of their applications to a community-governed SNS.
 
-Understanding both systems is important for developers. NNS proposals can affect canister behavior (for example, proposals that update system canisters or modify subnet configurations). SNS gives developers a standardized path to decentralize their app.
+Understanding both systems is important for developers. NNS proposals can affect canister behavior (for example, proposals that update system canisters or modify subnet configurations). SNS gives developers a standardized path to transfer control of their app to a community: once launched, no upgrade or configuration change can happen without a governance proposal voted on by asset holders, so no single party can make unilateral changes.
 
 ## The Network Nervous System
 
