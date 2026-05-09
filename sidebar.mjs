@@ -79,6 +79,7 @@ export const sidebar = [
     items: [
       { slug: "concepts/network-overview" },
       { slug: "concepts/canisters" },
+      { slug: "concepts/principals" },
       { slug: "concepts/app-architecture" },
       { slug: "concepts/node-infrastructure" },
       { slug: "concepts/edge-infrastructure" },

@@ -70,7 +70,7 @@ For a deeper dive, see [Orthogonal persistence](orthogonal-persistence.md).
 
 ## Canister IDs and principals
 
-Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](https://learn.internetcomputer.org/hc/en-us/articles/34250491785108): the same type of identifier used for users: and serves as the canister's address on the network.
+Every canister gets a globally unique **canister ID** when it is created. This ID is a [principal](principals.md): the same type of identifier used for users, and serves as the canister's address on the network.
 
 To send a message to a canister, you include its canister ID in the message header. The network routes the message to the correct subnet and places it in the canister's input queue for processing.
 
@@ -90,7 +90,13 @@ Installing uploads a Wasm module to the canister and runs its initialization log
 
 ### Upgrade
 
-Upgrading replaces the canister's Wasm module while preserving stable memory. The system runs a pre-upgrade hook (to save heap data to stable memory if needed), swaps the Wasm, then runs a post-upgrade hook (to restore data).
+Upgrading replaces the canister's Wasm module while preserving stable memory. The runtime executes three steps atomically:
+
+1. `pre_upgrade` (or `system func preupgrade` in Motoko): save any heap data to stable memory before the code swap.
+2. New Wasm module is installed.
+3. `post_upgrade` (or `system func postupgrade`): read data back from stable memory into the new heap layout.
+
+If `pre_upgrade` traps, the upgrade is aborted and the canister continues running the old code. If `post_upgrade` traps, the new code is installed but the canister is left in a failed state. If a canister ensures all persistent data is always in stable memory, steps 1 and 3 can be left empty.
 
 ### Stop and delete
 
@@ -102,7 +108,16 @@ For step-by-step CLI commands, see [Canister lifecycle management](../guides/can
 
 Controllers are principals (users or other canisters) that have permission to manage a canister: upgrade its code, change its settings, stop it, or delete it.
 
-If a canister has **no controllers**, it is immutable: no one can change its code or settings. This is a strong guarantee for users who want to verify that a canister's behavior will never change.
+The control structure can take several forms:
+
+| Control structure | Who is the controller | Effect |
+|---|---|---|
+| Centralized | A single developer's principal | Full developer control; standard during development |
+| Multi-signature | A multi-signer wallet like [Orbit](https://orbitwallet.io/) | Requires multiple keys to approve any change |
+| SNS-governed | A Service Nervous System (SNS) governance canister | Upgrades require a governance proposal voted on by asset holders |
+| No controller | Empty controller list | Immutable canister; code can never be changed |
+
+If a canister has **no controllers**, it is immutable: no one can change its code or settings. This is a strong trust guarantee for users. Immutability can be verified on the [ICP Dashboard](https://dashboard.internetcomputer.org).
 
 ## Canister internals
 
@@ -114,11 +129,22 @@ Under the hood, each canister maintains several components:
 - **Controllers list**: the set of principals authorized to manage the canister.
 - **Settings**: configurable parameters like compute allocation, memory allocation, and the freezing threshold (the cycles balance below which the canister stops accepting new messages to avoid running out).
 
+## Inter-canister messaging and error handling
+
+Canisters communicate by sending **requests** to other canisters and registering a **callback** to be invoked when the callee sends a response. The network guarantees that every request receives a reply: if a callee becomes unreachable or explicitly rejects a call, the Internet Computer synthesizes a reject response and delivers it to the caller's callback. Callbacks are never dropped.
+
+This bidirectional request/reply model is one way canisters differ from pure actors in classical actor-based systems, which typically use one-way fire-and-forget messages.
+
+**Trap behavior with outgoing calls:** When a canister processes a message, it may send outgoing requests before completing. Each time a canister sends a request, the network records a commit point. If the canister later traps while awaiting a response, its state reverts to what it was immediately after that last outgoing request was dispatched, not to the beginning of the original incoming message. This means any state changes made after the last outgoing call are rolled back, while changes made before it are preserved.
+
+This has a practical implication: if a canister modifies state and then makes an inter-canister call in the same message, it must account for the possibility that subsequent code (including the callback handler) will see the state as it was when the call was sent.
+
 ## Next steps
 
 - [Cycles](cycles.md): how canisters pay for computation
+- [Principals](principals.md): the identity model and caller authentication
 - [App architecture](app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx; informed by Learn Hub articles "Canister Smart Contracts", "Computational Model", "Canister Control" (migrated, source retired) -->
