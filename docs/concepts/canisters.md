@@ -90,7 +90,13 @@ Installing uploads a Wasm module to the canister and runs its initialization log
 
 ### Upgrade
 
-Upgrading replaces the canister's Wasm module while preserving stable memory. The system runs a pre-upgrade hook (to save heap data to stable memory if needed), swaps the Wasm, then runs a post-upgrade hook (to restore data).
+Upgrading replaces the canister's Wasm module while preserving stable memory. The runtime executes three steps atomically:
+
+1. `pre_upgrade` (or `system func preupgrade` in Motoko): save any heap data to stable memory before the code swap.
+2. New Wasm module is installed.
+3. `post_upgrade` (or `system func postupgrade`): read data back from stable memory into the new heap layout.
+
+If `pre_upgrade` traps, the upgrade is aborted and the canister continues running the old code. If `post_upgrade` traps, the new code is installed but the canister is left in a failed state. If a canister ensures all persistent data is always in stable memory, steps 1 and 3 can be left empty.
 
 ### Stop and delete
 
@@ -102,7 +108,16 @@ For step-by-step CLI commands, see [Canister lifecycle management](../guides/can
 
 Controllers are principals (users or other canisters) that have permission to manage a canister: upgrade its code, change its settings, stop it, or delete it.
 
-If a canister has **no controllers**, it is immutable: no one can change its code or settings. This is a strong guarantee for users who want to verify that a canister's behavior will never change.
+The control structure can take several forms:
+
+| Control structure | Who is the controller | Effect |
+|---|---|---|
+| Centralized | A single developer's principal | Full developer control; standard during development |
+| Multi-signature | A multi-signer wallet like [Orbit](https://orbitwallet.io/) | Requires multiple keys to approve any change |
+| SNS-governed | An SNS governance canister | Upgrades require a governance proposal voted on by token holders |
+| No controller | Empty controller list | Immutable canister; code can never be changed |
+
+If a canister has **no controllers**, it is immutable: no one can change its code or settings. This is a strong trust guarantee for users. Immutability can be verified on the [ICP Dashboard](https://dashboard.internetcomputer.org).
 
 ## Canister internals
 
@@ -127,9 +142,9 @@ This has a practical implication: if a canister modifies state and then makes an
 ## Next steps
 
 - [Cycles](cycles.md): how canisters pay for computation
-- [Principals](principals.md): the identity model and canister controllers
+- [Principals](principals.md): the identity model and caller authentication
 - [App architecture](app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx; informed by Learn Hub articles "Canister Smart Contracts", "Computational Model" (migrated, source retired) -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/canisters.mdx, message-execution.mdx; informed by Learn Hub articles "Canister Smart Contracts", "Computational Model", "Canister Control" (migrated, source retired) -->
