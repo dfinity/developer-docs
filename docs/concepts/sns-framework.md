@@ -78,8 +78,8 @@ SNS proposals are assigned to one of seven built-in topics. Each topic is classi
 | Topic | Description |
 |---|---|
 | Critical Dapp Operations | Adding or removing governed app canisters, executing critical app logic. |
-| SNS Community Settings | Tokenomics and branding changes: token name, symbol, description. |
-| Treasury and Asset Management | Moving treasury funds, managing liquidity pools, disbursing SNS-owned neurons. |
+| DAO Community Settings | Tokenomics and branding changes: token name, symbol, description. |
+| Treasury & Asset Management | Moving treasury funds, managing liquidity pools, disbursing SNS-owned neurons. |
 
 Critical proposals pass only if at least 20% of total voting power votes yes and at least 67% of cast votes are yes. The voting period is 5–10 days (extended by wait-for-quiet for contested votes) and cannot be changed by SNS governance.
 
