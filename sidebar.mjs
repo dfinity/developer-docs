@@ -119,6 +119,7 @@ export const sidebar = [
       { slug: "concepts/vetkeys" },
       { slug: "concepts/security" },
       { slug: "concepts/governance" },
+      { slug: "concepts/sns-framework" },
       { slug: "concepts/network-economics" },
       { slug: "concepts/ledgers" },
     ],
@@ -166,6 +167,8 @@ export const sidebar = [
     items: [
       { slug: "references/management-canister" },
       { slug: "references/system-canisters" },
+      { slug: "references/nns-proposal-types" },
+      { slug: "references/sns-settings" },
       { slug: "references/protocol-canisters" },
       { slug: "references/application-canisters" },
       { slug: "references/icrc-standards" },
