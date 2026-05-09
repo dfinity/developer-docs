@@ -9,6 +9,7 @@ const { title = data.title, tagline } = data.hero || {};
 ---
 
 <div class="hero">
+  <div class="icp-grid-paper-overlay" aria-hidden="true"></div>
   <div class="sl-flex stack">
     <div class="sl-flex copy">
       <h1 id="_top" data-page-title set:html={title} />
@@ -24,12 +25,16 @@ const { title = data.title, tagline } = data.hero || {};
       align-items: center;
       gap: 1rem;
       padding-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
     }
 
     .stack {
       flex-direction: column;
       gap: clamp(1.5rem, calc(1.5rem + 1vw), 2rem);
       text-align: center;
+      position: relative;
+      z-index: 1;
     }
 
     .copy {
@@ -39,15 +44,17 @@ const { title = data.title, tagline } = data.hero || {};
     }
 
     h1 {
-      font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
-      line-height: var(--sl-line-height-headings);
-      font-weight: 600;
-      color: var(--sl-color-white);
+      font-family: var(--icp-serif);
+      font-size: var(--icp-fz-h1);
+      font-weight: var(--icp-weight-display);
+      line-height: var(--icp-lh-display);
+      letter-spacing: var(--icp-tracking-display);
+      color: var(--icp-fg);
     }
 
     .tagline {
       font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
-      color: var(--sl-color-gray-2);
+      color: var(--icp-fg-secondary);
     }
 
     @media (min-width: 50rem) {

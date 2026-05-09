@@ -1,43 +1,172 @@
 /*
  * ICP Developer Docs — Custom Theme
  *
- * Brand: skills.internetcomputer.org
- * Light mode is the default. Dark mode is opt-in via data-theme="dark".
- * No pure #000 text, no pure #fff backgrounds.
- * Terracotta accent only — no purple, no secondary brand colors.
+ * Brand: ICP / DFINITY v2.2 (2026-05-08)
+ * Light editorial parchment is the default theme.
+ * Dark mode is opt-in via data-theme="dark" on <html> — never auto from prefers-color-scheme.
+ * Three-face type system: Newsreader (editorial), Inter (UI chrome), JetBrains Mono (technical).
+ * One primary accent: rust #a8482b.
  */
 
-/* ── ICP brand tokens (light defaults) ───────────────────── */
+/* ── ICP brand tokens (light defaults, mirrors tokens.css) ── */
 
 :root {
-  --icp-bg:         #f8f5ef;   /* parchment */
-  --icp-bg-elev:    #fdfaf3;   /* elevated: cards, code headers */
-  --icp-fg:         #1a1714;   /* ink */
-  --icp-muted:      #6b6660;   /* captions, meta */
-  --icp-rule:       #e5ddcf;   /* 1px hairlines */
-  --icp-accent:     #cc5a2b;   /* terracotta */
-  --icp-accent-dim: #f2d7c7;   /* blush: callout backgrounds */
-  --icp-code-bg:    #efe8da;   /* sand */
+  /* Type faces */
+  --icp-serif: "Newsreader", "Newsreader Fallback", Charter, Georgia, Cambria, "Times New Roman", serif;
+  --icp-ui: "Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --icp-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Type scale */
+  --icp-fz-h1: clamp(40px, 6.4vw, 86px);
+  --icp-fz-h2: 36px;
+  --icp-fz-h3: 24px;
+  --icp-fz-body: 17px;
+  --icp-fz-body-sm: 15px;
+  --icp-fz-eyebrow: 11px;
+  --icp-fz-marker: 12px;
+
+  --icp-lh-tight: 1.05;
+  --icp-lh-display: 1.15;
+  --icp-lh-body: 1.55;
+  --icp-lh-meta: 1.4;
+
+  --icp-tracking-display: -0.015em;
+  --icp-tracking-h2: -0.012em;
+  --icp-tracking-eyebrow: 0.18em;
+  --icp-tracking-mono: 0.04em;
+
+  --icp-weight-display: 380;
+  --icp-weight-body: 400;
+  --icp-weight-ui: 400;
+  --icp-weight-ui-strong: 500;
+
+  /* Spacing */
+  --icp-space-1: 4px;
+  --icp-space-2: 8px;
+  --icp-space-3: 12px;
+  --icp-space-4: 16px;
+  --icp-space-5: 24px;
+  --icp-space-6: 32px;
+  --icp-space-7: 48px;
+  --icp-space-8: 64px;
+  --icp-space-9: 96px;
+  --icp-space-10: 128px;
+  --icp-space-section: 144px;
+
+  /* Layout */
+  --icp-container: 1280px;
+  --icp-prose: 720px;
+  --icp-gutter: 32px;
+
+  /* Radii */
+  --icp-radius-inline: 3px;
+  --icp-radius-card: 6px;
+  --icp-radius-input: 8px;
+  --icp-radius-pill: 9999px;
+
+  /* Border weights */
+  --icp-rule-w: 1px;
+  --icp-card-stripe-w: 3px;
+
+  /* Backgrounds */
+  --icp-bg:             #faf9f5;   /* parchment, page default */
+  --icp-bg-sunk:        #f3f1ea;   /* sunk parchment for alternating sections */
+  --icp-bg-elev:        #ffffff;   /* cards that read as raised */
+  --icp-bg-cta-inverse: #1a1a1a;   /* CTA bar, always near-black */
+  --icp-bg-card:        #ffffff;
+
+  /* Grid paper texture */
+  --icp-grid-line: rgba(26, 26, 26, 0.04);
+  --icp-grid-tile: 24px;
+
+  /* Text */
+  --icp-fg:           #1a1a1a;   /* ink, never pure black */
+  --icp-fg-body:      #1a1a1a;
+  --icp-fg-secondary: #4b4943;   /* meta strips, secondary copy */
+  --icp-fg-muted:     #868078;   /* captions, attributions */
+  --icp-fg-disabled:  #b3ada3;
+  --icp-fg-inverse:   #ffffff;
+
+  /* Legacy alias for older component code */
+  --icp-muted: var(--icp-fg-muted);
+
+  /* Rules and borders */
+  --icp-rule:        #e7e3da;   /* warm ivory hairline */
+  --icp-rule-strong: #4b4943;
+
+  /* Accent: primary rust */
+  --icp-accent:        #a8482b;
+  --icp-accent-strong: #8e3b22;
+  --icp-accent-dim:    rgba(168, 72, 43, 0.10);
+
+  /* Section stripes (3px card top stripes, category coding only) */
+  --icp-section-default: var(--icp-accent);
+  --icp-section-teal:    #0b5e5c;
+  --icp-section-blue:    #1c3d5a;
+
+  /* Indicator dots */
+  --icp-indicator-teal: #14938e;
+  --icp-indicator-rust: var(--icp-accent);
+
+  /* Code surfaces */
+  --icp-code-bg: #efe8da;
+  --icp-code-fg: #1a1a1a;
+
+  /* Focus */
+  --icp-focus: #8e3b22;
 }
 
 :root[data-theme='dark'] {
-  --icp-bg:         #14110d;   /* deep bark */
-  --icp-bg-elev:    #1b1812;   /* bark */
-  --icp-fg:         #f0ebe0;   /* bone */
-  --icp-muted:      #a29a8d;   /* ash */
-  --icp-rule:       #2d2820;   /* soil */
-  --icp-accent:     #ff7a4d;   /* ember */
-  --icp-accent-dim: #3a2218;   /* hearth */
-  --icp-code-bg:    #221e18;
+  /* Backgrounds */
+  --icp-bg:             #14110d;
+  --icp-bg-sunk:        #1b1812;
+  --icp-bg-elev:        #1b1812;
+  --icp-bg-cta-inverse: #ffffff;
+  --icp-bg-card:        #1b1812;
+
+  --icp-grid-line: rgba(240, 235, 224, 0.05);
+
+  /* Text */
+  --icp-fg:           #f0ebe0;
+  --icp-fg-body:      #f0ebe0;
+  --icp-fg-secondary: #a29a8d;
+  --icp-fg-muted:     #7a7367;
+  --icp-fg-disabled:  #4a453d;
+  --icp-fg-inverse:   #1a1a1a;
+
+  --icp-muted: var(--icp-fg-muted);
+
+  /* Rules */
+  --icp-rule:        #2d2820;
+  --icp-rule-strong: #5a5446;
+
+  /* Accent: warmed for AA on dark surfaces */
+  --icp-accent:        #c25a37;
+  --icp-accent-strong: #d96a45;
+  --icp-accent-dim:    rgba(194, 90, 55, 0.16);
+
+  /* Section stripes */
+  --icp-section-default: var(--icp-accent);
+  --icp-section-teal:    #2c8a85;
+  --icp-section-blue:    #4a7da8;
+
+  /* Indicators */
+  --icp-indicator-teal: #2c8a85;
+  --icp-indicator-rust: var(--icp-accent);
+
+  /* Code */
+  --icp-code-bg: #1b1812;
+  --icp-code-fg: #f0ebe0;
+
+  /* Focus */
+  --icp-focus: var(--icp-accent);
 }
 
-/* ── Fonts ─────────────────────────────────────────────────── */
+/* ── Fonts ──────────────────────────────────────────────────── */
 
 :root {
-  --sl-font: 'Inter', var(--sl-font-system);
+  --sl-font: var(--icp-ui);
   --sl-content-width: 55rem;
-  /* Starlight overrides --sl-content-width on splash pages (45rem × 1.5 = 67.5rem).
-     This mirror variable stays unaffected and is used in the splash-page header formula. */
   --icp-content-width: 55rem;
 }
 
@@ -45,11 +174,8 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* react-remove-scroll (used by Mantine inside the kapa widget) stamps data-scroll-locked
-   on body and injects an unlayered `body[data-scroll-locked] { margin-right: 17px !important }`.
-   Per CSS Cascade 5, a @layer !important beats an unlayered !important regardless of
-   specificity or source order. The JS observer in kapa.js patches the injected node
-   directly as a parallel defence. */
+/* react-remove-scroll (kapa widget) injects margin-right:17px !important on body.
+   @layer !important overrides unlayered !important per CSS Cascade 5. */
 @layer kapa-fix {
   body[data-scroll-locked] {
     margin-right: 0 !important;
@@ -58,14 +184,14 @@ html {
 
 /* Newsreader for all headings */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
+  font-family: var(--icp-serif);
   font-weight: 500;
   line-height: 1.2;
 }
 
 .sl-markdown-content h1,
 .sl-markdown-content h2 {
-  letter-spacing: -0.015em;
+  letter-spacing: var(--icp-tracking-display);
 }
 
 .sl-markdown-content h3,
@@ -73,59 +199,66 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* ── Light mode — Starlight token overrides ───────────────── */
+/* JetBrains Mono for code and technical readouts */
+code, pre, kbd, samp,
+.sl-markdown-content code,
+.sl-markdown-content pre {
+  font-family: var(--icp-mono);
+}
+
+/* ── Light mode — Starlight token overrides ─────────────────── */
 
 :root[data-theme='light'] {
   /* Accent */
-  --sl-color-accent-low:  #f2d7c7;   /* blush */
-  --sl-color-accent:      #cc5a2b;   /* terracotta */
-  --sl-color-accent-high: #a84222;
+  --sl-color-accent-low:  #f2e7e1;   /* accent-dim resolved on parchment */
+  --sl-color-accent:      #a8482b;   /* rust */
+  --sl-color-accent-high: #8e3b22;
 
   /* Gray scale (ink on parchment) */
-  --sl-color-white: #1a1714;         /* foreground / ink */
+  --sl-color-white: #1a1a1a;
   --sl-color-gray-1: #2e2926;
   --sl-color-gray-2: #443e3a;
-  --sl-color-gray-3: #6b6660;        /* muted */
-  --sl-color-gray-4: #9a9490;
-  --sl-color-gray-5: #e5ddcf;        /* rule */
-  --sl-color-gray-6: #f0e8d8;
-  --sl-color-gray-7: #fdfaf3;        /* elevated */
-  --sl-color-black:  #f8f5ef;        /* page background / parchment */
+  --sl-color-gray-3: #868078;
+  --sl-color-gray-4: #a29a8d;
+  --sl-color-gray-5: #e7e3da;
+  --sl-color-gray-6: #f3f1ea;
+  --sl-color-gray-7: #ffffff;
+  --sl-color-black:  #faf9f5;
 
   /* Panel backgrounds */
-  --sl-color-bg-nav:         #fdfaf3;
-  --sl-color-bg-sidebar:     #f8f5ef;
+  --sl-color-bg-nav:         #ffffff;
+  --sl-color-bg-sidebar:     #faf9f5;
   --sl-color-bg-inline-code: #efe8da;
 
   /* Hairlines */
-  --sl-color-hairline:       #e5ddcf;
-  --sl-color-hairline-light: #ede5d4;
-  --sl-color-hairline-shade: #e0d8c8;
+  --sl-color-hairline:       #e7e3da;
+  --sl-color-hairline-light: #ede9e0;
+  --sl-color-hairline-shade: #e0dcd3;
 }
 
-/* ── Dark mode — Starlight token overrides ────────────────── */
+/* ── Dark mode — Starlight token overrides ──────────────────── */
 
 :root[data-theme='dark'] {
   /* Accent */
-  --sl-color-accent-low:  #3a2218;   /* hearth */
-  --sl-color-accent:      #ff7a4d;   /* ember */
-  --sl-color-accent-high: #ffb088;
+  --sl-color-accent-low:  #2e1a12;
+  --sl-color-accent:      #c25a37;   /* rust, warmed for dark */
+  --sl-color-accent-high: #d96a45;
 
   /* Gray scale (bone on bark) */
-  --sl-color-white: #f0ebe0;         /* foreground / bone */
+  --sl-color-white: #f0ebe0;
   --sl-color-gray-1: #d8d0c4;
   --sl-color-gray-2: #b8b0a4;
-  --sl-color-gray-3: #a29a8d;        /* ash */
+  --sl-color-gray-3: #a29a8d;
   --sl-color-gray-4: #6e6660;
-  --sl-color-gray-5: #2d2820;        /* soil */
+  --sl-color-gray-5: #2d2820;
   --sl-color-gray-6: #1f1c16;
-  --sl-color-gray-7: #1b1812;        /* bark */
-  --sl-color-black:  #14110d;        /* deep bark */
+  --sl-color-gray-7: #1b1812;
+  --sl-color-black:  #14110d;
 
   /* Panel backgrounds */
   --sl-color-bg-nav:         #1b1812;
   --sl-color-bg-sidebar:     #14110d;
-  --sl-color-bg-inline-code: #221e18;
+  --sl-color-bg-inline-code: #1b1812;
 
   /* Hairlines */
   --sl-color-hairline:       #2d2820;
@@ -133,14 +266,8 @@ h1, h2, h3, h4, h5, h6 {
   --sl-color-hairline-shade: #1e1a13;
 }
 
-/* ── Header grid — splash pages (no sidebar) ─────────────── */
+/* ── Header grid — splash pages (no sidebar) ────────────────── */
 
-/* Replicate Starlight's header column 1 formula for sidebar+TOC pages so search
-   lands at the same x position on the landing page as on docs pages.
-   Starlight overrides --sl-content-width on splash pages (45rem × 1.5 = 67.5rem),
-   so we use --icp-content-width which tracks the real docs content width.
-   Derived from Starlight's formula: (sidebar-width - nav-pad-x) +
-   max(0, (100% - 2×sidebar-width - content-width) / 2 - nav-gap) */
 @media (min-width: 50rem) {
   :root:not([data-has-sidebar]) .header {
     grid-template-columns:
@@ -156,7 +283,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* ── Responsive content width ─────────────────────────────── */
+/* ── Responsive content width ───────────────────────────────── */
 
 @media (min-width: 105rem) {
   :root { --sl-content-width: 65rem; --icp-content-width: 65rem; }
@@ -165,9 +292,36 @@ h1, h2, h3, h4, h5, h6 {
   :root { --sl-content-width: 75rem; --icp-content-width: 75rem; }
 }
 
-/* ── Buttons ──────────────────────────────────────────────── */
+/* ── Grid paper surface utilities ───────────────────────────── */
+
+/* Apply directly on a container as background */
+.icp-grid-paper {
+  background-image:
+    linear-gradient(90deg, var(--icp-grid-line) 1px, transparent 1px),
+    linear-gradient(var(--icp-grid-line) 1px, transparent 1px);
+  background-size: var(--icp-grid-tile) var(--icp-grid-tile);
+  background-position: -1px -1px;
+  background-repeat: repeat;
+}
+
+/* Hero overlay variant: drop into a position:relative hero container */
+.icp-grid-paper-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.8;
+  background-image:
+    linear-gradient(90deg, var(--icp-grid-line) 1px, transparent 1px),
+    linear-gradient(var(--icp-grid-line) 1px, transparent 1px);
+  background-size: var(--icp-grid-tile) var(--icp-grid-tile);
+  background-position: -1px -1px;
+  background-repeat: repeat;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
 
 .sl-link-button {
+  border-radius: var(--icp-radius-pill) !important;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
@@ -185,14 +339,16 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(240, 235, 224, 0.4);
 }
 
-/* ── Landing page hero ───────────────────────────────────── */
+/* ── Landing page hero ──────────────────────────────────────── */
 
 .hero {
   padding-block-start: clamp(2rem, 6vmin, 4rem) !important;
   padding-block-end: 1.5rem !important;
+  position: relative;
+  overflow: hidden;
 }
 
-/* ── Landing action cards (three boxes under hero) ────────── */
+/* ── Landing action cards (three boxes under hero) ──────────── */
 
 .landing-actions {
   display: grid;
@@ -214,7 +370,7 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0.375rem;
   background: var(--icp-bg-elev);
   border: 1px solid var(--icp-rule);
-  border-radius: 8px;
+  border-radius: var(--icp-radius-card);
   padding: 1.25rem 1.5rem;
   font-weight: 500;
   font-size: var(--sl-text-base);
@@ -230,22 +386,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .landing-action-card::after {
-  content: '→\fe0e';
+  content: '\2192\fe0e';
   opacity: 0.5;
   flex-shrink: 0;
 }
 
 .landing-action-card[href^="http"]::after {
-  content: '↗\fe0e';
+  content: '\2197\fe0e';
   opacity: 1;
 }
 
-/* ── ICP Skills banner ─────────────────────────────────────── */
+/* ── ICP Skills banner ──────────────────────────────────────── */
 
 .skills-banner {
   background: var(--icp-bg-elev);
   border: 1px solid var(--icp-rule);
-  border-radius: 0.5rem;
+  border-radius: var(--icp-radius-card);
   padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
   text-align: center;
   margin-block: 0 2rem;
@@ -257,11 +413,11 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--icp-fg);
   margin: 0 0 0.5rem;
   border: none;
-  font-family: 'Newsreader', 'Source Serif 4', 'EB Garamond', ui-serif, Georgia, serif;
+  font-family: var(--icp-serif);
 }
 
 .skills-banner p {
-  color: var(--icp-muted);
+  color: var(--icp-fg-muted);
   font-size: clamp(0.85rem, 1.2vw, 1rem);
   max-width: 42rem;
   margin: 0 auto 1.25rem;
@@ -276,19 +432,22 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 
-/* ── ICP Skills action buttons ─────────────────────────────── */
+/* ── ICP Skills action buttons ──────────────────────────────── */
 
+/* Primary: rust pill (brand CTA) */
 .skills-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
   background: var(--icp-accent);
   border: 1px solid var(--icp-accent);
-  border-radius: 6px;
-  padding: 0.6rem 1.25rem;
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
+  border-radius: var(--icp-radius-pill);
+  padding: 0.6rem 1.5rem;
+  font-family: var(--icp-ui);
+  font-size: var(--icp-fz-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #fff;
   cursor: pointer;
   transition: filter 0.15s ease;
@@ -305,17 +464,20 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0.7;
 }
 
+/* Secondary: outline pill */
 .skills-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background: transparent;
-  border: 1px solid var(--icp-rule);
-  border-radius: 6px;
+  border: 1px solid var(--icp-rule-strong);
+  border-radius: var(--icp-radius-pill);
   padding: 0.6rem 1.25rem;
   color: var(--icp-fg);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: var(--icp-fz-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -330,14 +492,14 @@ h1, h2, h3, h4, h5, h6 {
   height: 0.85rem;
 }
 
-/* ── External LinkCard indicator ─────────────────────────── */
+/* ── External LinkCard indicator ────────────────────────────── */
 
 .sl-link-card:has(a[target="_blank"]) .icon {
   display: none;
 }
 
 .sl-link-card:has(a[target="_blank"])::after {
-  content: '↗\fe0e';
+  content: '\2197\fe0e';
   color: var(--sl-color-gray-3);
   font-size: 1.333em;
   line-height: 1;
@@ -348,13 +510,13 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--sl-color-white);
 }
 
-/* ── PlantUML diagrams ────────────────────────────────────── */
+/* ── PlantUML diagrams ──────────────────────────────────────── */
 
 .plantuml-diagram {
   display: block;
   margin: 1.5rem 0;
   background: var(--icp-bg-elev);
-  border-radius: 6px;
+  border-radius: var(--icp-radius-card);
   padding: 1.5rem;
   text-align: center;
 }
@@ -383,10 +545,10 @@ h1, h2, h3, h4, h5, h6 {
   align-self: stretch;
   background: transparent;
   border: 1px solid var(--icp-rule);
-  border-radius: 6px;
+  border-radius: var(--icp-radius-input);
   padding: 0 0.75rem;
   color: var(--icp-fg);
-  font-family: inherit;
+  font-family: var(--icp-ui);
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1;
@@ -428,7 +590,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* ── Agent signaling ──────────────────────────────────────── */
+/* ── Agent signaling ────────────────────────────────────────── */
 
 /* Visually hidden but present in DOM for HTML-to-markdown converters.
    Uses clip-rect (not display:none) per agentdocsspec.com. */
