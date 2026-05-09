@@ -19,6 +19,33 @@ This flow (query, sign, submit) lets canisters call any Ethereum smart contract,
 
 The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system-level canister that acts as a gateway between ICP canisters and Ethereum JSON-RPC APIs. It is controlled by the NNS, so its behavior cannot be changed by any single party. For supported chains, built-in providers, and cycle costs, see [EVM RPC canister](../../references/protocol-canisters.md#evm-rpc-canister).
 
+```plantuml
+left to right direction
+
+package "Internet Computer" {
+  component "Your Canister" as UC
+  component "EVM RPC Canister" as EVM
+}
+
+package "JSON-RPC Providers" {
+  component "Provider 1" as P1
+  component "Provider 2" as P2
+  component "Provider N" as PN
+}
+
+package "Ethereum" {
+  component "Smart contracts" as SC
+}
+
+UC <--> EVM
+EVM --> P1
+EVM --> P2
+EVM --> PN
+P1 --> SC
+P2 --> SC
+PN --> SC
+```
+
 ### Multi-provider architecture
 
 ```plantuml
