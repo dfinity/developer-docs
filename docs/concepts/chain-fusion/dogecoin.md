@@ -11,6 +11,8 @@ The _Dogecoin adapter_ is a process that runs alongside the ICP replica on each 
 
 Canister-controlled Dogecoin addresses are derived from chain-key ECDSA public keys, just as in the Bitcoin integration. Transactions are signed using the management canister's `sign_with_ecdsa` API and broadcast to the Dogecoin network through the adapter.
 
+![Dogecoin integration architecture: a canister calls the Dogecoin canister through the ICP protocol stack, while the Dogecoin adapter connects to the Dogecoin peer-to-peer network](/concepts/chain-fusion/dogecoin-architecture.png)
+
 ## Chain-key DOGE (ckDOGE)
 
 ckDOGE is the chain-key token representing Dogecoin on ICP, backed 1:1 by real DOGE held in a canister-controlled address. The minter-plus-ledger architecture is the same as [ckBTC](bitcoin.md#chain-key-bitcoin-ckbtc): users deposit DOGE to a minter-controlled address, the minter mints ckDOGE on the ledger, and withdrawals trigger an onchain Dogecoin transaction signed with threshold ECDSA.

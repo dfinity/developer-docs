@@ -14,6 +14,33 @@ Supported providers include [Alchemy](https://www.alchemy.com/), [Ankr](https://
 Each request is forwarded to multiple providers. If providers return consistent results, that response is passed back to the calling canister. The NNS controls which providers are registered and how the canister behaves, so no single entity can alter its operation.
 
 ```plantuml
+left to right direction
+
+package "Internet Computer" {
+  component "Your Canister" as UC
+  component "SOL RPC Canister" as SolRpc
+}
+
+package "JSON-RPC Providers" {
+  component "Provider 1" as P1
+  component "Provider 2" as P2
+  component "Provider N" as PN
+}
+
+package "Solana" {
+  component "Programs" as SC
+}
+
+UC <--> SolRpc
+SolRpc --> P1
+SolRpc --> P2
+SolRpc --> PN
+P1 --> SC
+P2 --> SC
+PN --> SC
+```
+
+```plantuml
 participant "Your Canister" as Canister
 participant "SOL RPC Canister" as SolRpc
 participant "Solana Providers" as Providers
