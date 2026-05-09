@@ -522,11 +522,7 @@ builds upon this functionality.
 
 #### principal
 
-A **principal** is an entity that can be authenticated by the [Internet Computer](#internet-computer-protocol-icp). This is the same sense of the
-word principal as the [Wikipedia
-definition](https://en.wikipedia.org/wiki/Principal-(computer-security)).
-Principals that interact with the Internet Computer do so using a
-certain [identity](#identity).
+A **principal** is an entity that can be authenticated by the [Internet Computer](#internet-computer-protocol-icp). Principals include canister IDs, user identities derived from public keys, and the anonymous principal. See [Principals](../concepts/principals.md) for the full classification and how they are used for access control.
 
 #### proposal
 
