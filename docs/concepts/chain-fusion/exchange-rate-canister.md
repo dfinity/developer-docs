@@ -33,6 +33,8 @@ Every request must include **1 billion cycles**. Unused cycles are refunded. At 
 
 ## How rates are computed
 
+![Exchange rate canister data flow: the XRC pulls daily forex rates from forex providers and real-time crypto rates from exchanges, then returns the median rate and metadata to the requesting canister](/concepts/chain-fusion/exchange-rate-canister-flow.png)
+
 When a cryptocurrency rate is not cached, the XRC queries all supported exchanges using HTTPS outcalls to get the asset's price against USDT. It then takes the **median** of all received rates, making the result resistant to outliers. For a cryptocurrency/cryptocurrency pair like BTC/ICP, the XRC derives the rate from independent BTC/USDT and ICP/USDT rates using a cross-product approach before taking the median.
 
 For fiat currencies, the XRC downloads daily forex rates from forex data providers on a fixed schedule. USD/USDT is derived by taking the median of rates for several stablecoins against USDT, based on the assumption that at least half of the included stablecoins maintain their USD peg at any given time.

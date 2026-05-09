@@ -15,6 +15,8 @@ The integration has two layers:
 
 Together, these two layers give a canister the ability to receive bitcoin, check its balance, construct transactions, sign them, and broadcast them to the Bitcoin network.
 
+![Bitcoin integration architecture: a canister calls the Bitcoin canister through the ICP protocol stack, while the Bitcoin adapter connects to the Bitcoin peer-to-peer network](/concepts/chain-fusion/bitcoin-architecture.png)
+
 ## Bitcoin canister API
 
 The Bitcoin canister exposes endpoints accessible directly by other canisters:
@@ -27,6 +29,28 @@ The Bitcoin canister exposes endpoints accessible directly by other canisters:
 - `get_blockchain_info`: returns current chain state including tip height, block hash, timestamp, difficulty, and UTXO count.
 
 A typical flow for a canister spending bitcoin is: fetch UTXOs for its address, select inputs, build the transaction, call `sign_with_ecdsa` (or `sign_with_schnorr` for Taproot) for each input, then call `bitcoin_send_transaction`.
+
+```plantuml
+participant "Your Canister" as Canister
+participant "Bitcoin Canister" as BC
+participant "Chain-Key Signing" as CKS
+
+Canister -> BC: bitcoin_get_utxos(address, filter)
+BC --> Canister: utxos
+
+Canister -> BC: bitcoin_get_current_fee_percentiles
+BC --> Canister: fee_percentiles
+
+note over Canister: select inputs, build transaction
+
+loop for each transaction input
+  Canister -> CKS: sign_with_ecdsa(tx_input)
+  CKS --> Canister: signature
+end
+
+Canister -> BC: bitcoin_send_transaction(signed_tx)
+BC --> Canister: ok
+```
 
 For canister IDs, cycle costs, and the full interface specification, see [Bitcoin canisters](../../references/protocol-canisters.md#bitcoin-canisters).
 
@@ -41,11 +65,15 @@ Two primary endpoints are available:
 
 Both endpoints return `Passed` or `Failed`. The canister itself is controlled by the NNS, so its SDN list can only be updated via a governance proposal.
 
+![Bitcoin checker canister flow: the ckBTC minter calls the checker canister, which queries Bitcoin explorers and cross-references the OFAC SDN list before returning a pass or fail result](/concepts/chain-fusion/bitcoin-checker-flow.png)
+
 ## Chain-key Bitcoin (ckBTC)
 
 ckBTC is an asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
 
 ckBTC transactions settle in seconds with minimal fees, making it practical for high-frequency or low-value transfers that would be uneconomical on Bitcoin directly.
+
+![ckBTC system architecture: the ckBTC minter handles BTC deposits and withdrawals, the ckBTC ledger records balances, the Bitcoin canister provides UTXO data, and the Bitcoin checker canister screens addresses against the OFAC list](/concepts/chain-fusion/ckbtc-architecture.png)
 
 Two canisters run on the [pzp6e subnet](https://dashboard.internetcomputer.org/subnet/pzp6e-ekpqk-3c5x7-2h6so-njoeq-mt45d-h3h6c-q3mxf-vpeez-fez7a-iae), both controlled by the NNS root canister. The **ledger** is an [ICRC-1/ICRC-2](../../references/icrc-standards.md) compliant ledger that records all ckBTC balances and handles transfers. The **minter** manages the BTC side: it controls Bitcoin addresses, tracks UTXOs, triggers minting when deposits arrive, and signs and submits Bitcoin transactions when users withdraw.
 
