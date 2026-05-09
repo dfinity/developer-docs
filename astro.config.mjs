@@ -120,6 +120,8 @@ export default defineConfig({
         "@fontsource/newsreader/400-italic.css",
         "@fontsource/newsreader/500.css",
         "@fontsource/newsreader/500-italic.css",
+        "@fontsource/jetbrains-mono/400.css",
+        "@fontsource/jetbrains-mono/500.css",
         "./src/styles/custom.css",
       ],
       social: [
