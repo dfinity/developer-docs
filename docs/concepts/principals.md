@@ -7,7 +7,7 @@ A **principal** is any entity that can authenticate with the Internet Computer a
 
 ## Principal classes
 
-There are four classes of principals on ICP:
+ICP defines five principal classes, though one (derived IDs) has never been implemented:
 
 **1. Management canister principal (`aaaaa-aa`):** The IC management canister is a virtual system API that canisters call to perform operations like creating other canisters or changing settings. It does not run at a real canister address; it uses the fixed principal `aaaaa-aa`. Canisters call it with `ic_cdk::management_canister::*` (Rust) or via actor references in Motoko.
 
@@ -17,7 +17,7 @@ There are four classes of principals on ICP:
 
 **4. Anonymous principal (`2vxsx-fae`):** Messages that are not signed use the anonymous principal as their caller identity. Any canister can check whether a caller is anonymous and decide how to handle unsigned requests (for example, allowing public reads but rejecting state changes from anonymous callers).
 
-A fifth class, **derived IDs**, was reserved in the specification but has never been implemented.
+**5. Derived IDs:** Reserved in the specification but never implemented.
 
 ## How principals are used in practice
 
