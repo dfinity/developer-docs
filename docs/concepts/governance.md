@@ -70,7 +70,7 @@ An NNS proposal is a governance action submitted by a neuron and voted on by the
 - *UpdateCanisterSettings* for NNS canisters: Can change the behavior of system canisters.
 - *CreateServiceNervousSystem*: Authorizes a new SNS, launching the decentralization process for an app.
 
-See [system canisters](../references/system-canisters.md) for the full list of NNS proposal topics and types.
+See [NNS proposal types](../references/nns-proposal-types.md) for the full list of NNS proposal topics and their descriptions.
 
 ## Voting rewards
 
@@ -165,7 +165,7 @@ When a neuron follows a group of other neurons on a topic, it casts its vote onc
 
 A neuron can follow at most 15 neurons per topic. A **catch-all** following rule covers topics with no explicit setting, but does not apply to the *SNS & Community Fund* and *Governance* topics, which must be explicitly configured.
 
-**Periodic confirmation:** A neuron that never votes directly must confirm its following settings at least once every 6 months. If it fails to do so, voting power is linearly reduced over the following month until it reaches zero, and all following settings are reset. This prevents inactive neurons from accumulating rewards without genuine participation.
+**Periodic confirmation:** A neuron that never votes directly, sets following, or confirms following must do one of those actions at least once every 6 months. If it fails to do so, voting power is linearly reduced over the following month until it reaches zero, and all following settings are reset. This prevents inactive neurons from accumulating rewards without genuine participation.
 
 ## Voting thresholds and proposal decision
 

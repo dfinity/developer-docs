@@ -9,7 +9,7 @@ For a high-level introduction comparing the NNS and SNS, see [Governance](govern
 
 ## Framework architecture
 
-All SNS instances run code that the NNS community has reviewed and approved. The NNS maintains a canister called the **SNS Wasm modules canister (SNS-W)**, `qaa6y-5yaaa-aaaaa-aaafa-cai`, which stores the approved Wasm binaries for each SNS canister. When a new SNS is created, SNS-W deploys the approved code. When NNS voters approve an improved SNS version, it is published to SNS-W and all existing SNS instances can upgrade to it.
+All SNS instances run code that the Network Nervous System (NNS) community has reviewed and approved. The NNS maintains a canister called the **SNS Wasm modules canister (SNS-W)**, `qaa6y-5yaaa-aaaaa-aaafa-cai`, which stores the approved Wasm binaries for each SNS canister. When a new SNS is created, SNS-W deploys the approved code. When NNS voters approve an improved SNS version, it is published to SNS-W and all existing SNS instances can upgrade to it.
 
 This shared codebase has two benefits. First, NNS voters review the code once and all SNS instances benefit. Second, users who have interacted with one SNS have a reliable intuition for how any other SNS works.
 

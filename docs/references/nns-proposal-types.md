@@ -3,7 +3,7 @@ title: "NNS Proposal Types"
 description: "All NNS proposal topics and their proposal types, with descriptions"
 ---
 
-NNS proposals are grouped into topics that determine their reward weight, voting period, and how neurons can delegate their votes. Each proposal type specifies which canister method is called on adoption. For background on how proposals work, see [Governance](../concepts/governance.md#proposals).
+Network Nervous System (NNS) proposals are grouped into topics that determine their reward weight, voting period, and how neurons can delegate their votes. Each proposal type specifies which canister method is called on adoption. For background on how proposals work, see [Governance](../concepts/governance.md#proposals).
 
 ## Topic: ProtocolCanisterManagement
 

@@ -25,7 +25,7 @@ For background, see [SNS framework](../concepts/sns-framework.md).
 |---|---|---|
 | `neuron_minimum_dissolve_delay_to_vote_seconds` | `nat64` | Minimum dissolve delay a neuron must have to be eligible to vote. Must be less than `max_dissolve_delay_seconds`. |
 | `max_dissolve_delay_seconds` | `nat64` | Maximum dissolve delay achievable by a neuron. The dissolve delay bonus is saturated at this value. |
-| `max_dissolve_delay_bonus_percentage` | `nat64` | Additional voting power percentage granted at maximum dissolve delay. Set to 100 for a 2x bonus (matching NNS behavior). Set to 0 for no bonus. |
+| `max_dissolve_delay_bonus_percentage` | `nat64` | Additional voting power percentage granted at maximum dissolve delay. Set to 100 for a 2x bonus (matching Network Nervous System (NNS) behavior). Set to 0 for no bonus. |
 | `max_neuron_age_for_age_bonus` | `nat64` | Maximum neuron age (seconds) at which the age bonus is saturated. |
 | `max_age_bonus_percentage` | `nat64` | Additional voting power percentage granted at maximum age. Set to 25 for a 1.25x bonus (matching NNS behavior). Set to 0 for no bonus. |
 
