@@ -71,7 +71,7 @@ By default, canisters provide integrity but not confidentiality. Data stored on 
 
 - Consider end-to-end encrypting any private or personal data (e.g., a user's personal or private information) on canisters.
 
-- The example dapp [encrypted notes](https://github.com/dfinity/examples/tree/master/motoko/encrypted-notes-dapp) illustrates how end-to-end encryption can be done.
+- The [encrypted notes](https://github.com/dfinity/examples/tree/master/motoko/encrypted-notes-dapp) example app illustrates how end-to-end encryption can be done.
 
 ## Create backups
 
@@ -79,7 +79,7 @@ By default, canisters provide integrity but not confidentiality. Data stored on 
 
 A canister could be rendered unusable and impossible to upgrade. For example, due to one of the following reasons:
 
-- It has a faulty upgrade process due to some bug from the dapp developer.
+- It has a faulty upgrade process due to some bug from the app developer.
 
 - The state becomes inconsistent or corrupt because of a bug in the code that persists data.
 
@@ -91,4 +91,4 @@ A canister could be rendered unusable and impossible to upgrade. For example, du
 
 - See the "Backup and recovery" section in [how to audit an Internet Computer canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
 
-<!-- Upstream: sync from dfinity/portal — building-apps/security/data-storage.mdx -->
+<!-- Upstream: sync from dfinity/portal building-apps/security/data-storage.mdx -->

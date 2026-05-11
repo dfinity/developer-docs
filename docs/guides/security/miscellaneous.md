@@ -154,7 +154,7 @@ fn random_bytes(size: u32) -> RandomBytesResult {
 #### Caveats:
 - The `setup_randomness` must **always** be initialized in both the `init` and `post_upgrade` hook as `init` [is not invoked during a canister upgrade](../../references/ic-interface-spec/canister-interface.md#system-api-upgrades).
 - The `init` and `post_upgrade` methods don't allow async calls, and thus a timer is immediately scheduled to seed the randomness.
-- Once the seed is initialized, the outcome of all future `random_bytes` is predictable to anyone having the seed (node providers), as the PRNG is deterministic. This breaks the unpredictable property of secure randomness. Hence, to balance security vs. performance, we recommend frequently reseeding the PRNG on a timer. The example above already does this with a duration of **1 hour**. However, based on the sensitivity of their dapp, developers can choose an appropriate reseeding interval by setting `SEEDING_INTERVAL`.
+- Once the seed is initialized, the outcome of all future `random_bytes` is predictable to anyone having the seed (node providers), as the PRNG is deterministic. This breaks the unpredictable property of secure randomness. Hence, to balance security vs. performance, we recommend frequently reseeding the PRNG on a timer. The example above already does this with a duration of **1 hour**. However, based on the sensitivity of their app, developers can choose an appropriate reseeding interval by setting `SEEDING_INTERVAL`.
 - The `random_bytes` must **always** be an `update` method, so the PRNG can preserve the state and offer unique randomness on every request.
 
 ## Verify that your canister doesn't export malicious endpoints
@@ -277,4 +277,4 @@ Floats in Rust may behave unexpectedly. There can be undesirable loss of precisi
 
 Use [`rust_decimal::Decimal`](https://docs.rs/rust_decimal/latest/rust_decimal/) or [`num_rational::Ratio`](https://docs.rs/num-rational/latest/num_rational/). Decimal uses a fixed-point representation with base 10 denominators, and Ratio represents rational numbers. Both implement `checked_div` to handle division by zero, which is not available for floats. Numbers in common use, like 0.1 and 0.2, can be represented more intuitively with Decimal and can be represented exactly with Ratio. Rounding oddities like `0.1 + 0.2 != 0.3`, which happen with floats in Rust, do not arise with Decimal (see https://0.30000000000000004.com/ ). With Ratio, the desired precision can be made explicit. With either Decimal or Ratio, although one still has to manage precision, the above makes arithmetic easier to reason about.
 
-<!-- Upstream: sync from dfinity/portal — building-apps/security/misc.mdx -->
+<!-- Upstream: sync from dfinity/portal building-apps/security/misc.mdx -->
