@@ -34,7 +34,7 @@ Most web servers implement some sort of rate limiting; this is a mechanism used 
 
 You should consider such rate limits when designing and implementing your canisters. Rate limits are enforced using different time granularities, e.g., seconds or minutes. For second-granularity enforcement, make sure that the simultaneous requests by all subnet replicas do not violate the quota. Violations may lead to temporary or permanent bans.
 
-See the [HTTPS outcalls guide](../backends/https-outcalls.mdx) for more details.
+See the [HTTPS outcalls guide](../backends/https-outcalls.md) for more details.
 
 ## Only make HTTPS outcall requests to idempotent endpoints
 
@@ -48,7 +48,7 @@ Make sure the endpoints, called by an HTTPS outcall, are idempotent, such that t
 
 Some servers support the use of idempotency keys. These keys are random unique strings submitted in the HTTP request as headers. If used with the HTTPS outcalls feature, all requests sent by each honest replica will contain the same idempotency key. This allows the server to recognize duplicated requests (i.e., requests with the same idempotency key), handle just one, and modify the server state only once. Note that this is a feature that must be supported by the server.
 
-See the [HTTPS outcalls guide](../backends/https-outcalls.mdx) for more details.
+See the [HTTPS outcalls guide](../backends/https-outcalls.md) for more details.
 
 ## Ensure HTTPS responses are identical
 
@@ -64,7 +64,7 @@ Ideally, the HTTP responses returned by the queried endpoint would always be the
 
 This applies to the HTTP response body and headers. Make sure to consider both when applying the transformation functions. Response headers are often overlooked and lead to failure because of failed consensus.
 
-See the [HTTPS outcalls guide](../backends/https-outcalls.mdx) for more details.
+See the [HTTPS outcalls guide](../backends/https-outcalls.md) for more details.
 
 ## Be aware of HTTP request and response sizes
 
