@@ -47,7 +47,7 @@ Boundary nodes are the entry point for all external traffic to ICP. They serve t
 
 Boundary nodes also cache query responses and provide TLS termination. They are not part of consensus and cannot modify canister state: they are routing infrastructure.
 
-From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or icp-cli, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](../guides/backends/certified-variables.md) exist for applications that need authenticated query results.
+From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or icp-cli, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](certified-data.md#certified-variables) exist for applications that need authenticated query results.
 
 ## How it all fits together
 
@@ -55,7 +55,7 @@ Here is the path of a typical request:
 
 1. A user's browser sends an HTTPS request to a boundary node.
 2. The boundary node looks up which subnet hosts the target canister and forwards the message.
-3. For update calls: the subnet's consensus protocol includes the message in a block, all nodes execute it, and the subnet signs the response. For query calls: a single node executes the call and returns the result: query responses are not threshold-signed by the subnet, so they should be treated as unverified unless the canister uses [certified variables](../guides/backends/certified-variables.md).
+3. For update calls: the subnet's consensus protocol includes the message in a block, all nodes execute it, and the subnet signs the response. For query calls: a single node executes the call and returns the result: query responses are not threshold-signed by the subnet, so they should be treated as unverified unless the canister uses [certified variables](certified-data.md#certified-variables).
 4. The boundary node returns the response to the user.
 
 The entire flow (from user request to signed response) completes within the finality window described above for updates, and under 100 milliseconds for queries.
