@@ -77,28 +77,29 @@ export const sidebar = [
     label: "Concepts",
     collapsed: true,
     items: [
-      // Network: how ICP is built and operates
+      // Network: infrastructure topology, nodes, and scaling
       {
         label: "Network",
         collapsed: true,
         items: [
-          { slug: "concepts/network-overview" },
-          {
-            label: "Protocol Stack",
-            collapsed: true,
-            items: [
-              { slug: "concepts/protocol", label: "Overview" },
-              { slug: "concepts/protocol/peer-to-peer" },
-              { slug: "concepts/protocol/consensus" },
-              { slug: "concepts/protocol/message-routing" },
-              { slug: "concepts/protocol/execution" },
-              { slug: "concepts/protocol/state-synchronization" },
-              { slug: "concepts/protocol/performance" },
-            ],
-          },
+          { slug: "concepts/network-overview", label: "Overview" },
           { slug: "concepts/node-infrastructure" },
           { slug: "concepts/edge-infrastructure" },
           { slug: "concepts/evolution-scaling" },
+        ],
+      },
+      // Protocol Stack: ICP's internal execution layers
+      {
+        label: "Protocol Stack",
+        collapsed: true,
+        items: [
+          { slug: "concepts/protocol", label: "Overview" },
+          { slug: "concepts/protocol/peer-to-peer" },
+          { slug: "concepts/protocol/consensus" },
+          { slug: "concepts/protocol/message-routing" },
+          { slug: "concepts/protocol/execution" },
+          { slug: "concepts/protocol/state-synchronization" },
+          { slug: "concepts/protocol/performance" },
         ],
       },
       // Canisters: the developer runtime and canister capabilities
@@ -145,11 +146,11 @@ export const sidebar = [
         label: "Trust & governance",
         collapsed: true,
         items: [
-          { slug: "concepts/security" },
           { slug: "concepts/governance" },
           { slug: "concepts/sns-framework" },
           { slug: "concepts/network-economics" },
           { slug: "concepts/ledgers" },
+          { slug: "concepts/security" },
         ],
       },
     ],

@@ -9,11 +9,20 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 ## Network
 
-- **[Network Overview](network-overview.md)**: Subnets, nodes, consensus, and boundary nodes.
-- **[Protocol Stack](protocol/index.md)**: The four-layer architecture (peer-to-peer, consensus, message routing, execution) and protocol internals including performance benchmarks.
+- **[Overview](network-overview.md)**: Subnets, nodes, consensus, and boundary nodes.
 - **[Node Infrastructure](node-infrastructure.md)**: How ICP nodes are structured: IC-OS, virtual machine isolation, and Trusted Execution Environments.
 - **[Edge Infrastructure](edge-infrastructure.md)**: How requests reach ICP canisters: API boundary nodes, HTTP gateways, and asset certification.
 - **[Evolution & Scaling](evolution-scaling.md)**: How ICP scales horizontally through subnet creation and upgrades its protocol without forks.
+
+## Protocol Stack
+
+- **[Overview](protocol/index.md)**: The four-layer architecture and how the layers interact.
+- **[Peer-to-Peer](protocol/peer-to-peer.md)**: How replicas discover each other and exchange artifacts.
+- **[Consensus](protocol/consensus.md)**: How subnets agree on the order of messages.
+- **[Message Routing](protocol/message-routing.md)**: How messages are delivered to canisters after consensus.
+- **[Execution](protocol/execution.md)**: How the Wasm runtime processes messages and manages canister state.
+- **[State Synchronization](protocol/state-synchronization.md)**: How replicas catch up after falling behind.
+- **[Performance](protocol/performance.md)**: Throughput benchmarks and performance characteristics.
 
 ## Canisters
 
@@ -44,8 +53,8 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 ## Trust & governance
 
-- **[Security Model](security.md)**: Canister isolation, trust boundaries, and the threat model for app developers.
 - **[Governance](governance.md)**: The NNS, SNS for app governance, neurons, and proposals.
 - **[SNS Framework](sns-framework.md)**: How the Service Nervous System works: architecture, launch process, neurons, and governance.
 - **[Network Economics](network-economics.md)**: ICP token uses, voting rewards, supply dynamics, and SNS asset configuration.
 - **[Ledgers](ledgers.md)**: How ICRC and ICP token ledgers work, address formats, and scaling architecture.
+- **[Security Model](security.md)**: Canister isolation, trust boundaries, and the threat model for app developers.
