@@ -47,15 +47,7 @@ Canister memory is not persisted across upgrades. If data needs to be kept acros
 
 - Write tests for stable memory to avoid bugs.
 
-- Some libraries commonly used are:
-
-    - [https://github.com/dfinity/stable-structures](https://github.com/dfinity/stable-structures)
-
-    - [https://github.com/seniorjoinu/ic-stable-memory](https://github.com/seniorjoinu/ic-stable-memory)
-
-:::caution
-Please note some of these libraries may be partially unfinished.
-:::
+- A commonly used library for stable memory is [stable-structures](https://github.com/dfinity/stable-structures).
 
 - See [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), sections "Long running upgrades" and "\[de\]serializer requiring additional Wasm memory."
 
@@ -71,7 +63,7 @@ By default, canisters provide integrity but not confidentiality. Data stored on 
 
 - Consider end-to-end encrypting any private or personal data (e.g., a user's personal or private information) on canisters.
 
-- The [encrypted notes](https://github.com/dfinity/examples/tree/master/motoko/encrypted-notes-dapp) example app illustrates how end-to-end encryption can be done.
+- The [encrypted notes](https://github.com/dfinity/examples/tree/master/rust/vetkeys/encrypted_notes_dapp_vetkd) example app illustrates how end-to-end encryption can be done.
 
 ## Create backups
 
