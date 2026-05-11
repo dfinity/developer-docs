@@ -1,8 +1,9 @@
 ---
-title: "Security Overview"
+title: "Security overview"
 description: "Introduction to the ICP security best practices for canister and web app developers."
 sidebar:
   order: 1
+  label: "Overview"
 ---
 
 This section provides security best practices for developing canisters and web apps served by canisters on ICP. These best practices are mostly inspired by issues found in security reviews.

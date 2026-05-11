@@ -1,6 +1,6 @@
 ---
-title: "Decentralization"
-description: "Security best practices for distributed canister control using the SNS, governance mechanisms, and reducing centralized trust."
+title: "Canister control"
+description: "Security best practices for canister control: using governance frameworks such as the SNS, verifying the trust level of canisters you depend on, and loading assets only from trusted domains."
 sidebar:
   order: 10
 ---
