@@ -39,7 +39,7 @@ Since global timers are used internally by the Motoko `Timer` mechanism, the sam
 
 This behavior is different when [using Motoko](https://github.com/dfinity/motoko/pull/3542) and implementing `system func timer`. The `timer` function will be called after an upgrade. In case your canister was using timers for recurring tasks, the `timer` function would likely set the global timer again for a later time. However, the time between invocations of `timer` would not be consistent as the upgrade triggered an "unexpected" call to `timer`.
 
-Using the Rust CDK, the recurring timer is also lost on upgrade as explained in the API documentation of [set_timer_interval](https://docs.rs/ic-cdk/0.6.9/ic_cdk/timer/fn.set_timer_interval.html).
+Using the Rust CDK, the recurring timer is also lost on upgrade as explained in the API documentation of [set_timer_interval](https://docs.rs/ic-cdk-timers/1.0.0/ic_cdk_timers/fn.set_timer_interval.html).
 
 ### Recommendation
 
@@ -47,6 +47,6 @@ Using the Rust CDK, the recurring timer is also lost on upgrade as explained in 
 
 - See the Motoko documentation on [timers](../../languages/motoko/icp-features/timers.md).
 
-- See the Rust documentation on [set_timer_interval](https://docs.rs/ic-cdk/0.6.9/ic_cdk/timer/fn.set_timer_interval.html).
+- See the Rust documentation on [set_timer_interval](https://docs.rs/ic-cdk-timers/1.0.0/ic_cdk_timers/fn.set_timer_interval.html).
 
 <!-- Upstream: sync from dfinity/portal building-apps/security/canister-upgrades.mdx -->
