@@ -1,0 +1,258 @@
+---
+title: "Fetch exchange rates"
+description: "Call the exchange rate canister from a Rust or Motoko canister to get cryptocurrency and fiat exchange rates"
+sidebar:
+  order: 7
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The [exchange rate canister (XRC)](../../concepts/chain-fusion/exchange-rate-canister.md) provides cryptocurrency and fiat exchange rates to other canisters. Because the XRC requires cycles attached to every call, you must call it from canister code; the CLI cannot attach cycles to a direct call.
+
+This guide shows how to call the XRC from Rust and Motoko, parse the scaled-integer response, and test from the CLI using the proxy canister pattern.
+
+## Prerequisites
+
+- A deployed canister with cycles available
+- For Rust: the [`ic-xrc-types`](https://docs.rs/ic-xrc-types) crate added to your `Cargo.toml`
+
+```toml
+[dependencies]
+ic-cdk       = "0.18"
+ic-xrc-types = "1.2"
+candid       = "0.10"
+```
+
+## Call the XRC
+
+The XRC exposes a single method, `get_exchange_rate`, which takes a base asset, quote asset, and optional timestamp. Every call must include exactly **1 billion cycles**; unused cycles are refunded.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+In Motoko, declare the XRC actor interface inline and use the `(with cycles = amount)` syntax to attach cycles. The Candid field `class` maps to `class_` in Motoko because `class` is a reserved keyword.
+
+```motoko
+import Cycles "mo:core/Cycles";
+import Float "mo:core/Float";
+import Int "mo:core/Int";
+import Nat32 "mo:core/Nat32";
+import Nat64 "mo:core/Nat64";
+
+type AssetClass = { #Cryptocurrency; #FiatCurrency };
+type Asset      = { symbol : Text; class_ : AssetClass };
+
+type GetExchangeRateRequest = {
+  base_asset  : Asset;
+  quote_asset : Asset;
+  timestamp   : ?Nat64;
+};
+
+type ExchangeRateMetadata = {
+  decimals                        : Nat32;
+  base_asset_num_received_rates   : Nat64;
+  base_asset_num_queried_sources  : Nat64;
+  quote_asset_num_received_rates  : Nat64;
+  quote_asset_num_queried_sources : Nat64;
+  standard_deviation              : Nat64;
+  forex_timestamp                 : ?Nat64;
+};
+
+type ExchangeRate = {
+  base_asset  : Asset;
+  quote_asset : Asset;
+  timestamp   : Nat64;
+  rate        : Nat64;
+  metadata    : ExchangeRateMetadata;
+};
+
+type ExchangeRateError = {
+  #AnonymousPrincipalNotAllowed;
+  #Pending;
+  #CryptoBaseAssetNotFound;
+  #CryptoQuoteAssetNotFound;
+  #StablecoinRateNotFound;
+  #StablecoinRateTooFewRates;
+  #StablecoinRateZeroRate;
+  #ForexInvalidTimestamp;
+  #ForexBaseAssetNotFound;
+  #ForexQuoteAssetNotFound;
+  #ForexAssetsNotFound;
+  #RateLimited;
+  #NotEnoughCycles;
+  #FailedToAcceptCycles;
+  #InconsistentRatesReceived;
+  #Other : { code : Nat32; description : Text };
+};
+
+transient let xrc : actor {
+  get_exchange_rate : shared GetExchangeRateRequest -> async {
+    #Ok : ExchangeRate;
+    #Err : ExchangeRateError;
+  };
+} = actor "uf6dk-hyaaa-aaaaq-qaaaq-cai";
+
+persistent actor {
+
+  public func getRate(base : Text, quote : Text) : async ?Float {
+    let request : GetExchangeRateRequest = {
+      base_asset  = { symbol = base;  class_ = #Cryptocurrency };
+      quote_asset = { symbol = quote; class_ = #FiatCurrency };
+      timestamp   = null;
+    };
+
+    let result = await (with cycles = 1_000_000_000) xrc.get_exchange_rate(request);
+
+    switch result {
+      case (#Ok rate) {
+        let scale = Float.fromInt(Int.pow(10, Nat32.toNat(rate.metadata.decimals)));
+        ?(Float.fromInt(Nat64.toNat(rate.rate)) / scale)
+      };
+      case (#Err err) {
+        // handle specific errors as needed (see Error handling section below)
+        null
+      };
+    };
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+Add `ic-xrc-types` to `Cargo.toml` (see Prerequisites above), then use `Call::bounded_wait` with `.with_cycles` to attach the required cycles.
+
+```rust
+use candid::Principal;
+use ic_cdk::call::{Call, CallResult};
+use ic_xrc_types::{
+    Asset, AssetClass, ExchangeRate, ExchangeRateError, GetExchangeRateRequest,
+};
+
+const XRC_CANISTER_ID: &str = "uf6dk-hyaaa-aaaaq-qaaaq-cai";
+const CYCLES_PER_REQUEST: u128 = 1_000_000_000;
+
+#[ic_cdk::update]
+async fn get_rate(base: String, quote: String) -> Option<f64> {
+    let xrc = Principal::from_text(XRC_CANISTER_ID).unwrap();
+
+    let request = GetExchangeRateRequest {
+        base_asset:  Asset { symbol: base,  class: AssetClass::Cryptocurrency },
+        quote_asset: Asset { symbol: quote, class: AssetClass::FiatCurrency },
+        timestamp: None,
+    };
+
+    let result: CallResult<(Result<ExchangeRate, ExchangeRateError>,)> =
+        Call::bounded_wait(xrc, "get_exchange_rate")
+            .with_cycles(CYCLES_PER_REQUEST)
+            .with_arg(&request)
+            .await;
+
+    match result {
+        Ok((Ok(rate),)) => {
+            let scale = 10f64.powi(rate.metadata.decimals as i32);
+            Some(rate.rate as f64 / scale)
+        }
+        Ok((Err(err),)) => {
+            ic_cdk::println!("XRC error: {:?}", err);
+            None
+        }
+        Err(e) => {
+            ic_cdk::println!("Call failed: {:?}", e);
+            None
+        }
+    }
+}
+```
+
+The full example project is at [dfinity/examples: rust/exchange-rates](https://github.com/dfinity/examples/tree/master/rust/exchange-rates).
+
+</TabItem>
+</Tabs>
+
+## Reading the response
+
+The `rate` field is a scaled 64-bit integer. The `metadata.decimals` field tells you the scale factor:
+
+```
+human_readable_price = rate / 10^decimals
+```
+
+For example, if `rate = 8_523_450_000` and `decimals = 8`, the price is `85.2345`.
+
+The response also includes useful metadata:
+
+| Field | Description |
+|---|---|
+| `base_asset_num_queried_sources` | Number of exchanges queried for the base asset |
+| `base_asset_num_received_rates` | Number of exchanges that responded with a valid rate |
+| `standard_deviation` | Spread across received rates (scaled by `decimals`) |
+| `forex_timestamp` | Timestamp of the forex data used, if a fiat asset was involved |
+
+A large gap between `num_queried_sources` and `num_received_rates` indicates that many exchanges were unavailable, which may affect rate quality.
+
+## Requesting historical rates
+
+Pass a Unix timestamp (in seconds) to request a rate for a past minute. Timestamps have 1-minute granularity; seconds within the minute are ignored.
+
+For reliability, use the start of the **previous minute** rather than the current minute, because some exchanges may not yet have published data for the current interval:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+let oneMinuteAgo : Nat64 = (Nat64.fromNat(Int.abs(Time.now())) / 1_000_000_000) - 60;
+
+let request : GetExchangeRateRequest = {
+  base_asset  = { symbol = "ICP"; class_ = #Cryptocurrency };
+  quote_asset = { symbol = "USD"; class_ = #FiatCurrency };
+  timestamp   = ?oneMinuteAgo;
+};
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::api::time;
+
+let one_minute_ago = time() / 1_000_000_000 - 60;
+
+let request = GetExchangeRateRequest {
+    base_asset:  Asset { symbol: "ICP".into(), class: AssetClass::Cryptocurrency },
+    quote_asset: Asset { symbol: "USD".into(), class: AssetClass::FiatCurrency },
+    timestamp:   Some(one_minute_ago),
+};
+```
+
+</TabItem>
+</Tabs>
+
+## Error handling
+
+The most important errors to handle explicitly:
+
+| Error | Cause | Action |
+|---|---|---|
+| `NotEnoughCycles` | Fewer than 1B cycles attached | Ensure the caller provides sufficient cycles |
+| `Pending` | XRC is already retrieving a rate for this asset | Retry after a short delay |
+| `RateLimited` | Too many concurrent requests from non-CMC callers | Retry with backoff |
+| `CryptoBaseAssetNotFound` / `CryptoQuoteAssetNotFound` | Exchange returned no data for the asset | Check the symbol and try again |
+| `InconsistentRatesReceived` | Rates across exchanges diverged too widely | The XRC refuses to return an unreliable rate; retry later |
+| `ForexInvalidTimestamp` | Requested timestamp is outside the available forex window | Use a more recent timestamp |
+
+## Testing from the CLI
+
+The XRC requires cycles attached to the call, so you cannot call it directly from the CLI on mainnet. To test the integration from the terminal, use the [proxy canister pattern](../canister-management/cycles-management.md#calling-canisters-that-require-cycles): deploy a proxy canister that forwards the call with cycles attached.
+
+On a local replica, note that the XRC fetches from live external exchanges via HTTPS outcalls, so local testing requires a connection to the internet and a subnet configured as type `system`.
+
+## Next steps
+
+- [Exchange rate canister concept](../../concepts/chain-fusion/exchange-rate-canister.md): how median aggregation and rate derivation work
+- [Exchange rate canister reference](../../references/protocol-canisters.md#exchange-rate-canister-xrc): full Candid interface, all error types, and data sources
+- [Calling canisters that require cycles](../canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for CLI testing
+- [HTTPS outcalls](../../concepts/https-outcalls.md): how the XRC fetches external price data
+- [Full Rust example](https://github.com/dfinity/examples/tree/master/rust/exchange-rates): complete project with `Cargo.toml` and `dfx.json`
+
+{/* Upstream: informed by dfinity/examples (rust/exchange-rates/src/lib.rs); dfinity/exchange-rate-canister (src/xrc/xrc.did, INTERFACE_SPECIFICATION.md); dfinity/portal (docs/defi/fetching-exchange-rates.mdx, docs/references/system-canisters/xrc.mdx) */}

@@ -263,48 +263,86 @@ The [exchange rate canister](../concepts/chain-fusion/exchange-rate-canister.md)
 | Subnet | [`uzr34-akd3s-xrdag-3ql62-ocgoh-ld2ao-tamcv-54e7j-krwgb-2gm4z-oqe`](https://dashboard.internetcomputer.org/subnet/uzr34-akd3s-xrdag-3ql62-ocgoh-ld2ao-tamcv-54e7j-krwgb-2gm4z-oqe) |
 | Specification | [XRC interface spec](https://github.com/dfinity/exchange-rate-canister/blob/main/INTERFACE_SPECIFICATION.md) |
 
+For how the aggregation and rate derivation work, see [Exchange rate canister](../concepts/chain-fusion/exchange-rate-canister.md).
+
 ### Data sources
 
-The XRC pulls from the following exchanges: Coinbase, Kucoin, OKX, Gate.io, MEXC, Poloniex, Crypto.com, Bitget, and DigiFinex.
+Cryptocurrency rates: Coinbase, Kucoin, OKX, Gate.io, MEXC, Poloniex, Crypto.com, Bitget, DigiFinex.
 
-For forex rates, it queries public APIs from foreign exchange data providers worldwide on a periodic basis.
+Forex rates: queried from public APIs of foreign exchange data providers worldwide on a periodic schedule.
 
-### Rate aggregation
-
-The XRC calculates rates using candlestick chart data for specific one-minute intervals across exchanges. Rather than time-weighted or volume-weighted averages, it collects, combines, and filters rates from all sources and returns the median. This approach minimizes manipulation risk. The XRC can also derive rates for pairs not directly traded (e.g., A/B from A/C and B/C rates).
-
-### Interface
+### Candid interface
 
 The XRC exposes a single endpoint:
 
-```
+```candid
 get_exchange_rate : (GetExchangeRateRequest) -> (GetExchangeRateResult)
 ```
 
-**Request:**
+**Types:**
 
 ```candid
+type AssetClass = variant { Cryptocurrency; FiatCurrency };
+
+type Asset = record {
+  symbol : text;
+  class  : AssetClass;
+};
+
 type GetExchangeRateRequest = record {
   base_asset  : Asset;
   quote_asset : Asset;
   timestamp   : opt nat64;
 };
-```
 
-`Asset` is a record with a `symbol` (e.g., `"BTC"`) and `class` (`Cryptocurrency` or `FiatCurrency`). Any combination of digital asset and fiat is supported (e.g., ICP/USD, BTC/ICP, USD/EUR). If `timestamp` is omitted, the current rate is returned.
+type ExchangeRateMetadata = record {
+  decimals                      : nat32;
+  base_asset_num_received_rates : nat64;
+  base_asset_num_queried_sources: nat64;
+  quote_asset_num_received_rates: nat64;
+  quote_asset_num_queried_sources:nat64;
+  standard_deviation            : nat64;
+  forex_timestamp               : opt nat64;
+};
 
-**Response:**
+type ExchangeRate = record {
+  base_asset  : Asset;
+  quote_asset : Asset;
+  timestamp   : nat64;
+  rate        : nat64;
+  metadata    : ExchangeRateMetadata;
+};
 
-```candid
+type ExchangeRateError = variant {
+  AnonymousPrincipalNotAllowed : null;
+  Pending                      : null;
+  CryptoBaseAssetNotFound      : null;
+  CryptoQuoteAssetNotFound     : null;
+  StablecoinRateNotFound       : null;
+  StablecoinRateTooFewRates    : null;
+  StablecoinRateZeroRate       : null;
+  ForexInvalidTimestamp        : null;
+  ForexBaseAssetNotFound       : null;
+  ForexQuoteAssetNotFound      : null;
+  ForexAssetsNotFound          : null;
+  RateLimited                  : null;
+  NotEnoughCycles              : null;
+  FailedToAcceptCycles         : null;
+  InconsistentRatesReceived    : null;
+  Other                        : record { code : nat32; description : text };
+};
+
 type GetExchangeRateResult = variant {
   Ok  : ExchangeRate;
   Err : ExchangeRateError;
 };
 ```
 
+The `rate` field is a scaled 64-bit integer. Divide by `10^decimals` (from `metadata.decimals`) to get the human-readable price. If `timestamp` in the request is omitted, the rate for the current minute is returned. Timestamps have 1-minute granularity; seconds are ignored.
+
 ### Cycle costs
 
-Each request requires 1B cycles attached. If insufficient cycles are provided, the canister returns `ExchangeRateError::NotEnoughCycles`. The actual cost depends on the asset types and cache state:
+Each request requires 1 billion cycles attached. If insufficient cycles are provided, the canister returns `NotEnoughCycles`. The actual cost after the call depends on the asset types and cache state:
 
 | Condition | Actual cost |
 |---|---|
@@ -315,20 +353,7 @@ Each request requires 1B cycles attached. If insufficient cycles are provided, t
 
 Unused cycles are refunded. At least 1M cycles are charged even on error, to prevent denial-of-service attacks.
 
-### Example call
-
-Calling the XRC requires attaching cycles, which is only possible from canister-to-canister calls. The CLI cannot attach cycles to direct calls. Call the XRC from a canister using the Candid interface: pass the required cycles in the `ic_cdk::api::call::call_with_payment128` call or equivalent.
-
-To query the current rate without attaching cycles (for inspection only, expect a `NotEnoughCycles` error on mainnet):
-
-```bash
-icp canister call uf6dk-hyaaa-aaaaq-qaaaq-cai get_exchange_rate \
-  '(record {
-    base_asset  = record { symbol = "BTC"; class = variant { Cryptocurrency } };
-    quote_asset = record { symbol = "USD"; class = variant { FiatCurrency } };
-  })' \
-  -n ic
-```
+Cycles must be attached to the inter-canister call itself; the CLI cannot call the XRC directly on mainnet. For working code, see [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md).
 
 ## SNS-W canister
 
