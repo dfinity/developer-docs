@@ -7,21 +7,9 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-The [exchange rate canister (XRC)](../../concepts/chain-fusion/exchange-rate-canister.md) provides cryptocurrency and fiat exchange rates to other canisters. Because the XRC requires cycles attached to every call, you must call it from canister code; the CLI cannot attach cycles to a direct call.
+The [exchange rate canister (XRC)](../../concepts/chain-fusion/exchange-rate-canister.md) provides cryptocurrency and fiat exchange rates to other canisters. Because the XRC requires cycles attached to every call, you must call it from a canister that has cycles available; the CLI cannot attach cycles to a direct call.
 
 This guide shows how to call the XRC from Rust and Motoko, parse the scaled-integer response, and test from the CLI using the proxy canister pattern.
-
-## Prerequisites
-
-- A deployed canister with cycles available
-- For Rust: the [`ic-xrc-types`](https://docs.rs/ic-xrc-types) crate added to your `Cargo.toml`
-
-```toml
-[dependencies]
-ic-cdk       = "0.18"
-ic-xrc-types = "1.2"
-candid       = "0.10"
-```
 
 ## Call the XRC
 
@@ -120,7 +108,16 @@ persistent actor {
 </TabItem>
 <TabItem label="Rust">
 
-Add `ic-xrc-types` to `Cargo.toml` (see Prerequisites above), then use `Call::bounded_wait` with `.with_cycles` to attach the required cycles.
+Add `ic-xrc-types` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+ic-cdk       = "0.18"
+ic-xrc-types = "1.2"
+candid       = "0.10"
+```
+
+Then use `Call::bounded_wait` with `.with_cycles` to attach the required cycles:
 
 ```rust
 use candid::Principal;
@@ -165,7 +162,7 @@ async fn get_rate(base: String, quote: String) -> Option<f64> {
 }
 ```
 
-The full example project is at [dfinity/examples: rust/exchange-rates](https://github.com/dfinity/examples/tree/master/rust/exchange-rates).
+The full example project, including `Cargo.toml` and project configuration, is at [dfinity/examples: rust/exchange-rates](https://github.com/dfinity/examples/tree/master/rust/exchange-rates).
 
 </TabItem>
 </Tabs>
