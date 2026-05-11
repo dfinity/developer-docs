@@ -36,7 +36,7 @@ This flow replaces the traditional web stack. There is no separate web server, a
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](https-outcalls.md) |
 | **Infrastructure management** | You manage servers, scaling, uptime | The network handles replication and availability |
 
-\* With Internet Identity, users authenticate using a passkey or an OAuth provider (Google, Apple, etc.). Either way, each app receives a unique, app-specific principal — your canister never sees the OAuth credential or any cross-app identifier. This gives stronger privacy guarantees than traditional OAuth flows.
+\* With Internet Identity, users authenticate using a passkey or an OAuth provider (Google, Apple, etc.). Either way, each app receives a unique, app-specific principal: your canister never sees the OAuth credential or any cross-app identifier. This gives stronger privacy guarantees than traditional OAuth flows.
 
 The key difference: ICP applications are self-contained. You deploy code and data to canisters, and the network provides compute, storage, and serving. There is no infrastructure to provision or maintain.
 
@@ -91,7 +91,7 @@ Not every ICP application needs the default asset canister. Your options:
 
 ## Choosing an architecture
 
-Start with a [single canister](#single-canister) — it is the right choice for most applications. Work through these questions only if your needs grow:
+Start with a [single canister](#single-canister): it is the right choice for most applications. Work through these questions only if your needs grow:
 
 | Question | If yes | If no |
 |----------|--------|-------|
