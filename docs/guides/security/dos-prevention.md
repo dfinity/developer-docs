@@ -1,5 +1,5 @@
 ---
-title: "Denial of Service Prevention"
+title: "DoS prevention"
 description: "Security best practices for protecting canisters against DoS and DDoS attacks, noisy neighbors, and expensive calls."
 sidebar:
   order: 7
