@@ -1,5 +1,5 @@
 ---
-title: "Chain-Key Tokens"
+title: "Chain-key tokens"
 description: "Trustless 1:1 representations of external chain assets on ICP"
 ---
 

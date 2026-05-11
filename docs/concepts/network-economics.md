@@ -1,5 +1,5 @@
 ---
-title: "Network Economics"
+title: "Network economics"
 description: "How the Internet Computer's economic model works: ICP uses, governance rewards, supply dynamics, and SNS asset configuration"
 sidebar:
   order: 13

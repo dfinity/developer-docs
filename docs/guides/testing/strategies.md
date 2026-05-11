@@ -1,5 +1,5 @@
 ---
-title: "Testing Strategies"
+title: "Testing strategies"
 description: "Test canisters with unit tests, PocketIC integration tests, and benchmarking"
 sidebar:
   order: 1

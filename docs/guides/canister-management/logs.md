@@ -1,5 +1,5 @@
 ---
-title: "Canister Logs"
+title: "Canister logs"
 description: "Debug and monitor canisters using the logging API, query statistics, and access log streaming"
 sidebar:
   order: 3

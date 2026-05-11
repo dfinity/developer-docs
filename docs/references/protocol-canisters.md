@@ -1,5 +1,5 @@
 ---
-title: "Protocol Canisters"
+title: "Protocol canisters"
 description: "Bitcoin canister, ckBTC minter, ckETH minter, EVM RPC canister, exchange rate canister, and other protocol-level canisters with their APIs and Candid interfaces"
 sidebar:
   order: 3

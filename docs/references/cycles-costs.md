@@ -1,5 +1,5 @@
 ---
-title: "Cycles Costs"
+title: "Cycles costs"
 description: "Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations"
 sidebar:
   order: 8

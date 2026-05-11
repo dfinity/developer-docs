@@ -1,5 +1,5 @@
 ---
-title: "Digital Asset Standards"
+title: "Digital asset standards"
 description: "ICP's ICRC standards for fungible assets, NFTs, and their extension protocols"
 sidebar:
   order: 6

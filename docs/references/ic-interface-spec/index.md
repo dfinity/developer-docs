@@ -1,5 +1,5 @@
 ---
-title: "IC Interface Specification"
+title: "IC interface specification"
 description: "Introduction, pervasive concepts, and the IC system state tree"
 sidebar:
   label: "Introduction"

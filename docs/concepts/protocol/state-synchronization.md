@@ -1,5 +1,5 @@
 ---
-title: "State Synchronization"
+title: "State synchronization"
 description: "How ICP nodes join or re-join a subnet by downloading certified checkpoints instead of replaying the full block history."
 sidebar:
   order: 5

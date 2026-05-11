@@ -1,5 +1,5 @@
 ---
-title: "Verifiable Randomness"
+title: "Verifiable randomness"
 description: "Generate cryptographically secure random numbers in canisters using the management canister's raw_rand API"
 sidebar:
   order: 4

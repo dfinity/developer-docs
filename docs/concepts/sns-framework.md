@@ -1,5 +1,5 @@
 ---
-title: "SNS Framework"
+title: "SNS framework"
 description: "How the Service Nervous System works: framework architecture, launch process, neurons, proposals, and configurable rewards"
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: "Certified Variables"
+title: "Certified variables"
 description: "Return verifiable query responses using Merkle trees and certified data"
 sidebar:
   order: 5

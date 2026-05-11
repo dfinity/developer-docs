@@ -1,5 +1,5 @@
 ---
-title: "Exchange Rate Canister"
+title: "Exchange rate canister"
 description: "On-chain oracle for cryptocurrency and fiat exchange rates"
 ---
 

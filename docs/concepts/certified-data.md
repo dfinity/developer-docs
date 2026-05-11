@@ -1,5 +1,5 @@
 ---
-title: "Certified Data"
+title: "Certified data"
 description: "How ICP enables clients to verify query responses with a single public key check"
 sidebar:
   order: 11

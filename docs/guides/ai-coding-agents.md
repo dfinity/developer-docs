@@ -1,5 +1,5 @@
 ---
-title: "AI Coding Agents"
+title: "AI coding agents"
 description: "ICP skills are agent-readable instruction files that teach AI coding agents how to build correctly on the Internet Computer."
 ---
 

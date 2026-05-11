@@ -11,13 +11,13 @@
 
 export const sidebar = [
   {
-    label: "Getting Started",
+    label: "Getting started",
     autogenerate: { directory: "getting-started" },
   },
   {
     label: "Guides",
     items: [
-      { slug: "guides/ai-coding-agents", label: "AI Coding Agents" },
+      { slug: "guides/ai-coding-agents", label: "AI coding agents" },
       // Build: core development
       {
         label: "Backends",
@@ -25,7 +25,7 @@ export const sidebar = [
         autogenerate: { directory: "guides/backends" },
       },
       {
-        label: "Canister Calls",
+        label: "Canister calls",
         collapsed: true,
         autogenerate: { directory: "guides/canister-calls" },
       },
@@ -46,7 +46,7 @@ export const sidebar = [
         autogenerate: { directory: "guides/testing" },
       },
       {
-        label: "Canister Management",
+        label: "Canister management",
         collapsed: true,
         autogenerate: { directory: "guides/canister-management" },
       },
@@ -57,7 +57,7 @@ export const sidebar = [
       },
       // Advanced features
       {
-        label: "Digital Assets",
+        label: "Digital assets",
         collapsed: true,
         autogenerate: { directory: "guides/digital-assets" },
       },
@@ -77,15 +77,20 @@ export const sidebar = [
     label: "Concepts",
     collapsed: true,
     items: [
-      { slug: "concepts/network-overview" },
-      { slug: "concepts/canisters" },
-      { slug: "concepts/principals" },
-      { slug: "concepts/app-architecture" },
-      { slug: "concepts/node-infrastructure" },
-      { slug: "concepts/edge-infrastructure" },
-      { slug: "concepts/evolution-scaling" },
+      // Network: infrastructure topology, nodes, and scaling
       {
-        label: "Protocol Stack",
+        label: "Network",
+        collapsed: true,
+        items: [
+          { slug: "concepts/network-overview", label: "Overview" },
+          { slug: "concepts/node-infrastructure" },
+          { slug: "concepts/edge-infrastructure" },
+          { slug: "concepts/evolution-scaling" },
+        ],
+      },
+      // Protocol Stack: ICP's internal execution layers
+      {
+        label: "Protocol stack",
         collapsed: true,
         items: [
           { slug: "concepts/protocol", label: "Overview" },
@@ -97,13 +102,32 @@ export const sidebar = [
           { slug: "concepts/protocol/performance" },
         ],
       },
-      { slug: "concepts/cycles" },
-      { slug: "concepts/orthogonal-persistence" },
-      { slug: "concepts/timers" },
-      { slug: "concepts/verifiable-randomness" },
-      { slug: "concepts/https-outcalls" },
-      { slug: "concepts/chain-key-cryptography" },
-      { slug: "concepts/certified-data" },
+      // Canisters: the developer runtime and canister capabilities
+      {
+        label: "Canisters & capabilities",
+        collapsed: true,
+        items: [
+          { slug: "concepts/canisters" },
+          { slug: "concepts/principals" },
+          { slug: "concepts/app-architecture" },
+          { slug: "concepts/cycles" },
+          { slug: "concepts/orthogonal-persistence" },
+          { slug: "concepts/timers" },
+          { slug: "concepts/verifiable-randomness" },
+          { slug: "concepts/https-outcalls" },
+        ],
+      },
+      // Cryptography: ICP's cryptographic primitives
+      {
+        label: "Cryptography",
+        collapsed: true,
+        items: [
+          { slug: "concepts/chain-key-cryptography" },
+          { slug: "concepts/certified-data" },
+          { slug: "concepts/vetkeys" },
+        ],
+      },
+      // Chain Fusion: cross-chain integration
       {
         label: "Chain Fusion",
         collapsed: true,
@@ -117,15 +141,20 @@ export const sidebar = [
           { slug: "concepts/chain-fusion/exchange-rate-canister" },
         ],
       },
-      { slug: "concepts/vetkeys" },
-      { slug: "concepts/security" },
-      { slug: "concepts/governance" },
-      { slug: "concepts/sns-framework" },
-      { slug: "concepts/network-economics" },
-      { slug: "concepts/ledgers" },
+      // Trust & governance: security model, governance, and economics
+      {
+        label: "Trust & governance",
+        collapsed: true,
+        items: [
+          { slug: "concepts/governance" },
+          { slug: "concepts/sns-framework" },
+          { slug: "concepts/network-economics" },
+          { slug: "concepts/ledgers" },
+          { slug: "concepts/security" },
+        ],
+      },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer Tools" },
   {
     label: "Languages",
     items: [
@@ -142,7 +171,7 @@ export const sidebar = [
             },
           },
           {
-            label: "ICP Features",
+            label: "ICP features",
             autogenerate: {
               directory: "languages/motoko/icp-features",
             },
@@ -162,30 +191,60 @@ export const sidebar = [
       },
     ],
   },
+  { slug: "references/developer-tools", label: "Developer tools" },
   {
     label: "References",
     collapsed: true,
     items: [
-      { slug: "references/management-canister" },
-      { slug: "references/system-canisters" },
-      { slug: "references/nns-proposal-types" },
-      { slug: "references/sns-settings" },
-      { slug: "references/protocol-canisters" },
-      { slug: "references/application-canisters" },
-      { slug: "references/icrc-standards" },
-      { slug: "references/digital-asset-standards" },
-      { slug: "references/chain-key-canister-ids" },
-      { slug: "references/cycles-costs" },
-      { slug: "references/subnet-types" },
-      { slug: "references/execution-errors" },
-      { slug: "references/http-gateway-spec" },
-      { slug: "references/candid-spec" },
-      { slug: "references/internet-identity-spec" },
+      // Development reference: system API, costs, subnets, errors
       {
-        label: "IC Interface Spec",
+        label: "Development reference",
+        collapsed: true,
+        items: [
+          { slug: "references/management-canister" },
+          { slug: "references/cycles-costs" },
+          { slug: "references/subnet-types" },
+          { slug: "references/execution-errors" },
+        ],
+      },
+      // Canister registry: known canisters and their IDs
+      {
+        label: "Canister registry",
+        collapsed: true,
+        items: [
+          { slug: "references/system-canisters" },
+          { slug: "references/protocol-canisters" },
+          { slug: "references/application-canisters" },
+          { slug: "references/chain-key-canister-ids" },
+        ],
+      },
+      // Standards: ICRC standard family
+      {
+        label: "Standards",
+        collapsed: true,
+        items: [
+          { slug: "references/icrc-standards" },
+          { slug: "references/digital-asset-standards" },
+        ],
+      },
+      // Governance: NNS and SNS parameter references
+      {
+        label: "Governance",
+        collapsed: true,
+        items: [
+          { slug: "references/nns-proposal-types" },
+          { slug: "references/sns-settings" },
+        ],
+      },
+      // Formal specifications (ungrouped to avoid 4-level nesting with IC interface spec)
+      { slug: "references/candid-spec" },
+      {
+        label: "IC interface spec",
         collapsed: true,
         autogenerate: { directory: "references/ic-interface-spec" },
       },
+      { slug: "references/http-gateway-spec" },
+      { slug: "references/internet-identity-spec" },
       { slug: "references/glossary" },
     ],
   },

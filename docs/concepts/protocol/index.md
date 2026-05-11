@@ -1,5 +1,5 @@
 ---
-title: "Protocol Stack"
+title: "Protocol stack"
 description: "The four-layer architecture that every ICP subnet runs: peer-to-peer, consensus, message routing, and execution."
 ---
 

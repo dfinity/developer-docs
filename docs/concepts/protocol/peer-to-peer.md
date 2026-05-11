@@ -1,5 +1,5 @@
 ---
-title: "Peer-to-Peer Layer"
+title: "Peer-to-peer layer"
 description: "How ICP nodes broadcast artifacts and exchange protocol messages using the Abortable Broadcast primitive and QUIC transport."
 sidebar:
   order: 1

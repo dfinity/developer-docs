@@ -1,5 +1,5 @@
 ---
-title: "Message Routing"
+title: "Message routing"
 description: "How ICP routes messages between canisters across subnets, certifies subnet state, and enables secure cross-subnet communication."
 sidebar:
   order: 3

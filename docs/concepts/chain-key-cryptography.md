@@ -1,5 +1,5 @@
 ---
-title: "Chain-Key Cryptography"
+title: "Chain-key cryptography"
 description: "Threshold signatures that enable crosschain integration, fast verification, and chain evolution"
 sidebar:
   order: 9

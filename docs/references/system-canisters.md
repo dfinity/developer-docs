@@ -1,5 +1,5 @@
 ---
-title: "System Canisters"
+title: "System canisters"
 description: "NNS canisters, Internet Identity, ICP ledger, and other system-level canisters with canister IDs and interface references"
 sidebar:
   order: 2

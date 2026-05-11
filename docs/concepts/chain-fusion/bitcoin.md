@@ -1,5 +1,5 @@
 ---
-title: "Bitcoin Integration"
+title: "Bitcoin integration"
 description: "How ICP connects to Bitcoin natively: the adapter, the Bitcoin canister, the checker canister, and ckBTC"
 ---
 

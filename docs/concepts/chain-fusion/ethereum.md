@@ -1,5 +1,5 @@
 ---
-title: "Ethereum Integration"
+title: "Ethereum integration"
 description: "How ICP connects to Ethereum and EVM chains via HTTPS outcalls, chain-key ECDSA, and the EVM RPC canister"
 ---
 

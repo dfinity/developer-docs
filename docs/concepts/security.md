@@ -1,5 +1,5 @@
 ---
-title: "Security Model"
+title: "Security model"
 description: "The IC security model: canister isolation, trust boundaries, and the threat model for app developers"
 sidebar:
   order: 13

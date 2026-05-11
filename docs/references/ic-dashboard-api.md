@@ -1,5 +1,5 @@
 ---
-title: "IC Dashboard APIs"
+title: "IC dashboard APIs"
 description: "Five public REST APIs for querying ICP network state: metrics, governance, ICRC tokens, ICP ledger, and SNS data."
 sidebar:
   order: 16

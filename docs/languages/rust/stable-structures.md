@@ -1,5 +1,5 @@
 ---
-title: "Stable Structures"
+title: "Stable structures"
 description: "Use StableBTreeMap, StableCell, StableLog, StableVec, and MemoryManager for upgrade-safe persistent storage in Rust canisters"
 sidebar:
   order: 2

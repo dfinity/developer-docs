@@ -1,5 +1,5 @@
 ---
-title: "Orthogonal Persistence"
+title: "Orthogonal persistence"
 description: "How canister memory survives across executions and upgrades without databases"
 sidebar:
   order: 5

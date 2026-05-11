@@ -1,5 +1,5 @@
 ---
-title: "HTTPS Outcalls"
+title: "HTTPS outcalls"
 description: "How canisters call external APIs and web services directly, without oracles or intermediaries."
 sidebar:
   order: 8

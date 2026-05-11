@@ -1,5 +1,5 @@
 ---
-title: "Verifiable Randomness"
+title: "Verifiable randomness"
 description: "How ICP generates unpredictable random numbers using a threshold Verifiable Random Function, with no trusted party required"
 sidebar:
   order: 7

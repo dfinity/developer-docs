@@ -1,5 +1,5 @@
 ---
-title: "HTTP Gateway Protocol Specification"
+title: "HTTP gateway protocol specification"
 description: "The HTTP Gateway Protocol specification: how HTTP clients interact with the Internet Computer through canister-served HTTP responses"
 sidebar:
   order: 12

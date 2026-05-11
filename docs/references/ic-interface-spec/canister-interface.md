@@ -1,5 +1,5 @@
 ---
-title: "Canister Interface (System API)"
+title: "Canister interface (system API)"
 description: "WebAssembly module format and the System API available to canisters at runtime"
 sidebar:
   label: "Canister Interface"

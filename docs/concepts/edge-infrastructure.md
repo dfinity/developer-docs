@@ -1,5 +1,5 @@
 ---
-title: "Edge Infrastructure"
+title: "Edge infrastructure"
 description: "How requests reach ICP canisters: API boundary nodes, HTTP gateways, the HTTP Gateway Protocol, and asset certification."
 ---
 
