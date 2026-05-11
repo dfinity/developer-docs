@@ -496,11 +496,9 @@ async fn main() {
 **JavaScript (client-side verification):**
 
 ```js
-import pkg from "@dfinity/agent";
-const { Actor, HttpAgent, Certificate, blsVerify, Cbor, reconstruct, lookup_path } = pkg;
-import { IDL } from "@dfinity/candid";
-import { Principal } from "@dfinity/principal";
-import fetch from "isomorphic-fetch";
+import { Actor, HttpAgent, Certificate, Cbor, reconstruct, lookup_path } from "@icp-sdk/core/agent";
+import { IDL } from "@icp-sdk/core/candid";
+import { Principal } from "@icp-sdk/core/principal";
 import assert from "node:assert/strict";
 
 const idlFactory = ({ IDL }) => {
@@ -519,13 +517,12 @@ const idlFactory = ({ IDL }) => {
 const canisterId = Principal.fromText("a3shf-5eaaa-aaaaa-qaafa-cai");
 const host = "http://localhost:35777";
 
-start().await;
+await start();
 
 async function start() {
-  const agent = new HttpAgent({ fetch, host });
-  await agent.fetchRootKey();
+  const agent = await HttpAgent.create({ host });
+  const rootKey = await agent.fetchRootKey();
 
-  const rootKey = agent.rootKey.buffer;
   let dummyUser = { name: "test_user", age: 21 };
 
   const actor = Actor.createActor(idlFactory, {
@@ -540,21 +537,22 @@ async function start() {
 }
 
 async function verifyCertificate(certifiedUser, index, rootKey, canisterId) {
-  const certificate = certifiedUser.certificate.buffer;
-  const witness = certifiedUser.witness.buffer;
+  const certificate = certifiedUser.certificate;
+  const witness = certifiedUser.witness;
   const user = certifiedUser.user;
 
-  const cert = new Certificate(certificate, rootKey, canisterId, blsVerify);
-
-  // Step 1: Check if signature in the certificate can be validated with the
-  // root_hash of the tree in certificate as message and root_key as public_key
-  await cert.verify();
+  // Certificate.create() verifies automatically and throws if verification fails
+  const cert = await Certificate.create({
+    certificate,
+    rootKey,
+    principal: { canisterId },
+  });
   console.log("Certificate verification succeeded");
 
   // Step 2: Check if the response is not stale with the given time offset of 5m.
   const te = new TextEncoder();
   const pathTime = [te.encode("time")];
-  const rawTime = cert.lookup(pathTime).value;
+  const rawTime = cert.lookup_path(pathTime).value;
   console.log("Time skew: ", verifyTime(rawTime));
 
   // Step 3: Check if witness root_hash matches the certified_data
@@ -564,7 +562,7 @@ async function verifyCertificate(certifiedUser, index, rootKey, canisterId) {
     te.encode("certified_data"),
   ];
 
-  const certifiedData = cert.lookup(pathData).value;
+  const certifiedData = cert.lookup_path(pathData).value;
   let witnessTree = Cbor.decode(witness);
   let witnessRootHash = await reconstruct(witnessTree);
   console.log(
@@ -581,7 +579,7 @@ async function verifyCertificate(certifiedUser, index, rootKey, canisterId) {
   assert.deepStrictEqual(witnessData, user, "Value matches response data");
 
   // Step 6: Return the result
-  return user
+  return user;
 }
 
 function verifyTime(rawTime) {

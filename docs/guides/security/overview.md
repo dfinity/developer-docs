@@ -29,7 +29,7 @@ Below are resources covering security best practices for technologies commonly u
 * [OWASP top ten](https://owasp.org/www-project-top-ten/)
 
 ### Rust
-* [Secure Rust guidelines](https://anssi-fr.github.io/rust-guide/01_introduction.html), in particular [unsafe code](https://anssi-fr.github.io/rust-guide/04_language.html#unsafe-code), [overflows](https://anssi-fr.github.io/rust-guide/04_language.html#integer-overflows) and [Cargo-audit](https://anssi-fr.github.io/rust-guide/03_libraries.html#cargo-audit)
+* [Secure Rust guidelines](https://anssi-fr.github.io/rust-guide/introduction.html), in particular [unsafe code](https://anssi-fr.github.io/rust-guide/unsafe/generalities.html), [overflows](https://anssi-fr.github.io/rust-guide/integer.html#chapter-integer) and [Cargo-audit](https://anssi-fr.github.io/rust-guide/libraries.html#cargo-audit)
   * For overflowing operations, consider using `saturated` or `checked` variants, such as `saturated_add`, `saturated_sub`, `checked_add`, `checked_sub`. See the [Rust docs](https://doc.rust-lang.org/std/primitive.u32.html#method.saturating_add) for `u32`.
 
 ### Crypto
