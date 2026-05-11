@@ -196,26 +196,55 @@ export const sidebar = [
     label: "References",
     collapsed: true,
     items: [
-      { slug: "references/management-canister" },
-      { slug: "references/system-canisters" },
-      { slug: "references/nns-proposal-types" },
-      { slug: "references/sns-settings" },
-      { slug: "references/protocol-canisters" },
-      { slug: "references/application-canisters" },
-      { slug: "references/icrc-standards" },
-      { slug: "references/digital-asset-standards" },
-      { slug: "references/chain-key-canister-ids" },
-      { slug: "references/cycles-costs" },
-      { slug: "references/subnet-types" },
-      { slug: "references/execution-errors" },
-      { slug: "references/http-gateway-spec" },
+      // Development reference: system API, costs, subnets, errors
+      {
+        label: "Development reference",
+        collapsed: true,
+        items: [
+          { slug: "references/management-canister" },
+          { slug: "references/cycles-costs" },
+          { slug: "references/subnet-types" },
+          { slug: "references/execution-errors" },
+        ],
+      },
+      // Canister registry: known canisters and their IDs
+      {
+        label: "Canister registry",
+        collapsed: true,
+        items: [
+          { slug: "references/system-canisters" },
+          { slug: "references/protocol-canisters" },
+          { slug: "references/application-canisters" },
+          { slug: "references/chain-key-canister-ids" },
+        ],
+      },
+      // Standards: ICRC standard family
+      {
+        label: "Standards",
+        collapsed: true,
+        items: [
+          { slug: "references/icrc-standards" },
+          { slug: "references/digital-asset-standards" },
+        ],
+      },
+      // Governance: NNS and SNS parameter references
+      {
+        label: "Governance",
+        collapsed: true,
+        items: [
+          { slug: "references/nns-proposal-types" },
+          { slug: "references/sns-settings" },
+        ],
+      },
+      // Formal specifications (ungrouped to avoid 4-level nesting with IC interface spec)
       { slug: "references/candid-spec" },
-      { slug: "references/internet-identity-spec" },
       {
         label: "IC interface spec",
         collapsed: true,
         autogenerate: { directory: "references/ic-interface-spec" },
       },
+      { slug: "references/http-gateway-spec" },
+      { slug: "references/internet-identity-spec" },
       { slug: "references/glossary" },
     ],
   },
