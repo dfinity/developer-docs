@@ -5,7 +5,7 @@ sidebar:
   order: 10
 ---
 
-## Use a decentralized governance system such as the SNS to control your canisters
+## Use a governance framework such as the SNS to control your canisters
 
 ### Security concerns
 
@@ -28,14 +28,14 @@ In the following list, we first provide recommendations for centralized canister
     - Require approval by several individuals or parties to perform any canister controller operations.
     - Require approval by several individuals or parties for any security-sensitive changes at the application level that are restricted to privileged principals, such as admin operations including permissions management, minting new tokens, removing NFTs for digital rights violations, etc.
     - A helpful tool to achieve either of the above two points is the [orbit station canister](https://github.com/dfinity/orbit) which allows you to configure intricate policies for canister control. [Orbit](https://orbit.global/) also serves as an enterprise wallet where token funds are governed using policies. Ideally, individuals also manage their key material using hardware security modules, such as [YubiHSM](https://www.yubico.com/ch/store/yubihsm-2-series/) and physically protect these through methods such as using safes at different geographical locations. Some of HSMs support threshold signature schemes, which can help to further secure the setup. To increase transparency about the changes made to an app, consider using a tool like [LaunchTrail](https://github.com/spinner-cash/launchtrail).
-3. **Full community governance**: The app is controlled by a decentralized governance system such as ICP's [Service Nervous System (SNS)](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System), so that any security-sensitive changes to the canisters are only executed if the SNS community approves them collectively through a proposal voting mechanism. If an SNS is used:
+3. **Full community governance**: The app is controlled by a governance framework such as ICP's [Service Nervous System (SNS)](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System), so that any security-sensitive changes to the canisters are only executed if the SNS community approves them collectively through a proposal voting mechanism. If an SNS is used:
     - Make sure voting power is distributed over many independent entities such that there is not one single or a few entities that can decide by themselves how the [community governance evolves](https://learn.internetcomputer.org/hc/en-us/articles/34088279488660-Tokenomics#voting-power-and-decentralization).
     - Ensure all components of the app are under SNS control, including the canisters serving the web frontends; see [SNS asset canisters](../governance/managing.md).
     - Consider the [SNS preparation checklist](../governance/launching.md). Important points from a security perspective are tokenomics, disclosing dependencies to off-chain components, and performing security reviews.
     - Rather than self-deploying the SNS code or building your own governance system, consider using the official SNS on the SNS subnet, as this guarantees that the SNS is running an NNS-blessed version and maintained as part of ICP.
     - See also [verification and trust in a (launched) SNS](https://wiki.internetcomputer.org/wiki/Verification_and_trust_in_a_(launched)_SNS) and [SNS decentralization swap trust](https://wiki.internetcomputer.org/wiki/SNS_decentralization_swap_trust).
 
-An alternative to community governance (3. above) would be to create an immutable canister by removing the canister controller completely. This can be achieved by setting the controller to a [black hole canister](https://github.com/ninegua/ic-blackhole). However, note that this implies that the canister can **never** be upgraded, which may have severe implications in case a bug is found. The complexity of ICP apps and the fact that complex frontends are hosted onchain means that black holed canisters are rarely the right solution. The option to use a decentralized governance system and thus being able to upgrade canisters is a big advantage of the ICP ecosystem compared to other chains.
+An alternative to community governance (3. above) would be to create an immutable canister by removing the canister controller completely. This can be achieved by setting the controller to a [black hole canister](https://github.com/ninegua/ic-blackhole). However, note that this implies that the canister can **never** be upgraded, which may have severe implications in case a bug is found. The complexity of ICP apps and the fact that complex frontends are hosted onchain means that black holed canisters are rarely the right solution. The option to use a governance framework and thus being able to upgrade canisters is a big advantage of the ICP ecosystem compared to other chains.
 
 :::note
 Contrary to some other chains, immutable canisters need cycles to run, and they can receive cycles.
@@ -48,12 +48,12 @@ It is also possible to implement a custom governance canister on ICP from scratc
 ### Security concern
 
 If your app depends on a third-party canister (e.g., by making inter-canister calls to it), it is important to verify that the callee satisfies an appropriate level of decentralization. For example:
-- If funds or cycles are transferred to a third-party canister, one might require the canister to be controlled by a decentralized governance system, as otherwise these funds are centrally controlled.
+- If funds or cycles are transferred to a third-party canister, one might require the canister to be controlled by a governance framework, as otherwise these funds are centrally controlled.
 - If inter-canister calls are made to a centrally controlled and potentially malicious canister, that canister could execute a denial of service attack on the caller or even trigger functional bugs; see [be aware of the risks involved in calling untrustworthy canisters](./inter-canister-calls.md#be-aware-of-the-risks-involved-in-calling-untrustworthy-canisters).
 
 ### Recommendation
 
-If you interact with a canister that you require to be decentralized, make sure it is controlled by the NNS, a service nervous system (SNS) or a decentralized governance system, and review under what conditions and by whom the canister can be changed.
+If you interact with a canister that you require to be decentralized, make sure it is controlled by the NNS, a service nervous system (SNS) or a governance framework, and review under what conditions and by whom the canister can be changed.
 
 ## Don't load JavaScript or other assets from untrusted domains
 
