@@ -37,10 +37,15 @@ Technical reference material for ICP development. These pages cover exact specif
 - **[Candid Specification](candid-spec.md)**: The Candid interface description language: type system, encoding, and subtyping rules.
 - **[Internet Identity Specification](internet-identity-spec.md)**: Delegation chains, passkey management, and canister signatures.
 
+## Governance
+
+- **[NNS Proposal Types](nns-proposal-types.md)**: All NNS proposal topics and their proposal types, with descriptions of what each type does on adoption.
+- **[SNS Settings](sns-settings.md)**: Reference for all SNS nervous system parameters: voting power, governance rules, asset economics, and reward behavior.
+
 ## Network observability
 
 - **[IC Dashboard APIs](ic-dashboard-api.md)**: Five public REST APIs for querying live network state: metrics, governance, ICRC tokens, ICP ledger, and SNS data.
 
-## Other
+## Terminology
 
 - **[Glossary](glossary.md)**: Definitions of ICP-specific terms: canister, cycle, principal, subnet, and more.

@@ -7,6 +7,8 @@ sidebar:
 
 Practical how-to guides organized by development stage. Each guide solves a specific task with working code.
 
+## Tooling
+
 - **[AI Coding Agents](ai-coding-agents.md)**: Use ICP skills to give AI coding agents accurate canister IDs and tested code patterns.
 
 ## Build

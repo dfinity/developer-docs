@@ -55,6 +55,6 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 - **[Governance](governance.md)**: The NNS, SNS for app governance, neurons, and proposals.
 - **[SNS framework](sns-framework.md)**: How the Service Nervous System works: architecture, launch process, neurons, and governance.
-- **[Network economics](network-economics.md)**: ICP token uses, voting rewards, supply dynamics, and SNS asset configuration.
-- **[Ledgers](ledgers.md)**: How ICRC and ICP token ledgers work, address formats, and scaling architecture.
+- **[Network economics](network-economics.md)**: ICP native asset uses, voting rewards, supply dynamics, and SNS asset configuration.
+- **[Ledgers](ledgers.md)**: How ICRC and ICP ledgers work, address formats, and scaling architecture.
 - **[Security model](security.md)**: Canister isolation, trust boundaries, and the threat model for app developers.
