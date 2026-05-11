@@ -17,7 +17,7 @@ To protect your canisters from DoS and DDoS attacks, consider the following stra
 * **Bot prevention techniques**: Use methods like captchas or proof of work to ensure only legitimate users can access your canister. CAPTCHAs help verify that the user is human, while proof of work requires the user to spend computational resources to proceed, deterring automated attacks. [Internet Identity](https://github.com/dfinity/internet-identity) has a [captcha implementation](https://github.com/dfinity/internet-identity/blob/2bf92dc16371428a3dcc1115580a691842ec76df/src/internet_identity/src/main.rs#L517) that can serve as an example for implementing this in other projects.
 * **Monitor cycles usage**: Regularly track your canisters cycles consumption and set alerts for any sudden spikes that may indicate an attack.
 * **Ingress message charging**: While charging for ingress messages (external requests to the canister) is not natively supported, custom solutions could be implemented to make sure that any expensive actions have costs associated with them.
-* **Filter ingress messages using inspect message**: Certain non-critical checks can be placed in the inspect message function to filter out ingress update messages before they are executed by all nodes of a subnet. Since this code only runs on a single node, the execution does not consume cycles, but it also shouldn't be relied upon for security-critical checks such as access control. However, they can efficiently reject certain ingress messages early. Read the corresponding [documentation](../../references/ic-interface-spec/canister-interface.md#system-api-inspect-message) and [security best practice](./identity-and-access-management.mdx) carefully for the caveats.
+* **Filter ingress messages using inspect message**: Certain non-critical checks can be placed in the inspect message function to filter out ingress update messages before they are executed by all nodes of a subnet. Since this code only runs on a single node, the execution does not consume cycles, but it also shouldn't be relied upon for security-critical checks such as access control. However, they can efficiently reject certain ingress messages early. Read the corresponding [documentation](../../references/ic-interface-spec/canister-interface.md#system-api-inspect-message) and [security best practice](./identity-and-access-management.mdx#do-not-rely-on-ingress-message-inspection) carefully for the caveats.
 
 ## Protect against noisy neighbors
 
@@ -41,7 +41,7 @@ When the subnet grows above 750GiB, then the new reservation mechanism activates
 
 ### Security concern
 
-Some calls (update or query) might be expensive in terms of the memory or cycles they consume. For example, any function using chain-key signing or HTTPS outcalls is relatively expensive. See the [additional documentation](../../references/cycles-costs.md) on cycles cost details and for other examples.
+Some calls (update or query) might be expensive in terms of the memory or cycles they consume. For example, any function using chain-key signing or HTTPS outcalls is relatively expensive. See the [cycles costs reference](../../references/cycles-costs.md) for pricing details and a full list of expensive call types.
 
 An attacker will target expensive calls to drain the cycles balance or available memory quickly.
 
