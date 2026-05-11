@@ -9,7 +9,7 @@ sidebar:
 
 ### Security concern
 
-ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` as a query call for the rest of this section.
+ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` methods as query methods for the rest of this section.
 
 Update calls are slow and expensive but provide integrity guarantees as their responses include a threshold signature signed by the subnet.
 
