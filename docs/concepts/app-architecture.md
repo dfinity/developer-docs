@@ -84,15 +84,16 @@ Not every ICP application needs the default asset canister. Your options:
 
 - **Asset canister**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to an asset canister that serves it over HTTP. See [Asset canister](../guides/frontends/asset-canister.md).
 - **Framework-specific canister**: use a framework like Juno that provides a more opinionated hosting solution on ICP.
-- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build). Useful during migration or when you need features that asset canisters don't support.
+- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent). Useful during migration or when you need features that asset canisters don't support.
 - **No frontend**: backend-only canisters that expose a Candid API for other canisters or CLI tools to call.
 
 ## Choosing an architecture
 
+Start with a [single canister](#single-canister) — it is the right choice for most applications. Work through these questions only if your needs grow:
+
 | Question | If yes | If no |
 |----------|--------|-------|
-| Start here | [Single canister](#single-canister): recommended for most applications | - |
-| Does the app have a web UI? | Add an [asset canister](#the-default-two-canister-model) | Backend-only canister |
+| Does the app have a web UI? | Add an [asset canister](#frontend-options) | Backend-only canister |
 | Do you need separation of concerns or hit platform limits? | [Canister-per-service](#canister-per-service) | Stay with a single canister |
 | Do you need to scale beyond one subnet? | [Canister-per-subnet](#canister-per-subnet) | Stay on one subnet |
 

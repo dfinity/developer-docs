@@ -43,7 +43,7 @@ For how the protocol achieves this (block making, notarization, finalization, an
 Boundary nodes are the entry point for all external traffic to ICP. They serve two purposes:
 
 1. **HTTP gateway.** When a user's browser requests `https://<canister-id>.icp0.io`, a boundary node translates that HTTP request into a canister message, routes it to the correct subnet, and returns the response.
-2. **API endpoint.** Agent libraries (like [`@icp-sdk/core/agent`](https://js.icp.build) in JavaScript) send ingress messages to boundary nodes, which forward them to the target canister's subnet.
+2. **API endpoint.** Agent libraries (like [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent) in JavaScript) send ingress messages to boundary nodes, which forward them to the target canister's subnet.
 
 Boundary nodes also cache query responses and provide TLS termination. They are not part of consensus and cannot modify canister state: they are routing infrastructure.
 
