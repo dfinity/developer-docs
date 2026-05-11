@@ -1,5 +1,5 @@
 ---
-title: "HTTPS Interface"
+title: "HTTPS interface"
 description: "HTTP endpoints for submitting calls, reading state, and querying canisters on the Internet Computer"
 sidebar:
   label: "HTTPS Interface"

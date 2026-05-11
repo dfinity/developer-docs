@@ -1,5 +1,5 @@
 ---
-title: "System Canisters"
+title: "System canisters"
 description: "NNS canisters, Internet Identity, ICP ledger, and other system-level canisters with canister IDs and interface references"
 sidebar:
   order: 2
@@ -196,7 +196,7 @@ Key differences from cycles wallets:
 - Transfers and balance queries use ICRC-1/ICRC-2 methods
 - Compatible with any ICRC-1 tooling
 
-For the interface specification, see the [cycles ledger specification](https://github.com/dfinity/cycles-ledger/blob/main/INTERFACE_SPECIFICATION.md).
+For the full interface, see the [cycles ledger Candid file](https://github.com/dfinity/cycles-ledger/blob/main/cycles-ledger/cycles-ledger.did).
 
 ## Cycles ledger index
 
@@ -206,41 +206,7 @@ For the interface specification, see the [cycles ledger specification](https://g
 
 The cycles ledger index canister indexes cycles ledger transactions by account, mirroring the same pattern as the ICP index canister for ICP transactions.
 
-## Using system canisters
-
-### Calling from a canister (Rust)
-
-Calls to system canisters are inter-canister calls. The Rust CDK provides direct bindings for some system canisters (such as the management canister). For others, use `ic_cdk::call::Call` with the canister's principal:
-
-```rust
-use candid::Principal;
-use ic_cdk::call::Call;
-
-let icp_ledger = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
-let args = /* ICRC-1 transfer args */;
-let result: TransferResult = Call::bounded_wait(icp_ledger, "icrc1_transfer")
-    .with_arg(args)
-    .await?
-    .candid()?;
-```
-
-### Calling from a canister (Motoko)
-
-In Motoko, `canister:` imports use the canister **name** as declared in `icp.yaml`, not the raw canister ID. For the ICP ledger declared as `icp_ledger_canister` in your project config:
-
-```motoko
-import Ledger "canister:icp_ledger_canister";
-```
-
-To call a canister by hardcoded ID without a project config entry, use actor syntax:
-
-```motoko
-let ledger : actor {
-  icrc1_balance_of : (Account) -> async Nat;
-} = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
-```
-
-### Using system canisters in local development
+## Using system canisters in local development
 
 The icp-cli local network automatically includes Internet Identity and NNS canisters. Enable them in your `icp.yaml` network configuration:
 
@@ -261,9 +227,11 @@ icp network start -d
 
 System canisters run at their mainnet canister IDs on the local network, so calls to `rdmx6-jaaaa-aaaaa-aaadq-cai` (Internet Identity) or `ryjl3-tyaaa-aaaaa-aaaba-cai` (ICP ledger) work without any additional configuration.
 
-### Querying canister metadata via the Dashboard API
+For how to call system canisters from your own canister, see [Inter-canister calls](../guides/canister-calls/inter-canister-calls.mdx).
 
-The IC Dashboard API provides REST endpoints for querying canister metadata, transaction history, and network metrics without making onchain calls. See the [ic-dashboard skill](https://skills.internetcomputer.org/skills/ic-dashboard) for usage examples and the full API reference.
+## Querying system canister data via the Dashboard API
+
+The IC Dashboard API provides REST endpoints for querying canister metadata, transaction history, and network metrics without making onchain calls. See [IC Dashboard APIs](ic-dashboard-api.md) for the full reference.
 
 ## Next steps
 

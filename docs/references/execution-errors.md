@@ -1,5 +1,5 @@
 ---
-title: "Execution Errors"
+title: "Execution errors"
 description: "Reference for canister execution errors on ICP: causes, example messages, and how to fix each error."
 sidebar:
   order: 10

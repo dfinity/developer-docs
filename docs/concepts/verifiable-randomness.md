@@ -1,5 +1,5 @@
 ---
-title: "Verifiable Randomness"
+title: "Verifiable randomness"
 description: "How ICP generates unpredictable random numbers using a threshold Verifiable Random Function, with no trusted party required"
 sidebar:
   order: 7
@@ -7,9 +7,9 @@ sidebar:
 
 Generating unpredictable random numbers is a fundamental requirement for many applications: lotteries, games, fair selection, cryptographic protocols, and more. In a system where every node must agree on the same state, this is harder than it sounds.
 
-## Why randomness is hard on deterministic consensus systems
+## Why randomness is hard on deterministic consensus protocols
 
-Consensus-based systems execute every transaction deterministically. Each node replays the same operations and must arrive at the same state. This means randomness sources available to normal programs (such as OS entropy (`/dev/urandom`), hardware timers, or per-process seeds) cannot be used directly: they would produce different values on each replica, breaking consensus.
+Consensus-based protocols execute every transaction deterministically. Each node replays the same operations and must arrive at the same state. This means randomness sources available to normal programs (such as OS entropy (`/dev/urandom`), hardware timers, or per-process seeds) cannot be used directly: they would produce different values on each replica, breaking consensus.
 
 Naive alternatives have well-known weaknesses:
 

@@ -1,5 +1,5 @@
 ---
-title: "HTTPS Outcalls"
+title: "HTTPS outcalls"
 description: "How canisters call external APIs and web services directly, without oracles or intermediaries."
 sidebar:
   order: 8
@@ -86,7 +86,7 @@ For exact pricing formulas, see the [cycles costs reference](../references/cycle
 - **No streaming or WebSocket.** Outcalls are single request-response pairs. Long-lived connections are not supported.
 - **~30-second timeout.** If the external server doesn't respond in time, the call fails.
 - **Rate limiting.** All canisters on a subnet share the same IPv6 prefixes. If many canisters on the same subnet call the same server, they share its rate limit quota. Using API keys with per-key quotas mitigates this.
-- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service: not just replay the canister's intended request. [TEE-enabled subnets](https://learn.internetcomputer.org/hc/en-us/articles/46124920595988-Trusted-Execution-Environments) mitigate this by running replicas in hardware-enforced enclaves, preventing node operators from reading canister memory. Consider deploying canisters that store sensitive credentials on a TEE-enabled subnet.
+- **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service: not just replay the canister's intended request. [TEE-enabled subnets](node-infrastructure.md#trusted-execution-environments) mitigate this by running replicas in hardware-enforced enclaves, preventing node operators from reading canister memory. Consider deploying canisters that store sensitive credentials on a TEE-enabled subnet.
 
 ## HTTPS outcalls vs. oracles
 
@@ -111,6 +111,4 @@ One extension is under consideration that may affect architecture decisions:
 - [HTTPS outcalls guide](../guides/backends/https-outcalls.md): practical how-to with code examples in Motoko and Rust
 - [Chain Fusion: Ethereum integration](../guides/chain-fusion/ethereum.md): uses HTTPS outcalls via the EVM RPC canister
 - [Cycles costs reference](../references/cycles-costs.md): detailed pricing formulas
-- [Learn Hub: HTTPS Outcalls](https://learn.internetcomputer.org/hc/en-us/articles/34211194553492): additional learning material
-
 <!-- Upstream: informed by dfinity/portal docs/references/https-outcalls-how-it-works.mdx -->

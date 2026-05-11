@@ -1,5 +1,5 @@
 ---
-title: "Application Architecture"
+title: "Application architecture"
 description: "How ICP applications are structured: canisters, frontends, and inter-canister communication"
 sidebar:
   order: 3
@@ -28,13 +28,15 @@ This flow replaces the traditional web stack. There is no separate web server, a
 
 | Concern | Traditional web app | ICP application |
 |---------|-------------------|-----------------|
-| **Compute** | Application server (Node, Django, etc.) | Backend canister (Wasm) |
-| **Storage** | Database (Postgres, MongoDB, etc.) | Canister stable memory (up to 500 GiB) |
-| **Frontend hosting** | CDN + static file server | Asset canister |
-| **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey-based) |
-| **Scheduled tasks** | Cron jobs, worker queues | Canister timers |
+| **Compute** | Application server (Node, Django, etc.) | [Backend canister](canisters.md) (Wasm) |
+| **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](orthogonal-persistence.md) (up to 500 GiB) |
+| **Frontend hosting** | CDN + static file server | [Asset canister](../guides/frontends/asset-canister.md) |
+| **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
+| **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](timers.md) |
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](https-outcalls.md) |
 | **Infrastructure management** | You manage servers, scaling, uptime | The network handles replication and availability |
+
+\* With Internet Identity, users authenticate using a passkey or an OAuth provider (Google, Apple, etc.). Either way, each app receives a unique, app-specific principal: your canister never sees the OAuth credential or any cross-app identifier. This gives stronger privacy guarantees than traditional OAuth flows.
 
 The key difference: ICP applications are self-contained. You deploy code and data to canisters, and the network provides compute, storage, and serving. There is no infrastructure to provision or maintain.
 
@@ -71,7 +73,7 @@ For maximum throughput, distribute canisters across multiple [subnets](network-o
 
 ## Data storage
 
-Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](../guides/backends/data-persistence.md#store-data-durably): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
+Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](orthogonal-persistence.md#stable-memory): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
 
 - **Motoko:** the [`core` standard library](https://mops.one/core/docs) includes persistent data structures designed for upgrade-safe storage.
 - **Rust:** [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) provides `StableBTreeMap` and other structures for stable memory.
@@ -84,15 +86,16 @@ Not every ICP application needs the default asset canister. Your options:
 
 - **Asset canister**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to an asset canister that serves it over HTTP. See [Asset canister](../guides/frontends/asset-canister.md).
 - **Framework-specific canister**: use a framework like Juno that provides a more opinionated hosting solution on ICP.
-- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build). Useful during migration or when you need features that asset canisters don't support.
+- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent). Useful during migration or when you need features that asset canisters don't support.
 - **No frontend**: backend-only canisters that expose a Candid API for other canisters or CLI tools to call.
 
 ## Choosing an architecture
 
+Start with a [single canister](#single-canister): it is the right choice for most applications. Work through these questions only if your needs grow:
+
 | Question | If yes | If no |
 |----------|--------|-------|
-| Start here | [Single canister](#single-canister): recommended for most applications | - |
-| Does the app have a web UI? | Add an [asset canister](#the-default-two-canister-model) | Backend-only canister |
+| Does the app have a web UI? | Add an [asset canister](#frontend-options) | Backend-only canister |
 | Do you need separation of concerns or hit platform limits? | [Canister-per-service](#canister-per-service) | Stay with a single canister |
 | Do you need to scale beyond one subnet? | [Canister-per-subnet](#canister-per-subnet) | Stay on one subnet |
 

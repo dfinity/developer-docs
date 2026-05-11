@@ -7,6 +7,8 @@ sidebar:
 
 Practical how-to guides organized by development stage. Each guide solves a specific task with working code.
 
+## Tooling
+
 - **[AI Coding Agents](ai-coding-agents.md)**: Use ICP skills to give AI coding agents accurate canister IDs and tested code patterns.
 
 ## Build
@@ -25,5 +27,5 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 ## Advanced features
 
 - **[Digital Assets](digital-assets/ledgers.md)**: Create and integrate with ledgers and wallets using digital asset standards.
-- **[Chain Fusion](chain-fusion/bitcoin.md)**: Connect canisters to Bitcoin, Ethereum, and Solana and sign cross-chain transactions.
+- **[Chain Fusion](chain-fusion/bitcoin.md)**: Connect canisters to Bitcoin, Ethereum, and Solana, sign cross-chain transactions, and fetch exchange rates.
 - **[Governance](governance/launching.md)**: Transfer control of your app to your community and govern it through proposals.

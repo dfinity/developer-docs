@@ -2,7 +2,7 @@
 title: "VetKeys"
 description: "Verifiable encrypted threshold key derivation for encryption and secret management on ICP"
 sidebar:
-  order: 11
+  order: 12
 ---
 
 VetKeys (verifiably encrypted threshold keys) give canisters the ability to derive secret key material on demand, without any node or canister ever seeing the raw key. The protocol that underpins this capability is called vetKD: verifiable encrypted threshold key derivation.

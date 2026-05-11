@@ -1,5 +1,5 @@
 ---
-title: "Application Canisters"
+title: "Application canisters"
 description: "Reference for the asset canister, SNS canisters, LLM canister, and other application-layer canisters with their interfaces and canister IDs"
 sidebar:
   order: 4

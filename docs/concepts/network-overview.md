@@ -1,5 +1,5 @@
 ---
-title: "Network Overview"
+title: "Network overview"
 description: "How the Internet Computer works: subnets, nodes, consensus, and boundary nodes"
 sidebar:
   order: 1
@@ -26,7 +26,7 @@ For details on subnet types and how to choose one, see [Subnet types](../referen
 
 ## Nodes
 
-Each physical machine in the network is a **node**. Nodes run software called the **replica**, which implements the ICP protocol stack: consensus, message routing, execution, and state management.
+Each physical machine in the network is a **node**. Nodes run software called the **replica**, which implements the ICP [protocol stack](protocol/index.md): peer-to-peer, consensus, message routing, and execution.
 
 Nodes are owned by **node providers**: independent entities who operate the hardware. Node providers are voted into the network by the governance system (NNS) and must meet specific hardware requirements. This process, called **deterministic decentralization**, ensures that subnet membership is diverse across operators, geographies, and jurisdictions.
 
@@ -34,29 +34,20 @@ As a developer, you don't interact with individual nodes directly. The protocol 
 
 ## Consensus
 
-Each subnet runs a four-phase consensus protocol:
+Each subnet runs a consensus protocol that produces one finalized block per round, approximately every 1 second. ICP provides cryptographic (not probabilistic) finality: once your update call returns, the state change is committed. Query calls skip consensus entirely: a single node handles the request, which is why queries are fast but carry weaker authenticity guarantees than update calls.
 
-1. **Block making.** A designated block maker proposes a block of messages to execute.
-2. **Notarization.** A threshold of nodes validates and signs the proposed block.
-3. **Finalization.** Once a notarized block has no competing blocks, it is finalized.
-4. **Execution.** All nodes execute the messages in the finalized block deterministically, reaching the same resulting state.
-
-This produces one block per round (approximately every 1 second). Update calls achieve the rapid finality described above because there is no need to wait for multiple block confirmations.
-
-Query calls skip consensus entirely: a single node handles the request and returns its local state, which is why queries are fast (milliseconds) but provide weaker authenticity guarantees than update calls.
-
-For a deeper dive into the consensus protocol and other protocol internals, see the [Learn Hub](https://learn.internetcomputer.org).
+For how the protocol achieves this (block making, notarization, finalization, and the other layers), see [Protocol Stack](protocol/index.md).
 
 ## Boundary nodes
 
 Boundary nodes are the entry point for all external traffic to ICP. They serve two purposes:
 
 1. **HTTP gateway.** When a user's browser requests `https://<canister-id>.icp0.io`, a boundary node translates that HTTP request into a canister message, routes it to the correct subnet, and returns the response.
-2. **API endpoint.** Agent libraries (like [`@icp-sdk/core/agent`](https://js.icp.build) in JavaScript) send ingress messages to boundary nodes, which forward them to the target canister's subnet.
+2. **API endpoint.** Agent libraries (like [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent) in JavaScript) send ingress messages to boundary nodes, which forward them to the target canister's subnet.
 
 Boundary nodes also cache query responses and provide TLS termination. They are not part of consensus and cannot modify canister state: they are routing infrastructure.
 
-From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or icp-cli, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](../guides/backends/certified-variables.md) exist for applications that need authenticated query results.
+From a developer's perspective, boundary nodes are mostly transparent. You interact with them through the standard agent libraries or icp-cli, and they handle the routing. The main thing to be aware of is that query responses pass through a boundary node, which is why [certified variables](certified-data.md#certified-variables) exist for applications that need authenticated query results.
 
 ## How it all fits together
 
@@ -64,7 +55,7 @@ Here is the path of a typical request:
 
 1. A user's browser sends an HTTPS request to a boundary node.
 2. The boundary node looks up which subnet hosts the target canister and forwards the message.
-3. For update calls: the subnet's consensus protocol includes the message in a block, all nodes execute it, and the subnet signs the response. For query calls: a single node executes the call and returns the result: query responses are not threshold-signed by the subnet, so they should be treated as unverified unless the canister uses [certified variables](../guides/backends/certified-variables.md).
+3. For update calls: the subnet's consensus protocol includes the message in a block, all nodes execute it, and the subnet signs the response. For query calls: a single node executes the call and returns the result: query responses are not threshold-signed by the subnet, so they should be treated as unverified unless the canister uses [certified variables](certified-data.md#certified-variables).
 4. The boundary node returns the response to the user.
 
 The entire flow (from user request to signed response) completes within the finality window described above for updates, and under 100 milliseconds for queries.

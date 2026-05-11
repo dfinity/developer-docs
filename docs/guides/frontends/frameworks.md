@@ -1,5 +1,5 @@
 ---
-title: "Frontend Frameworks"
+title: "Frontend frameworks"
 description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using the asset canister and icp-cli"
 sidebar:
   order: 4

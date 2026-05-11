@@ -1,5 +1,5 @@
 ---
-title: "Inter-Canister Call Safety"
+title: "Inter-canister call safety"
 description: "Handle reentrancy, callback traps, and async safety in inter-canister calls"
 sidebar:
   order: 5

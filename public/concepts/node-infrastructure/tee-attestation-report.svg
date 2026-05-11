@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="Gradient-Purple" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="6.01%" stop-color="#c772ef"/>
+      <stop offset="100%" stop-color="#6a85f1"/>
+    </linearGradient>
+
+    <style>
+
+      .card-bg { fill: #202124; stroke: #5f6368; stroke-width: 1; }
+      .section-bg { fill: #303134; stroke: #5f6368; stroke-width: 1; }
+
+      .title { font-size: 16px; font-weight: 600; fill: url(#Gradient-Purple); }
+      .label { font-size: 10px; fill: #9aa0a6; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+      .value { font-family: 'SF Mono', 'Segoe UI Mono', 'Roboto Mono', monospace; font-size: 11px; fill: #e8eaed; }
+
+      .more-fields { fill: #303134; stroke: #5f6368; stroke-dasharray: 4 2; }
+      .more-text { font-size: 10px; fill: #9aa0a6; font-style: italic; }
+
+      .signed-box { fill: #2d2a3d; stroke: url(#Gradient-Purple); stroke-width: 1; }
+      .signed-text { fill: #c772ef; font-weight: 700; font-size: 12px; }
+      .signed-sub { fill: #c772ef; font-weight: 600; font-size: 9px; }
+
+      .check-icon { stroke: #c772ef; stroke-width: 2.5; fill: none; }
+    </style>
+  </defs>
+
+  <rect x="10" y="10" width="380" height="480" rx="8" class="card-bg"/>
+
+  <text x="30" y="45" class="title">AMD SEV-SNP Attestation Report</text>
+  <line x1="30" y1="60" x2="370" y2="60" stroke="url(#Gradient-Purple)" stroke-width="1.5"/>
+
+  <g transform="translate(30, 90)">
+    <text x="0" y="-6" class="label">1. VM Launch Measurement</text>
+    <rect x="0" y="0" width="340" height="35" rx="4" class="section-bg"/>
+    <text x="10" y="22" class="value">3a7c...8b2f [SHA-384 Hash]</text>
+  </g>
+
+  <g transform="translate(30, 155)">
+    <text x="0" y="-6" class="label">2. Hardware Chip ID</text>
+    <rect x="0" y="0" width="340" height="35" rx="4" class="section-bg"/>
+    <text x="10" y="22" class="value">9f8e...5b4a [Unique HW ID]</text>
+  </g>
+
+  <g transform="translate(30, 220)">
+    <text x="0" y="-6" class="label">3. Custom Report Data (Nonce)</text>
+    <rect x="0" y="0" width="340" height="35" rx="4" class="section-bg"/>
+    <text x="10" y="22" class="value">d4e5...1a2b [64 Bytes User Data]</text>
+  </g>
+
+  <g transform="translate(30, 285)">
+    <rect x="0" y="0" width="340" height="80" rx="4" class="more-fields"/>
+    <text x="170" y="35" text-anchor="middle" class="more-text">... + Additional Fields ...</text>
+    <text x="170" y="50" text-anchor="middle" class="more-text">(TCB Version, Policy, Family ID)</text>
+  </g>
+
+  <g transform="translate(30, 410)">
+    <rect x="0" y="0" width="340" height="50" rx="4" class="signed-box"/>
+
+    <path d="M 20 25 L 30 35 L 50 15" class="check-icon"/>
+
+    <text x="60" y="30" class="signed-text">SIGNED BY AMD CERTIFICATE CHAIN</text>
+  </g>
+
+</svg>

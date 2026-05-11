@@ -1,5 +1,5 @@
 ---
-title: "Custom Domains"
+title: "Custom domains"
 description: "Point a custom domain to your ICP-hosted frontend with DNS and boundary node configuration"
 sidebar:
   order: 2

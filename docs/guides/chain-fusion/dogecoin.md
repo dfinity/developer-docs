@@ -1,5 +1,5 @@
 ---
-title: "Dogecoin Integration"
+title: "Dogecoin integration"
 description: "Send and receive DOGE from ICP canisters using the Dogecoin canister"
 sidebar:
   order: 4
@@ -34,7 +34,7 @@ For reading balances and UTXO state without sending a transaction, only steps 1�
 The Dogecoin canister exposes these methods:
 
 - `dogecoin_get_utxos`: returns unspent transaction outputs for a Dogecoin address
-- `dogecoin_get_balance`: returns the balance of a Dogecoin address in koinus (1 DOGE = 100,000,000 koinus)
+- `dogecoin_get_balance`: returns the balance of a Dogecoin address in koinu (1 DOGE = 100,000,000 koinu)
 - `dogecoin_get_current_fee_percentiles`: returns fee percentiles from recent Dogecoin transactions
 - `dogecoin_send_transaction`: submits a signed transaction to the Dogecoin network
 
@@ -84,7 +84,7 @@ fn dogecoin_canister_id() -> Principal {
     Principal::from_text(DOGECOIN_CANISTER).expect("Invalid Dogecoin canister ID")
 }
 
-/// Returns the balance of a Dogecoin address in koinus (1 DOGE = 100,000,000 koinus).
+/// Returns the balance of a Dogecoin address in koinu (1 DOGE = 100,000,000 koinu).
 #[update]
 async fn get_dogecoin_balance(address: String, network: DogecoinNetwork) -> u64 {
     let (balance,): (u64,) = Call::unbounded_wait(dogecoin_canister_id(), "dogecoin_get_balance")
@@ -120,7 +120,7 @@ The [Bitcoin integration guide](bitcoin.md) covers the same conceptual steps wit
 
 - Use the Dogecoin canister for UTXO queries and transaction submission (not the Bitcoin canister's `bitcoin_*` API)
 - Use Dogecoin's P2PKH address format (mainnet addresses start with `D`)
-- Dogecoin uses koinus instead of satoshis (1 DOGE = 100,000,000 koinus)
+- Dogecoin uses koinu instead of satoshis (1 DOGE = 100,000,000 koinu)
 - Dogecoin uses a different fee rate: use `dogecoin_get_current_fee_percentiles` to get current rates
 
 ## Relationship to Bitcoin integration
@@ -149,38 +149,18 @@ ckDOGE is a 1:1 DOGE-backed token on ICP. The ckDOGE minter holds real DOGE and 
 
 ### Deposit (DOGE to ckDOGE)
 
-```plantuml
-actor User
-participant "ckDOGE Minter" as Minter
-participant "Dogecoin Network" as DOGE
-
-User -> Minter: get_doge_address(account)
-Minter --> User: doge_address
-User -> DOGE: send DOGE to doge_address
-User -> Minter: update_balance(account)
-Minter --> User: ckDOGE minted to ICRC-1 account
-```
+For a flow diagram, see [Dogecoin integration](../../concepts/chain-fusion/dogecoin.md#depositing-doge-doge-to-ckdoge).
 
 ### Withdrawal (ckDOGE to DOGE)
 
-```plantuml
-actor User
-participant "ckDOGE Ledger" as Ledger
-participant "ckDOGE Minter" as Minter
-participant "Dogecoin Network" as DOGE
-
-User -> Ledger: icrc2_approve(spender=minter, amount)
-User -> Minter: retrieve_doge_with_approval(doge_address, amount)
-Minter -> Ledger: icrc2_transfer_from(user, minter, amount)
-Minter -> DOGE: send DOGE to doge_address
-```
+For a flow diagram, see [Dogecoin integration](../../concepts/chain-fusion/dogecoin.md#withdrawing-doge-ckdoge-to-doge).
 
 ## Next steps
 
-- [Chain fusion overview](../../concepts/chain-fusion.md): understand how ICP integrates with external blockchains
+- [Chain fusion overview](../../concepts/chain-fusion/index.md): understand how ICP integrates with external blockchains
 - [Bitcoin integration](bitcoin.md): the same UTXO-based integration with complete code examples
 - [Chain-key cryptography](../../concepts/chain-key-cryptography.md): how threshold ECDSA signatures work
-- [Chain-key tokens](../digital-assets/chain-key-tokens.md): ckBTC, ckETH, and upcoming ckDOGE
+- [Chain-key tokens](../digital-assets/chain-key-tokens.md): ckBTC, ckETH, and ckDOGE
 - [Build on Dogecoin book](https://dfinity.github.io/dogecoin-canister): full tutorial for building Dogecoin apps on ICP
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/chain-fusion/dogecoin/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx; dfinity/examples — rust/basic_dogecoin/README.md; learn.internetcomputer.org — Dogecoin integration overview (https://learn.internetcomputer.org/hc/en-us/articles/46782835018516) -->

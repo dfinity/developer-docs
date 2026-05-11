@@ -1,5 +1,5 @@
 ---
-title: "Reproducible Builds"
+title: "Reproducible builds"
 description: "Verify that deployed canister Wasm matches the source code using deterministic builds"
 sidebar:
   order: 6

@@ -1,5 +1,5 @@
 ---
-title: "DoS Prevention"
+title: "DoS prevention"
 description: "Protect canisters from denial-of-service attacks with rate limiting, cycle drain protection, and resource management"
 sidebar:
   order: 4

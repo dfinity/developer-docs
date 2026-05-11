@@ -1,5 +1,5 @@
 ---
-title: "Subnet Selection"
+title: "Subnet selection"
 description: "Choose the right subnet for your canister deployment based on geographic, security, and colocation requirements"
 sidebar:
   order: 8

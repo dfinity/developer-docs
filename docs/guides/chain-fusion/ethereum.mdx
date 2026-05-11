@@ -1,5 +1,5 @@
 ---
-title: "Ethereum Integration"
+title: "Ethereum integration"
 description: "Interact with Ethereum and EVM chains from ICP canisters via the EVM RPC canister"
 sidebar:
   order: 2
@@ -9,29 +9,11 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them onchain: all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
 
-For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion.md).
+For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion/index.md).
 
 ## How it works
 
-The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system canister deployed on ICP's 34-node fiduciary subnet. When your canister calls it:
-
-```plantuml
-participant "Your Canister" as Canister
-participant "EVM RPC Canister" as EVM
-participant "Provider 1" as P1
-participant "Provider 2" as P2
-participant "Provider N" as PN
-
-Canister -> EVM: eth_getBlockByNumber(chain, args) + cycles
-EVM -> P1: JSON-RPC (HTTPS outcall)
-EVM -> P2: JSON-RPC (HTTPS outcall)
-EVM -> PN: JSON-RPC (HTTPS outcall)
-P1 --> EVM: response
-P2 --> EVM: response
-PN --> EVM: response
-note right of EVM: consensus check (≥2/3 nodes agree)
-EVM --> Canister: Consistent(result) + refund excess cycles
-```
+The EVM RPC canister (`7hfb6-caaaa-aaaar-qadga-cai`) is a system canister deployed on ICP's 34-node fiduciary subnet. For a flow diagram, see [Ethereum integration](../../concepts/chain-fusion/ethereum.md#multi-provider-architecture). When your canister calls it:
 
 1. Your canister sends a request to the EVM RPC canister with cycles attached.
 2. The EVM RPC canister fans the request out to multiple RPC providers via [HTTPS outcalls](../backends/https-outcalls.md).
@@ -603,7 +585,7 @@ Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers quer
 **Practical guidance:**
 
 - Send 10,000,000,000 cycles (10B) as a starting budget. Unused cycles are refunded.
-- Typical calls cost 100M--1B cycles (approximately $0.0001--$0.001 USD).
+- Typical calls cost 100M to 1B cycles (approximately $0.0001 to $0.001 USD).
 - Use `requestCost` to get an exact estimate before making a raw JSON-RPC call.
 - The Candid-RPC methods (like `eth_getBlockByNumber`) automatically retry with larger response sizes if needed, consuming more cycles from your budget.
 
@@ -719,7 +701,7 @@ ic-cdk = "0.20"
 
 - [Bitcoin integration](bitcoin.md): similar patterns for BTC using the Bitcoin API
 - [Chain-key tokens](../digital-assets/chain-key-tokens.md): learn about ckETH and other chain-key tokens backed 1:1 by native assets
-- [Chain Fusion concepts](../../concepts/chain-fusion.md): understand how ICP connects to external blockchains
+- [Chain Fusion concepts](../../concepts/chain-fusion/index.md): understand how ICP connects to external blockchains
 - [HTTPS outcalls](../backends/https-outcalls.md): the underlying mechanism the EVM RPC canister uses
 - [basic_ethereum example](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum): complete end-to-end Rust example with address generation, signing, and transaction submission
 - [EVM RPC canister source](https://github.com/dfinity/evm-rpc-canister): canister source code and Candid interface

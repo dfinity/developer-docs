@@ -1,5 +1,5 @@
 ---
-title: "Data Integrity"
+title: "Data integrity"
 description: "Protect data confidentiality and authenticity in canisters using vetKeys encryption, identity-based encryption, certified variables, and signature verification."
 sidebar:
   order: 3

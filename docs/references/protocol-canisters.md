@@ -1,11 +1,11 @@
 ---
-title: "Protocol Canisters"
+title: "Protocol canisters"
 description: "Bitcoin canister, ckBTC minter, ckETH minter, EVM RPC canister, exchange rate canister, and other protocol-level canisters with their APIs and Candid interfaces"
 sidebar:
   order: 3
 ---
 
-Protocol canisters implement platform-level features on the Internet Computer. Unlike [system canisters](system-canisters.md), which govern the network itself, protocol canisters provide infrastructure that applications build on: Bitcoin integration, Ethereum integration, chain-key tokens, and exchange rates. They are controlled by the NNS and run on dedicated system subnets.
+Protocol canisters implement platform-level features on the Internet Computer. Unlike [system canisters](system-canisters.md), which govern the network itself, protocol canisters provide infrastructure that applications build on: Bitcoin integration, Ethereum integration, [chain-key tokens](../concepts/chain-fusion/chain-key-tokens.md), and exchange rates. They are controlled by the NNS and run on dedicated system subnets.
 
 For all chain-key token canister IDs (ledger, minter, index), see [Chain-Key Token Canister IDs](chain-key-canister-ids.md). For deposit, withdrawal, and transfer flows, see [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md).
 
@@ -38,8 +38,38 @@ The Bitcoin integration canisters connect ICP to the Bitcoin network. They track
 - `bitcoin_send_transaction`: submits a signed Bitcoin transaction
 - `bitcoin_get_current_fee_percentiles`: returns fee percentiles in millisatoshi/vbyte
 - `bitcoin_get_block_headers`: returns block headers for a range of heights
+- `get_blockchain_info`: returns chain tip height, block hash, timestamp, difficulty, and UTXO count
 
-For integration patterns, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
+### Cycle costs
+
+All Bitcoin canister calls require cycles attached. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
+
+| Endpoint | Testnet / Regtest | Mainnet |
+|---|---|---|
+| `bitcoin_get_balance` | 40,000,000 | 100,000,000 |
+| `bitcoin_get_utxos` | 4,000,000,000 | 10,000,000,000 |
+| `bitcoin_send_transaction` (base) | 2,000,000,000 | 5,000,000,000 |
+| `bitcoin_send_transaction` (per byte) | 8,000,000 | 20,000,000 |
+| `bitcoin_get_current_fee_percentiles` | 40,000,000 | 100,000,000 |
+| `bitcoin_get_block_headers` | 4,000,000,000 | 10,000,000,000 |
+| `get_blockchain_info` | 40,000,000 | 100,000,000 |
+
+For integration patterns and code examples, see the [Bitcoin guide](../guides/chain-fusion/bitcoin.md).
+
+## Dogecoin canister
+
+The Dogecoin canister is a system-level canister that connects ICP to the Dogecoin network using the same architecture as the Bitcoin integration. It syncs blocks from the Dogecoin peer-to-peer network, maintains the UTXO set, and exposes an API for querying Dogecoin state and submitting transactions.
+
+For the current canister ID, see the [Dogecoin canister repository](https://github.com/dfinity/dogecoin-canister).
+
+### Key endpoints
+
+- `dogecoin_get_utxos`: returns UTXOs for a Dogecoin address
+- `dogecoin_get_balance`: returns the balance of a Dogecoin address in koinu (1 DOGE = 100,000,000 koinu)
+- `dogecoin_get_current_fee_percentiles`: returns fee percentiles from recent Dogecoin transactions
+- `dogecoin_send_transaction`: submits a signed transaction to the Dogecoin network
+
+For integration patterns, see the [Dogecoin guide](../guides/chain-fusion/dogecoin.md).
 
 ## ckBTC minter
 
@@ -68,6 +98,16 @@ For canister IDs, see [Chain-Key Token Canister IDs: ckBTC](chain-key-canister-i
 - `retrieve_btc_status_v2_by_account(account)`: returns statuses for all recent withdrawal requests from the given account
 - `get_minter_info`: returns current minter parameters
 - `get_events(start, length)`: returns the minter's internal event log
+
+### Withdrawal fee
+
+The minter fee for a Bitcoin withdrawal transaction is `146 × inputs + 4 × outputs + 26` satoshi. This formula covers the cost of threshold ECDSA signatures and Bitcoin transaction broadcasting. When multiple withdrawal requests are batched into one transaction, the fee is split among all outputs.
+
+<!-- Needs DeFi team verification: minter fee formula and UTXO consolidation parameters below were sourced from Learn Hub (now retired) and have not yet been independently verified against the live minter code. -->
+
+### UTXO consolidation
+
+As deposits accumulate, the minter manages a growing set of UTXOs. If the UTXO count exceeds 10,000, the minter periodically creates consolidation transactions that merge the 1,000 smallest UTXOs into 2 new outputs, funded from the minter's fee subaccount. This prevents the UTXO set from growing large enough to make withdrawals impossible (a Bitcoin transaction is limited to 100 KB).
 
 ### KYT checker
 
@@ -191,9 +231,31 @@ By default, the canister requires all providers to agree (`Equality` consensus).
 
 For integration examples, see the [Ethereum guide](../guides/chain-fusion/ethereum.md).
 
+## SOL RPC canister
+
+The SOL RPC canister proxies JSON-RPC calls to the Solana network via HTTPS outcalls. It follows the same pattern as the EVM RPC canister: each request is forwarded to multiple independent RPC providers and the results are compared for consensus before being returned to the caller. No API keys are required.
+
+| Field | Value |
+|---|---|
+| Canister ID | [`2xib7-jqaaa-aaaar-qai6q-cai`](https://dashboard.internetcomputer.org/canister/2xib7-jqaaa-aaaar-qai6q-cai) |
+| Source | [dfinity/sol-rpc-canister](https://github.com/dfinity/sol-rpc-canister) |
+
+### Built-in RPC providers
+
+| Provider |
+|---|
+| [Alchemy](https://www.alchemy.com/) |
+| [Ankr](https://www.ankr.com/) |
+| [Chainstack](https://chainstack.com/) |
+| [dRPC](https://drpc.org/) |
+| [Helius](https://www.helius.dev/) |
+| [PublicNode](https://publicnode.com/) |
+
+For integration examples, see the [Solana guide](../guides/chain-fusion/solana.md).
+
 ## Exchange rate canister (XRC)
 
-The exchange rate canister (XRC) uses HTTPS outcalls to fetch cryptocurrency and foreign exchange rates from major exchanges. It runs on the `uzr34` system subnet and is used by the cycles minting canister (CMC) to convert ICP to cycles at a stable XDR-pegged price.
+The [exchange rate canister](../concepts/chain-fusion/exchange-rate-canister.md) (XRC) uses HTTPS outcalls to fetch cryptocurrency and foreign exchange rates from major exchanges. It runs on the `uzr34` system subnet and is used by the cycles minting canister (CMC) to convert ICP to cycles at a stable XDR-pegged price.
 
 | Field | Value |
 |---|---|
@@ -201,48 +263,86 @@ The exchange rate canister (XRC) uses HTTPS outcalls to fetch cryptocurrency and
 | Subnet | [`uzr34-akd3s-xrdag-3ql62-ocgoh-ld2ao-tamcv-54e7j-krwgb-2gm4z-oqe`](https://dashboard.internetcomputer.org/subnet/uzr34-akd3s-xrdag-3ql62-ocgoh-ld2ao-tamcv-54e7j-krwgb-2gm4z-oqe) |
 | Specification | [XRC interface spec](https://github.com/dfinity/exchange-rate-canister/blob/main/INTERFACE_SPECIFICATION.md) |
 
+For how the aggregation and rate derivation work, see [Exchange rate canister](../concepts/chain-fusion/exchange-rate-canister.md).
+
 ### Data sources
 
-The XRC pulls from the following exchanges: Coinbase, Kucoin, OKX, Gate.io, MEXC, Poloniex, Crypto.com, Bitget, and DigiFinex.
+Cryptocurrency rates: Coinbase, Kucoin, OKX, Gate.io, MEXC, Poloniex, Crypto.com, Bitget, DigiFinex.
 
-For forex rates, it queries public APIs from foreign exchange data providers worldwide on a periodic basis.
+Forex rates: queried from public APIs of foreign exchange data providers worldwide on a periodic schedule.
 
-### Rate aggregation
-
-The XRC calculates rates using candlestick chart data for specific one-minute intervals across exchanges. Rather than time-weighted or volume-weighted averages, it collects, combines, and filters rates from all sources and returns the median. This approach minimizes manipulation risk. The XRC can also derive rates for pairs not directly traded (e.g., A/B from A/C and B/C rates).
-
-### Interface
+### Candid interface
 
 The XRC exposes a single endpoint:
 
-```
+```candid
 get_exchange_rate : (GetExchangeRateRequest) -> (GetExchangeRateResult)
 ```
 
-**Request:**
+**Types:**
 
 ```candid
+type AssetClass = variant { Cryptocurrency; FiatCurrency };
+
+type Asset = record {
+  symbol : text;
+  class  : AssetClass;
+};
+
 type GetExchangeRateRequest = record {
   base_asset  : Asset;
   quote_asset : Asset;
   timestamp   : opt nat64;
 };
-```
 
-`Asset` is a record with a `symbol` (e.g., `"BTC"`) and `class` (`Cryptocurrency` or `FiatCurrency`). Any combination of digital asset and fiat is supported (e.g., ICP/USD, BTC/ICP, USD/EUR). If `timestamp` is omitted, the current rate is returned.
+type ExchangeRateMetadata = record {
+  decimals                      : nat32;
+  base_asset_num_received_rates : nat64;
+  base_asset_num_queried_sources: nat64;
+  quote_asset_num_received_rates: nat64;
+  quote_asset_num_queried_sources:nat64;
+  standard_deviation            : nat64;
+  forex_timestamp               : opt nat64;
+};
 
-**Response:**
+type ExchangeRate = record {
+  base_asset  : Asset;
+  quote_asset : Asset;
+  timestamp   : nat64;
+  rate        : nat64;
+  metadata    : ExchangeRateMetadata;
+};
 
-```candid
+type ExchangeRateError = variant {
+  AnonymousPrincipalNotAllowed : null;
+  Pending                      : null;
+  CryptoBaseAssetNotFound      : null;
+  CryptoQuoteAssetNotFound     : null;
+  StablecoinRateNotFound       : null;
+  StablecoinRateTooFewRates    : null;
+  StablecoinRateZeroRate       : null;
+  ForexInvalidTimestamp        : null;
+  ForexBaseAssetNotFound       : null;
+  ForexQuoteAssetNotFound      : null;
+  ForexAssetsNotFound          : null;
+  RateLimited                  : null;
+  NotEnoughCycles              : null;
+  FailedToAcceptCycles         : null;
+  InconsistentRatesReceived    : null;
+  Other                        : record { code : nat32; description : text };
+};
+
 type GetExchangeRateResult = variant {
   Ok  : ExchangeRate;
   Err : ExchangeRateError;
 };
 ```
 
+The `rate` field is a scaled 64-bit integer. Divide by `10^decimals` (from `metadata.decimals`) to get the human-readable price. If `timestamp` in the request is omitted, the rate for the current minute is returned. Timestamps have 1-minute granularity; seconds are ignored.
+
 ### Cycle costs
 
-Each request requires 1B cycles attached. If insufficient cycles are provided, the canister returns `ExchangeRateError::NotEnoughCycles`. The actual cost depends on the asset types and cache state:
+Each request requires 1 billion cycles attached. If insufficient cycles are provided, the canister returns `NotEnoughCycles`. The actual cost after the call depends on the asset types and cache state:
 
 | Condition | Actual cost |
 |---|---|
@@ -253,20 +353,7 @@ Each request requires 1B cycles attached. If insufficient cycles are provided, t
 
 Unused cycles are refunded. At least 1M cycles are charged even on error, to prevent denial-of-service attacks.
 
-### Example call
-
-Calling the XRC requires attaching cycles, which is only possible from canister-to-canister calls. The CLI cannot attach cycles to direct calls. Call the XRC from a canister using the Candid interface: pass the required cycles in the `ic_cdk::api::call::call_with_payment128` call or equivalent.
-
-To query the current rate without attaching cycles (for inspection only, expect a `NotEnoughCycles` error on mainnet):
-
-```bash
-icp canister call uf6dk-hyaaa-aaaaq-qaaaq-cai get_exchange_rate \
-  '(record {
-    base_asset  = record { symbol = "BTC"; class = variant { Cryptocurrency } };
-    quote_asset = record { symbol = "USD"; class = variant { FiatCurrency } };
-  })' \
-  -n ic
-```
+Cycles must be attached to the inter-canister call itself; the CLI cannot call the XRC directly on mainnet. For working code, see [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md).
 
 ## SNS-W canister
 
@@ -279,7 +366,7 @@ The SNS Wasm canister (SNS-W) manages the deployment and upgrade of Service Nerv
 
 The SNS-W canister stores blessed SNS Wasm binaries, creates new SNS instances, and coordinates SNS upgrades. When the NNS passes an SNS upgrade proposal, it installs the new Wasms on each SNS canister via SNS-W.
 
-For governance context, see the [SNS documentation](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System).
+For governance context, see [SNS framework](../concepts/sns-framework.md).
 
 ## Quick reference
 
@@ -293,6 +380,7 @@ For governance context, see the [SNS documentation](https://learn.internetcomput
 | ckDOGE Minter | `eqltq-xqaaa-aaaar-qb3vq-cai` | DOGE ↔ ckDOGE minting and burning |
 | ckSOL Minter | `lh22c-kyaaa-aaaar-qb5nq-cai` | SOL ↔ ckSOL minting and burning |
 | EVM RPC | `7hfb6-caaaa-aaaar-qadga-cai` | Ethereum JSON-RPC proxy |
+| SOL RPC | `2xib7-jqaaa-aaaar-qai6q-cai` | Solana JSON-RPC proxy |
 | Exchange Rate (XRC) | `uf6dk-hyaaa-aaaaq-qaaaq-cai` | Crypto and forex exchange rates |
 | SNS-W | `qaa6y-5yaaa-aaaaa-aaafa-cai` | SNS deployment and upgrades |
 
@@ -301,9 +389,12 @@ For ledger, index, and testnet canister IDs for all chain-key tokens, see [Chain
 ## Next steps
 
 - [Chain-Key Token Canister IDs](chain-key-canister-ids.md): ledger, minter, and index IDs for all chain-key tokens
-- [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md): deposit, withdrawal, and transfer flows for all chain-key tokens
+- [Chain-key tokens concept](../concepts/chain-fusion/chain-key-tokens.md): how trustless 1:1 asset representations work and why they differ from wrapped tokens
+- [Chain-key tokens guide](../guides/digital-assets/chain-key-tokens.md): deposit, withdrawal, and transfer flows for all chain-key tokens
+- [Exchange rate canister concept](../concepts/chain-fusion/exchange-rate-canister.md#how-rates-are-computed): how rates are aggregated and what pairs are available
 - [Bitcoin guide](../guides/chain-fusion/bitcoin.md): integrating Bitcoin in canisters using the Bitcoin canister and ckBTC
 - [Ethereum guide](../guides/chain-fusion/ethereum.md): integrating Ethereum in canisters using the EVM RPC canister and ckETH
+- [IC Dashboard APIs](ic-dashboard-api.md#ic-api): programmatic access to canister metrics, subnet data, and protocol-level information
 - [System canisters](system-canisters.md): NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
 - [Management canister](management-canister.md): the virtual canister for canister lifecycle, signing, and platform APIs
 

@@ -134,14 +134,14 @@ git checkout main
 - Reference `dfx` — it is deprecated and banned
 - Use `mo:base` imports in Motoko code examples — use `mo:core` instead. Critical replacements: `Buffer` → `List`, `HashMap`/`TrieMap`/`Trie`/`RBTree` → `Map`, `Deque` → `Queue`, `OrderedMap` → `pure/Map`, `OrderedSet` → `pure/Set`
 - Create `.mdx` files without a clear need for interactive components — default to `.md`
-- Duplicate content that lives in external docs (icp-cli, JS SDK, icskills, Learn Hub)
+- Duplicate content that lives in external docs (icp-cli, JS SDK, icskills)
 - Edit synced files directly (`docs/languages/motoko/`, `docs/guides/tools/migrating-from-dfx.md`)
 - Nest sidebar items more than 3 levels deep
 - Skip reading source material before writing a page
 - Write code snippets from memory — find and adapt from actual upstream code in `.sources/`
 - Modify the rationale or context of existing decisions in `.docs-plan/decisions.md` — you may remove entries that are fully reflected in the current codebase but never alter reasoning behind active decisions
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
-- Link to `internetcomputer.org/docs/` — that site is retired. For internal pages use relative paths, not absolute `docs.internetcomputer.org/...` URLs. Link to Learn Hub or explain inline for external content.
+- Link to `internetcomputer.org/docs/` — that site is retired. For internal pages use relative paths, not absolute `docs.internetcomputer.org/...` URLs. Explain inline or link to `docs/concepts/` for protocol-level background; do not link to `learn.internetcomputer.org` (Learn Hub has been retired; its content is now in this site under `docs/concepts/`).
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
 - Link to a page without a section anchor when the surrounding context refers to a specific topic covered by a subsection — always check the target file's headings and include `#anchor` when a more precise destination exists. Verify anchors by grepping headings: `grep "^## \|^### " <target>`. Anchor slugs: lowercase, spaces → `-`, special chars stripped.
 - Link to `https://cli.internetcomputer.org/` (bare root) — all CLI doc pages are under a versioned path. Use `https://cli.internetcomputer.org/0.2/<path>` (current slug; verify with `cat .sources/icp-cli/docs-site/versions.json`) and confirm the path exists in `.sources/icp-cli/docs/<path>.md`. For command-specific links add a section anchor from `.sources/icp-cli/docs/reference/cli.md` (e.g. `#icp-canister-logs`, `#icp-canister-settings-update`, `#icp-cycles`). When bumping icp-cli to a new minor version, follow the "Link adaptation for `icp-cli`" checklist in "Bumping submodules".

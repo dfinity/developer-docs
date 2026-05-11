@@ -1,5 +1,5 @@
 ---
-title: "ICRC Standards"
+title: "ICRC standards"
 description: "Index of all adopted ICRC standards on ICP, grouped by category"
 sidebar:
   order: 5

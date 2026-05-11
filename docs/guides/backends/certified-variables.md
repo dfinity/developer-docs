@@ -1,5 +1,5 @@
 ---
-title: "Certified Variables"
+title: "Certified variables"
 description: "Return verifiable query responses using Merkle trees and certified data"
 sidebar:
   order: 5
@@ -7,7 +7,7 @@ sidebar:
 
 Query calls on ICP are answered by a single replica without going through consensus. This means a malicious or faulty replica could return fabricated data. **Certified variables** solve this: the [canister](../../concepts/canisters.md) stores a hash in the [subnet's](../../concepts/network-overview.md#subnets) certified state during an update call, and query responses include a certificate signed by the subnet's threshold BLS key, proving the data is authentic. The result is responses that are both fast (no consensus delay) and cryptographically verified.
 
-For a conceptual overview of why query integrity matters, see [Security concepts](../../concepts/security.md).
+For a conceptual explanation of how certified data works and why it matters, see [Certified data](../../concepts/certified-data.md). For the security implications, see [Security concepts](../../concepts/security.md).
 
 ## How certification works
 
@@ -364,4 +364,4 @@ See [Frontend certification](../../guides/frontends/certification.md) for the as
 - [IC Interface Specification: Certified Data](../../references/ic-interface-spec/canister-interface.md#system-api-certified-data): the certified data system API
 - [IC Interface Specification: Certification](../../references/ic-interface-spec/certification.md): certificate format and delegation
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/security/data-integrity-and-authenticity.mdx; dfinity/icskills — skills/certified-variables/SKILL.md; dfinity/cdk-rs — library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs; caffeinelabs/motoko-core — src/CertifiedData.mo; dfinity/examples — motoko/cert-var; dfinity/response-verification — README.md -->
+<!-- Upstream: informed by dfinity/portal (docs/building-apps/security/data-integrity-and-authenticity.mdx); dfinity/icskills (skills/certified-variables/SKILL.md); dfinity/cdk-rs (library/ic-certified-map/src/lib.rs, ic-cdk/src/api.rs); caffeinelabs/motoko-core (src/CertifiedData.mo); dfinity/examples (motoko/cert-var); dfinity/response-verification (README.md) -->

@@ -48,6 +48,10 @@ referred to as one **e8**.
 A **batch** is a collection of [messages](#message) whose
 order is agreed upon by [consensus](#consensus).
 
+#### block maker
+
+A **block maker** is a [node](#node) selected by the [consensus](#consensus) protocol to propose a block in a given round. Block makers are chosen through a random permutation of [subnet](#subnet) nodes using randomness from the [random beacon](#random-beacon). The lowest-ranked node acts as the primary block maker; higher-ranked nodes step in if the primary fails to produce a notarized block within the timeout.
+
 #### beneficiary
 
 The **beneficiary** of an [account](#account) is the [principal](#principal) who owns the [balance](#balance) of the account. The beneficiary of an
@@ -164,15 +168,19 @@ single public key. This is a huge advantage as it allows any device,
 including smart watches and mobile phones, to verify the authenticity of
 artifacts from the Internet Computer.
 
+#### ckBTC
+
+**ckBTC** (chain-key Bitcoin) is a fungible token on ICP backed 1:1 by BTC held by the [Bitcoin canister](../references/protocol-canisters.md#bitcoin-canisters). Depositing BTC to a generated custody address mints the equivalent amount of ckBTC. Transfers settle in 1–2 seconds at a 10 satoshi fee. ckBTC can be redeemed for the underlying BTC at any time. It is the recommended way to integrate Bitcoin value into ICP applications. See [chain-key tokens](../concepts/chain-fusion/chain-key-tokens.md) for the underlying architecture.
+
 #### consensus
 
-In distributed computing, **consensus** is a [fault-tolerant](https://learn.internetcomputer.org/hc/en-us/articles/34210647901460-Fault-Tolerance) mechanism by
+In distributed computing, **consensus** is a [fault-tolerant](../concepts/evolution-scaling.md#fault-tolerance) mechanism by
 means of which a number of [nodes](#node) can reach agreement
 about a value or state.
 
 Consensus is a core component of the [replica](#replica)
-software. The [consensus](https://learn.internetcomputer.org/hc/en-us/articles/34207558615956-Consensus) layer selects [messages](#message)
-from the [peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) artifact pool and pulls messages from the
+software. The [consensus](../concepts/protocol/consensus.md) layer selects [messages](#message)
+from the [peer-to-peer](../concepts/protocol/peer-to-peer.md) artifact pool and pulls messages from the
 cross-network streams of other [subnets](#subnet) and
 organizes them into a [batch](#batch), which is delivered to
 the [message routing](#message-routing) layer.
@@ -209,6 +217,10 @@ A **data center** (DC) is a physical site that hosts
 [nodes](#node) which contribute to the [Internet Computer](#internet-computer-protocol-icp). It includes the hardware and
 software infrastructure required for node deployment.
 Data centers are nodes that are selected and vetted by the [NNS](#network-nervous-system-nns).
+
+#### Deterministic Time Slicing (DTS)
+
+**Deterministic Time Slicing** (DTS) is a mechanism in the [execution layer](../concepts/protocol/execution.md) that allows a long-running canister computation to span multiple [consensus](#consensus) rounds. Instead of timing out, a computation that exceeds the per-round instruction limit is paused at the end of a round and automatically resumed in the next. DTS is transparent to canisters and requires no special canister code.
 
 #### dissolve delay
 
@@ -261,7 +273,7 @@ The distinction between fiduciary and beneficiary is also important for canister
 
 #### governance canister
 
-The **[governance](https://learn.internetcomputer.org/hc/en-us/articles/34574082263700-Tokenomics-Governance) canister** is a [system canister](#system-canister) that implements the
+The **[governance](../concepts/governance.md#the-network-nervous-system) canister** is a [system canister](#system-canister) that implements the
 [NNS](#network-nervous-system-nns) governance system, i.e.,
 among others, stores and manages [neurons](#neuron) and
 [proposals](#proposal), and implements the NNS
@@ -285,6 +297,10 @@ The **ICP supply account** is a quasi-fictitious ledger
 [account](#account) whose balance is always zero. It has a
 central role in [ICP](#icp) [burning](#burning-transaction)
 and [minting](#minting-transaction) operations.
+
+#### ICRC
+
+**ICRC** (Internet Computer Request for Comments) is the token and interface standard system for ICP, analogous to ERC standards on Ethereum. Standards are numbered sequentially: ICRC-1 defines the core fungible token interface (transfers and balance queries), ICRC-2 adds approval and transfer-from semantics, ICRC-3 standardizes the transaction log format. All DFINITY-maintained asset ledgers implement at least ICRC-1 and ICRC-2. See [digital asset standards](digital-asset-standards.md) for the full list.
 
 #### identity
 
@@ -345,6 +361,10 @@ in geographically distributed [data centers](#data-center).
 
 ## L
 
+#### latency
+
+**Latency** is the time between submitting a call to a canister and receiving a response. Update call latency is bounded by consensus finality: typically 1–2 seconds on a 13-node subnet. Query call latency is dominated by network round-trip time to a single node: typically 100–200ms. See [Performance](../concepts/protocol/performance.md) for measured values.
+
 #### ledger canister
 
 The **ledger canister** is a [system canister](#system-canister) whose main role is to store
@@ -358,9 +378,13 @@ The **ledger canister** is a [system canister](#system-canister) whose main role
 A **message** is data sent from one [canister](#canister) to
 another or from a user to a canister.
 
+#### MIEPS
+
+**MIEPS** (Millions of Instructions Executed Per Second) is the primary throughput metric for ICP compute capacity. It counts replicated Wasm instructions executed per second across all subnets, excluding query calls. A single subnet can execute up to 8 billion instructions per second (8,000 MIEPS). See [Performance](../concepts/protocol/performance.md) for measured network-wide values.
+
 #### message routing
 
-The **[message routing](https://learn.internetcomputer.org/hc/en-us/articles/34208241927316-Message-Routing)** layer receives [batches](#batch) from
+The **[message routing](../concepts/protocol/message-routing.md)** layer receives [batches](#batch) from
 the [consensus](#consensus) layer and inducts them into the
 [induction pool](#induction-pool). Message routing then
 schedules a set of [canisters](#canister) to execute messages
@@ -416,7 +440,7 @@ The NNS consists of a collection of [system canisters](#system-canister) (aka "N
 
 A **neuron** is an [ICP](#icp) entity that
 can make [proposals](#proposal) and vote on proposals related
-to the [governance](https://learn.internetcomputer.org/hc/en-us/articles/34574082263700-Tokenomics-Governance) of the [Internet Computer](#internet-computer-protocol-icp).
+to the [governance](../concepts/governance.md#the-network-nervous-system) of the [Internet Computer](#internet-computer-protocol-icp).
 
 To provide the stability required for responsible governance, neurons
 need to store ("stake") a certain amount of [ICP](#icp) in
@@ -474,6 +498,10 @@ Node providers are selected and vetted by the [NNS](#network-nervous-system-nns)
 
 ## O
 
+#### orthogonal persistence
+
+**Orthogonal persistence** is the storage model used by the ICP [execution layer](../concepts/protocol/execution.md). Canister memory pages are persisted to disk automatically after each round without requiring explicit read or write operations. Developers can treat canister state as always in memory; the runtime handles persistence transparently. See the [orthogonal persistence concept page](../concepts/orthogonal-persistence.md) for details.
+
 #### output queue
 
 Each [canister](#canister) has an **output queue** of
@@ -483,18 +511,18 @@ Each [canister](#canister) has an **output queue** of
 
 #### peer-to-peer (P2P)
 
-In common usage, **[peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer)** (P2P) computing or networking is a
+In common usage, **[peer-to-peer](../concepts/protocol/peer-to-peer.md)** (P2P) computing or networking is a
 distributed application architecture that partitions workload across a
 network of equally privileged computer [nodes](#node) so that
 participants can contribute resources such as processing power, disk
 storage, or network bandwidth to handle application workload.
 
-The **[peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) layer** collects and disseminates
+The **[peer-to-peer](../concepts/protocol/peer-to-peer.md) layer** collects and disseminates
 [messages](#message) and artifacts from users and from other
 nodes.
 
 The [nodes](#node) of a [subnet](#subnet) form a
-dedicated [peer-to-peer](https://learn.internetcomputer.org/hc/en-us/articles/34207428453140-Peer-to-peer) broadcast network that facilitates the secure
+dedicated [peer-to-peer](../concepts/protocol/peer-to-peer.md) broadcast network that facilitates the secure
 **bounded-time/eventual delivery** broadcast of artifacts (such as
 [ingress messages](#ingress-message), control messages, and
 their signature shares). The [consensus](#consensus) layer
@@ -502,11 +530,7 @@ builds upon this functionality.
 
 #### principal
 
-A **principal** is an entity that can be authenticated by the [Internet Computer](#internet-computer-protocol-icp). This is the same sense of the
-word principal as the [Wikipedia
-definition](https://en.wikipedia.org/wiki/Principal-(computer-security)).
-Principals that interact with the Internet Computer do so using a
-certain [identity](#identity).
+A **principal** is an entity that can be authenticated by the [Internet Computer](#internet-computer-protocol-icp). Principals include canister IDs, user identities derived from public keys, and the anonymous principal. See [Principals](../concepts/principals.md) for the full classification and how they are used for access control.
 
 #### proposal
 
@@ -545,6 +569,10 @@ preserved. Queries are synchronous and can be made to any
 
 ## R
 
+#### random beacon
+
+The **random beacon** is a source of cryptographic randomness produced each [consensus](#consensus) round using threshold BLS signatures. Every [subnet](#subnet) node contributes a signature share; when enough shares are combined, a verifiable random value is produced. The random beacon is used to select [block makers](#block-maker) and other randomized elements of the consensus protocol.
+
 #### replica
 
 The **replica** an instance of software containing all the protocol components
@@ -559,6 +587,10 @@ network nervous system ([NNS](#network-nervous-system-nns))
 and accessed by all [subnet](#subnet) blockchains.
 
 ## S
+
+#### stable memory
+
+**Stable memory** is a persistent memory region in each [canister](#canister) that survives Wasm module upgrades. Unlike heap memory, which is cleared when a new Wasm module is installed, stable memory is preserved across upgrades and is addressed through the system API. It is the recommended location for data that must persist long-term. See [orthogonal persistence](../concepts/orthogonal-persistence.md) for how Motoko manages this automatically, and [data persistence](../guides/backends/data-persistence.mdx) for Rust patterns.
 
 #### state change
 
@@ -604,6 +636,14 @@ regular ledger [account](#account) (i.e., any ledger account
 except the [ICP supply account](#icp-supply-account)) to
 another regular ledger account.
 
+#### throughput
+
+**Throughput** is the number of messages a subnet can process per second. It is measured separately for update calls (replicated, consensus-required) and [query calls](#query) (non-replicated, single-node). Update throughput is bounded by consensus capacity and scales by adding subnets. Query throughput scales linearly with the number of nodes in a subnet, since each node independently handles queries. See [Performance](../concepts/protocol/performance.md) for measured values.
+
+#### Trusted Execution Environment (TEE)
+
+A **Trusted Execution Environment** (TEE) is a hardware-enforced isolation mechanism that protects the memory and state of a virtual machine from the host operating system and hypervisor. ICP uses AMD SEV-SNP as its TEE technology on supported nodes, providing memory encryption, VM launch measurements, and attestation reports that allow external parties to verify the exact software a node is running. See [node infrastructure](../concepts/node-infrastructure.md#trusted-execution-environments) for how ICP uses TEEs in practice.
+
 ## U
 
 #### user
@@ -620,6 +660,10 @@ developers, holders of [ICP](#icp) utility tokens, and
 The **valid set rule** is the rule that determines a valid [induction pool](#induction-pool). [Ingress messages](#ingress-message) and [inter-canister messages](#inter-canister-message) must pass certain checks
 to ensure that the valid set rule is upheld before they can be added to
 the induction pool.
+
+#### vetKeys
+
+**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables onchain encryption, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
 
 #### voting
 
@@ -644,6 +688,10 @@ neuron owners.
 stack-based virtual machine.
 
 ## X
+
+#### XNet
+
+**XNet** is the cross-subnet messaging stream used to deliver [messages](#message) between [canisters](#canister) on different [subnets](#subnet). XNet messages produced by the [execution layer](../concepts/protocol/execution.md) are certified by the originating subnet using [chain-key](#chain-key) cryptography and validated by [block makers](#block-maker) on the receiving subnet before being included in a block.
 
 #### XDR
 

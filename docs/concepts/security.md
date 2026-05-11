@@ -1,8 +1,8 @@
 ---
-title: "Security Model"
+title: "Security model"
 description: "The IC security model: canister isolation, trust boundaries, and the threat model for app developers"
 sidebar:
-  order: 12
+  order: 13
 ---
 
 The Internet Computer provides strong security guarantees at the protocol level: replicated execution, threshold cryptography, and deterministic state machines. But the protocol cannot prevent bugs in your code. Understanding where the platform's guarantees end and your responsibilities begin is essential for building secure apps.
@@ -15,7 +15,7 @@ Canisters execute in two modes, each with different trust properties:
 
 **Update calls** go through consensus. Every node on the subnet executes the same code against the same state and must agree on the result. This makes update calls tamper-proof: a single malicious node cannot alter the outcome. The tradeoff is latency (~2 seconds).
 
-**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree: clients then verify the subnet's signature to confirm the response hasn't been tampered with.
+**Query calls** run on a single replica. They are fast (~200ms) but the responding replica can return incorrect or fabricated results. Replica-signed queries provide partial mitigation (the replica signs its response), but for data that must be trustworthy, use [certified variables](../guides/backends/certified-variables.md) or update calls. Certified variables work by letting the canister set data that the subnet signs as part of the state tree: clients then verify the subnet's signature to confirm the response hasn't been tampered with. See [Certified data](certified-data.md) for how this mechanism works.
 
 This distinction is the most important security boundary on the IC. Any data returned by a query call that is not backed by a certificate should be treated as unverified.
 
@@ -87,7 +87,7 @@ See [Upgrade safety](../guides/security/canister-upgrades.md) for patterns that 
 
 ### Controller risk
 
-Canister controllers can change the code, extract funds, or delete the canister at any time. If a single person or team controls a canister that holds user assets, users must trust that entity completely. For applications where this trust is unacceptable, control can be transferred to a DAO (such as an [SNS](../guides/governance/launching.md)) or the canister can be made immutable by removing all controllers.
+Canister controllers can change the code, extract funds, or delete the canister at any time. If a single person or team controls a canister that holds user assets, users must trust that entity completely. For applications where this trust is unacceptable, control can be transferred to an [SNS](../guides/governance/launching.md) or the canister can be made immutable by removing all controllers.
 
 Users can verify a canister's controllers through the IC dashboard or by querying the canister's information via a `read_state` request.
 
