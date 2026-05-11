@@ -28,13 +28,15 @@ This flow replaces the traditional web stack. There is no separate web server, a
 
 | Concern | Traditional web app | ICP application |
 |---------|-------------------|-----------------|
-| **Compute** | Application server (Node, Django, etc.) | Backend canister (Wasm) |
-| **Storage** | Database (Postgres, MongoDB, etc.) | Canister stable memory (up to 500 GiB) |
-| **Frontend hosting** | CDN + static file server | Asset canister |
-| **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey-based) |
-| **Scheduled tasks** | Cron jobs, worker queues | Canister timers |
+| **Compute** | Application server (Node, Django, etc.) | [Backend canister](canisters.md) (Wasm) |
+| **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](orthogonal-persistence.md) (up to 500 GiB) |
+| **Frontend hosting** | CDN + static file server | [Asset canister](../guides/frontends/asset-canister.md) |
+| **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
+| **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](timers.md) |
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](https-outcalls.md) |
 | **Infrastructure management** | You manage servers, scaling, uptime | The network handles replication and availability |
+
+\* With Internet Identity, users authenticate using a passkey or an OAuth provider (Google, Apple, etc.). Either way, each app receives a unique, app-specific principal — your canister never sees the OAuth credential or any cross-app identifier. This gives stronger privacy guarantees than traditional OAuth flows.
 
 The key difference: ICP applications are self-contained. You deploy code and data to canisters, and the network provides compute, storage, and serving. There is no infrastructure to provision or maintain.
 
