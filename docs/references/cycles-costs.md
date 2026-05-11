@@ -91,7 +91,7 @@ By default canisters are scheduled best-effort. Setting `compute_allocation` gua
 - **2%**: Scheduled every 50 rounds
 - **100%**: Scheduled every round
 
-Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet: see the *Compute allocation* row in the Cost table above for exact figures.
+Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet: see the *Compute allocation* row in the [Cost table](#cost-table) above for exact figures.
 
 ## Storage reservation
 
