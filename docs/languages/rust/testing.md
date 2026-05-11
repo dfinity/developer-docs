@@ -1,5 +1,5 @@
 ---
-title: "Testing Rust Canisters"
+title: "Testing Rust canisters"
 description: "Unit and integration testing patterns for Rust canisters, including dependency injection, mocking, and PocketIC"
 sidebar:
   order: 3

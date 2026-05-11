@@ -1,5 +1,5 @@
 ---
-title: "Node Infrastructure"
+title: "Node infrastructure"
 description: "How ICP nodes are structured: the IC-OS operating system stack, virtual machine isolation, and Trusted Execution Environments."
 ---
 

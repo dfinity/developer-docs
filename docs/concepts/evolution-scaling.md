@@ -1,5 +1,5 @@
 ---
-title: "Evolution & Scaling"
+title: "Evolution & scaling"
 description: "How ICP scales horizontally through subnet creation, maintains liveness under node failures, and upgrades its protocol without forks."
 ---
 

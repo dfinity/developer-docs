@@ -1,5 +1,5 @@
 ---
-title: "Dogecoin Integration"
+title: "Dogecoin integration"
 description: "How ICP connects to Dogecoin using the same architecture as the Bitcoin integration"
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: "Testing SNS Governance"
+title: "Testing SNS governance"
 description: "Test your SNS configuration locally and with a mainnet testflight before submitting the NNS proposal"
 sidebar:
   order: 2

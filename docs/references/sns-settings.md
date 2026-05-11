@@ -1,5 +1,5 @@
 ---
-title: "SNS Settings"
+title: "SNS settings"
 description: "Reference for all SNS nervous system parameters (NervousSystemParameters)"
 ---
 

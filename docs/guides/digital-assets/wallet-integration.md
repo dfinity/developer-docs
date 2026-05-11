@@ -1,5 +1,5 @@
 ---
-title: "Wallet Integration"
+title: "Wallet integration"
 description: "Integrate ICRC signer-standard wallets with your app using explicit per-action user approval."
 sidebar:
   order: 4

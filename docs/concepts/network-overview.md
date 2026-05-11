@@ -1,5 +1,5 @@
 ---
-title: "Network Overview"
+title: "Network overview"
 description: "How the Internet Computer works: subnets, nodes, consensus, and boundary nodes"
 sidebar:
   order: 1

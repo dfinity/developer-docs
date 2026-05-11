@@ -1,5 +1,5 @@
 ---
-title: "Chain-Key Token Canister IDs"
+title: "Chain-key token canister IDs"
 description: "Mainnet and testnet canister IDs for all chain-key tokens: ckBTC, ckETH, ckERC20, ckDOGE, and ckSOL"
 sidebar:
   order: 7

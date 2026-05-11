@@ -1,5 +1,5 @@
 ---
-title: "IC Interface Spec Changelog"
+title: "IC interface spec changelog"
 description: "Version history and changes to the IC Interface Specification"
 sidebar:
   label: "Changelog"

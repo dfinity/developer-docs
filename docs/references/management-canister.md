@@ -1,5 +1,5 @@
 ---
-title: "Management Canister"
+title: "Management canister"
 description: "API reference for the IC management canister (aaaaa-aa): canister lifecycle, signing, randomness, and more"
 sidebar:
   order: 1

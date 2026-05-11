@@ -1,5 +1,5 @@
 ---
-title: "Abstract Behavior"
+title: "Abstract behavior"
 description: "Formal specification of the Internet Computer abstract state machine and execution semantics"
 sidebar:
   label: "Abstract Behavior"

@@ -1,5 +1,5 @@
 ---
-title: "Response Certification"
+title: "Response certification"
 description: "Verify that frontend responses are authentic and untampered using IC certificates"
 sidebar:
   order: 3

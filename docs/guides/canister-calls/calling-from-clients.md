@@ -1,5 +1,5 @@
 ---
-title: "Calling from Clients"
+title: "Calling from clients"
 description: "Call canister functions from frontends, scripts, and backend services using IC agent libraries"
 sidebar:
   order: 4

@@ -11,13 +11,13 @@
 
 export const sidebar = [
   {
-    label: "Getting Started",
+    label: "Getting started",
     autogenerate: { directory: "getting-started" },
   },
   {
     label: "Guides",
     items: [
-      { slug: "guides/ai-coding-agents", label: "AI Coding Agents" },
+      { slug: "guides/ai-coding-agents", label: "AI coding agents" },
       // Build: core development
       {
         label: "Backends",
@@ -25,7 +25,7 @@ export const sidebar = [
         autogenerate: { directory: "guides/backends" },
       },
       {
-        label: "Canister Calls",
+        label: "Canister calls",
         collapsed: true,
         autogenerate: { directory: "guides/canister-calls" },
       },
@@ -46,7 +46,7 @@ export const sidebar = [
         autogenerate: { directory: "guides/testing" },
       },
       {
-        label: "Canister Management",
+        label: "Canister management",
         collapsed: true,
         autogenerate: { directory: "guides/canister-management" },
       },
@@ -57,7 +57,7 @@ export const sidebar = [
       },
       // Advanced features
       {
-        label: "Digital Assets",
+        label: "Digital assets",
         collapsed: true,
         autogenerate: { directory: "guides/digital-assets" },
       },
@@ -90,7 +90,7 @@ export const sidebar = [
       },
       // Protocol Stack: ICP's internal execution layers
       {
-        label: "Protocol Stack",
+        label: "Protocol stack",
         collapsed: true,
         items: [
           { slug: "concepts/protocol", label: "Overview" },
@@ -104,7 +104,7 @@ export const sidebar = [
       },
       // Canisters: the developer runtime and canister capabilities
       {
-        label: "Canisters",
+        label: "Canisters & capabilities",
         collapsed: true,
         items: [
           { slug: "concepts/canisters" },
@@ -171,7 +171,7 @@ export const sidebar = [
             },
           },
           {
-            label: "ICP Features",
+            label: "ICP features",
             autogenerate: {
               directory: "languages/motoko/icp-features",
             },
@@ -191,7 +191,7 @@ export const sidebar = [
       },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer Tools" },
+  { slug: "references/developer-tools", label: "Developer tools" },
   {
     label: "References",
     collapsed: true,
@@ -212,7 +212,7 @@ export const sidebar = [
       { slug: "references/candid-spec" },
       { slug: "references/internet-identity-spec" },
       {
-        label: "IC Interface Spec",
+        label: "IC interface spec",
         collapsed: true,
         autogenerate: { directory: "references/ic-interface-spec" },
       },

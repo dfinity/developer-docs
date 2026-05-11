@@ -1,5 +1,5 @@
 ---
-title: "Canister Optimization"
+title: "Canister optimization"
 description: "Reduce Wasm binary size and improve canister performance with ic-wasm, SIMD, performance counters, and memory tuning"
 sidebar:
   order: 4

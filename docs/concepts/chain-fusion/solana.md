@@ -1,5 +1,5 @@
 ---
-title: "Solana Integration"
+title: "Solana integration"
 description: "How canisters interact with Solana via the SOL RPC canister"
 ---
 

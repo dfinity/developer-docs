@@ -1,5 +1,5 @@
 ---
-title: "Execution Layer"
+title: "Execution layer"
 description: "How ICP deterministically executes canister code using WebAssembly, deterministic time slicing, and concurrent execution."
 sidebar:
   order: 4

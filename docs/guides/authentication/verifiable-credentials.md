@@ -1,5 +1,5 @@
 ---
-title: "Verifiable Credentials"
+title: "Verifiable credentials"
 description: "Issue and verify credentials on ICP using Internet Identity and the VC protocol: covers issuer and relying party integration patterns."
 sidebar:
   order: 2

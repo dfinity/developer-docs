@@ -1,5 +1,5 @@
 ---
-title: "Subnet Types Reference"
+title: "Subnet types reference"
 description: "All subnet types with node counts, replication factors, and cost multipliers"
 sidebar:
   order: 9

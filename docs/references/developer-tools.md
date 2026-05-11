@@ -1,5 +1,5 @@
 ---
-title: "Developer Tools"
+title: "Developer tools"
 description: "Overview of the ICP developer toolchain: icp-cli, CDKs, JS SDK, PocketIC, and more"
 sidebar:
   hidden: true

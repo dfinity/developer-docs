@@ -1,5 +1,5 @@
 ---
-title: "Large Wasm Modules"
+title: "Large Wasm modules"
 description: "Deploy canisters that exceed the 2 MiB Wasm limit using chunk store and compression"
 sidebar:
   order: 9

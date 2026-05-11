@@ -1,5 +1,5 @@
 ---
-title: "Dogecoin Integration"
+title: "Dogecoin integration"
 description: "Send and receive DOGE from ICP canisters using the Dogecoin canister"
 sidebar:
   order: 4

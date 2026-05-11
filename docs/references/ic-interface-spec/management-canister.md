@@ -1,5 +1,5 @@
 ---
-title: "IC Management Canister"
+title: "IC management canister"
 description: "The virtual management canister interface: canister lifecycle, threshold signing, Bitcoin, and provisional APIs"
 sidebar:
   label: "Management Canister"

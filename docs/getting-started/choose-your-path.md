@@ -1,5 +1,5 @@
 ---
-title: "Choose Your Path"
+title: "Choose your path"
 description: "Choose your development path based on what you want to build"
 sidebar:
   order: 3

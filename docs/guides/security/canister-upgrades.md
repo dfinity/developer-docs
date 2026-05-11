@@ -1,5 +1,5 @@
 ---
-title: "Secure Upgrades"
+title: "Secure upgrades"
 description: "Upgrade canisters safely: pre/post hooks, stable memory, Candid compatibility, snapshot rollbacks, schema evolution, and testing"
 sidebar:
   order: 2

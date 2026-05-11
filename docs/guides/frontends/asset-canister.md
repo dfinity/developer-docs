@@ -1,5 +1,5 @@
 ---
-title: "Asset Canister"
+title: "Asset canister"
 description: "Deploy and serve frontend assets from an ICP canister with SPA routing, canister discovery, programmatic uploads, and security configuration"
 sidebar:
   order: 1

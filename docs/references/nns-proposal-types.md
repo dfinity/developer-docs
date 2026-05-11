@@ -1,5 +1,5 @@
 ---
-title: "NNS Proposal Types"
+title: "NNS proposal types"
 description: "All NNS proposal topics and their proposal types, with descriptions"
 ---
 
