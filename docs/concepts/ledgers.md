@@ -69,5 +69,7 @@ Fees are typically small and fixed (for example, the ICP transfer fee is 0.0001 
 - [Network economics](network-economics.md): how ICP and SNS assets are economically designed
 - [Cycles](cycles.md): cycles as the computational fuel that ledger canisters and other canisters consume
 - [Chain-key tokens](chain-fusion/index.md#chain-key-tokens): ckBTC, ckETH, and other 1:1 backed asset ledgers
+- [IC Dashboard ICRC API](../references/ic-dashboard-api.md#icrc-api): query token balances and transaction history for ICRC assets programmatically
+- [IC Dashboard Ledger API](../references/ic-dashboard-api.md#ledger-api): query ICP ledger accounts and transaction history programmatically
 
 <!-- Upstream: informed by Learn Hub article "How Token Ledgers Work on the Internet Computer" (migrated, source retired) -->

@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Protocol canisters implement platform-level features on the Internet Computer. Unlike [system canisters](system-canisters.md), which govern the network itself, protocol canisters provide infrastructure that applications build on: Bitcoin integration, Ethereum integration, chain-key tokens, and exchange rates. They are controlled by the NNS and run on dedicated system subnets.
+Protocol canisters implement platform-level features on the Internet Computer. Unlike [system canisters](system-canisters.md), which govern the network itself, protocol canisters provide infrastructure that applications build on: Bitcoin integration, Ethereum integration, [chain-key tokens](../concepts/chain-fusion/chain-key-tokens.md), and exchange rates. They are controlled by the NNS and run on dedicated system subnets.
 
 For all chain-key token canister IDs (ledger, minter, index), see [Chain-Key Token Canister IDs](chain-key-canister-ids.md). For deposit, withdrawal, and transfer flows, see [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md).
 
@@ -255,7 +255,7 @@ For integration examples, see the [Solana guide](../guides/chain-fusion/solana.m
 
 ## Exchange rate canister (XRC)
 
-The exchange rate canister (XRC) uses HTTPS outcalls to fetch cryptocurrency and foreign exchange rates from major exchanges. It runs on the `uzr34` system subnet and is used by the cycles minting canister (CMC) to convert ICP to cycles at a stable XDR-pegged price.
+The [exchange rate canister](../concepts/chain-fusion/exchange-rate-canister.md) (XRC) uses HTTPS outcalls to fetch cryptocurrency and foreign exchange rates from major exchanges. It runs on the `uzr34` system subnet and is used by the cycles minting canister (CMC) to convert ICP to cycles at a stable XDR-pegged price.
 
 | Field | Value |
 |---|---|
@@ -341,7 +341,7 @@ The SNS Wasm canister (SNS-W) manages the deployment and upgrade of Service Nerv
 
 The SNS-W canister stores blessed SNS Wasm binaries, creates new SNS instances, and coordinates SNS upgrades. When the NNS passes an SNS upgrade proposal, it installs the new Wasms on each SNS canister via SNS-W.
 
-For governance context, see the [SNS documentation](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System).
+For governance context, see [SNS framework](../concepts/sns-framework.md).
 
 ## Quick reference
 
@@ -364,9 +364,12 @@ For ledger, index, and testnet canister IDs for all chain-key tokens, see [Chain
 ## Next steps
 
 - [Chain-Key Token Canister IDs](chain-key-canister-ids.md): ledger, minter, and index IDs for all chain-key tokens
-- [Chain-key tokens](../guides/digital-assets/chain-key-tokens.md): deposit, withdrawal, and transfer flows for all chain-key tokens
+- [Chain-key tokens concept](../concepts/chain-fusion/chain-key-tokens.md): how trustless 1:1 asset representations work and why they differ from wrapped tokens
+- [Chain-key tokens guide](../guides/digital-assets/chain-key-tokens.md): deposit, withdrawal, and transfer flows for all chain-key tokens
+- [Exchange rate canister concept](../concepts/chain-fusion/exchange-rate-canister.md#how-rates-are-computed): how rates are aggregated and what pairs are available
 - [Bitcoin guide](../guides/chain-fusion/bitcoin.md): integrating Bitcoin in canisters using the Bitcoin canister and ckBTC
 - [Ethereum guide](../guides/chain-fusion/ethereum.md): integrating Ethereum in canisters using the EVM RPC canister and ckETH
+- [IC Dashboard APIs](ic-dashboard-api.md#ic-api): programmatic access to canister metrics, subnet data, and protocol-level information
 - [System canisters](system-canisters.md): NNS canisters, Internet Identity, ICP ledger, and other network-level canisters
 - [Management canister](management-canister.md): the virtual canister for canister lifecycle, signing, and platform APIs
 

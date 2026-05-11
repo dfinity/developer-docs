@@ -210,5 +210,7 @@ When an SNS swap runs, NF contributions scale with direct participation through 
 - [SNS framework](sns-framework.md): detailed architecture, neurons, proposals, and reward scheme
 - [NNS proposal types reference](../references/nns-proposal-types.md): all proposal topics and types
 - [System canisters reference](../references/system-canisters.md): NNS-controlled canisters, their IDs, and interfaces
+- [IC Dashboard SNS API](../references/ic-dashboard-api.md#sns-api): query SNS governance data, neuron details, and proposal history programmatically
+- [IC Dashboard IC API](../references/ic-dashboard-api.md#ic-api): query NNS proposal data, neuron metrics, and governance statistics
 
 <!-- Upstream: informed by dfinity/portal (docs/building-apps/governing-apps/tokenomics/index.mdx, docs/building-apps/governing-apps/tokenomics/predeployment-considerations.mdx, docs/building-apps/governing-apps/tokenomics/preparation.mdx, docs/building-apps/governing-apps/tokenomics/sns-checklist.mdx, docs/building-apps/governing-apps/launching/launch-summary-1proposal.mdx, docs/building-apps/governing-apps/nns/concepts/proposal-requirements.mdx, docs/building-apps/governing-apps/nns/concepts/neurons/becoming-a-known-neuron.mdx; dfinity/icskills: sns-launch/SKILL.md); informed by Learn Hub articles "Overview", "Neurons", "Proposals", "Neuron Attributes", "Neurons' Fund (NF)", "Voting Rewards" (migrated, source retired) -->

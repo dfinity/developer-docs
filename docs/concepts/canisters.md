@@ -100,7 +100,7 @@ If `pre_upgrade` traps, the upgrade is aborted and the canister continues runnin
 
 ### Stop and delete
 
-Stopping a canister prevents it from accepting new messages while letting in-flight messages complete. Once stopped, a canister can be deleted to reclaim its resources and remaining cycles.
+Stopping a canister prevents it from accepting new messages while letting in-flight messages complete. Once stopped, a canister can be deleted to reclaim its resources and remaining [cycles](cycles.md).
 
 For step-by-step CLI commands, see [Canister lifecycle management](../guides/canister-management/lifecycle.md).
 

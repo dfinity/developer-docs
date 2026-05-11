@@ -269,7 +269,7 @@ The distinction between fiduciary and beneficiary is also important for canister
 
 #### governance canister
 
-The **[governance](https://learn.internetcomputer.org/hc/en-us/articles/34574082263700-Tokenomics-Governance) canister** is a [system canister](#system-canister) that implements the
+The **[governance](../concepts/governance.md#the-network-nervous-system) canister** is a [system canister](#system-canister) that implements the
 [NNS](#network-nervous-system-nns) governance system, i.e.,
 among others, stores and manages [neurons](#neuron) and
 [proposals](#proposal), and implements the NNS
@@ -432,7 +432,7 @@ The NNS consists of a collection of [system canisters](#system-canister) (aka "N
 
 A **neuron** is an [ICP](#icp) entity that
 can make [proposals](#proposal) and vote on proposals related
-to the [governance](https://learn.internetcomputer.org/hc/en-us/articles/34574082263700-Tokenomics-Governance) of the [Internet Computer](#internet-computer-protocol-icp).
+to the [governance](../concepts/governance.md#the-network-nervous-system) of the [Internet Computer](#internet-computer-protocol-icp).
 
 To provide the stability required for responsible governance, neurons
 need to store ("stake") a certain amount of [ICP](#icp) in
