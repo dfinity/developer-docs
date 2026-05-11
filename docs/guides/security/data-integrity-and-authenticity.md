@@ -1,5 +1,5 @@
 ---
-title: "Data Integrity and Authenticity"
+title: "Data integrity and authenticity"
 description: "Security best practices for certified variables, asset certification, and protecting data authenticity on ICP."
 sidebar:
   order: 4

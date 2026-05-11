@@ -1,5 +1,5 @@
 ---
-title: "Data Storage"
+title: "Data storage"
 description: "Security best practices for canister data storage, stable memory, encryption of sensitive data, and backups."
 sidebar:
   order: 3

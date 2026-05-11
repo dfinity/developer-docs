@@ -1,5 +1,5 @@
 ---
-title: "HTTPS Outcall Security"
+title: "HTTPS outcalls"
 description: "Security best practices for canister HTTPS outcalls: API keys, rate limits, idempotency, response consistency, and input validation."
 sidebar:
   order: 6
