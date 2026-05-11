@@ -7,7 +7,7 @@ sidebar:
 
 This section provides security best practices for developing canisters and web apps served by canisters on ICP. These best practices are mostly inspired by issues found in security reviews.
 
-The goal of these best practices is to enable developers to identify and address potential issues early during the development of new dapps, and not only in the end when (if at all) a security review is done. Ideally, this will make the development of secure dapps more efficient.
+The goal of these best practices is to enable developers to identify and address potential issues early during the development of new apps, and not only in the end when (if at all) a security review is done. Ideally, this will make the development of secure apps more efficient.
 
 Some excellent canister best practices linked here are from [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html) and [how to audit an ICP canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister). The relevant sections are linked in the individual best practices.
 
@@ -17,11 +17,11 @@ The target audience for these documents is any developer working on ICP canister
 
 ## Disclaimers and limitations
 
-The collection of best practices may grow over time. While it is useful to improve the security of dapps on ICP, such a list will never be complete and will never cover all potential security concerns. For example, there will always be attack vectors very specific to a dapp's use cases that cannot be covered by general best practices. Thus, following the best practices can complement, but not replace, security reviews. Especially for security-critical dapps, it is recommended to perform security reviews or audits. Furthermore, please note that the best practices are currently not ordered according to risk or priority.
+The collection of best practices may grow over time. While it is useful to improve the security of apps on ICP, such a list will never be complete and will never cover all potential security concerns. For example, there will always be attack vectors very specific to an app's use cases that cannot be covered by general best practices. Thus, following the best practices can complement, but not replace, security reviews. Especially for security-critical apps, it is recommended to perform security reviews or audits. Furthermore, please note that the best practices are currently not ordered according to risk or priority.
 
 ## Further reading
 
-Below are resources covering security best practices for technologies commonly used in ICP dapps. These are equally important as the ICP-specific guidelines and should be studied carefully.
+Below are resources covering security best practices for technologies commonly used in ICP apps. These are equally important as the ICP-specific guidelines and should be studied carefully.
 
 ### General
 * [How to audit an Internet Computer canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister) by Joachim Breitner
@@ -51,4 +51,4 @@ Below are resources covering security best practices for technologies commonly u
 * In [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html): [test upgrades](https://mmapped.blog/posts/01-effective-rust-canisters.html#test-upgrades), [make code target-independent](https://mmapped.blog/posts/01-effective-rust-canisters.html#target-independent)
 * Consider [PocketIC](../testing/pocket-ic.md) for canister testing
 
-<!-- Upstream: sync from dfinity/portal — building-apps/security/overview.mdx, building-apps/security/resources.mdx -->
+<!-- Upstream: sync from dfinity/portal building-apps/security/overview.mdx, building-apps/security/resources.mdx -->
