@@ -339,4 +339,4 @@ Loops in the call graph (e.g., canister A calling B, B calling C, C calling A) m
 
 - For more information, see [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), section "Loops in call graphs."
 
-<!-- Upstream: informed by dfinity/portal — building-apps/security/inter-canister-calls.mdx; dfinity/icskills — skills/canister-security/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal building-apps/security/inter-canister-calls.mdx; dfinity/icskills skills/canister-security/SKILL.md -->

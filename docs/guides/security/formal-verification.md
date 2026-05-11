@@ -21,14 +21,14 @@ The Temporal Logic of Actions (TLA+) is a language for specifying and verifying 
 
 Importantly, after building the model of the code, model checking runs with virtually no further human input, making it highly cost-effective. To illustrate with some made-up numbers: if the industry standard practices (such as testing and security reviews) eliminate 80% of the bugs, and "heavyweight" formal verification eliminates 99.99%, with TLA+ you can eliminate 90% with a fraction of the effort of the heavyweight verification.
 
-We have used TLA+ to create the following models that can be interesting for dapp developers:
+We have used TLA+ to create the following models that can be interesting for canister developers:
 
 - NNS and SNS governance (focusing on interactions with the ledger canister).
 - ICP ledger (focusing on block archival).
 - ckBTC minter.
 - SNS swap canister.
-- People parties dapp.
+- People parties app.
 
-To find out more on why and how you can apply TLA+ to your canisters and dapps, including an in-depth guide to modeling canisters, refer to our series of blog posts ([1](https://medium.com/dfinity/eliminating-smart-contract-bugs-with-tla-e986aeb6da24), [2](https://medium.com/dfinity/weeding-out-the-bugs-with-tla-models-3606045bf24e), [3](https://mynosefroze.com/blog/2023-08-09-tla_for_canisters)). You can also look at the [DFINITY-produced TLA+ models](https://github.com/dfinity/formal-models) for examples and techniques.
+To find out more on why and how you can apply TLA+ to your canisters and apps, including an in-depth guide to modeling canisters, refer to our series of blog posts ([1](https://medium.com/dfinity/eliminating-smart-contract-bugs-with-tla-e986aeb6da24), [2](https://medium.com/dfinity/weeding-out-the-bugs-with-tla-models-3606045bf24e), [3](https://mynosefroze.com/blog/2023-08-09-tla_for_canisters)). You can also look at the [DFINITY-produced TLA+ models](https://github.com/dfinity/formal-models) for examples and techniques.
 
-<!-- Upstream: sync from dfinity/portal — building-apps/security/formal-verification.mdx -->
+<!-- Upstream: sync from dfinity/portal building-apps/security/formal-verification.mdx -->

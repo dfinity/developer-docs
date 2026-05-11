@@ -94,4 +94,4 @@ Perform input validation when using user-submitted data in the HTTPS outcalls.
 
 See the [OWASP Input Validation Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html) for more information.
 
-<!-- Upstream: sync from dfinity/portal — building-apps/security/https-outcalls.mdx -->
+<!-- Upstream: sync from dfinity/portal building-apps/security/https-outcalls.mdx -->
