@@ -77,33 +77,56 @@ export const sidebar = [
     label: "Concepts",
     collapsed: true,
     items: [
-      { slug: "concepts/network-overview" },
-      { slug: "concepts/canisters" },
-      { slug: "concepts/principals" },
-      { slug: "concepts/app-architecture" },
-      { slug: "concepts/node-infrastructure" },
-      { slug: "concepts/edge-infrastructure" },
-      { slug: "concepts/evolution-scaling" },
+      // Network: how ICP is built and operates
       {
-        label: "Protocol Stack",
+        label: "Network",
         collapsed: true,
         items: [
-          { slug: "concepts/protocol", label: "Overview" },
-          { slug: "concepts/protocol/peer-to-peer" },
-          { slug: "concepts/protocol/consensus" },
-          { slug: "concepts/protocol/message-routing" },
-          { slug: "concepts/protocol/execution" },
-          { slug: "concepts/protocol/state-synchronization" },
-          { slug: "concepts/protocol/performance" },
+          { slug: "concepts/network-overview" },
+          {
+            label: "Protocol Stack",
+            collapsed: true,
+            items: [
+              { slug: "concepts/protocol", label: "Overview" },
+              { slug: "concepts/protocol/peer-to-peer" },
+              { slug: "concepts/protocol/consensus" },
+              { slug: "concepts/protocol/message-routing" },
+              { slug: "concepts/protocol/execution" },
+              { slug: "concepts/protocol/state-synchronization" },
+              { slug: "concepts/protocol/performance" },
+            ],
+          },
+          { slug: "concepts/node-infrastructure" },
+          { slug: "concepts/edge-infrastructure" },
+          { slug: "concepts/evolution-scaling" },
         ],
       },
-      { slug: "concepts/cycles" },
-      { slug: "concepts/orthogonal-persistence" },
-      { slug: "concepts/timers" },
-      { slug: "concepts/verifiable-randomness" },
-      { slug: "concepts/https-outcalls" },
-      { slug: "concepts/chain-key-cryptography" },
-      { slug: "concepts/certified-data" },
+      // Canisters: the developer runtime and canister capabilities
+      {
+        label: "Canisters",
+        collapsed: true,
+        items: [
+          { slug: "concepts/canisters" },
+          { slug: "concepts/principals" },
+          { slug: "concepts/app-architecture" },
+          { slug: "concepts/cycles" },
+          { slug: "concepts/orthogonal-persistence" },
+          { slug: "concepts/timers" },
+          { slug: "concepts/verifiable-randomness" },
+          { slug: "concepts/https-outcalls" },
+        ],
+      },
+      // Cryptography: ICP's cryptographic primitives
+      {
+        label: "Cryptography",
+        collapsed: true,
+        items: [
+          { slug: "concepts/chain-key-cryptography" },
+          { slug: "concepts/certified-data" },
+          { slug: "concepts/vetkeys" },
+        ],
+      },
+      // Chain Fusion: cross-chain integration
       {
         label: "Chain Fusion",
         collapsed: true,
@@ -117,15 +140,20 @@ export const sidebar = [
           { slug: "concepts/chain-fusion/exchange-rate-canister" },
         ],
       },
-      { slug: "concepts/vetkeys" },
-      { slug: "concepts/security" },
-      { slug: "concepts/governance" },
-      { slug: "concepts/sns-framework" },
-      { slug: "concepts/network-economics" },
-      { slug: "concepts/ledgers" },
+      // Trust & governance: security model, governance, and economics
+      {
+        label: "Trust & governance",
+        collapsed: true,
+        items: [
+          { slug: "concepts/security" },
+          { slug: "concepts/governance" },
+          { slug: "concepts/sns-framework" },
+          { slug: "concepts/network-economics" },
+          { slug: "concepts/ledgers" },
+        ],
+      },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer Tools" },
   {
     label: "Languages",
     items: [
@@ -162,6 +190,7 @@ export const sidebar = [
       },
     ],
   },
+  { slug: "references/developer-tools", label: "Developer Tools" },
   {
     label: "References",
     collapsed: true,
