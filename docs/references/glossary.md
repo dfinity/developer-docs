@@ -168,6 +168,10 @@ single public key. This is a huge advantage as it allows any device,
 including smart watches and mobile phones, to verify the authenticity of
 artifacts from the Internet Computer.
 
+#### ckBTC
+
+**ckBTC** (chain-key Bitcoin) is a fungible token on ICP backed 1:1 by BTC held by the [Bitcoin canister](../references/protocol-canisters.md#bitcoin-canisters). Depositing BTC to a generated custody address mints the equivalent amount of ckBTC. Transfers settle in 1–2 seconds at a 10 satoshi fee. ckBTC can be redeemed for the underlying BTC at any time. It is the recommended way to integrate Bitcoin value into ICP applications. See [chain-key tokens](../concepts/chain-fusion/chain-key-tokens.md) for the underlying architecture.
+
 #### consensus
 
 In distributed computing, **consensus** is a [fault-tolerant](../concepts/evolution-scaling.md#fault-tolerance) mechanism by
@@ -293,6 +297,10 @@ The **ICP supply account** is a quasi-fictitious ledger
 [account](#account) whose balance is always zero. It has a
 central role in [ICP](#icp) [burning](#burning-transaction)
 and [minting](#minting-transaction) operations.
+
+#### ICRC
+
+**ICRC** (Internet Computer Request for Comments) is the token and interface standard system for ICP, analogous to ERC standards on Ethereum. Standards are numbered sequentially: ICRC-1 defines the core fungible token interface (transfers and balance queries), ICRC-2 adds approval and transfer-from semantics, ICRC-3 standardizes the transaction log format. All DFINITY-maintained asset ledgers implement at least ICRC-1 and ICRC-2. See [digital asset standards](digital-asset-standards.md) for the full list.
 
 #### identity
 
@@ -580,6 +588,10 @@ and accessed by all [subnet](#subnet) blockchains.
 
 ## S
 
+#### stable memory
+
+**Stable memory** is a persistent memory region in each [canister](#canister) that survives Wasm module upgrades. Unlike heap memory, which is cleared when a new Wasm module is installed, stable memory is preserved across upgrades and is addressed through the system API. It is the recommended location for data that must persist long-term. See [orthogonal persistence](../concepts/orthogonal-persistence.md) for how Motoko manages this automatically, and [data persistence](../guides/backends/data-persistence.mdx) for Rust patterns.
+
 #### state change
 
 A **state change** is the result of any function call or operation that changes the information stored in a [canister](#canister). For example, if a function makes an update call that adds two numbers together or removes a name from a list, the result is a change to the canister state.
@@ -648,6 +660,10 @@ developers, holders of [ICP](#icp) utility tokens, and
 The **valid set rule** is the rule that determines a valid [induction pool](#induction-pool). [Ingress messages](#ingress-message) and [inter-canister messages](#inter-canister-message) must pass certain checks
 to ensure that the valid set rule is upheld before they can be added to
 the induction pool.
+
+#### vetKeys
+
+**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables onchain encryption, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
 
 #### voting
 
