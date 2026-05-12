@@ -324,8 +324,6 @@ When making inter-canister calls, always handle the error cases (rejects) correc
 
 - See the "Talking to malicious canisters" section in [how to audit an ICP canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
 
-- See [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), section "Calling potentially malicious or buggy canisters can prevent canisters from upgrading."
-
 
 ## Make sure there are no loops in call graphs
 
@@ -337,6 +335,5 @@ Loops in the call graph (e.g., canister A calling B, B calling C, C calling A) m
 
 - Avoid such loops, or rely on bounded-wait calls instead, since these provide timeouts.
 
-- For more information, see [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), section "Loops in call graphs."
 
 <!-- Upstream: informed by dfinity/portal building-apps/security/inter-canister-calls.mdx; dfinity/icskills skills/canister-security/SKILL.md -->

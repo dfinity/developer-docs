@@ -21,8 +21,6 @@ If a canister traps or panics in `pre_upgrade`, this can lead to permanently blo
 
 - See also the section on upgrades in [how to audit an Internet Computer canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister) (though focused on Motoko).
 
-- See [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), section "Bugs in `pre_upgrade` hooks."
-
 ## Reinstantiate timers during upgrades
 
 ### Security concern

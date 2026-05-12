@@ -49,8 +49,6 @@ Canister memory is not persisted across upgrades. If data needs to be kept acros
 
 - A commonly used library for stable memory is [stable-structures](https://github.com/dfinity/stable-structures).
 
-- See [current limitations of the Internet Computer](https://wiki.internetcomputer.org/wiki/Current_limitations_of_the_Internet_Computer), sections "Long running upgrades" and "\[de\]serializer requiring additional Wasm memory."
-
 - For example, [Internet Identity](https://github.com/dfinity/internet-identity) uses stable memory directly to store user data.
 
 ## Consider encrypting sensitive data on canisters
