@@ -80,6 +80,7 @@ Each user gets their own canister that they control. The main application canist
 **Things to know:**
 - The main canister must treat every user canister as potentially malicious. Any code path that interacts with user canisters must assume adversarial behavior and be hardened against it.
 - Development cost is very high. Handling all possible actions from potentially malicious user canisters requires expert knowledge of the ICP security and messaging model.
+- Spawning a user canister (via an actor class in Motoko or a management canister `create_canister` call in Rust) carries the same cost as a fresh canister install. Do it once per user at account creation, never on a hot call path.
 - **There is no known successful end-to-end implementation of the full canister-per-user vision.** A few projects have explored variations, but the architecture remains experimental.
 - Common misconception: canister-per-user is not the most scalable pattern. Canister-per-subnet is more performant because it can utilize multiple subnets without the overhead of managing a large number of small canisters.
 
