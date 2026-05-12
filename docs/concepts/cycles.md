@@ -94,7 +94,7 @@ Every state-changing operation (each block created) costs 100M cycles as a fee. 
 The cycles ledger does not support calling arbitrary canisters with cycles attached, because open call contexts can cause the ledger to become stuck. Two patterns address this:
 
 - **Top up the target canister first**: if you control the canister, transfer cycles to it using `withdraw` or `icp canister top-up`, then let the canister attach cycles internally from its own balance. This is the preferred pattern for canisters you deploy and control.
-- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles) for the how-to.
+- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calls with attached cycles](../guides/canister-calls/inter-canister-calls.md#calls-with-attached-cycles) for the how-to.
 
 ## Developer responsibility
 
@@ -118,7 +118,7 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 ## Related
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
-- [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for attaching cycles from the CLI
+- [Calls with attached cycles](../guides/canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an inter-canister call and use the proxy canister pattern for the CLI
 - [Cycles ledger reference](../references/system-canisters.md#cycles-ledger): canister IDs, interface specification, and CMC integration
 - [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage

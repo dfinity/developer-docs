@@ -140,48 +140,7 @@ icp cycles mint --icp 1.0 -n ic
 icp canister top-up backend --amount 1T -e ic
 ```
 
-### Accepting cycles in your canister
-
-Canisters can also accept cycles sent with an inter-canister call. This pattern is used for "tip jar" flows and payment routing:
-
-<Tabs syncKey="lang">
-<TabItem label="Motoko">
-
-```motoko
-import Cycles "mo:core/Cycles";
-import Runtime "mo:core/Runtime";
-
-persistent actor {
-  public func deposit() : async Nat {
-    let available = Cycles.available();
-    if (available == 0) {
-      Runtime.trap("No cycles sent with this call")
-    };
-    Cycles.accept<system>(available)
-  };
-}
-```
-
-</TabItem>
-<TabItem label="Rust">
-
-```rust
-use ic_cdk::update;
-use candid::Nat;
-
-#[update]
-fn deposit() -> Nat {
-    let available = ic_cdk::api::msg_cycles_available();
-    if available == 0 {
-        ic_cdk::trap("No cycles sent with this call");
-    }
-    let accepted = ic_cdk::api::msg_cycles_accept(available);
-    Nat::from(accepted)
-}
-```
-
-</TabItem>
-</Tabs>
+For accepting cycles sent with an inter-canister call (the per-request payment pattern used by canisters like the exchange rate canister), see [Calls with attached cycles](../canister-calls/inter-canister-calls.md#calls-with-attached-cycles).
 
 ## Freezing threshold
 
@@ -313,87 +272,6 @@ async fn top_up_canister(canister_id: Principal, amount: u128) {
 </TabItem>
 </Tabs>
 
-## Calling canisters that require cycles
-
-Some canister methods expect cycles to be attached to the call itself. The [cycles ledger](../../concepts/cycles.md#cycles-ledger) cannot forward calls with cycles attached, so you need a different approach depending on whether you are calling from canister code or from the CLI.
-
-### From canister code
-
-Attach cycles to an inter-canister call using `Cycles.add` (Motoko) or `msg_cycles_add` (Rust). The called canister receives the cycles as part of the message context and accepts them with `Cycles.accept`:
-
-<Tabs syncKey="lang">
-<TabItem label="Motoko">
-
-```motoko
-import Cycles "mo:core/Cycles";
-
-persistent actor {
-  let target = actor ("rrkah-fqaaa-aaaaa-aaaaq-cai") : actor {
-    someMethod : () -> async ();
-  };
-
-  public func callWithCycles() : async () {
-    Cycles.add<system>(500_000_000);
-    await target.someMethod();
-  };
-}
-```
-
-</TabItem>
-<TabItem label="Rust">
-
-```rust
-use ic_cdk::update;
-
-#[update]
-async fn call_with_cycles() {
-    ic_cdk::api::call::msg_cycles_add(500_000_000u64);
-    let _: () = ic_cdk::call(
-        candid::Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
-        "someMethod",
-        (),
-    )
-    .await
-    .expect("call failed");
-}
-```
-
-</TabItem>
-</Tabs>
-
-The calling canister uses cycles from its own balance, not from the cycles ledger. Top up the calling canister first using `icp canister top-up` or `icp cycles mint`.
-
-### From the CLI or an agent
-
-The CLI cannot attach cycles directly to a canister call. Two approaches address this:
-
-**Top up the target canister first** (preferred when you control it): transfer cycles to the target canister using `icp canister top-up`, then call the method normally. The canister uses its own balance when the method runs.
-
-```bash
-# Transfer 1T cycles to the target canister
-icp canister top-up rrkah-fqaaa-aaaaa-aaaaq-cai --amount 1T -n ic
-
-# Then call the method as normal
-icp canister call rrkah-fqaaa-aaaaa-aaaaq-cai someMethod '()' -n ic
-```
-
-**Proxy canister** (required when you need to attach cycles to a call and don't control the target): deploy a proxy canister that can forward calls with cycles attached.
-
-```bash
-# Deploy the proxy canister using the provided template
-icp new proxy --template proxy
-cd proxy
-icp deploy -e ic
-
-# Get the proxy canister ID
-export PROXY_ID=$(icp canister status -e ic --id-only proxy)
-
-# Call any canister through the proxy with cycles attached
-icp canister call --proxy "$PROXY_ID" rrkah-fqaaa-aaaaa-aaaaq-cai someMethod '()' -n ic
-```
-
-The proxy canister template is available at [icp-cli-templates/proxy](https://github.com/dfinity/icp-cli-templates/tree/main/proxy). It deploys the [proxy-canister](https://github.com/dfinity/proxy-canister), which is automatically provisioned on local networks but must be deployed manually on mainnet.
-
 ## Multi-environment deployment
 
 For production, use separate environments for staging and production to avoid accidentally affecting live canisters. Configure environments in `icp.yaml`:
@@ -495,6 +373,7 @@ icp canister top-up backend --amount 1T -n ic
 - [Cycles costs reference](../../references/cycles-costs.md#cost-table): Exact cost tables per operation
 - [Cycles](../../concepts/cycles.md): Why canisters pay for execution and how the cycles ledger works
 - [Cycles ledger reference](../../references/system-canisters.md#cycles-ledger): Canister IDs and interface specification
+- [Calls with attached cycles](../canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an inter-canister call and accept them in the callee
 - [Reproducible builds](reproducible-builds.md): Verify your WASM is trustworthy before deploying
 - [icp-cli docs](https://cli.internetcomputer.org/0.2/reference/cli#icp-cycles): Full command reference for `icp cycles` and `icp canister top-up`
 
