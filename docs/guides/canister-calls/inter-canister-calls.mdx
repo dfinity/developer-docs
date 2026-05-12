@@ -291,12 +291,6 @@ persistent actor {
 }
 ```
 
-You can combine cycle attachment with a bounded-wait timeout in the same parenthetical:
-
-```motoko
-let result = await (with timeout = 25; cycles = 500_000_000) target.someMethod();
-```
-
 </TabItem>
 <TabItem label="Rust">
 
@@ -318,8 +312,6 @@ async fn call_with_cycles() {
     .expect("call failed");
 }
 ```
-
-`.with_cycles()` and `.change_timeout()` can be chained in any order on the same `Call`.
 
 </TabItem>
 </Tabs>
