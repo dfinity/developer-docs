@@ -1,23 +1,24 @@
 #!/usr/bin/env node
 // Syncs the Internet Identity specification from .sources/internetidentity into
-// docs/references/internet-identity-spec.md.
+// docs/references/internet-identity-spec.md and public/references/internet-identity.did.
 //
 // Transformations applied:
 //   - Strip MDX import lines
 //   - Remove the H1 heading (Starlight renders the frontmatter title as H1)
 //   - Rewrite absolute / relative links that point outside this site
-//   - Inline the Candid interface from internet_identity.did in place of the
-//     <CodeBlock> component (done after link rewriting so .did comments are untouched)
+//   - Replace <CodeBlock> component with a download link to internet-identity.did
+//   - Copy internet_identity.did to public/references/internet-identity.did
 //
 // Usage: node scripts/sync-ii-spec.mjs
 //   or:  npm run sync:ii-spec
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 const SOURCE_MDX = '.sources/internetidentity/docs/ii-spec.mdx';
 const SOURCE_DID = '.sources/internetidentity/src/internet_identity/internet_identity.did';
 const TARGET     = 'docs/references/internet-identity-spec.md';
+const TARGET_DID = 'public/references/internet-identity.did';
 
 if (!existsSync(SOURCE_MDX)) {
   console.error(
@@ -31,8 +32,7 @@ const version = execSync('git -C .sources/internetidentity rev-parse --short HEA
   .toString().trim();
 console.log(`Syncing II spec from dfinity/internet-identity@${version}...`);
 
-let content    = readFileSync(SOURCE_MDX, 'utf8');
-const didContent = readFileSync(SOURCE_DID, 'utf8');
+let content = readFileSync(SOURCE_MDX, 'utf8');
 
 // 1. Strip MDX import lines
 content = content.replace(/^import .*\n/gm, '');
@@ -40,7 +40,7 @@ content = content.replace(/^import .*\n/gm, '');
 // 2. Strip the H1 (Starlight renders it from frontmatter)
 content = content.replace(/^# The Internet Identity Specification\n\n/m, '');
 
-// 3. Rewrite links before Candid inlining (keeps .did comments untouched)
+// 3. Rewrite links
 const linkMap = [
   [
     'https://internetcomputer.org/docs/current/references/ic-interface-spec#id-classes',
@@ -80,10 +80,12 @@ for (const [old, replacement] of linkMap) {
   content = content.replaceAll(old, replacement);
 }
 
-// 4. Inline the Candid interface (after link rewriting to avoid touching .did comments)
+// 4. Replace the <CodeBlock> component with a download link to the .did file
 content = content.replace(
   '<CodeBlock language="candid">{IICandidInterface}</CodeBlock>',
-  '```candid\n' + didContent.trimEnd() + '\n```'
+  'The complete Candid interface definition is available at [`internet-identity.did`](/references/internet-identity.did).' +
+  ' This file defines all types and method signatures in machine-readable Candid format' +
+  ' and can be used for binding generation and type checking.'
 );
 
 // 5. Strip leading blank lines, then inject frontmatter
@@ -113,17 +115,19 @@ content =
   `  - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md\n` +
   `Other changes from source:\n` +
   `  - \`# The Internet Identity Specification\` H1 removed (Starlight renders frontmatter title as H1)\n` +
-  `  - \`<CodeBlock language="candid">{IICandidInterface}</CodeBlock>\` replaced with inlined content from src/internet_identity/internet_identity.did\n` +
+  `  - \`<CodeBlock language="candid">{IICandidInterface}</CodeBlock>\` replaced with download link to /references/internet-identity.did\n` +
   `-->\n` +
   `<!-- Upstream: sync from dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did -->\n`;
 
 writeFileSync(TARGET, content);
 console.log(`Written: ${TARGET}`);
 
+// Copy the .did file to public/references/
+copyFileSync(SOURCE_DID, TARGET_DID);
+console.log(`Written: ${TARGET_DID}`);
+
 // Warn about any remaining absolute docs links that weren't rewritten.
-// Strip code blocks first — URLs inside .did comments are intentionally preserved.
-const prose = content.replace(/```[\s\S]*?```/g, '');
-const remaining = [...prose.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
+const remaining = [...content.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
   .map(m => m[0]);
 const unique = [...new Set(remaining)];
 if (unique.length) {

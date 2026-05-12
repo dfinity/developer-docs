@@ -110,7 +110,7 @@ jobs:
 
           BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.short }}"
           git checkout -b "$BRANCH"
-          git add .sources/internetidentity docs/references/internet-identity-spec.md
+          git add .sources/internetidentity docs/references/internet-identity-spec.md public/references/internet-identity.did
           git commit -m "chore: sync II spec from dfinity/internet-identity@${{ steps.latest.outputs.short }}"
           git push -u origin "$BRANCH"
 
