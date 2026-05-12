@@ -292,7 +292,7 @@ EOF
 | `candid` | Check for spec changes affecting the Candid reference or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria |
-| `internetidentity` | Check for spec changes in `docs/ii-spec.mdx`; re-sync `internet-identity-spec.md` (see link adaptation note below). Re-copy Candid interface from `src/internet_identity/internet_identity.did` if changed |
+| `internetidentity` | Run `npm run sync:ii-spec` — the script handles all link rewrites, Candid inlining, and frontmatter. If the script exits with a warning about unhandled links, add the new pattern to `linkMap` in `scripts/sync-ii-spec.mjs` |
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |
@@ -317,14 +317,7 @@ EOF
    ```
 4. Run `npm run build` to confirm no broken links.
 
-**Link adaptation for `internet-identity-spec.md`:** The upstream source (`docs/ii-spec.mdx`) uses absolute `internetcomputer.org` URLs pointing to the IC interface spec. Our file uses relative paths into the split `ic-interface-spec/` directory. After every re-sync, run:
-```bash
-grep -n "ic-interface-spec" docs/references/internet-identity-spec.md
-```
-Any link of the form `internetcomputer.org/.../ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/references/internet-identity-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
-```bash
-grep -r "{#<anchor>}" docs/references/ic-interface-spec/
-```
+**Link adaptation for `internet-identity-spec.md`:** Handled automatically by `npm run sync:ii-spec`. The script rewrites all absolute `internetcomputer.org` links to relative paths using `linkMap` in `scripts/sync-ii-spec.mjs`. If a new link pattern appears in the upstream source, the script exits with a warning listing the unhandled URL — add it to `linkMap` with the correct relative path (use `grep -r "{#<anchor>}" docs/references/ic-interface-spec/` to find which file owns the anchor), then re-run.
 
 ### Synced files from submodules
 

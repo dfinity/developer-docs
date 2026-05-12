@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate": "node scripts/validate.js --all",
-    "sync:motoko": "./scripts/sync-motoko.sh"
+    "sync:motoko": "./scripts/sync-motoko.sh",
+    "sync:ii-spec": "./scripts/sync-ii-spec.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",
