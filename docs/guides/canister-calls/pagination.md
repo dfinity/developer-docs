@@ -163,5 +163,6 @@ Each call to a query method on a canister on the IC mainnet costs cycles. When p
 - [Inter-canister calls](./inter-canister-calls.md): calling query methods from other canisters
 - [Calling from clients](./calling-from-clients.md): making query calls from a browser or CLI
 - [Data persistence](../backends/data-persistence.md): storage patterns for canister state
+- [Stable structures (Rust)](../../languages/rust/stable-structures.md): deep dive into `ic-stable-structures` used in the Rust example above
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/general.mdx (pagination item) -->
