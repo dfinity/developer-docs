@@ -84,4 +84,4 @@ A canister can be made permanently immutable in two ways:
 - [Canister lifecycle](./lifecycle.md#canister-history): querying canister history to track Wasm hash changes over time
 - [Canister control](../../guides/security/canister-control.md): governance and decentralization recommendations for canister operators
 
-<!-- Upstream: ported from dfinity/portal docs/building-apps/best-practices/trust-in-canisters.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/trust-in-canisters.mdx -->

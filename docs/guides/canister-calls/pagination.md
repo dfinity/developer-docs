@@ -164,4 +164,4 @@ Each call to a query method on a canister on the IC mainnet costs cycles. When p
 - [Calling from clients](./calling-from-clients.md): making query calls from a browser or CLI
 - [Data persistence](../backends/data-persistence.md): storage patterns for canister state
 
-<!-- Upstream: ported from dfinity/portal docs/building-apps/best-practices/general.mdx (pagination item) -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/general.mdx (pagination item) -->

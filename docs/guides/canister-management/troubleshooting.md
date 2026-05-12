@@ -170,4 +170,4 @@ Caused by: Wasm module has an invalid import section
 - [Asset canister](../frontends/asset-canister.md): frontend deployment and `.ic-assets.json5` configuration
 - [Certified variables](../backends/certified-variables.md): tamperproof query responses
 
-<!-- Upstream: rewritten (not ported) from dfinity/portal docs/building-apps/best-practices/troubleshooting.mdx; dfx-centric content excluded -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/troubleshooting.mdx; dfx-centric content excluded, fully rewritten for icp CLI -->
