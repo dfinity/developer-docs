@@ -27,7 +27,7 @@ Your options depend on whether the canister ID can change:
 
 **Snapshot transfer** is the simpler path and is appropriate when you can accept a new canister ID. Create a new canister on the desired subnet, transfer state via snapshots, and switch over. The source canister is retained and can be deleted afterward.
 
-**Full migration** is required when the canister ID must be preserved. The canister ID cannot change when:
+**Full migration** is required when the canister ID must be preserved. The canister ID must not change when:
 
 - **Threshold signatures (tECDSA / tSchnorr)**: The IC derives signing keys by cryptographically binding them to the calling canister's principal. Any Bitcoin or Ethereum addresses derived from those keys are permanently tied to the original canister ID. Changing the ID means losing access to those signing keys and any assets they control.
 - **vetKeys**: vetKey derivation includes the canister's principal. A new ID produces entirely different decryption keys, making previously encrypted data permanently inaccessible.
