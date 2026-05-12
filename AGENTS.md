@@ -90,6 +90,15 @@ EOF
 git checkout main
 ```
 
+**Any time commits are pushed to a PR branch** — check whether the PR description still accurately reflects the complete set of changes on the branch. If new commits introduce changes not covered by the existing summary, update the description immediately:
+```bash
+gh pr edit <PR#> --body "$(cat <<'EOF'
+<updated full description>
+EOF
+)"
+```
+Do not leave a PR description that no longer matches the branch. The description is the reviewer's first read; a stale summary wastes review time and creates confusion.
+
 **Rebase approved PR with merge conflicts:**
 ```bash
 git fetch origin && git checkout <branch>
