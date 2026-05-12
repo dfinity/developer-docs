@@ -2,7 +2,6 @@
 # At least one DX team member must approve every PR before it can be merged.
 * @dfinity/dx
 
-
 # Interface specification — additional required reviewers for spec files and attachments.
 # GitHub CODEOWNERS: last matching rule wins, so these override the wildcard above.
 docs/references/ic-interface-spec/* @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
