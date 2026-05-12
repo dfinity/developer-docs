@@ -71,6 +71,18 @@ For maximum throughput, distribute canisters across multiple [subnets](network-o
 
 **Trade-offs:** cross-subnet calls have higher latency and bandwidth limits. You need to design data partitioning carefully.
 
+### Canister-per-user
+
+Each user gets their own canister that they control. The main application canister orchestrates user canisters to implement the application's functionality. Since users control their canisters, they can install their own code, decide how to participate in the application, and determine what data to share with the main canister.
+
+**When to use:** only when user sovereignty over data is a core product requirement and you accept the significant development cost.
+
+**Things to know:**
+- The main canister must treat every user canister as potentially malicious. Any code path that interacts with user canisters must assume adversarial behavior and be hardened against it.
+- Development cost is very high. Handling all possible actions from potentially malicious user canisters requires expert knowledge of the ICP security and messaging model.
+- **There is no known successful end-to-end implementation of the full canister-per-user vision.** A few projects have explored variations, but the architecture remains experimental.
+- Common misconception: canister-per-user is not the most scalable pattern. Canister-per-subnet is more performant because it can utilize multiple subnets without the overhead of managing a large number of small canisters.
+
 ## Data storage
 
 Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](orthogonal-persistence.md#stable-memory): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
@@ -98,6 +110,7 @@ Start with a [single canister](#single-canister): it is the right choice for mos
 | Does the app have a web UI? | Add an [asset canister](#frontend-options) | Backend-only canister |
 | Do you need separation of concerns or hit platform limits? | [Canister-per-service](#canister-per-service) | Stay with a single canister |
 | Do you need to scale beyond one subnet? | [Canister-per-subnet](#canister-per-subnet) | Stay on one subnet |
+| Is user sovereignty over data a core requirement and are you prepared for high dev cost? | [Canister-per-user](#canister-per-user) (experimental) | None of the above |
 
 Start with the simplest architecture that meets your requirements. You can always split a canister into multiple canisters later: it is much harder to merge canisters that were split prematurely.
 
@@ -108,4 +121,4 @@ Start with the simplest architecture that meets your requirements. You can alway
 - [Asset canister](../guides/frontends/asset-canister.md): frontend deployment
 - [Canisters](canisters.md): canister internals
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/application-architectures.mdx, docs/building-apps/getting-started/app-architecture.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/application-architectures.mdx, docs/building-apps/getting-started/app-architecture.mdx; canister-per-user section ported from application-architectures.mdx -->

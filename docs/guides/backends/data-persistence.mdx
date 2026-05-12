@@ -571,11 +571,88 @@ icp canister call backend get_user '(0 : nat64)'
 
 If the count drops to 0 after upgrade, the data is not in stable memory. Review your storage declarations.
 
+## Storage recommendations
+
+### Choose the right storage type
+
+| Memory type | Max size | Persists across upgrades | Best for |
+|-------------|----------|--------------------------|----------|
+| Heap | 4 GiB | No (Rust) / Yes (Motoko `persistent actor`) | Frequently accessed data, caches, ephemeral computation |
+| Stable | 500 GiB | Yes | All important data, large datasets, anything that must survive upgrades |
+
+The practical rule: **use stable structures directly for any data that matters**. Avoid relying on `pre_upgrade` / `post_upgrade` hooks to serialize heap data to stable memory. Serializing large heap state during an upgrade can hit the instruction limit and trap, leaving the canister on the old code. Data in stable structures is already in stable memory from the first write — no serialization step required on upgrade.
+
+For Motoko, `persistent actor` makes all `let` and `var` declarations persistent automatically. There is no need to choose manually between heap and stable memory.
+
+### Language-specific recommendations
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+**Choose efficient data structures.**
+
+The `mo:core` library provides stable-friendly, performant data structures. Use these in preference to the legacy `mo:base` equivalents:
+
+| Use case | `mo:core` type | Replaces (`mo:base`) |
+|----------|----------------|----------------------|
+| Key-value map | `Map` | `HashMap`, `TrieMap`, `Trie`, `RBTree` |
+| Dynamic sequence | `List` | `Buffer` |
+| Double-ended queue | `Queue` | `Deque` |
+| Ordered map | `pure/Map` | `OrderedMap` |
+| Ordered set | `pure/Set` | `OrderedSet` |
+
+`Map` avoids the automatic resizing overhead that `HashMap` incurs on growth. `List` handles dynamic sequences without the fragile array-copy pattern of `Buffer`.
+
+**Prefer `Blob` over `[Nat8]` for binary data.**
+
+`Blob` is 4× more compact than `[Nat8]` and produces significantly less GC pressure. Use `Blob` for binary assets, cryptographic values, and anywhere you would send or receive `vec nat8` in Candid. Store large `Blob`s in stable memory.
+
+**Use `compacting-gc` for append-only workloads (classical persistence only).**
+
+If your canister grows the heap by appending data without frequent deletions, the `--compacting-gc` flag allows the GC to handle larger heaps and reduces the cost of copying large, stationary objects. Enable it in `icp.yaml` under canister build args. Note: `--compacting-gc` applies only to the legacy classical persistence mode (`--legacy-persistence`); it is not used with the default enhanced orthogonal persistence.
+
+</TabItem>
+<TabItem label="Rust">
+
+**Exercise caution with `Vec<u8>` and `String` in state serialization.**
+
+If you serialize/deserialize state that contains `Vec<u8>` or `String` values, Rust's memory layout requires copying each value during encoding and decoding. For large state, this increases the instruction cost significantly. Prefer `StableBTreeMap<Vec<u8>, ...>` (or a typed key) backed directly by stable memory over serializing heap collections on upgrade.
+
+**Use `ic-stable-structures` for all persistent state.**
+
+Put all important data in `StableBTreeMap`, `StableCell`, or `StableLog` from the start. This avoids the `pre_upgrade` serialization problem entirely. See [Implementing Storable for custom types](#store-data-durably) above for the correct pattern.
+
+For reference on effective Rust canister patterns, see [Effective Rust Canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html) and [How to audit an Internet Computer canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
+
+</TabItem>
+</Tabs>
+
+### Implement state backup mechanisms
+
+Even with stable memory, consider implementing explicit backup mechanisms for state that would be catastrophic to lose. This protects against:
+
+- Accidental reinstall (which wipes stable memory)
+- Bugs in upgrade hooks that corrupt the stable layout
+- Application-level errors that require rollback
+
+Common approaches include exporting a snapshot of canister state to a Blob that can be stored externally, or using canister [snapshots](../canister-management/snapshots.md) to checkpoint state before an upgrade.
+
+### Transaction history storage
+
+If your application needs to maintain a history of transactions or events, avoid storing unbounded logs in the same canister as your main application state. Options:
+
+- **Dedicated logging canister.** A separate canister that accepts append-only log entries reduces load on the main canister and keeps the history size from affecting upgrade cost.
+- **`StableLog` (Rust).** For canisters that can accommodate history growth, `StableLog` from `ic-stable-structures` provides an append-only log directly in stable memory.
+- **External history services.** Services like [CAP](https://cap.ooo/) maintain transaction provenance records that integrate with explorers and wallets, which is useful for token standards compliance.
+
+Be aware that inter-canister calls to a logging service add latency and cycle cost. Size the logging approach to the transaction volume you expect.
+
 ## Related
 
 - [Orthogonal Persistence](../../concepts/orthogonal-persistence.md): conceptual explanation of heap vs. stable memory
 - [Canister Lifecycle](../canister-management/lifecycle.md#what-happens-during-an-upgrade): upgrade hooks and canister lifecycle
 - [Stable Structures (Rust)](../../languages/rust/stable-structures.md): deep dive into `ic-stable-structures`
+- [Canister snapshots](../canister-management/snapshots.md): checkpoint canister state before upgrades
 - [Motoko](../../languages/motoko/index.md): Motoko language overview and persistence model
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/canister-management/storage.mdx, docs/building-apps/best-practices/storage.mdx, docs/building-apps/best-practices/idempotency.mdx */}

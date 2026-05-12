@@ -72,4 +72,8 @@ Note that also loading other assets such as [CSS](https://xsleaks.dev/docs/attac
 
 - Use a [content security policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to prevent scripts and other content from other origins from being loaded at all. See also [define security headers, including a content security policy (CSP)](./overview.md#web-security).
 
+## Related
+
+- [Trust in canisters](../canister-management/trust-in-canisters.md): how to assess whether a canister you did not write is safe to interact with, including the full trust spectrum from developer-controlled to black-holed
+
 <!-- Upstream: sync from dfinity/portal building-apps/security/decentralization.mdx -->

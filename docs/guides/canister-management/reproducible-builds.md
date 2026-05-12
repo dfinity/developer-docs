@@ -264,5 +264,6 @@ Maintaining a reproducible build over years requires more than getting it workin
 - [Canister lifecycle](lifecycle.md): deploy and upgrade workflow
 - [Canister settings](settings.md): configure controllers and make canisters immutable
 - [Cycles management](cycles-management.md): top up canisters before long-term deployment
+- [Trust in canisters](trust-in-canisters.md): how users can use reproducible build verification to assess whether a canister is safe to interact with
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/best-practices/reproducible-builds.mdx; dfinity/icp-cli-recipes — recipes/prebuilt/README.md, recipe.hbs; dfinity/icp-cli — docs/guides/using-recipes.md -->
