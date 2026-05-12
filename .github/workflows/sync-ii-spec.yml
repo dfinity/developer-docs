@@ -78,7 +78,7 @@ jobs:
 
       - name: Bump submodule to latest main
         if: steps.check.outputs.needed == 'true'
-        run: git -C .sources/internetidentity checkout FETCH_HEAD
+        run: git -C .sources/internetidentity checkout ${{ steps.latest.outputs.hash }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: steps.check.outputs.needed == 'true'
