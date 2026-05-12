@@ -179,6 +179,7 @@ icp canister status my-canister -e ic
 ## Next steps
 
 - [Canister lifecycle](lifecycle.md): Understand how snapshots fit into the upgrade workflow
+- [Canister migration](canister-migration.md): Complete guide for moving a canister to a different subnet using the snapshot download/upload workflow
 - [Canister upgrades security](../security/canister-upgrades.md): Security considerations when using snapshot-based rollbacks
 - [icp-cli canister snapshot reference](https://cli.internetcomputer.org/0.2/guides/canister-snapshots): Full command reference for all snapshot subcommands
 
