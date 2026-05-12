@@ -36,7 +36,7 @@ Your options depend on whether the canister ID can change:
 :::danger
 If your canister uses threshold signatures (tECDSA / tSchnorr) or vetKeys, snapshot transfer splits state from keys: the target canister gets a new ID and therefore different signing and decryption keys. Any Bitcoin or Ethereum addresses and any encrypted data tied to the original canister ID become inaccessible from the new canister.
 
-You still have a recovery window: the source canister is retained after snapshot transfer, so the original keys remain accessible through it. Stop the target, switch back to the source, and perform full migration instead — before deleting the source canister. Once the source is deleted, those keys and any assets or data tied to them are permanently gone.
+You still have a recovery window: the source canister is retained after snapshot transfer, so the original keys remain accessible through it. Stop the target, switch back to the source, and perform full migration instead. Do this before deleting the source canister. Once the source is deleted, those keys and any assets or data tied to them are permanently gone.
 :::
 
 ## Migrating without preserving the canister ID
@@ -184,7 +184,7 @@ Snapshots capture the Wasm module and memory, but not canister settings. Control
 ```bash
 icp canister settings show my-canister -e ic
 
-# Apply non-default settings to the target (do not copy controllers — they are restored automatically)
+# Apply non-default settings to the target (controllers are restored automatically; do not copy them)
 icp canister settings update <target-id> \
   --compute-allocation 10 \
   --freezing-threshold 604800 \
