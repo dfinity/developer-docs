@@ -53,7 +53,7 @@ Note the canister ID printed in the output. Add `--quiet` to print only the ID, 
 
 ### 2. Transfer state via snapshots
 
-The snapshot download/upload workflow is required for cross-subnet transfers because the direct restore (`load_canister_snapshot`) only works within the same subnet. See [Canister snapshots](snapshots.md#downloading-and-uploading-snapshots) for full details on resuming interrupted transfers.
+See [Canister snapshots](snapshots.md#downloading-and-uploading-snapshots) for full details on resuming interrupted transfers.
 
 ```bash
 # Stop and snapshot the source canister
