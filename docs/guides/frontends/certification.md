@@ -318,6 +318,6 @@ For the full working example including a backend canister, see the [certified-co
 - [Asset canister](asset-canister.md): deploy and configure the standard asset canister with automatic certification
 - [Certified variables](../backends/certified-variables.md): certify Candid query responses from backend canisters
 - [Security concepts](../../concepts/security.md): why query integrity matters
-- [HTTP Gateway specification](../../references/http-gateway-spec.md): how boundary nodes verify responses
+- [HTTP Gateway specification](../../references/http-gateway-protocol-spec.md): how boundary nodes verify responses
 
 <!-- Upstream: informed by dfinity/response-verification — packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts, examples/certification/certified-counter; dfinity/portal — docs/building-apps/frontends/asset-security.mdx; dfinity/icskills — skills/certified-variables/SKILL.md, skills/asset-canister/SKILL.md -->

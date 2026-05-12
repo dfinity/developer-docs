@@ -1,0 +1,43 @@
+name: Interface Specification PR Slack Notification
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    paths:
+      - .github/workflows/interface-spec.yml
+      - .github/workflows/interface-spec-tag.yml
+      - .github/workflows/interface-spec-slack.yml
+      - docs/references/ic-interface-spec/**
+      - docs/references/http-gateway-protocol-spec.md
+      - public/references/certificates.cddl
+      - public/references/requests.cddl
+      - public/references/http-gateway.did
+      - public/references/ic.did
+
+jobs:
+  notify-slack:
+    name: Notify Slack
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Sanitize PR title
+        id: sanitize
+        env:
+          RAW_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          ESCAPED_TITLE=$(echo "$RAW_TITLE" \
+            | sed 's/&/\&amp;/g' \
+            | sed 's/</\&lt;/g' \
+            | sed 's/>/\&gt;/g')
+          echo "safe_title=$ESCAPED_TITLE" >> "$GITHUB_OUTPUT"
+
+      - name: Post to Slack
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_API_TOKEN }}
+          payload: |
+            channel: interface-spec
+            text: ":github: `${{ github.repository }}` <${{ github.event.pull_request.html_url }}|${{ steps.sanitize.outputs.safe_title }}>"

@@ -179,7 +179,7 @@ Delegations are *scoped*, i.e., they indicate which set of canister principals t
 
 ### Encoding of certificates {#certification-encoding}
 
-The binary encoding of a certificate is a CBOR (see [CBOR](./index.md#cbor)) value according to the following CDDL (see [CDDL](./index.md#cddl)). You can also [download the file](/references/_attachments/certificates.cddl).
+The binary encoding of a certificate is a CBOR (see [CBOR](./index.md#cbor)) value according to the following CDDL (see [CDDL](./index.md#cddl)). You can also [download the file](/references/certificates.cddl).
 
 The values in the [The system state tree](./index.md#state-tree) are encoded to blobs as follows:
 
@@ -251,6 +251,6 @@ In the pruned tree, the `lookup_path` function behaves as follows:
 
 ## The HTTP Gateway protocol {#http-gateway}
 
-The HTTP Gateway Protocol has been moved into its own [specification](../http-gateway-spec.md).
+The HTTP Gateway Protocol has been moved into its own [specification](../http-gateway-protocol-spec.md).
 
 <!-- Upstream: sync from dfinity/portal — docs/references/ic-interface-spec.md -->

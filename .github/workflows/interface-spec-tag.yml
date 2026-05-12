@@ -1,0 +1,40 @@
+name: Interface Specification Tag
+
+on:
+  pull_request_target:
+    paths:
+      - .github/workflows/interface-spec.yml
+      - .github/workflows/interface-spec-tag.yml
+      - .github/workflows/interface-spec-slack.yml
+      - docs/references/ic-interface-spec/**
+      - docs/references/http-gateway-protocol-spec.md
+      - public/references/certificates.cddl
+      - public/references/requests.cddl
+      - public/references/http-gateway.did
+      - public/references/ic.did
+
+jobs:
+  interface-spec-tag:
+    name: Tag PR with interface-spec
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Create label if missing
+        run: |
+          gh label create interface-spec \
+            --color 0075ca \
+            --description "Changes to the IC interface specification" \
+            --repo ${{ github.repository }} \
+            --force
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag PR with interface-spec
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --add-label interface-spec \
+            --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

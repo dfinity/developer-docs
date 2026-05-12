@@ -7,6 +7,7 @@ import remarkIcpCliVersion from "./plugins/remark-icp-cli-version.mjs";
 import remarkSnippet from "./plugins/remark-snippet.mjs";
 import remarkHeadingId from "./plugins/remark-heading-id.mjs";
 import remarkPlantUML from "./plugins/remark-plantuml.mjs";
+import remarkIncludeFile from "./plugins/remark-include-file.mjs";
 import agentDocs from "./plugins/astro-agent-docs.mjs";
 import { sidebar } from "./sidebar.mjs";
 import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
@@ -18,7 +19,7 @@ export default defineConfig({
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
     rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
-    remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML],
+    remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML, remarkIncludeFile],
   },
   integrations: [
     starlight({

@@ -241,7 +241,7 @@ This feature is intended to allow more flexibility with respect to the origins o
 `https://<canister_id>.ic0.app` and `https://<canister_id>.raw.ic0.app` do _not_ issue the same principals by default . However, this feature can also be used to map `https://<canister_id>.raw.ic0.app` to `https://<canister_id>.ic0.app` principals or vice versa.
 :::
 
-In order for Internet Identity to accept the `derivationOrigin` the origin of the client application must be listed in the JSON object served on the URL `https://<canister_id>.icp0.io/.well-known/ii-alternative-origins` (i.e. the file must be hosted by an ICP canister that must implement the `http_request` query call as specified [here](./http-gateway-spec.md)).
+In order for Internet Identity to accept the `derivationOrigin` the origin of the client application must be listed in the JSON object served on the URL `https://<canister_id>.icp0.io/.well-known/ii-alternative-origins` (i.e. the file must be hosted by an ICP canister that must implement the `http_request` query call as specified [here](./http-gateway-protocol-spec.md)).
 
 
 ### JSON Schema {#alternative-frontend-origins-schema}
@@ -1411,7 +1411,7 @@ See [here](../guides/authentication/verifiable-credentials.md) for the specifica
 
 ### HTTP gateway protocol
 
-The methods `http_request` and `http_request_update` serve the front-end assets to browesers. See [here](./http-gateway-spec.md) for additional details.
+The methods `http_request` and `http_request_update` serve the front-end assets to browesers. See [here](./http-gateway-protocol-spec.md) for additional details.
 
 ### Internal APIs
 
@@ -1475,7 +1475,7 @@ Link replacements from source (source used absolute/relative paths pointing outs
   - internetcomputer.org [/docs]/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec/index.md#canister-signatures (×2)
   - internetcomputer.org [/docs]/current/references/ic-interface-spec#authentication → ./ic-interface-spec/https-interface.md#authentication
   - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message
-  - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-spec.md
+  - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-protocol-spec.md
   - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
   - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md
 Other changes from source:

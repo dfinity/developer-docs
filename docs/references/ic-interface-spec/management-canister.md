@@ -22,7 +22,10 @@ It is possible to use the management canister via external requests (a.k.a. ingr
 
 ### Interface overview {#ic-candid}
 
-The [interface description](/reference/ic.did), in [Candid syntax](../candid-spec.md), describes the available functionality.
+The interface description below, in [Candid syntax](../candid-spec.md), describes the available functionality. You can also [download the file](/references/ic.did).
+
+```candid file=<rootDir>/public/references/ic.did
+```
 
 The binary encoding of arguments and results are as per Candid specification.
 
