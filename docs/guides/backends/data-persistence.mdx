@@ -643,7 +643,7 @@ If your application needs to maintain a history of transactions or events, avoid
 
 - **Dedicated logging canister.** A separate canister that accepts append-only log entries reduces load on the main canister and keeps the history size from affecting upgrade cost.
 - **`StableLog` (Rust).** For canisters that can accommodate history growth, `StableLog` from `ic-stable-structures` provides an append-only log directly in stable memory.
-- **External history services.** Services like [CAP](https://cap.ooo/) maintain transaction provenance records that integrate with explorers and wallets, which is useful for token standards compliance.
+- **External history services.** Services like [CAP](https://cap.ooo/) maintain transaction provenance records that integrate with explorers and wallets, which is useful for [digital asset standards](../../references/digital-asset-standards.md) compliance.
 
 Be aware that inter-canister calls to a logging service add latency and cycle cost. Size the logging approach to the transaction volume you expect.
 
