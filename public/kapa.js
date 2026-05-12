@@ -8,6 +8,7 @@
   s.async = true;
   Object.assign(s.dataset, {
     websiteId: '73cafe70-9be1-494b-bd31-b849fc29799f',
+    sourceGroupIDsInclude: '9694e6a3-61d1-4ff3-a45f-9b8f02722b95', // icp-2.0 source group
     projectName: 'Internet Computer',
     projectColor: '#cc5a2b',
     projectLogo: 'https://docs.internetcomputer.org/favicon.svg',
