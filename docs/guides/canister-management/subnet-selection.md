@@ -84,15 +84,48 @@ The `--subnet` flag only affects canister creation. If a canister already exists
 
 > **Tip:** Subnet principal IDs can change over time. Always verify the current ID for a named subnet on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before using it in production scripts.
 
-## Colocation with an existing canister
+## Colocation via proxy canister
 
-To create a new canister on the same subnet as an existing canister, use the `--proxy` flag with `icp canister create`. This routes the creation call through the existing canister and places the new canister on the same subnet:
+To create a new canister on the same subnet as an existing canister, use the `--proxy` flag with `icp canister create`. This routes the creation call through a proxy canister, and the new canister is placed on that proxy's subnet:
 
 ```bash
-icp canister create my_new_canister -e ic --proxy <EXISTING_CANISTER_ID>
+icp canister create my_new_canister -e ic --proxy <PROXY_CANISTER_ID>
+
+# With a custom cycle allocation for the new canister (proxy pays from its own balance):
+icp canister create my_new_canister -e ic --proxy <PROXY_CANISTER_ID> --cycles 3T
 ```
 
-This is useful when you already have a deployed canister and want new canisters to live on the same subnet. The proxy canister must implement a `proxy` method that forwards management canister calls.
+`--proxy` and `--subnet` are mutually exclusive: the CLI rejects any call that specifies both.
+
+### Proxy interface requirement
+
+The target canister must expose a `proxy` method with this exact Candid interface. An arbitrary canister will reject the call:
+
+```candid
+type ProxyArgs = record {
+  canister_id : principal;
+  method      : text;
+  args        : blob;
+  cycles      : nat;
+};
+
+type ProxyResult = variant {
+  Ok  : record { result : blob };
+  Err : variant {
+    InsufficientCycles : record { available : nat; required : nat };
+    CallFailed         : record { reason : text };
+    UnauthorizedUser;
+  };
+};
+
+service : {
+  proxy : (ProxyArgs) -> (ProxyResult);
+}
+```
+
+### Cycles model
+
+The `--cycles` value specifies how many cycles to allocate to the new canister. Those cycles are drawn from the proxy canister's own balance, not from your wallet. Ingress messages on ICP cannot carry cycles; the value is passed as data in `ProxyArgs.cycles`, and the proxy spends from its own cycle balance when forwarding the management canister call. Ensure the proxy canister is adequately funded before use.
 
 ## Storage capacity considerations
 
@@ -110,10 +143,10 @@ Verify the subnet ID is correct. Some subnets (including all system subnets) do 
 
 ### Canister is on the wrong subnet
 
-Canisters cannot be moved between subnets while keeping the same canister ID by default. Your options depend on whether you can accept a new ID:
+Canisters cannot be moved between subnets while keeping the same canister ID without using `icp canister migrate-id`. Your options depend on whether you can accept a new ID:
 
 - **New canister ID is acceptable**: Transfer state via [canister snapshots](snapshots.md) to a new canister on the correct subnet.
-- **Canister ID must be preserved**: Transfer state via snapshots, copy settings, then use `icp canister migrate-id` to move the ID to the new canister.
+- **Canister ID must be preserved**: Transfer state via snapshots, copy settings, delete the snapshot on the target, then run `icp canister migrate-id` to move the ID to the new canister. See the [canister migration guide](https://cli.internetcomputer.org/0.2/guides/canister-migration) for the complete step-by-step workflow, including the cycle warning, the snapshot deletion requirement before `migrate-id`, NNS controller cleanup, and how to recover from interruptions.
 
 Note that any canister ID change means losing access to any threshold signature keys (tECDSA, tSchnorr) and vetKeys derived by the original canister: these are cryptographically bound to the canister ID. Any assets or encrypted data tied to those keys become permanently inaccessible under the new ID.
 
@@ -122,6 +155,7 @@ Note that any canister ID change means losing access to any threshold signature 
 - [Cycles costs](../../references/cycles-costs.md#replication-factors): Cost tables and the subnet multiplier formula
 - [Subnet types reference](../../references/subnet-types.md): Full reference for all subnet types with node counts and properties
 - [Canister snapshots](snapshots.md): Transfer state between canisters when migrating subnets
+- [Canister migration](https://cli.internetcomputer.org/0.2/guides/canister-migration): Complete workflow for moving a canister to a different subnet, with or without preserving the canister ID
 - [Network overview](../../concepts/network-overview.md): How subnets fit into the ICP architecture
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/deploy-specific-subnet.mdx; dfinity/icp-cli docs/guides/deploying-to-specific-subnets.md -->
