@@ -1,7 +1,3 @@
-[submodule ".sources/portal"]
-	path = .sources/portal
-	url = git@github.com:dfinity/portal.git
-	branch = master
 [submodule ".sources/icp-cli"]
 	path = .sources/icp-cli
 	url = git@github.com:dfinity/icp-cli.git

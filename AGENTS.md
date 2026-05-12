@@ -199,7 +199,6 @@ For current release hashes, see `.sources/VERSIONS`.
 
 | Submodule | Repo | Pinned to | What it provides |
 |-----------|------|-----------|-----------------|
-| `.sources/portal` | `dfinity/portal` | `master` | Old docs content referenced in stub `<!-- Source Material -->` comments |
 | `.sources/icp-cli` | `dfinity/icp-cli` | latest release | CLI reference, command syntax verification |
 | `.sources/icp-cli-recipes` | `dfinity/icp-cli-recipes` | `main` | Recipe examples for CLI guides |
 | `.sources/icp-cli-templates` | `dfinity/icp-cli-templates` | `main` | Project templates for getting-started |
@@ -236,7 +235,6 @@ git -C .sources/<repo> checkout <commit>
 ### Rules for agents
 
 - **Always read source material from `.sources/`** — never from local clones, `gh api`, or training data
-- **Stub shorthand mapping:** `Portal: building-apps/foo.mdx` → `.sources/portal/docs/building-apps/foo.mdx`
 - **Consult relevant repos when writing or reviewing:**
   - **Motoko code** → `motoko-core` (API signatures) + `motoko` (compiler: system function names, keywords)
   - **Rust code** → `cdk-rs` (`ic-cdk`, `ic-cdk-timers`, management canister types)
@@ -246,7 +244,6 @@ git -C .sources/<repo> checkout <commit>
   - **JavaScript / TypeScript** → `icp-js-sdk-docs` (unzip archives before reading; never guess JS SDK API)
   - **Code examples** → `examples` (link to for snippets >30 lines)
 - **Do not modify `.sources/`** — read-only. Edits go to the upstream repos.
-- **Portal `file=` references:** Resolve `file=../../../../submodules/samples/...` paths via `.sources/examples` instead.
 
 ### Bumping submodules
 
@@ -279,7 +276,6 @@ EOF
 
 | Submodule | Extra checks on bump |
 |---|---|
-| `portal` | Follow the full portal checklist in "Synced files from submodules" below |
 | `motoko` | **Automated** — `.github/workflows/sync-motoko.yml` opens a PR with the submodule bump, synced docs, and VERSIONS update already committed. Review the content diff and merge. Also check for changed/removed API signatures — grep all Motoko code blocks in docs. |
 | `motoko-core` | Check for changed/removed API signatures — grep all Motoko code blocks in docs |
 | `cdk-rs` | Check `ic-cdk`, `ic-cdk-timers`, `ic-cdk-macros` API changes — grep all Rust code blocks |
@@ -326,29 +322,22 @@ Any link of the form `internetcomputer.org/.../ic-interface-spec#<anchor>` or `.
 grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 ```
 
-### Synced files from submodules
+### Directly maintained spec files
 
-| Local file | Source | Affects |
-|-----------|--------|---------|
-| `public/reference/ic.did` | `.sources/portal/docs/references/_attachments/ic.did` | Management canister reference — new/changed methods require updating `docs/references/management-canister.md` |
-| `public/references/_attachments/certificates.cddl` | `.sources/portal/docs/references/_attachments/certificates.cddl` | Downloadable CDDL linked from `docs/references/ic-interface-spec/certification.md` |
-| `public/references/_attachments/requests.cddl` | `.sources/portal/docs/references/_attachments/requests.cddl` | Downloadable CDDL linked from `docs/references/ic-interface-spec/https-interface.md` |
-| `public/references/_attachments/http-gateway.did` | `.sources/portal/docs/references/_attachments/http-gateway.did` | Downloadable Candid interface linked from `docs/references/http-gateway-spec.md` |
-| `docs/references/ic-interface-spec/` | `.sources/portal/docs/references/ic-interface-spec.md` | IC interface spec split into 7 focused pages — apply portal diffs by section (see checklist below) |
-| `docs/references/http-gateway-spec.md` | `.sources/portal/docs/references/http-gateway-protocol-spec.md` | HTTP Gateway spec — apply portal diff as a patch on every bump |
+The following files are no longer synced from an external submodule — they are maintained directly in this repository. Update them manually when the IC team announces a new version of the relevant specification.
 
-**Portal bump checklist (run on every portal bump):**
+| Local file | What it is | When to update |
+|-----------|-----------|---------------|
+| `public/references/ic.did` | Candid interface of the IC management canister | New management canister methods or changed types; update `docs/references/management-canister.md` and affected guides alongside |
+| `public/references/_attachments/certificates.cddl` | Certificate CDDL schema (linked from `docs/references/ic-interface-spec/certification.md`) | IC certification spec changes |
+| `public/references/_attachments/requests.cddl` | Request CDDL schema (linked from `docs/references/ic-interface-spec/https-interface.md`) | IC HTTPS interface spec changes |
+| `public/references/_attachments/http-gateway.did` | HTTP Gateway Candid interface (linked from `docs/references/http-gateway-spec.md`) | HTTP Gateway spec changes |
+| `docs/references/ic-interface-spec/` | IC Interface Spec split into 7 focused pages | IC spec version bumps — apply changes to the matching file (see section mapping below) |
+| `docs/references/http-gateway-spec.md` | HTTP Gateway Protocol Spec | HTTP Gateway spec version bumps |
 
-**Step 1 — `ic.did` and `_attachments/`:**
-1. `diff public/reference/ic.did .sources/portal/docs/references/_attachments/ic.did`
-2. If changed: `cp .sources/portal/docs/references/_attachments/ic.did public/reference/ic.did`
-3. Review diff for new/changed/removed methods
-4. Update `docs/references/management-canister.md` and any affected guides
-5. For each of `certificates.cddl`, `requests.cddl`, `http-gateway.did`: `diff public/references/_attachments/<file> .sources/portal/docs/references/_attachments/<file>` — if changed, copy the updated file to `public/references/_attachments/`
+**IC Interface Spec — section-to-file mapping:**
 
-**Step 2 — `ic-interface-spec/`:** The spec is now split into 7 files under `docs/references/ic-interface-spec/`. Each file maps to a section of the portal source:
-
-| File | Portal section (## heading) |
+| File | IC spec section |
 |---|---|
 | `index.md` | Introduction, Pervasive concepts, The system state tree |
 | `https-interface.md` | HTTPS Interface |
@@ -356,38 +345,11 @@ grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 | `management-canister.md` | The IC management canister, The IC Bitcoin API, The IC Provisional API |
 | `certification.md` | Certification, The HTTP Gateway protocol |
 | `abstract-behavior.md` | Abstract behavior |
-| `changelog.md` | `.sources/portal/docs/references/_attachments/interface-spec-changelog.md` (NOT `ic-interface-spec.md`) |
+| `changelog.md` | IC spec changelog |
 
-For every commit in the bump range that touched `docs/references/ic-interface-spec.md`:
-1. `git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md > /tmp/spec.diff`
-2. Inspect the diff: identify which section(s) changed
-3. Apply the relevant hunks manually to the corresponding file(s) in `docs/references/ic-interface-spec/`
-4. Update any cross-file anchor links (`(./other.md#anchor)`) if headings were added or removed
-5. Verify new methods/fields are reflected in `docs/references/management-canister.md` if they touch the management canister
-
-For every commit in the bump range that touched `docs/references/_attachments/interface-spec-changelog.md`:
-1. `git -C .sources/portal show <commit> -- docs/references/_attachments/interface-spec-changelog.md > /tmp/changelog.diff`
-2. Apply the new version entries to `docs/references/ic-interface-spec/changelog.md`
-
-**Step 3 — `http-gateway-spec.md`:** For every commit in the bump range that touched `docs/references/http-gateway-protocol-spec.md`:
-1. `git -C .sources/portal show <commit> -- docs/references/http-gateway-protocol-spec.md > /tmp/patch.diff`
-2. `patch -F 5 -p1 --input=/tmp/patch.diff docs/references/http-gateway-spec.md`
-3. Resolve any rejects manually (see note below on link adaptation)
-4. Run `grep -n "ic-interface-spec" docs/references/http-gateway-spec.md` and convert any newly introduced links
-
-**Link adaptation for `http-gateway-spec.md`:** The portal source uses absolute `/references/ic-interface-spec#anchor` URLs. Our file uses relative paths into the split `ic-interface-spec/` directory. After every sync, any link of the form `/references/ic-interface-spec#<anchor>` or `./ic-interface-spec.md#<anchor>` must be converted. Use the anchor-to-file mapping at the bottom of `docs/references/http-gateway-spec.md` as the authoritative guide. If a new anchor appears that is not in the comment, find its file with:
+**Link adaptation for `http-gateway-spec.md`:** If an update introduces absolute `/references/ic-interface-spec#<anchor>` links, convert them to relative paths using the anchor-to-file mapping at the bottom of `docs/references/http-gateway-spec.md`. If a new anchor is not in that comment, find its file with:
 ```bash
 grep -r "{#<anchor>}" docs/references/ic-interface-spec/
-```
-
-**Finding which commits touched which files:**
-```bash
-git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/ic-interface-spec.md
-git -C .sources/portal show <commit> -- docs/references/ic-interface-spec.md | grep "^[+-]## " | head -20  # identify which sections changed
-git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/interface-spec-changelog.md
-git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/http-gateway-protocol-spec.md
-git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/ic.did
-git -C .sources/portal log --oneline <old-ref>..<new-ref> -- docs/references/_attachments/certificates.cddl docs/references/_attachments/requests.cddl docs/references/_attachments/http-gateway.did
 ```
 
 ## Planning artifacts (`.docs-plan/`)
@@ -449,10 +411,6 @@ sidebar:
   order: 1                                    # Optional: only where reading order matters
 ---
 ```
-
-## Portal tracking
-
-The old portal (`dfinity/portal`) has been replaced by this site. The `.sources/portal` submodule is kept as a read-only reference for spec content (see `ic.did` sync checklist above) but no longer needs active monitoring for content changes.
 
 ## Commands
 

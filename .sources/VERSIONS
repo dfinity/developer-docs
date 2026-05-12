@@ -1,7 +1,7 @@
 # Pinned submodule versions (release-pinned repos only)
 # -------------------------------------------------------
 # Repos that track main/master are NOT listed here — they have no fixed release
-# version. Those repos are: portal, examples, icskills, dotskills,
+# version. Those repos are: examples, icskills, dotskills,
 # icp-cli-recipes, icp-cli-templates, icp-js-sdk-docs.
 #
 # FORMAT: <submodule>   <version label>   <7-char hash>
