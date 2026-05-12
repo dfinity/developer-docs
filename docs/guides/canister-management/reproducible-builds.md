@@ -2,7 +2,7 @@
 title: "Reproducible builds"
 description: "Verify that deployed canister Wasm matches the source code using deterministic builds"
 sidebar:
-  order: 6
+  order: 7
 ---
 
 A reproducible build produces the same WebAssembly module byte-for-byte whenever anyone compiles the same source code in the same documented environment. For canisters, this matters because ICP lets anyone query a canister's Wasm hash: but only a reproducible build makes that hash meaningful. Without it, a published hash cannot be linked to readable source code.

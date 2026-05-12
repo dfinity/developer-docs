@@ -2,7 +2,7 @@
 title: "Canister migration"
 description: "Move a canister to a different subnet while preserving its state, with or without keeping the original canister ID"
 sidebar:
-  order: 9
+  order: 10
 ---
 
 Moving a canister to a different subnet is sometimes necessary: the canister was deployed to the wrong subnet, geographic or replication requirements have changed, or you need to consolidate canisters for efficient inter-canister calls. This guide covers both migration paths depending on whether you can accept a new canister ID.
