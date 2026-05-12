@@ -318,7 +318,7 @@ async fn call_with_cycles() {
 
 The cycles come from the calling canister's own balance, not the cycles ledger. Top up the calling canister with `icp canister top-up` before using this pattern.
 
-### Accepting cycles in the callee
+### Charging a cycle fee
 
 A canister that charges per-call defines a required fee, rejects calls that don't meet it, and accepts exactly that amount before doing its work. Any cycles above the fee are returned to the caller automatically:
 
