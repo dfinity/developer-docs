@@ -292,7 +292,7 @@ EOF
 | `candid` | Check for spec changes affecting the Candid reference or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria |
-| `internetidentity` | Run `npm run sync:ii-spec` — the script handles all link rewrites, Candid inlining, and frontmatter. If the script exits with a warning about unhandled links, add the new pattern to `linkMap` in `scripts/sync-ii-spec.mjs` |
+| `internetidentity` | Run `npm run sync:ii-spec` — the script handles all link rewrites, Candid inlining, and frontmatter. If the script exits with a warning about unhandled links, add the new pattern to `linkMap` in `scripts/sync-ii-spec.mjs`. The **Sync II spec** workflow (`.github/workflows/sync-ii-spec.yml`) can be triggered manually from GitHub Actions; it only opens a PR when `docs/ii-spec.mdx` or `internet_identity.did` actually changed. |
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |
