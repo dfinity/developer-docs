@@ -146,7 +146,7 @@ Verify the subnet ID is correct. Some subnets (including all system subnets) do 
 Canisters cannot be moved between subnets while keeping the same canister ID without using `icp canister migrate-id`. Your options depend on whether you can accept a new ID:
 
 - **New canister ID is acceptable**: Transfer state via [canister snapshots](snapshots.md) to a new canister on the correct subnet.
-- **Canister ID must be preserved**: Create a target canister on the correct subnet, transfer state via snapshots, delete the snapshot on the target (required before `migrate-id`), copy non-default settings, stop the target canister, then run `icp canister migrate-id`. All cycles remaining on the source canister are burned when it is deleted; top up the target canister in advance. See the [canister migration guide](canister-migration.md#migrating-with-the-canister-id) for the complete step-by-step workflow, including NNS controller cleanup and interruption recovery.
+- **Canister ID must be preserved**: Use `icp canister migrate-id` to move the ID to a new canister on the correct subnet. See the [canister migration guide](canister-migration.md#migrating-with-the-canister-id) for the complete step-by-step workflow.
 
 Note that any canister ID change means losing access to any threshold signature keys (tECDSA, tSchnorr) and vetKeys derived by the original canister: these are cryptographically bound to the canister ID. Any assets or encrypted data tied to those keys become permanently inaccessible under the new ID.
 
@@ -154,7 +154,7 @@ Note that any canister ID change means losing access to any threshold signature 
 
 - [Cycles costs](../../references/cycles-costs.md#replication-factors): Cost tables and the subnet multiplier formula
 - [Subnet types reference](../../references/subnet-types.md): Full reference for all subnet types with node counts and properties
-- [Canister snapshots](snapshots.md#example-transferring-state-between-canisters): Download/upload workflow for transferring state to a canister on a different subnet
+- [Canister snapshots](snapshots.md#example-transferring-state-between-canisters): Download/upload workflow for transferring state to another canister
 - [Canister migration](canister-migration.md): Complete workflow for moving a canister to a different subnet, with or without preserving the canister ID
 - [Network overview](../../concepts/network-overview.md): How subnets fit into the ICP architecture
 

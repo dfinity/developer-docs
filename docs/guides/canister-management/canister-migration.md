@@ -33,6 +33,10 @@ Your options depend on whether the canister ID is load-bearing:
 - **vetKeys**: vetKey derivation includes the canister's principal. A new ID produces entirely different decryption keys, making previously encrypted data permanently inaccessible.
 - **External references**: Other canisters, frontends, or off-chain systems that reference the canister by ID will break. This includes Internet Identity: users who authenticated via a canister-ID-based domain (for example, `<canister-id>.icp0.io`) will lose access to their sessions.
 
+:::danger
+Choosing snapshot transfer when the canister ID is load-bearing causes permanent, irreversible loss. Any threshold signature keys (tECDSA / tSchnorr) and the Bitcoin or Ethereum addresses derived from them are gone. Any data encrypted under a vetKey becomes permanently inaccessible. There is no recovery path. Verify whether your canister derives threshold signatures or vetKeys before choosing an approach.
+:::
+
 ## Migrating without preserving the canister ID
 
 Use this approach when you can accept a new canister ID. The source canister remains on its original subnet until you explicitly delete it; there is no irreversible step and no minimum cycle requirement.
