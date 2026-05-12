@@ -320,7 +320,7 @@ The cycles come from the calling canister's own balance, not the cycles ledger. 
 
 ### Accepting cycles in the callee
 
-A canister that charges per-call claims the attached cycles with `Cycles.accept` (Motoko) or `msg_cycles_accept` (Rust). Any cycles not accepted are returned to the caller automatically:
+A canister that charges per-call defines a required fee, rejects calls that don't meet it, and accepts exactly that amount. Any cycles above the fee are returned to the caller automatically:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -330,12 +330,14 @@ import Cycles "mo:core/Cycles";
 import Runtime "mo:core/Runtime";
 
 persistent actor {
+  let fee : Nat = 100_000_000;
+
   public func deposit() : async Nat {
     let available = Cycles.available();
-    if (available == 0) {
-      Runtime.trap("No cycles sent with this call")
+    if (available < fee) {
+      Runtime.trap("Insufficient cycles: requires " # debug_show fee)
     };
-    Cycles.accept<system>(available)
+    Cycles.accept<system>(fee) // accept exactly the fee; excess is returned automatically
   };
 }
 ```
@@ -347,13 +349,15 @@ persistent actor {
 use candid::Nat;
 use ic_cdk::update;
 
+const FEE: u128 = 100_000_000;
+
 #[update]
 fn deposit() -> Nat {
     let available = ic_cdk::api::msg_cycles_available();
-    if available == 0 {
-        ic_cdk::trap("No cycles sent with this call");
+    if available < FEE {
+        ic_cdk::trap("Insufficient cycles");
     }
-    Nat::from(ic_cdk::api::msg_cycles_accept(available))
+    Nat::from(ic_cdk::api::msg_cycles_accept(FEE)) // accept exactly the fee; excess is returned automatically
 }
 ```
 
@@ -378,7 +382,7 @@ icp canister call rrkah-fqaaa-aaaaa-aaaaq-cai someMethod '()' -n ic
 
 ```bash
 # Deploy the proxy canister using the provided template
-icp new proxy --template proxy
+icp new proxy --subfolder proxy
 cd proxy
 icp deploy -e ic
 
