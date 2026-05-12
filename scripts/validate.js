@@ -72,8 +72,11 @@ function checkForbiddenPatterns(file, content) {
   if (isSynced(file)) return [];
   const errors = [];
   const lines = content.split('\n');
+  let inFence = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (/^```/.test(line.trimStart())) { inFence = !inFence; continue; }
+    if (inFence) continue;
     for (const { re, msg } of FORBIDDEN) {
       if (re.test(line)) errors.push(`line ${i + 1}: ${msg}`);
     }
