@@ -1,6 +1,8 @@
 ---
 title: "Trust in canisters"
 description: "How to evaluate whether a canister is safe to interact with: code verification, build reproducibility, controller trust, and immutability options"
+sidebar:
+  order: 11
 ---
 
 Applications that handle token transfers, financial transactions, or other sensitive operations require that users trust the canister to act honestly and reliably. This guide explains how to assess whether a canister you did not write is safe to interact with.
@@ -23,7 +25,7 @@ ICP exposes the SHA-256 hash of every canister's deployed Wasm module. If the de
 1. Get the deployed hash:
 
 ```bash
-icp canister status <canister-id> -n ic
+icp canister status <canister-id> -e ic
 ```
 
 2. Reproduce the build from the published source following the developer's instructions.
@@ -46,7 +48,7 @@ Even if a canister runs correct code today, its controllers can upgrade it to di
 Retrieve the current controller list:
 
 ```bash
-icp canister status <canister-id> -n ic
+icp canister status <canister-id> -e ic
 ```
 
 You can also retrieve controller information programmatically via a [`read_state` request](../../references/ic-interface-spec/https-interface.md#http-read-state) to the IC management interface.
@@ -59,7 +61,7 @@ If the controller list contains a single developer identity, that developer has 
 |-----------------|-------------|-------|
 | Single developer identity | Lowest | One person can change or delete the canister at any time |
 | Multi-sig (e.g. Orbit) | Medium | Multiple parties must agree before changes take effect |
-| SNS (Service Nervous System) | High | Governance is enforced by the network; changes require a community vote with token-weighted approval |
+| [SNS (Service Nervous System)](../../concepts/sns-framework.md) | High | Governance is enforced by the network; changes require a community vote with token-weighted approval |
 | Black-holed | Highest | No controller can change the code; the canister is permanently immutable |
 
 In all cases, the trust requirements flow to the controller. If an SNS governs the canister, review the SNS configuration and token distribution to assess how decentralized the governance actually is. An SNS with a heavily concentrated token supply provides weaker guarantees than a broadly distributed one.

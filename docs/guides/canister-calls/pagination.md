@@ -1,6 +1,8 @@
 ---
 title: "Paginating query results"
 description: "How to implement reliable pagination for canister query methods, including cursor-based patterns for mutable datasets"
+sidebar:
+  order: 6
 ---
 
 Many canisters expose query methods that return lists of items: messages, transactions, tokens, users. When the list grows large, returning all items in a single response is impractical. Pagination splits results into pages, but the approach matters: a naive offset-based implementation produces incorrect results as soon as the underlying dataset changes.
@@ -25,7 +27,6 @@ Because the cursor is tied to an item identity rather than a position, insertion
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
-import Iter "mo:core/Iter";
 import Array "mo:core/Array";
 
 persistent actor {
@@ -50,7 +51,7 @@ persistent actor {
     let threshold = switch afterId { case null 0; case (?n) n + 1 };
     var collected : [Item] = [];
     var count = 0;
-    label scan for ((id, item) in Map.entries(items, Nat.compare)) {
+    label scan for ((id, item) in Map.entries(items)) {
       if (id < threshold) continue scan;
       if (count >= limit) break scan;
       collected := Array.append(collected, [item]);

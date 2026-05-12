@@ -1,6 +1,8 @@
 ---
 title: "Troubleshooting"
 description: "Diagnose and resolve common issues: latency problems, frontend errors, Wasm build failures, and security policy warnings"
+sidebar:
+  order: 12
 ---
 
 This guide covers common issues encountered when developing and deploying canisters on ICP. For language-specific issues, see the [Motoko](../../languages/motoko/index.md) and [Rust](../../languages/rust/index.md) language docs.
@@ -36,6 +38,12 @@ icp canister settings update backend --compute-allocation 1 -e ic
 ```
 
 Note that compute allocation incurs a rental fee regardless of actual canister activity. See [Canister settings](./settings.md#compute-allocation) for cost details.
+
+### Consider migrating to a less-loaded subnet
+
+If the subnet consistently shows high load and compute allocation alone does not resolve the latency, migrating your canister to a less-loaded subnet may be the most effective remedy. Subnets process messages independently, so a canister on a busy subnet competes with every other canister on that subnet regardless of its compute allocation.
+
+Check current subnet loads on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) to identify subnets with available capacity. For how to migrate a canister to a different subnet, see [Subnet selection](./subnet-selection.md#canister-is-on-the-wrong-subnet).
 
 ### Use query calls instead of update calls where appropriate
 
