@@ -320,7 +320,7 @@ The cycles come from the calling canister's own balance, not the cycles ledger. 
 
 ### Accepting cycles in the callee
 
-A canister that charges per-call defines a required fee, rejects calls that don't meet it, and accepts exactly that amount. Any cycles above the fee are returned to the caller automatically:
+A canister that charges per-call defines a required fee, rejects calls that don't meet it, and accepts exactly that amount before doing its work. Any cycles above the fee are returned to the caller automatically:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -332,12 +332,13 @@ import Runtime "mo:core/Runtime";
 persistent actor {
   let fee : Nat = 100_000_000;
 
-  public func deposit() : async Nat {
+  public func compute() : async () {
     let available = Cycles.available();
     if (available < fee) {
       Runtime.trap("Insufficient cycles: requires " # debug_show fee)
     };
-    Cycles.accept<system>(fee) // accept exactly the fee; excess is returned automatically
+    ignore Cycles.accept<system>(fee); // accept exactly the fee; excess is returned automatically
+    // ... do work here
   };
 }
 ```
@@ -346,18 +347,18 @@ persistent actor {
 <TabItem label="Rust">
 
 ```rust
-use candid::Nat;
 use ic_cdk::update;
 
 const FEE: u128 = 100_000_000;
 
 #[update]
-fn deposit() -> Nat {
+fn compute() {
     let available = ic_cdk::api::msg_cycles_available();
     if available < FEE {
         ic_cdk::trap("Insufficient cycles");
     }
-    Nat::from(ic_cdk::api::msg_cycles_accept(FEE)) // accept exactly the fee; excess is returned automatically
+    ic_cdk::api::msg_cycles_accept(FEE); // accept exactly the fee; excess is returned automatically
+    // ... do work here
 }
 ```
 
