@@ -54,7 +54,7 @@ persistent actor {
     label scan for ((id, item) in Map.entries(items)) {
       if (id < threshold) continue scan;
       if (count >= limit) break scan;
-      collected := Array.append(collected, [item]);
+      collected := Array.concat(collected, [item]);
       count += 1;
     };
     let nextCursor = if (count < limit) null else ?(collected[count - 1].id);
@@ -68,16 +68,33 @@ persistent actor {
 
 ```rust
 use ic_stable_structures::{StableBTreeMap, memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl};
+use ic_stable_structures::storable::{Bound, Storable};
 use ic_cdk::{query, update};
 use candid::{CandidType, Deserialize};
+use serde::Serialize;
+use std::borrow::Cow;
 use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
-#[derive(CandidType, Deserialize, Clone)]
+#[derive(CandidType, Serialize, Deserialize, Clone)]
 struct Item {
     id: u64,
     name: String,
+}
+
+impl Storable for Item {
+    const BOUND: Bound = Bound::Unbounded;
+
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        let mut buf = vec![];
+        ciborium::into_writer(self, &mut buf).expect("failed to encode Item");
+        Cow::Owned(buf)
+    }
+
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
+        ciborium::from_reader(bytes.as_ref()).expect("failed to decode Item")
+    }
 }
 
 #[derive(CandidType)]
