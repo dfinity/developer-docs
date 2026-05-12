@@ -18,7 +18,7 @@ Consider migrating a canister when:
 
 ## Choosing your approach
 
-Your options depend on whether the canister ID is load-bearing:
+Your options depend on whether the canister ID can change:
 
 | Approach | State | Canister ID | Source canister | Complexity |
 |---|---|---|---|---|
@@ -27,14 +27,16 @@ Your options depend on whether the canister ID is load-bearing:
 
 **Snapshot transfer** is the simpler path and is appropriate when you can accept a new canister ID. Create a new canister on the desired subnet, transfer state via snapshots, and switch over. The source canister is retained and can be deleted afterward.
 
-**Full migration** is required when the canister ID must be preserved. A canister ID is load-bearing in these situations:
+**Full migration** is required when the canister ID must be preserved. The canister ID cannot change when:
 
 - **Threshold signatures (tECDSA / tSchnorr)**: The IC derives signing keys by cryptographically binding them to the calling canister's principal. Any Bitcoin or Ethereum addresses derived from those keys are permanently tied to the original canister ID. Changing the ID means losing access to those signing keys and any assets they control.
 - **vetKeys**: vetKey derivation includes the canister's principal. A new ID produces entirely different decryption keys, making previously encrypted data permanently inaccessible.
 - **External references**: Other canisters, frontends, or off-chain systems that reference the canister by ID will break. This includes Internet Identity: users who authenticated via a canister-ID-based domain (for example, `<canister-id>.icp0.io`) will lose access to their sessions.
 
 :::danger
-Choosing snapshot transfer when the canister ID is load-bearing causes permanent, irreversible loss. Any threshold signature keys (tECDSA / tSchnorr) and the Bitcoin or Ethereum addresses derived from them are gone. Any data encrypted under a vetKey becomes permanently inaccessible. There is no recovery path. Verify whether your canister derives threshold signatures or vetKeys before choosing an approach.
+If your canister uses threshold signatures (tECDSA / tSchnorr) or vetKeys, snapshot transfer splits state from keys: the target canister gets a new ID and therefore different signing and decryption keys. Any Bitcoin or Ethereum addresses and any encrypted data tied to the original canister ID become inaccessible from the new canister.
+
+You still have a recovery window: the source canister is retained after snapshot transfer, so the original keys remain accessible through it. Stop the target, switch back to the source, and perform full migration instead — before deleting the source canister. Once the source is deleted, those keys and any assets or data tied to them are permanently gone.
 :::
 
 ## Migrating without preserving the canister ID
