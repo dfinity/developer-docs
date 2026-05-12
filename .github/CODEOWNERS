@@ -12,3 +12,9 @@ public/references/ic.did @dfinity/interface-spec @dfinity/team-dsm @dfinity/cons
 public/references/certificates.cddl @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
 public/references/requests.cddl @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
 public/references/http-gateway.did @dfinity/interface-spec @dfinity/team-dsm @dfinity/consensus @dfinity/dx
+
+# Security — product-security team must approve changes to security best practices
+docs/guides/security/ @dfinity/product-security @dfinity/dx
+docs/concepts/security.md @dfinity/product-security @dfinity/dx
+docs/references/message-execution-properties.md @dfinity/product-security @dfinity/dx
+docs/guides/canister-calls/idempotency.md @dfinity/product-security @dfinity/dx

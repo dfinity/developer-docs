@@ -1,110 +1,223 @@
 ---
-title: "Inter-canister call safety"
-description: "Handle reentrancy, callback traps, and async safety in inter-canister calls"
+title: "Inter-canister calls"
+description: "Security best practices for handling traps in callbacks, message ordering, rejected calls, and untrustworthy canisters."
 sidebar:
   order: 5
 ---
 
-Inter-canister calls are the most common source of security bugs on the Internet Computer. The async messaging model creates a class of vulnerabilities that do not exist in synchronous systems: state can change between an `await` and its response, traps in callbacks can skip security-critical operations, and calls to untrusted canisters can permanently block upgrades.
+To understand the issues around async inter-canister calls, one needs to understand the [properties of message execution on ICP](../../references/message-execution-properties.md). Understanding these properties is a prerequisite for understanding the security issues discussed below.
 
-This guide covers the specific patterns you must apply whenever your canister makes an inter-canister call.
+This is also explained in the [community conversation on security best practices](https://www.youtube.com/watch?v=PneRzDmf_Xw&list=PLuhDt1vhGcrez-f3I0_hvbwGZHZzkZ7Ng&index=2&t=4s).
 
-## Why inter-canister calls are dangerous
+## Securely handle traps in callbacks
 
-When your canister `await`s a call to another canister, the IC scheduler can interleave other incoming messages while your canister waits for the response. This means:
+### Security concern
 
-- State your canister read before the `await` may be different when the callback runs.
-- A second call from the same user can arrive and begin executing before the first call's callback completes.
-- If the callback traps, any mutations made in the callback are rolled back: but mutations made before the `await` are already committed.
+Traps and panics roll back the canister state, as described in [Property 5](../../references/message-execution-properties.md#message-execution-properties). So any state change followed by a trap or panic can be risky. This is an important concern when inter-canister calls are made. If a trap occurs after an await to an inter-canister call, then the state is reverted to the snapshot before the inter-canister call's callback invocation, and not to the state before the entire call.
 
-The code before `await` and the code after `await` execute as **separate atomic message executions**. Understanding this is the foundation of inter-canister call security.
+More precisely, suppose some state changes are applied and then an inter-canister call is issued. Also, assume that these state changes leave the canister in an inconsistent state, and that state is only made consistent again in the callback. Now if there is a trap in the callback, this leaves the canister in an inconsistent state.
 
-## Reentrancy and the CallerGuard pattern
+Here are two example security issues that can arise because of this:
 
-A reentrancy bug occurs when a second message from the same caller interleaves with a first message that is still in progress: that is, awaiting a response. In DeFi contexts this enables double-spending: the attacker calls `withdraw()`, waits for it to begin the inter-canister transfer, then calls `withdraw()` again before the first call updates the balance.
+- Assume an inter-canister call is issued to transfer funds. In the callback, the canister accounts for having made that transfer by updating the balances in the canister storage. However, suppose the callback also updates some usage statistics data, which eventually leads to a trap when some data structure becomes full. As soon as that is the case, the canister ends up in an inconsistent state because the state changes in the callback are no longer applied, and thus the transfers are not correctly accounted for.
+  ![example_trap_after_await](/img/docs/security/example_trap_after_await.png)
+  This example is also discussed in this [community conversation](https://www.youtube.com/watch?v=PneRzDmf_Xw&list=PLuhDt1vhGcrez-f3I0_hvbwGZHZzkZ7Ng&index=2&t=4s).
 
-The CallerGuard pattern prevents this by tracking which callers have an in-flight operation. When a second call arrives from the same caller, it is rejected before it can interleave.
+- Suppose part of the canister state is locked before an inter-canister call and released in the callback. Then the lock may never be released if the callback traps.
+  Note that in canisters implemented in Rust with Rust CDK version `0.5.1`, any local variables still go out of scope if a callback traps. The CDK actually calls into the `ic0.call_on_cleanup` API to release these resources. This helps to prevent issues with locks not being released, as it is possible to use Rust's Drop implementation to release locked resources, as we discuss in [Be aware that there is no reliable message ordering](#be-aware-that-there-is-no-reliable-message-ordering).
 
-### Motoko
+### Recommendation
 
-In Motoko, the guard must be released in a `finally` block. The `finally` block runs in cleanup context, where state changes are committed even if the `try` body trapped. If you release the guard inside the `try` body, a trap in the callback leaves the guard held forever. The caller is permanently locked out.
+Recall that the responses to inter-canister calls are processed in the corresponding callback. If the callback traps, the cleanup (ic0.call_on_cleanup) is executed. When making an inter-canister call, ICP reserves sufficiently many cycles to execute the response callback or cleanup, up to the instruction limit. A fixed fraction of the reservation is set aside for the cleanup. Thus, a response or cleanup execution can never "run out of cycles," but they can run into the instruction limit and trap.
+
+The naïve recommendation to address the security concern described above would be to avoid traps. However, that can be very difficult to achieve due to the following reasons:
+
+- The implementation can be involved and could panic due to bugs, such as index out-of-bounds errors or panics (expect, unwrap) that should supposedly never happen.
+
+- It is hard to make sure the callback or cleanup doesn't run into the instruction limit and thus traps, because the number of instructions required can in general not be predicted and may depend on the data being processed.
+
+Due to these reasons, while it is easy to recommend "avoiding traps", this is actually hard to achieve in practice. Therefore, code should be written so that it can deal even with unexpected traps due to bugs or hitting the instruction limits. There are two approaches:
+
+1. Perform simple cleanups
+1. Utilize "journaling."
+
+In the first approach, the cleanup callback is used to recover from unexpected panics. This can work, but it has several drawbacks:
+- The cleanup itself could panic, in which case one is in the initial problematic situation again. The risk may be acceptable for simple cleanups, but as discussed above, it is hard to write code that never panics, especially if it is somewhat complex.
+- As of version 0.12.0, Motoko provides the `try`/`finally` feature to clean up temporary resource allocations in a structured way. Cleanup is used (as formerly) internally by Motoko to perform some state manipulations and now allows inserting programmer-written code also. If an execution path after `await` traps, all `finally` blocks in (dynamic) scope will be executed as a last-resort measure. Be aware that `finally` is not a magical construct to end all trap worries, as trapping in the `finally` blocks themselves can still leave your canister in an inconsistent state. Thus we recommend keeping your `finally` code clear and concise and paying special attention to reviewing it well.
+- As discussed above, the Rust CDK has a feature that automatically releases local variables in cleanup, which [can be used to release locks](#recommendation-1). Since only one cleanup callback can be defined, any custom cleanup would currently have to implement that feature itself if needed, making this currently hard to use and understand.
+
+Instead, "journaling" is the recommended way of addressing the problem at hand.
+
+### Journaling
+
+Journaling can be used for ensuring that tasks are completed correctly in an asynchronous context, where any instruction or async task can fail. Journaling is generally useful in any security-critical application canister on ICP. The journaling concept we describe here is inspired and adapted from journaling in file systems.
+
+Conceptually, a journal is a chronological list of records kept in a canister's storage. It keeps track of tasks before they begin and when they are completed. Before each failable task, the journal records the intent to execute the task, and after the task, the journal records the result. The journal supports idempotent task flows by providing the necessary information for the canister to resume flows that failed to complete, report progress for ongoing flows, and report results for completed flows. Retries can be initiated by calls, automatically on a [heartbeat](../backends/timers.md#heartbeats-legacy) or using [timers](../backends/timers.md). If the task flow was completed in a heartbeat or a timer, a user can take advantage of idempotency to check the result.
+
+Creating a record in the journal is called "journaling." For example, to make an unreliable async call to a ledger:
+
+1. Check the journal to ensure the transfer is not already in progress. If it is already in progress, go into recovery (see the [Recovery](#recovery) section below). Otherwise, journal the intent to call a ledger to transfer 1 token from A to B. The journaled intent should contain sufficient context to later identify what happened to the call.
+
+    - An "in progress" transfer would show in the journal as an entry containing intent to do the transfer without an entry containing the result of the transfer call.
+
+1. Call the ledger to transfer 1 token from A to B.
+
+1. Journal the result of the transfer.
+
+    - On failure, record the error.
+
+    - On success, record success. In order to commit the record, an inter-canister call can be made to an endpoint on the same canister that does nothing. Otherwise, a trap could erase the journaled result, complicating recovery.
+
+1. Continue onto the next blocked task.
+
+    - "Blocked tasks" are those that require step 3 to be completed before execution.
+
+    - A blocked task may depend on the success or failure recorded in step 3.
+
+    - Examples of blocked tasks:
+
+    - On failure, log the failure in a user-visible log, and if less than 5 failures have occurred, make a new transfer outcall with the same parameters.
+
+        - On success, update the internal accounting of assets to conform to the result of the transfer.
+
+    - Note that any independent task does not need to wait for any part of this flow.
+
+The critical property of the journal is that at any point, if there is a failure, the journal is sufficient to determine what the next safe step should be. If, after step 1 (journal the intent),
+there is a failure in step 2 or 3, and step 3 has not been completed, then the application should complete step 3 by finding out what happened to the call in step 2. If finding out what happened to the call is too difficult to automate, it can be done manually. The journal can indicate whether a manual intervention is necessary and the type of intervention that is necessary.
+The fact that the intent has been journaled and the app knows not to reenter the flow until the result has been recorded means the journal acts as a lock on the critical section containing
+the ledger outcall. The lock will not get stuck, assuming the application can always find out what happened to a call. Enough context about the call should be recorded in the intent to ensure
+that this is the case. For the ICP ledger, an ID can be generated and recorded in the journaled intent, and the ledger can be called with the ID included in the memo so that the result of the
+call can be queried later.
+
+### Journaling is robust to panics
+
+Continuing the above example, consider a panic at any point.
+1. If there is panic before the async outcall, then the journaled intent will be lost. No state change occurred internally, and no outcalls were made, so the app is in a safe state. The next step is to record a new intent.
+1. If there is a panic after the async outcall and no self-call was used to commit the journal, the journaled result (step 3) will be lost. This means the app will need to determine the result and journal it before continuing to step 4. As long as it is possible to determine the result, the app can be brought back to a consistent state.
+
+### Journaling and audit events
+
+The journal can be used to augment the audit trail for recent events. However, it is probably too detailed for long-term storage. After a while, journal entries could be compressed and incorporated into long-term audit events. The process for creating audit events could itself be journaled.
+
+### Recovery
+
+The journal ensures the application knows that recovery from an error is needed and aids in making recovery decisions. In order to support the recovery process, the journal should support querying all unresolved tasks of a certain type and tasks of a certain type that resulted in an error. Given an intent, the journal should also be able to return the result if it exists and indicate if it does not exist.
+
+Note that recovery can often be complex to automate. In such cases, the journal can support a manual recovery process.
+Extending the ledger example above, a recovery process could look as follows:
+
+1. There is a panic, and the status of the ledger call is unknown. However, the journal has recorded that a call to transfer with particular parameters and a memo has been made, including the deduplication timestamp of the transfer.
+1. The app calls the ledger to determine whether a transaction with the journaled parameters has succeeded on the ledger. Due to the guarantee that any pair of messages that are both executed are always executed in the order issued, if the ledger indicates that the transaction has not occurred, then the transaction will never occur.
+1. The app journals the result of the transfer call.
+1. The app journals the intention to update internal state according to the result of the transfer call, then updates the internal state, and finally journals the result of the attempt to update the internal state. Journaling this step is still useful even if it does not contain outcalls, because outcalls may be introduced later, and the step could conflict with other processes that are not atomic.
+
+Note that querying the ICP ledger or an ICRC ledger to determine whether a transaction has succeeded is not straightforward to automate, so it could be done manually.
+
+### Example implementation of journaling
+
+GoldDAO's GLDT-swap has an implementation of journaling. In their case, the journal entries are recorded in the "registry." Note that in GLDT-swap there is also a separate concept of "record," which is a permanent audit trail and is not used for journaling. Some error paths require manual recovery. See the following reference points:
+
+- Registry (journal) structure:
+    - https://github.com/GoldDAO/gold-dao/blob/ledger-v1.0.0/canister/gldt_core/src/registry.rs#L18
+    - https://github.com/GoldDAO/gold-dao/blob/ledger-v1.0.0/canister/gldt_core/src/lib.rs#L654
+- The registry is used in `notify_sale_nft_origyn` to record progress and enforce correctness of the flow.
+    - https://github.com/GoldDAO/gold-dao/blob/ledger-v1.0.0/canister/gldt_core/src/lib.rs#L910
+    - Note that not all details of the flow appear in the registry. The amount of detail to include depends on one's goals for recovery.
+
+## Be aware that there is no reliable message ordering
+
+### Security concern
+
+As described in the [properties of message executions on ICP](../../references/message-execution-properties.md), messages (but not entire calls) are processed atomically. In particular, as described in Property 4 in that document, messages from interleaving calls do not have a reliable execution ordering. Thus, the state of the canister (and other canisters) may change between the time an inter-canister call is started and the time when it returns, which may lead to issues if not handled correctly. These issues are generally called 'reentrancy bugs' (see the [Ethereum best practices on reentrancy](https://consensysdiligence.github.io/smart-contract-best-practices/attacks/reentrancy/)). Note, however, that the messaging guarantees, and thus the bugs, on ICP are different from Ethereum.
+
+Here are two concrete and somewhat similar types of bugs to illustrate potential reentrancy security issues:
+
+- **Time-of-check time-of-use issues:** These occur when some condition on global state is checked before an inter-canister call and then wrongly assuming the condition still holds when the call returns. For example, one might check if there is sufficient balance on some account, then issue an inter-canister call, and finally make a transfer as part of the callback message. When the second inter-canister call starts, it is possible that the condition that was checked initially no longer holds, because other ledger transfers may have happened before the callback of the first call is executed (see also Property 4 above).
+
+- **Double-spending issues**: Such issues occur when a transfer is issued twice, often because of unfavorable message scheduling. For example, suppose you check if a caller is eligible for a refund, and if so, transfer some refund amount to them. When the refund ledger call returns successfully, you set a flag in the canister storage indicating that the caller has been refunded. This is vulnerable to double-spending because the refund method can be called twice by the caller in parallel, in which case it is possible that the messages before issuing the transfer (including the eligibility check) are scheduled before both callbacks. A detailed explanation of this issue can be found in the [community conversation on security best practices](https://www.youtube.com/watch?v=PneRzDmf_Xw&list=PLuhDt1vhGcrez-f3I0_hvbwGZHZzkZ7Ng&index=2&t=4s).
+
+### Recommendation
+
+It is highly recommended to carefully review any canister code that makes async inter-canister calls (`await`). If two messages read or write the same state, review if there is a possible scheduling of these messages that leads to illegal transactions or an inconsistent state.
+
+See also: "Inter-canister calls" section in [how to audit an ICP canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
+
+To address issues around message ordering that can lead to bugs, one usually employs locking mechanisms to ensure that a caller or anyone can only execute an entire call, which involves several messages, once at a time. A simple example is also given in the [community conversation](https://www.youtube.com/watch?v=PneRzDmf_Xw&list=PLuhDt1vhGcrez-f3I0_hvbwGZHZzkZ7Ng&index=2&t=4s) mentioned above.
+
+The locks would usually be released in the callback. That bears the risk that the lock may never be released in case the callback traps, as we discussed in [securely handle traps in callbacks](#securely-handle-traps-in-callbacks). The code examples below show how one can securely implement a lock per caller.
+- In Rust, one can use the drop pattern where each caller lock (`CallerGuard` struct) implements the `Drop` trait to release the lock. From Rust CDK version `0.5.1`, any local variables still go out of scope if the callback traps, so the lock on the caller is released even in that case. Technically, the CDK calls into the `ic0.call_on_cleanup` API to release these resources. Recall that `ic0.call_on_cleanup` is executed if the `reply` or the `reject` callback executed and trapped.
+- In Motoko, one can use the `try`/`finally` control flow construct. This construct guarantees that the lock is released in the `finally` block regardless of any errors or traps in the `try` or `catch` blocks.
+
+**Motoko:**
 
 ```motoko
-import Map "mo:core/Map";
-import Principal "mo:core/Principal";
-import Error "mo:core/Error";
 import Result "mo:core/Result";
+import Map "mo:core/Map";
+import Error "mo:core/Error";
+import Principal "mo:core/Principal";
 
-// Inside your persistent actor class { ... }
-// Replace otherCanister with your canister reference.
+actor {
 
-let pendingRequests = Map.empty<Principal, Bool>();
+  let pending_requests = Map.empty<Principal, Bool>();
 
-func acquireGuard(principal : Principal) : Result.Result<(), Text> {
-  if (Map.get(pendingRequests, Principal.compare, principal) != null) {
-    return #err("already processing a request for this caller");
-  };
-  Map.add(pendingRequests, Principal.compare, principal, true);
-  #ok
-};
-
-func releaseGuard(principal : Principal) {
-  ignore Map.delete(pendingRequests, Principal.compare, principal);
-};
-
-public shared ({ caller }) func withdraw(amount : Nat) : async Result.Result<(), Text> {
-  if (Principal.isAnonymous(caller)) {
-    return #err("anonymous caller not allowed");
+  private func guard(principal : Principal) : Result.Result<(), Error.Error> {
+    if (Map.get(pending_requests, Principal.compare, principal) != null) {
+      #err (Error.reject("Already processing a request for principal " # Principal.toText(principal)));
+    } else {
+      Map.add(pending_requests, Principal.compare, principal, true);
+      #ok;
+    };
   };
 
-  // Acquire per-caller lock before any state reads or async calls.
-  switch (acquireGuard(caller)) {
-    case (#err(msg)) { return #err(msg) };
-    case (#ok) {};
+  private func drop_guard(principal : Principal) {
+    ignore Map.delete(pending_requests, Principal.compare, principal);
   };
 
-  try {
-    // Read state and make the inter-canister call here.
-    let result = await otherCanister.transfer(caller, amount);
-    #ok(result)
-  } catch (e) {
-    #err("transfer failed: " # Error.message(e))
-  } finally {
-    // Runs in cleanup context regardless of success or trap.
-    // State mutations here are always committed.
-    releaseGuard(caller);
+  public shared ({ caller }) func example_call_with_locking_per_caller() : async Result.Result<(), (Error.ErrorCode, Text)> {
+    var guard_acquired = false;
+    try {
+      // Try to create a lock for `caller`, return an error immediately if there is already a call in progress for `caller`
+      switch (guard caller) {
+        case (#ok) guard_acquired := true;
+        case (#err e) return (#err (Error.code e, Error.message e));
+      };
+      // do anything, call other canisters
+      #ok
+    } catch e {
+      #err (Error.code e, Error.message e);
+    } finally {
+      // Release the guard (only requests that have created a lock)
+      if guard_acquired {
+        drop_guard caller;
+      };
+    };
   };
 };
 ```
 
-### Rust
-
-In Rust, the `Drop` trait releases the lock when the guard goes out of scope: including when the async function is cancelled or a trap occurs. Never write `let _ = CallerGuard::new(caller)?`: the leading underscore drops the guard immediately, making locking ineffective. Always bind to a named variable: `let _guard = CallerGuard::new(caller)?`.
+**Rust:**
 
 ```rust
-use std::cell::RefCell;
-use std::collections::BTreeSet;
-use candid::Principal;
-use ic_cdk::update;
-use ic_cdk::api::msg_caller;
-use ic_cdk::call::Call;
-
-// Replace other_canister_id() with your canister's ID lookup.
-
-thread_local! {
-    static PENDING: RefCell<BTreeSet<Principal>> = RefCell::new(BTreeSet::new());
+pub struct State {
+    pending_requests: BTreeSet<Principal>,
 }
 
-struct CallerGuard {
+thread_local! {
+    static STATE: RefCell<State> = RefCell::new(State{pending_requests: BTreeSet::new()});
+}
+
+pub struct CallerGuard {
     principal: Principal,
 }
 
 impl CallerGuard {
-    fn new(principal: Principal) -> Result<Self, String> {
-        PENDING.with(|p| {
-            if !p.borrow_mut().insert(principal) {
-                return Err("already processing a request for this caller".to_string());
+    pub fn new(principal: Principal) -> Result<Self, String> {
+        STATE.with(|state| {
+            let pending_requests = &mut state.borrow_mut().pending_requests;
+            if pending_requests.contains(&principal){
+                return Err(format!("Already processing a request for principal {:?}", &principal));
             }
+            pending_requests.insert(principal);
             Ok(Self { principal })
         })
     }
@@ -112,372 +225,115 @@ impl CallerGuard {
 
 impl Drop for CallerGuard {
     fn drop(&mut self) {
-        PENDING.with(|p| {
-            p.borrow_mut().remove(&self.principal);
-        });
+        STATE.with(|state| {
+            state.borrow_mut().pending_requests.remove(&self.principal);
+        })
     }
 }
 
 #[update]
-async fn withdraw(amount: u64) -> Result<(), String> {
-    let caller = msg_caller();
-    if caller == Principal::anonymous() {
-        return Err("anonymous caller not allowed".to_string());
-    }
-
-    // Acquire per-caller lock. Drop releases the lock when _guard goes out of scope.
+#[candid_method(update)]
+async fn example_call_with_locking_per_caller() -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    // using `?`, return an error immediately if there is already a call in progress for `caller`
+    // warning: never use `let _ = CallerGuard::new(caller)?`, because this will drop the guard immediately
+    // and locking would not be effective
     let _guard = CallerGuard::new(caller)?;
-
-    // Make the inter-canister call while the lock is held.
-    Call::bounded_wait(other_canister_id(), "transfer")
-        .with_args(&(caller, amount))
-        .await
-        .map_err(|e| format!("transfer failed: {:?}", e))?;
-
+    // do anything, call other canisters
     Ok(())
-    // _guard dropped here: lock released
-}
-```
+} // here the guard goes out of scope and is dropped
 
-## State mutations before and after await
+mod test {
+    use super::*;
 
-Because the code before `await` and the code after `await` are separate message executions, you must treat them independently when reasoning about consistency.
-
-**The critical rule:** If your canister mutates state before an `await`, that mutation is committed even if the callback traps.
-
-### Example: deduct before transferring
-
-In a token transfer flow, deduct the balance before the inter-canister call rather than after. If the call fails, refund in the callback. This approach is safe: if the callback traps, the pre-deducted balance stays deducted (you can detect and remediate the stuck state. If you deduct after the call and the callback traps, the transfer happened but the balance was never deducted) funds are double-spent.
-
-**Motoko:**
-
-```motoko
-import Map "mo:core/Map";
-import Principal "mo:core/Principal";
-import Error "mo:core/Error";
-import Result "mo:core/Result";
-
-// Inside your persistent actor class { ... }
-let balances = Map.empty<Principal, Nat>();
-
-public shared ({ caller }) func transfer(to : Principal, amount : Nat) : async Result.Result<(), Text> {
-  // 1. Validate balance before the await.
-  let balance = switch (Map.get(balances, Principal.compare, caller)) {
-    case (?b) b;
-    case null 0;
-  };
-  if (balance < amount) {
-    return #err("insufficient balance");
-  };
-
-  // 2. Deduct BEFORE the await: mutation is committed regardless of callback outcome.
-  Map.add(balances, Principal.compare, caller, balance - amount);
-
-  // 3. Perform the inter-canister call.
-  try {
-    await ledgerCanister.transfer(to, amount);
-    #ok(())
-  } catch (e) {
-    // 4. Refund on failure: the deduction persists even if this try/catch runs.
-    let currentBalance = switch (Map.get(balances, Principal.compare, caller)) {
-      case (?b) b;
-      case null 0;
-    };
-    Map.add(balances, Principal.compare, caller, currentBalance + amount);
-    #err("transfer failed: " # Error.message(e))
-  }
-};
-```
-
-**Rust:**
-
-```rust
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use candid::Principal;
-use ic_cdk::update;
-use ic_cdk::api::msg_caller;
-use ic_cdk::call::Call;
-
-// Replace ledger_canister_id() with your canister's ID lookup.
-
-thread_local! {
-    static BALANCES: RefCell<BTreeMap<Principal, u64>> =
-        RefCell::new(BTreeMap::new());
-}
-
-#[update]
-async fn transfer(to: Principal, amount: u64) -> Result<(), String> {
-    let caller = msg_caller();
-
-    // 1. Validate and deduct BEFORE the await.
-    BALANCES.with(|b| {
-        let mut balances = b.borrow_mut();
-        let balance = balances.get(&caller).copied().unwrap_or(0);
-        if balance < amount {
-            return Err("insufficient balance".to_string());
-        }
-        balances.insert(caller, balance - amount);
-        Ok(())
-    })?;
-
-    // 2. Make the inter-canister call.
-    let result = Call::bounded_wait(ledger_canister_id(), "transfer")
-        .with_args(&(to, amount))
-        .await;
-
-    if let Err(e) = result {
-        // 3. Refund on failure.
-        BALANCES.with(|b| {
-            let mut balances = b.borrow_mut();
-            let current = balances.get(&caller).copied().unwrap_or(0);
-            balances.insert(caller, current + amount);
-        });
-        return Err(format!("transfer failed: {:?}", e));
+    #[test]
+    fn should_obtain_guard_for_different_principals() {
+        let principal_1 = Principal::anonymous();
+        let principal_2 = Principal::management_canister();
+        let caller_guard = CallerGuard::new(principal_1);
+        assert!(caller_guard.is_ok());
+        assert!(CallerGuard::new(principal_2).is_ok());
     }
 
-    Ok(())
-}
-```
+    #[test]
+    fn should_not_obtain_guard_twice_for_same_principal() {
+        let principal = Principal::anonymous();
+        let caller_guard = CallerGuard::new(principal);
+        assert!(caller_guard.is_ok());
+        assert!(CallerGuard::new(principal).is_err());
+    }
 
-## Callback traps and security-critical cleanup
-
-A trap in an inter-canister call callback is particularly dangerous: the callback's state mutations are rolled back, but the pre-`await` mutations are not. A malicious callee can induce a trap in your callback to skip actions that should always run: like debiting an account.
-
-To protect against this:
-
-1. **Keep callbacks minimal.** The less logic in a callback, the fewer opportunities for a trap.
-2. **Use `finally` (Motoko) or `Drop` guards (Rust) for cleanup.** Cleanup that runs in `finally` or in `drop()` executes in cleanup context where mutations persist even after a trap.
-3. **Avoid calling untrusted canisters** from callbacks that perform security-critical state changes. The callee can cause your callback to trap.
-
-### Motoko: cleanup in finally
-
-```motoko
-import Error "mo:core/Error";
-
-// Inside your persistent actor class { ... }
-// Replace otherCanister with your canister reference.
-
-var operationInProgress = false;
-
-public shared ({ caller }) func riskyOperation() : async () {
-  operationInProgress := true;  // Committed immediately
-
-  try {
-    await otherCanister.doSomething();
-    // ... callback logic
-  } catch (e) {
-    // Handle error
-    ignore Error.message(e);
-  } finally {
-    // Runs in cleanup context: mutation persists even if callback trapped.
-    operationInProgress := false;
-  }
-};
-```
-
-### Rust: cleanup via Drop
-
-```rust
-use std::cell::Cell;
-use ic_cdk::update;
-use ic_cdk::call::Call;
-
-// Replace other_canister_id() with your canister's ID lookup.
-
-thread_local! {
-    static OPERATION_IN_PROGRESS: Cell<bool> = Cell::new(false);
-}
-
-struct OperationGuard;
-
-impl Drop for OperationGuard {
-    fn drop(&mut self) {
-        // Runs when the guard is dropped, even during cleanup after a trap.
-        OPERATION_IN_PROGRESS.with(|f| f.set(false));
+    #[test]
+    fn should_release_guard_on_drop() {
+        let principal = Principal::anonymous();
+        {
+            let caller_guard = CallerGuard::new(principal);
+            assert!(caller_guard.is_ok());
+        } // drop caller_guard as it goes out of scope here
+        // it is possible to get a guard again:
+        assert!(CallerGuard::new(principal).is_ok());
     }
 }
-
-#[update]
-async fn risky_operation() -> Result<(), String> {
-    OPERATION_IN_PROGRESS.with(|f| f.set(true)); // Committed immediately
-
-    // _guard released (Drop called) when this function returns or is cancelled.
-    let _guard = OperationGuard;
-
-    Call::bounded_wait(other_canister_id(), "do_something")
-        .await
-        .map_err(|e| format!("call failed: {:?}", e))?;
-
-    Ok(())
-}
 ```
 
-## Bounded vs unbounded wait
+This pattern can be extended to work for the following use cases:
 
-The IC offers two kinds of inter-canister calls:
+- A global lock that does not only lock per caller. For this, set a boolean flag in the canister state instead of using a `BTreeSet<Principal>` (Rust) or `Map<Principal, Bool>` (Motoko).
+- A guard that makes sure that only a limited number of principals are allowed to execute a method at the same time.
+  - Rust: Return an error in `CallerGuard::new()` in case `pending_requests.len() >= MAX_NUM_CONCURRENT_REQUESTS`.
+  - Motoko: Return an error in `guard` in case `Map.size(pending_requests) >= MAX_NUM_CONCURRENT_REQUESTS`.
+- A guard that limits the number of times a method can be called in parallel.
+  - Rust: Use a counter in the canister state that is checked and increased in `CallerGuard::new()` and decreased in `Drop`.
+  - Motoko: Increase a counter in the `guard` function and decrease it in the `drop` function.
+- A guard that makes sure that every task from a set of tasks can only be processed once, independent of the caller who triggered the processing. [View example project](https://github.com/dfinity/examples/tree/master/rust/guards).
+- A lock that uses a different type than `Principal` to grant access to the resource. [View an implementation using generic types](https://github.com/dfinity/examples/tree/master/rust/guards).
 
-| | `bounded_wait` | `unbounded_wait` |
-|---|---|---|
-| Timeout | 300 seconds (default) | No timeout |
-| If callee is unresponsive | Returns `SYS_UNKNOWN` error | Waits indefinitely |
-| Upgrade safety | Canister can be stopped and upgraded after timeout | Canister **cannot be stopped** while awaiting |
-| Use for | Calls to external or untrusted canisters | Calls to your own canisters you control |
+Finally, note that the same guard can be used in several methods to restrict parallel execution of them.
 
-**The upgrade safety issue:** A canister cannot be stopped (and therefore cannot be upgraded) while it has outstanding unbounded-wait calls. If the callee is malicious or buggy and never responds, your canister is permanently stuck. Use `bounded_wait` for any call to a canister you do not control.
+## Handle rejected inter-canister calls correctly
 
-### Motoko: bounded vs unbounded
+### Security concern
 
-Motoko does not yet expose a direct API to switch between bounded and unbounded wait. The `await` keyword currently uses unbounded wait. For calls to untrusted canisters, prefer the system-level API (available via Rust) or structure your application so calls to untrusted canisters only go out from canisters you can afford to sacrifice.
+As stated by the [Property 6](../../references/message-execution-properties.md#message-execution-properties), inter-canister calls can fail in which case they result in a **reject**. See [reject codes](../../references/ic-interface-spec/https-interface.md#reject-codes) for more detail. The caller must correctly deal with the reject cases, as they can happen in normal operation, because of insufficient cycles on the sender or receiver side, or because some data structures like message queues are full.
 
-<!-- Needs human verification: Motoko bounded-wait API availability — as of current release, Motoko does not expose a bounded_wait equivalent. Verify against compiler release notes. -->
+1. The call was issued as a bounded-wait (best-effort response) call, and the system responded with a `SYS_UNKNOWN` reject code. In this case, the caller cannot be a priori sure whether the call took effect or not.
+2. The system responded with a `CANISTER_ERROR` reject code. This indicates a bug in the ledger canister. In this case, it is still possible that the call had a partial effect on the ledger canister.
+3. The system responded with a `CANISTER_REJECT` reject code. This means that the call was explicitly rejected by the ledger canister. Normally, this indicates that the transfer didn't happen, but this depends on the ledger canister. The ICP ledger canister for example never rejects calls explicitly.
 
-### Rust: choose bounded_wait for untrusted canisters
+### Recommendation
 
-```rust
-use ic_cdk::call::Call;
-use candid::Principal;
+When making inter-canister calls, always handle the error cases (rejects) correctly. Other than the `SYS_UNKNOWN` error code, these errors imply that the message has not been successfully executed. For `SYS_UNKNOWN`, follow the guidelines in the [safe retries and idempotency](../canister-calls/idempotency.md) document to handle this scenario correctly.
 
-async fn call_trusted(canister: Principal, method: &str) -> Result<String, String> {
-    // Use unbounded_wait only for canisters you control.
-    Call::unbounded_wait(canister, method)
-        .await
-        .map_err(|e| format!("call failed: {:?}", e))?
-        .candid()
-        .map_err(|e| format!("decode failed: {:?}", e))
-}
+## Be aware of the risks involved in calling untrustworthy canisters
 
-async fn call_untrusted(canister: Principal, method: &str) -> Result<String, String> {
-    // Use bounded_wait for external or untrusted canisters.
-    // Default timeout is 300 seconds. Adjust with .change_timeout(seconds).
-    Call::bounded_wait(canister, method)
-        .await
-        .map_err(|e| format!("call failed: {:?}", e))?
-        .candid()
-        .map_err(|e| format!("decode failed: {:?}", e))
-}
-```
+### Security concern
 
-## Response size limits
+- If inter-canister calls are made to potentially malicious canisters, this can lead to DoS issues, or there could be issues related to candid decoding. Also, the data returned from a canister call could be assumed to be trustworthy when it is not.
 
-All inter-canister call payloads (both requests and responses) are limited to **2 MB**. A request above 2 MB fails synchronously. A response above 2 MB causes the callee to trap.
+- When a canister `C1` calls a canister `C2` using an unbounded-wait (guaranteed-response) inter-canister call, and `C2` stalls the response indefinitely by not responding, the result would be a DoS on `C1`. Additionally, since the call registers a callback on `C1`, `C1` can no longer be stopped because of the outstanding callback, and thus can no longer be cleanly upgraded. Recovery would require wiping the state of the canister by reinstalling it. Note that even if `C2` was trustworthy it could still stall indefinitely. This could happen due to a bug in `C2` (which may be unlikely to occur). But other causes could be a stall of the subnet hosting `C2` (assuming that `C1` and `C2` are on different subnets), or `C2` making a downstream call to an untrusted canister `C3`.
 
-When reading large datasets across canisters, use pagination: return chunks of data per call rather than everything at once. Keep individual payloads under 1 MB to leave room for encoding overhead.
+- In summary, this can DoS a canister, consume an excessive amount of resources, or lead to logic bugs if the behavior of the canister depends on the inter-canister call response.
 
-```motoko
-// Paginated query: avoid returning unbounded data
-// Requires: import Array "mo:core/Array"; import Nat "mo:core/Nat";
-public query func getItems(offset : Nat, limit : Nat) : async [Item] {
-  // Return at most `limit` items starting from `offset`.
-  // Caller makes multiple calls to retrieve all data.
-  Array.sliceToArray(items, offset, offset + Nat.min(limit, items.size() - offset))
-};
-```
+### Recommendation
 
-## Caller identity across await points
+- Making inter-canister calls to trustworthy canisters is safe, except for the (possibly unlikely) case that there is a bug in the callee or its subnet that makes it stall for a long time.
 
-In Motoko, the `caller` is captured as an immutable binding at function entry via `public shared ({ caller }) func`. This is safe across `await` points.
+- Interacting with untrustworthy canisters is still possible by using a state-free proxy canister which could easily be re-installed if it is attacked as described above and is stuck. When the proxy is reinstalled, the caller obtains an error response to the open calls.
 
-In Rust, the current ic-cdk executor preserves caller across `.await` points via protected tasks, but this is an implementation detail: not a language guarantee. Bind `msg_caller()` before the first `await` as a defensive practice.
+- Sanitize data returned from inter-canister calls.
 
-```rust
-use ic_cdk::update;
-use ic_cdk::api::msg_caller;
-use ic_cdk::call::Call;
-use candid::Principal;
+- See the "Talking to malicious canisters" section in [how to audit an ICP canister](https://www.joachim-breitner.de/blog/788-How_to_audit_an_Internet_Computer_canister).
 
-// Replace other_canister_id() with your canister's ID lookup.
 
-#[update]
-async fn process() -> Result<(), String> {
-    // Capture caller BEFORE any await: defensive practice in Rust.
-    let caller: Principal = msg_caller();
+## Make sure there are no loops in call graphs
 
-    Call::bounded_wait(other_canister_id(), "validate")
-        .with_arg(caller)
-        .await
-        .map_err(|e| format!("validation failed: {:?}", e))?;
+### Security concern
 
-    // Use the captured binding, not msg_caller() again.
-    do_work_for(caller);
-    Ok(())
-}
+Loops in the call graph (e.g., canister A calling B, B calling C, C calling A) may lead to canister deadlocks.
 
-fn do_work_for(_caller: Principal) {
-    // ...
-}
-```
+### Recommendation
 
-## canister_inspect_message is not called for inter-canister calls
+- Avoid such loops, or rely on bounded-wait calls instead, since these provide timeouts.
 
-`canister_inspect_message` (Motoko: `system func inspect`) runs only for **ingress messages**: calls from external users arriving at the boundary nodes. It is never called for inter-canister calls.
 
-This means any access control you implement in `inspect_message` does not protect your canister from being called by another canister. Always duplicate access checks inside the method body itself.
-
-For full details on access control patterns, see [access management](access-management.md).
-
-## Handling rejected calls
-
-Inter-canister calls can be rejected for reasons beyond your control: the callee may have trapped, run out of cycles, been stopped, or the system may have rejected the message due to resource pressure. Unhandled rejections trap your canister.
-
-Always handle the error result of an inter-canister call.
-
-**Motoko:** use `try/catch`:
-
-```motoko
-import Error "mo:core/Error";
-import Result "mo:core/Result";
-
-// Inside your persistent actor class { ... }
-// Replace otherCanister with your canister reference.
-
-public shared func callSomething() : async Result.Result<Text, Text> {
-  try {
-    let result = await otherCanister.someMethod();
-    #ok(result)
-  } catch (e) {
-    #err("call failed: " # Error.message(e))
-  }
-};
-```
-
-**Rust:** handle the `Result` from `Call::bounded_wait`:
-
-```rust
-use ic_cdk::update;
-use ic_cdk::call::Call;
-use candid::Principal;
-
-// Replace other_canister_id() with your canister's ID lookup.
-
-#[update]
-async fn call_something() -> Result<String, String> {
-    let response = Call::bounded_wait(other_canister_id(), "some_method")
-        .await
-        .map_err(|e| format!("call rejected: {:?}", e))?;
-
-    response.candid::<String>()
-        .map_err(|e| format!("decode failed: {:?}", e))
-}
-```
-
-## Summary checklist
-
-Before shipping any canister that makes inter-canister calls:
-
-- **Reentrancy:** Apply CallerGuard (per-caller lock) to any method that makes an inter-canister call and reads or writes shared state.
-- **State ordering:** Deduct or commit before `await`; compensate on failure in the callback.
-- **Cleanup:** Use `finally` (Motoko) or `Drop` (Rust) for locks and cleanup that must always run.
-- **Wait type:** Use `bounded_wait` for calls to canisters you do not control; `unbounded_wait` only for your own canisters.
-- **Payload size:** Keep request and response payloads under 1 MB; paginate larger datasets.
-- **Caller capture:** In Rust, bind `msg_caller()` before the first `await`.
-- **Access control:** Do not rely on `canister_inspect_message` for inter-canister call security: always check the caller inside the method.
-- **Error handling:** Always handle the `Result` of every inter-canister call.
-
-## Next steps
-
-- [Inter-canister calls](../canister-calls/inter-canister-calls.md#making-calls): Basic inter-canister call patterns and the `Call` API
-- [Parallel inter-canister calls](../canister-calls/parallel-inter-canister-calls.md): Running multiple calls concurrently and handling partial failures
-- [Security concepts](../../concepts/security.md): IC security model and threat landscape
-
-<!-- Upstream: informed by dfinity/icskills — canister-security/SKILL.md, multi-canister/SKILL.md -->
+<!-- Upstream: informed by dfinity/portal building-apps/security/inter-canister-calls.mdx; dfinity/icskills skills/canister-security/SKILL.md -->
