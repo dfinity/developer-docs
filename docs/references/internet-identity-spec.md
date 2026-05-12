@@ -2,10 +2,8 @@
 title: "Internet Identity specification"
 description: "Technical specification of the Internet Identity service: authentication protocol, backend interface, and implementation notes."
 sidebar:
-  order: 10
+  order: 14
 ---
-
-# The Internet Identity Specification
 
 ## Introduction
 
@@ -877,7 +875,7 @@ type WebAuthn = record {
 };
 
 // Authentication method using generic signatures
-// See ./ic-interface-spec/index.md#signatures for
+// See https://internetcomputer.org/docs/current/references/ic-interface-spec/#signatures for
 // supported signature schemes.
 type PublicKeyAuthn = record {
     pubkey : PublicKey;

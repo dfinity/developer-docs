@@ -5,9 +5,9 @@
 // Transformations applied:
 //   - Strip MDX import lines
 //   - Remove the H1 heading (Starlight renders the frontmatter title as H1)
-//   - Inline the Candid interface from internet_identity.did in place of the
-//     <CodeBlock> component
 //   - Rewrite absolute / relative links that point outside this site
+//   - Inline the Candid interface from internet_identity.did in place of the
+//     <CodeBlock> component (done after link rewriting so .did comments are untouched)
 //
 // Usage: node scripts/sync-ii-spec.mjs
 //   or:  npm run sync:ii-spec
@@ -38,15 +38,9 @@ const didContent = readFileSync(SOURCE_DID, 'utf8');
 content = content.replace(/^import .*\n/gm, '');
 
 // 2. Strip the H1 (Starlight renders it from frontmatter)
-content = content.replace(/^# The Internet Identity Specification\n\n/, '');
+content = content.replace(/^# The Internet Identity Specification\n\n/m, '');
 
-// 3. Inline the Candid interface
-content = content.replace(
-  '<CodeBlock language="candid">{IICandidInterface}</CodeBlock>',
-  '```candid\n' + didContent.trimEnd() + '\n```'
-);
-
-// 4. Rewrite links — more specific patterns first to avoid partial matches
+// 3. Rewrite links before Candid inlining (keeps .did comments untouched)
 const linkMap = [
   [
     'https://internetcomputer.org/docs/current/references/ic-interface-spec#id-classes',
@@ -86,6 +80,12 @@ for (const [old, replacement] of linkMap) {
   content = content.replaceAll(old, replacement);
 }
 
+// 4. Inline the Candid interface (after link rewriting to avoid touching .did comments)
+content = content.replace(
+  '<CodeBlock language="candid">{IICandidInterface}</CodeBlock>',
+  '```candid\n' + didContent.trimEnd() + '\n```'
+);
+
 // 5. Strip leading blank lines, then inject frontmatter
 content = content.replace(/^\n+/, '');
 content =
@@ -93,7 +93,7 @@ content =
   `title: "Internet Identity specification"\n` +
   `description: "Technical specification of the Internet Identity service: authentication protocol, backend interface, and implementation notes."\n` +
   `sidebar:\n` +
-  `  order: 10\n` +
+  `  order: 14\n` +
   `---\n\n` +
   content;
 
@@ -120,8 +120,10 @@ content =
 writeFileSync(TARGET, content);
 console.log(`Written: ${TARGET}`);
 
-// Warn about any remaining absolute docs links that weren't rewritten
-const remaining = [...content.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
+// Warn about any remaining absolute docs links that weren't rewritten.
+// Strip code blocks first — URLs inside .did comments are intentionally preserved.
+const prose = content.replace(/```[\s\S]*?```/g, '');
+const remaining = [...prose.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
   .map(m => m[0]);
 const unique = [...new Set(remaining)];
 if (unique.length) {
