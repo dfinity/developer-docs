@@ -9,7 +9,7 @@ Technical reference material for ICP development. These pages cover exact specif
 
 ## Tools
 
-- **[Developer Tools](developer-tools.md)**: icp-cli, CDKs, JS SDK, PocketIC, ICP Ninja, and other toolchain components.
+- **[Developer Tools](../developer-tools/index.md)**: icp-cli, CDKs, JS SDK, PocketIC, ICP Ninja, and other toolchain components.
 
 ## Canisters
 
