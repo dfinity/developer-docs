@@ -662,7 +662,7 @@ The following parameters should be supplied for the call:
 
 -   `url` - the requested URL. The URL must be valid according to [RFC-3986](https://www.ietf.org/rfc/rfc3986.txt), it might contain non-ASCII characters according to [RFC-3987](https://www.ietf.org/rfc/rfc3987.txt), and its length must not exceed `8192`. The URL may specify a custom port number.
 
--   `max_response_bytes` - optional, specifies the maximal size of the response in bytes. If provided, the value must not exceed `2MB` (`2,000,000B`). The call will be charged based on this parameter. If not provided, the maximum of `2MB` will be used.
+-   `max_response_bytes` - optional, specifies the maximal size of the response in bytes. If provided, the value must not exceed `2MB` (`2,000,000B`). If not provided, the maximum of `2MB` will be used. When the `pricing_version` is set to `1`, the call will be charged based on this parameter. When the `pricing_version` is set to `2`, this field is ignored.
 
 -   `method` - currently, `GET`, `HEAD`, and `POST` are supported. Additionally, `PUT` and `DELETE` are supported in non-replicated mode only.
 
@@ -674,13 +674,17 @@ The following parameters should be supplied for the call:
 
 -   `is_replicated` - optional, selecting between replicated and non-replicated modes.
 
-:::note
+    :::note
 
-The `is_replicated` field is considered EXPERIMENTAL.
+    The `is_replicated` field is considered EXPERIMENTAL.
 
-:::
+    :::
 
-Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls).
+-   `pricing_version` - the version of the pricing mechanism for HTTP outcalls that should be applied to this call; it can be either `1` or `2`. For compatibility reasons, the default is `1`; however, version `1` is deprecated.
+
+Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). Extraneous cycles are refunded:
+- with pricing version `1`, the difference between the attached cycles and the cost returned by the `ic0.cost_http_request` API with the appropriate parameters
+- with pricing version `2`, any attached cycles exceeding those used by the outcall execution.
 
 The returned response (and the response provided to the `transform` function, if specified) contains the following fields:
 
@@ -718,6 +722,54 @@ The Internet Computer mainnet supports requests to both IPv6 and IPv4 destinatio
 If you do not specify the `max_response_bytes` parameter, the maximum of a `2MB` response will be charged for, which is expensive in terms of cycles. Always set the parameter to a reasonable upper bound of the expected (network and transformed) response size to not incur unnecessary cycles costs for your request.
 
 :::
+
+### IC method `flexible_http_request` {#ic-flexible_http_request}
+
+This is a variant of the [`http_request`](#ic-http_request) method where nodes return their individual HTTP responses to the caller instead of trying to reach consensus on the response, letting the caller do its own HTTP response processing. Use cases include calling HTTP endpoints that provide rapidly changing information (where achieving consensus is unlikely) and letting the user pick a trade-off between cheaper calls (fewer replicas requesting/responding) and stronger integrity guarantees (more replicas requesting/responding).
+
+The arguments of the call are as for `http_request`, except that:
+
+- there is an additional optional argument `replication`. When set, the caller can specify how many nodes should issue an HTTP outcall, the minimum number of HTTP responses from nodes in order for the outcall to succeed (`min_responses`), and the maximum number of HTTP responses the caller is willing to receive as the result of the outcall (`max_responses`). That is, a successful HTTP outcall is guaranteed to return between `min_responses` and `max_responses`. If `replication` is set, then the caller must ensure that `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the number of the nodes on the caller's subnet, otherwise the call will fail. The caller may use the `ic0.subnet_self_node_count` System API call to determine `N`. If `replication` is not provided, the defaults of `floor(2 / 3 * N) + 1`, `N` and `N` are used for `min_responses`, `max_responses` and `total_requests`.
+
+- the deprecated `max_response_bytes` argument is not supported.
+
+The other arguments, `url`, `method`, `headers`, `body`, and `transform` are the same as for `http_request`. The result is a vector of responses, with each individual response having the same structure as a `http_request` response, providing `status`, `headers`, and `body` fields.
+
+As for `http_request`, the endpoint specified by the provided `url` should be idempotent. The one exception is when `total_requests` is set to 1 in `replication`. The request restrictions are also the same as for the `http_request` method:
+
+- The total number of bytes in the request must not exceed `2MB` (`2,000,000`) bytes.
+
+- Only the `GET`, `HEAD`, and `POST` methods are supported.
+
+- The number of headers must not exceed `64`.
+
+- The number of bytes representing a header name or value must not exceed `8KiB`.
+
+- The total number of bytes representing the header names and values must not exceed `48KiB`.
+
+The response from the remote server must not exceed `2MB`. Moreover, the total size of the result, that is, the sum of the responses returned by the different replicas (possibly after the transform function), must also not exceed 2MB.
+
+Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). The unused cycles are then refunded to the caller.
+
+The method may return an error of the `flexible_http_request_err` type. The error includes a textual error message, an optional global error code, and a vector of resource reports from individual nodes.
+
+The `global_error` field describes why the aggregate call failed to meet the requirements:
+
+- `timeout`, meaning that less than `min_responses` from the nodes have been collected before some system-defined timeout.
+
+- `out_of_cycles` indicating that the attached cycles were not enough to cover the processing of at least `min_responses`.
+
+- `responses_too_large`: indicating that no combination of at least `min_responses` available responses could fit into the 2MB total limit.
+
+- `too_many_rejects`: indicating that more than `total_requests - min_responses` nodes returned reject responses, so at least `min_responses` successful responses can never be collected.
+
+The `node_details` vector provides visibility into the execution on specific nodes. Each entry contains:
+
+- `node_id`.
+
+- `report`: A detailed accounting of resources (bytes, instructions, time, and cycles) used by the node. Note: If a node fails due to a resource limit or running out of cycles, the corresponding field in this report will be set to `exceeded` rather than `used`.
+
+- `error`: An optional record containing a `code` and `message`. This is populated only when the node encounters a functional failure.
 
 ### IC method `node_metrics_history` {#ic-node_metrics_history}
 

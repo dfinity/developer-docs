@@ -5538,6 +5538,11 @@ ic0.subnet_self_copy<es>(dst : I, offset : I, size : I) =
   if es.context = s then Trap {cycles_used = es.cycles_used;}
   copy_to_canister<es>(dst, offset, size, es.params.sysenv.subnet_id)
 
+I ∈ {i32, i64}
+ic0.subnet_self_node_count<es>() : I =
+  if es.context = s then Trap {cycles_used = es.cycles_used;}
+  return es.params.sysenv.subnet_size
+
 ic0.canister_cycle_balance<es>() : i64 =
   if es.context = s then Trap {cycles_used = es.cycles_used;}
   if es.balance >= 2^64 then Trap {cycles_used = es.cycles_used;}
@@ -5797,6 +5802,10 @@ ic0.cost_create_canister<es>(dst: I) : () =
 
 I ∈ {i32, i64}
 ic0.cost_http_request<es>(request_size: i64, max_res_bytes: i64, dst: I) : () = 
+  copy_cycles_to_canister<es>(dst, arbitrary())
+
+I ∈ {i32, i64}
+ic0.cost_http_request_v2<es>(params_src : I, params_size : I, dst : I) : ()= 
   copy_cycles_to_canister<es>(dst, arbitrary())
 
 I ∈ {i32, i64}
