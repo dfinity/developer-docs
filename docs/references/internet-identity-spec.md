@@ -120,7 +120,6 @@ The Internet Identity service frontend also manages an _identity frontend delega
 This section describes the Internet Identity service from the point of view of a client application frontend.
 
 ```plantuml
-@startuml
     participant "Client Application" as C
     participant "Internet Identity" as II
     participant "User" as U
@@ -133,7 +132,6 @@ This section describes the Internet Identity service from the point of view of a
     U ->> II: Authenticate
     II ->> II: Sign delegation
     II ->> C: Signed delegation\n`authorize-client-success` message
-@enduml
 ```
 
 1.  The client application frontend creates a session key pair (e.g., Ed25519).
@@ -261,7 +259,6 @@ In order for Internet Identity to accept the `derivationOrigin` the origin of th
 Internet Identity will fetch the `/.well-known/ii-alternative-origins` file from the derivation origin and check if the alternative origin is listed in the file.
 
 ```plantuml
-@startuml
     participant "User" as U
     participant "App Alternative Origin" as A
     participant "II Frontend" as IF
@@ -281,7 +278,6 @@ Internet Identity will fetch the `/.well-known/ii-alternative-origins` file from
     else is NOT present
         IF->>U: Invalid origin request
     end
-@enduml
 ```
 
 Requirements:

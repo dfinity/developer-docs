@@ -88,7 +88,7 @@ for (const [old, replacement] of linkMap) {
 // 4. Convert Mermaid sequenceDiagram blocks to PlantUML
 function convertMermaidSequence(body) {
   const lines = body.split('\n');
-  const out = ['@startuml'];
+  const out = [];
   for (const line of lines) {
     if (line.trim() === 'sequenceDiagram') continue;
     // participant X as Long Name → participant "Long Name" as X
@@ -100,8 +100,7 @@ function convertMermaidSequence(body) {
     // <br> → \n for multiline message labels
     out.push(line.replace(/<br\s*\/?>/gi, '\\n'));
   }
-  while (out.length > 1 && out[out.length - 1].trim() === '') out.pop();
-  out.push('@enduml');
+  while (out.length > 0 && out[out.length - 1].trim() === '') out.pop();
   return out.join('\n');
 }
 
