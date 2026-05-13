@@ -6,8 +6,13 @@
 //   - Strip MDX import lines
 //   - Remove the H1 heading (Starlight renders the frontmatter title as H1)
 //   - Rewrite absolute / relative links that point outside this site
+//   - Convert Mermaid sequenceDiagram blocks to PlantUML (site uses remarkPlantUML)
 //   - Replace <CodeBlock> component with a download link to internet-identity.did
 //   - Copy internet_identity.did to public/references/internet-identity.did
+//
+// Validation (exits non-zero on failure):
+//   - Unhandled absolute internetcomputer.org/docs links
+//   - Unconverted Mermaid blocks (unsupported diagram type added upstream)
 //
 // Usage: node scripts/sync-ii-spec.mjs
 //   or:  npm run sync:ii-spec
@@ -80,7 +85,31 @@ for (const [old, replacement] of linkMap) {
   content = content.replaceAll(old, replacement);
 }
 
-// 4. Replace the <CodeBlock> component with a download link to the .did file
+// 4. Convert Mermaid sequenceDiagram blocks to PlantUML
+function convertMermaidSequence(body) {
+  const lines = body.split('\n');
+  const out = ['@startuml'];
+  for (const line of lines) {
+    if (line.trim() === 'sequenceDiagram') continue;
+    // participant X as Long Name → participant "Long Name" as X
+    const pm = line.match(/^(\s*)participant\s+(\S+)\s+as\s+(.+)$/);
+    if (pm) {
+      out.push(`${pm[1]}participant "${pm[3].trim()}" as ${pm[2]}`);
+      continue;
+    }
+    // <br> → \n for multiline message labels
+    out.push(line.replace(/<br\s*\/?>/gi, '\\n'));
+  }
+  while (out.length > 1 && out[out.length - 1].trim() === '') out.pop();
+  out.push('@enduml');
+  return out.join('\n');
+}
+
+content = content.replace(/^```mermaid\n([\s\S]*?)^```/gm, (_, body) => {
+  return '```plantuml\n' + convertMermaidSequence(body) + '\n```';
+});
+
+// 6. Replace the <CodeBlock> component with a download link to the .did file
 content = content.replace(
   '<CodeBlock language="candid">{IICandidInterface}</CodeBlock>',
   'The complete Candid interface definition is available at [`internet-identity.did`](/references/internet-identity.did).' +
@@ -88,7 +117,7 @@ content = content.replace(
   ' and can be used for binding generation and type checking.'
 );
 
-// 5. Strip leading blank lines, then inject frontmatter
+// 7. Strip leading blank lines, then inject frontmatter
 content = content.replace(/^\n+/, '');
 content =
   `---\n` +
@@ -99,7 +128,7 @@ content =
   `---\n\n` +
   content;
 
-// 6. Append the link-adaptation log and Upstream comment
+// 8. Append the link-adaptation log and Upstream comment
 content =
   content.trimEnd() +
   '\n' +
@@ -116,6 +145,7 @@ content =
   `Other changes from source:\n` +
   `  - \`# The Internet Identity Specification\` H1 removed (Starlight renders frontmatter title as H1)\n` +
   `  - \`<CodeBlock language="candid">{IICandidInterface}</CodeBlock>\` replaced with download link to /references/internet-identity.did\n` +
+  `  - Mermaid sequenceDiagram blocks converted to PlantUML (site uses remarkPlantUML, not Mermaid)\n` +
   `-->\n` +
   `<!-- Upstream: sync from dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did -->\n`;
 
@@ -126,6 +156,8 @@ console.log(`Written: ${TARGET}`);
 copyFileSync(SOURCE_DID, TARGET_DID);
 console.log(`Written: ${TARGET_DID}`);
 
+let failed = false;
+
 // Warn about any remaining absolute docs links that weren't rewritten.
 const remaining = [...content.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
   .map(m => m[0]);
@@ -133,7 +165,23 @@ const unique = [...new Set(remaining)];
 if (unique.length) {
   console.warn('\nWARNING: Unhandled absolute links — add them to the linkMap:');
   unique.forEach(l => console.warn(`  ${l}`));
+  failed = true;
+}
+
+// Warn about unconverted Mermaid blocks (unsupported diagram type added upstream).
+// Only sequenceDiagram is handled; anything else needs a new conversion case.
+const mermaidBlocks = [...content.matchAll(/^```mermaid$/gm)];
+if (mermaidBlocks.length) {
+  console.warn('\nWARNING: Unconverted Mermaid blocks remain — add conversion support in convertMermaidSequence:');
+  for (const m of mermaidBlocks) {
+    const line = content.slice(0, m.index).split('\n').length;
+    console.warn(`  line ${line}`);
+  }
+  failed = true;
+}
+
+if (failed) {
   process.exit(1);
 } else {
-  console.log('\nAll absolute links adapted. Run `npm run build` to verify.');
+  console.log('\nAll checks passed. Run `npm run build` to verify.');
 }

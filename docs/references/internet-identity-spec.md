@@ -119,11 +119,11 @@ The Internet Identity service frontend also manages an _identity frontend delega
 
 This section describes the Internet Identity service from the point of view of a client application frontend.
 
-```mermaid
-sequenceDiagram
-    participant C as Client Application
-    participant II as Internet Identity
-    participant U as User
+```plantuml
+@startuml
+    participant "Client Application" as C
+    participant "Internet Identity" as II
+    participant "User" as U
 
     C ->> C: Generate session key pair
     C ->> II: Open Internet Identity window / tab
@@ -132,7 +132,8 @@ sequenceDiagram
     II ->> U: Prompt authentication
     U ->> II: Authenticate
     II ->> II: Sign delegation
-    II ->> C: Signed delegation<br>`authorize-client-success` message
+    II ->> C: Signed delegation\n`authorize-client-success` message
+@enduml
 ```
 
 1.  The client application frontend creates a session key pair (e.g., Ed25519).
@@ -259,12 +260,12 @@ In order for Internet Identity to accept the `derivationOrigin` the origin of th
 
 Internet Identity will fetch the `/.well-known/ii-alternative-origins` file from the derivation origin and check if the alternative origin is listed in the file.
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant A as App Alternative Origin
-    participant IF as II Frontend
-    participant D as App Derivation Origin
+```plantuml
+@startuml
+    participant "User" as U
+    participant "App Alternative Origin" as A
+    participant "II Frontend" as IF
+    participant "App Derivation Origin" as D
     D->>D: Adds /.well-known/ii-alternative-origins endpoint
     D->>D: Adds "Alternative Origin" in /.well-known/ii-alternative-origins response
     U->>A: User accesses Alternative Origin
@@ -280,6 +281,7 @@ sequenceDiagram
     else is NOT present
         IF->>U: Invalid origin request
     end
+@enduml
 ```
 
 Requirements:
@@ -732,5 +734,6 @@ Link replacements from source (source used absolute/relative paths pointing outs
 Other changes from source:
   - `# The Internet Identity Specification` H1 removed (Starlight renders frontmatter title as H1)
   - `<CodeBlock language="candid">{IICandidInterface}</CodeBlock>` replaced with download link to /references/internet-identity.did
+  - Mermaid sequenceDiagram blocks converted to PlantUML (site uses remarkPlantUML, not Mermaid)
 -->
 <!-- Upstream: sync from dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did -->
