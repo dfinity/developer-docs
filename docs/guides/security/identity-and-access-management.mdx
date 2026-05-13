@@ -79,7 +79,7 @@ Implementing user authentication and canister calls yourself in your web app is 
 
 ### Recommendation
 
--   Consider using an identity provider such as [Internet Identity](https://github.com/dfinity/internet-identity) for authentication, and use the ICP JavaScript agent for making canister calls.
+-   Consider using an identity provider such as [Internet Identity](https://github.com/dfinity/internet-identity) for authentication, and use the [ICP JavaScript agent](../../references/developer-tools.md#javascript--typescript) for making canister calls.
 
 -   You may consider alternative authentication frameworks on ICP for authentication.
 
@@ -99,7 +99,7 @@ The auth-client supports [idle timeouts](https://js.icp.build/auth/latest/api/cl
 
 ### Security concern
 
-`agent.fetchRootKey()` can be used in the ICP JavaScript agent to fetch the root subnet threshold public key from a status call in test environments. This key is used to verify threshold signatures on certified data received through canister update calls. Using this method in a production web app gives an attacker the option to supply their own public key, invalidating all authenticity guarantees of update responses.
+`agent.fetchRootKey()` can be used in the [ICP JavaScript agent](../../references/developer-tools.md#javascript--typescript) to fetch the root subnet threshold public key from a status call in test environments. This key is used to verify threshold signatures on certified data received through canister update calls. Using this method in a production web app gives an attacker the option to supply their own public key, invalidating all authenticity guarantees of update responses.
 
 ### Recommendation
 
