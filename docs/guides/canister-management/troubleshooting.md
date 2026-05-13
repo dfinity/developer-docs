@@ -43,7 +43,7 @@ Note that compute allocation incurs a rental fee regardless of actual canister a
 
 If the subnet consistently shows high load and compute allocation alone does not resolve the latency, migrating your canister to a less-loaded subnet may be the most effective remedy. Subnets process messages independently, so a canister on a busy subnet competes with every other canister on that subnet regardless of its compute allocation.
 
-Check current subnet loads on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) to identify subnets with available capacity. For how to migrate a canister to a different subnet, see [Subnet selection](./subnet-selection.md#canister-is-on-the-wrong-subnet).
+Check current subnet loads on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) to identify subnets with available capacity. For how to migrate a canister to a different subnet, see [Canister migration](./canister-migration.md).
 
 ### Use query calls instead of update calls where appropriate
 
