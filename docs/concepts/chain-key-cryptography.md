@@ -71,6 +71,8 @@ For ECDSA and BIP340, key derivation uses a generalized form of [BIP-32](https:/
 
 Derivation is transparent: it happens inside the protocol as part of the signing and public-key-retrieval APIs. You provide a derivation path and the protocol handles the rest.
 
+![Key derivation hierarchy: subnet master key → canister root key → child keys via BIP-32-style derivation path](/concepts/chain-key-cryptography/key_derivation.png)
+
 Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline**: no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or network address without a live ICP connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
 
 <!-- ic-pub-key: the missing .d.ts issue (dfinity/ic-pub-key#197) is closed and fixed. Package may still move to the @icp-sdk/ namespace in a future release; update all references when that happens. -->

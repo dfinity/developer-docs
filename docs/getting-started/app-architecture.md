@@ -9,6 +9,8 @@ An application on the Internet Computer typically consists of one or more [canis
 
 ## The default two-canister model
 
+![Application architecture: browser talks to a frontend canister (HTML/JS/CSS) which calls a backend canister (logic + state) via an agent library](/getting-started/app-arch.png)
+
 Most ICP applications start with two canisters:
 
 - **Backend canister**: contains your application logic and data. You write it in Motoko or Rust (the official CDKs). Community-supported languages like TypeScript and Python are also available: see [Languages](../languages/index.md). Your code is compiled locally to WebAssembly and executed by the network.

@@ -32,12 +32,18 @@ The derivation is **deterministic**: the same (canister, context, input) triple 
 
 When a canister calls `vetkd_derive_key`:
 
+![vetKD protocol flow: user generates transport key pair, canister authenticates and routes the request, subnet nodes threshold-derive and encrypt the key, client decrypts with transport secret key](/concepts/vetkeys/vetkd_diagram.png)
+
 1. The canister passes the `input`, `context`, `transport_public_key`, and `key_id` to the management canister.
 2. A threshold of subnet nodes cooperates to derive the key and encrypt it under the supplied transport public key.
 3. The encrypted key is returned to the canister, which forwards it to the client.
 4. The client decrypts the key using its transport secret key, obtaining the raw vetKey locally.
 
 The client's transport key pair is ephemeral: generated fresh for each session and discarded after use. No node, no subnet, and no canister ever holds the client's raw derived key.
+
+Keys are structured hierarchically. The subnet's vetKD master key is used to derive a unique canister-level key for each canister, which in turn derives per-context and per-input subkeys:
+
+![vetKD public key derivation hierarchy: subnet master key → canister master key (via canister ID) → subkeys (via context and input)](/concepts/vetkeys/vetkd_derivation.png)
 
 ## API overview
 

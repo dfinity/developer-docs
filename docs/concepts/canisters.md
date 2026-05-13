@@ -121,6 +121,8 @@ If a canister has **no controllers**, it is immutable: no one can change its cod
 
 ## Canister internals
 
+![Canister components: input queue, Wasm module, heap and stable memory, output queue, cycles balance, controllers, and settings](/concepts/canisters/inside-canister.png)
+
 Under the hood, each canister maintains several components:
 
 - **Input queue**: holds incoming messages waiting to be processed. The canister processes one message at a time.
