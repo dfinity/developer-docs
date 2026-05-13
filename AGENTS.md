@@ -90,6 +90,17 @@ EOF
 git checkout main
 ```
 
+**Any time commits are pushed to a PR branch** — check whether the PR description still accurately reflects the complete set of changes on the branch. If new commits introduce changes not covered by the existing summary, update the description immediately:
+```bash
+gh pr edit <PR#> --body "$(cat <<'EOF'
+<updated full description>
+EOF
+)"
+```
+Do not leave a PR description that no longer matches the branch. The description is the reviewer's first read; a stale summary wastes review time and creates confusion.
+
+**PR body formatting rule (applies to `gh pr create`, `gh pr edit`, and `gh pr comment`)** — always pass the body through a single-quoted heredoc (`<<'EOF'`). Single-quoted heredocs suppress all shell expansion, so backticks and other special characters are passed through literally. Never manually escape backticks with `\`` inside the heredoc: the backslash will appear verbatim in the rendered output.
+
 **Rebase approved PR with merge conflicts:**
 ```bash
 git fetch origin && git checkout <branch>
