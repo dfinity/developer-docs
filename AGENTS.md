@@ -1,7 +1,7 @@
 # ICP Developer Docs: Agent & Contributor Instructions
 
 ICP developer documentation built with Astro + Starlight.
-Content is `.md` by default. Pages that need interactive components (e.g., language-synced tabs) use `.mdx` — see `.docs-plan/decisions.md` for the policy.
+Content is `.md` by default. Pages that need interactive components (e.g., language-synced tabs) use `.mdx`.
 Goal: get developers (human and AI) building on the IC as fast as possible.
 
 This file is the single source of truth for all agents (Claude Code, Codex, Cursor, etc.) and contributors. `CLAUDE.md` symlinks here.
@@ -10,11 +10,8 @@ This file is the single source of truth for all agents (Claude Code, Codex, Curs
 
 1. Read this file for rules and boundaries
 2. Run `./scripts/setup.sh` — initializes submodules and npm deps
-3. Check `.docs-plan/decisions.md` before making any structural changes
-4. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — content pages use the `documentation` label; infra tasks use `enhancement`
-5. Look up the page in `.docs-plan/migration-plan.md` for source material and effort
-6. Do the work following the rules below
-7. Record any structural decisions in `.docs-plan/decisions.md`
+3. Pick a task from [GitHub Issues](https://github.com/dfinity/developer-docs/issues) — content pages use the `documentation` label; infra tasks use `enhancement`
+4. Do the work following the rules below
 
 ## Branch naming
 
@@ -118,25 +115,23 @@ git checkout main
 
 ## Always (do these without asking)
 
-- Read `.docs-plan/decisions.md` before proposing structural changes
 - **Load skills before writing** — `technical-documentation` + the relevant icskill + `icp-brand-voice` + `icp-brand-design`. Run `git submodule update --init --depth 1` if skills appear as broken symlinks.
 - Use `icp` CLI commands in all examples — never `dfx`
 - Use `mo:core` for all Motoko standard library imports — never `mo:base`. See `.sources/motoko/doc/md/12-base-core-migration.md` for the full mapping.
 - Use `.md` by default; `.mdx` only for interactive components (e.g. `<Tabs syncKey="lang">`). Tab order: Motoko → Rust → others.
 - Include complete frontmatter (title + description required — see schema below)
-- Record structural decisions in `.docs-plan/decisions.md` immediately — new files, path changes, config changes, any choice a future agent needs to understand
+- Document structural decisions in the PR description — new files, path changes, config changes, any choice a future contributor needs to understand
 - **Every non-stub content page must end with an `<!-- Upstream: -->` comment** listing every `.sources/` repo used
 - **Every PR must include a `## Sync recommendation` section** in the description
 
 ## Ask first (confirm with the user before doing these)
 
 - Creating new top-level sections (getting-started, guides, concepts, languages, references)
-- Adding new pages not in the migration plan
+- Adding new pages without a corresponding GitHub Issue
 - Removing existing pages from the structure
 - Changing a page's sync recommendation from hand-written to synced (or vice versa)
 - Changing the frontmatter schema
 - Modifying the sidebar configuration in `astro.config.mjs`
-- Changing decisions recorded in `.docs-plan/decisions.md`
 - Adding new external doc sources to the linking rules
 - Adding a new entry to `.sources/` (new submodule)
 
@@ -150,7 +145,6 @@ git checkout main
 - Nest sidebar items more than 3 levels deep
 - Skip reading source material before writing a page
 - Write code snippets from memory — find and adapt from actual upstream code in `.sources/`
-- Modify the rationale or context of existing decisions in `.docs-plan/decisions.md` — you may remove entries that are fully reflected in the current codebase but never alter reasoning behind active decisions
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
 - Link to `internetcomputer.org/docs/` — that site is retired. For internal pages use relative paths, not absolute `docs.internetcomputer.org/...` URLs. Explain inline or link to `docs/concepts/` for protocol-level background; do not link to `learn.internetcomputer.org` (Learn Hub has been retired; its content is now in this site under `docs/concepts/`).
 - Link to internal pages that don't exist — every `[text](path.md)` must resolve to an actual file. Run `ls <target>` before linking. Links to `.mdx` pages use `.md` extension (Astro resolves both).
@@ -360,12 +354,8 @@ grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 
 | File | What it answers |
 |------|-----------------|
-| `decisions.md` | "Has this been decided already?" — append-only decision log |
-| `migration-plan.md` | "How do I execute this task?" — source material and effort per page |
 | `content-authoring.md` | "How do I write a page?" — full authoring workflow |
 | `review-guidelines.md` | "How do I review a PR?" — full review checklist |
-
-Additional context files (less frequently needed): `synthesis.md`, `developer-journey.md`, `jssdk-skills-mapping.md`, `icp-cli-examples-inventory.md`.
 
 ## Content authoring workflow
 
@@ -432,6 +422,3 @@ The site implements the [Agent-Friendly Documentation Spec](https://agentdocsspe
 
 **SECTIONS array:** The `SECTIONS` array in `plugins/astro-agent-docs.mjs` maps directory prefixes to section labels in `llms.txt`. Update it when adding or renaming sidebar sections in `astro.config.mjs`.
 
-## Previous work
-
-Branch `restructuring-attempt-1` preserves the previous attempt with 124 pages, CI workflows, sync scripts, and `DOCS_RESTRUCTURING_PROPOSAL.md`.
