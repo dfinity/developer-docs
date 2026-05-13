@@ -515,6 +515,7 @@ S = {
   certified_data: CanisterId ↦ Blob;
   canister_history: CanisterId ↦ CanisterHistory;
   canister_log_visibility: CanisterId ↦ CanisterLogVisibility;
+  canister_log_memory_limit: CanisterId ↦ Nat;
   canister_snapshot_visibility: CanisterId ↦ CanisterSnapshotVisibility;
   canister_logs: CanisterId ↦ [CanisterLog];
   query_stats: CanisterId ↦ [QueryStats];
@@ -624,6 +625,7 @@ The initial state of the IC is
   certified_data = ();
   canister_history = ();
   canister_log_visibility = ();
+  canister_log_memory_limit = ();
   canister_snapshot_visibility = ();
   canister_logs = ();
   query_stats = ();
@@ -1710,6 +1712,11 @@ if A.settings.log_visibility is not null:
 else:
   New_canister_log_visibility = Controllers
 
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
+
 if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
@@ -1741,6 +1748,7 @@ S' = S with
     query_stats[Canister_id] = []
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
+    canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
     canister_logs[Canister_id] = []
     messages = Older_messages · Younger_messages ·
@@ -1877,6 +1885,8 @@ S' = S with
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
     if A.settings.log_visibility is not null:
       canister_log_visibility[A.canister_id] = A.settings.log_visibility
+    if A.settings.log_memory_limit is not null:
+      canister_log_memory_limit[A.canister_id] = A.settings.log_memory_limit
     if A.settings.snapshot_visibility is not null:
       canister_snapshot_visibility[A.canister_id] = A.settings.snapshot_visibility
     messages = Older_messages · Younger_messages ·
@@ -2832,7 +2842,8 @@ S with
     certified_data[A.canister_id] = (deleted)
     canister_history[A.canister_id] = (deleted)
     canister_log_visibility[A.canister_id] = (deleted)
-   canister_snapshot_visibility[A.canister_id] = (deleted)
+    canister_log_memory_limit[A.canister_id] = (deleted)
+    canister_snapshot_visibility[A.canister_id] = (deleted)
     canister_logs[A.canister_id] = (deleted)
     query_stats[A.canister_id] = (deleted)
     chunk_store[A.canister_id] = (deleted)
@@ -3065,6 +3076,11 @@ if A.settings.log_visibility is not null:
 else:
   New_canister_log_visibility = Controllers
 
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
+
 if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
@@ -3094,6 +3110,7 @@ S' = S with
     certified_data[Canister_id] = ""
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
+    canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
     canister_logs[Canister_id] = []
     query_stats[CanisterId] = []
@@ -3735,6 +3752,101 @@ S with
 
 ```
 
+#### IC Management Canister: Canister logs {#ic-mgmt-canister-fetch-canister-logs}
+
+Given a state `S`, `Canister_id`, `filter`, and `Sender`, we define
+
+```html
+
+canister_logs(S, Canister_id, filter) =
+  if filter = by_idx Range:
+    { Log | Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.idx ∧ Log.idx < Range.end }
+  else if filter = by_timestamp_nanos Range:
+    { Log | Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.timestamp_nanos ∧ Log.timestamp_nanos < Range.end }
+  else:
+    S.canister_logs[Canister_id]
+fetch_canister_logs_cost(S, Canister_id) = <implementation-specific>
+is_sender_authorized(S, Canister_id, Sender) =
+  (S[Canister_id].canister_log_visibility = Public)
+  or
+  (S[Canister_id].canister_log_visibility = Controllers and Sender in S[Canister_id].controllers)
+  or
+  (S[Canister_id].canister_log_visibility = AllowedViewers Principals and (Sender in S[Canister_id].controllers or Sender in Principals))
+
+```
+
+Conditions
+
+```html
+
+S.messages = Older_messages · CallMessage M · Younger_messages
+(M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
+M.callee = ic_principal
+M.method_name = 'fetch_canister_logs'
+M.arg = candid(A)
+fetch_canister_logs_cost(S, A.canister_id) <= M.transferred_cycles
+is_sender_authorized(S, A.canister_id, M.caller)
+
+```
+
+State after
+
+```html
+
+S with
+    messages = Older_messages · Younger_messages ·
+      ResponseMessage {
+        origin = M.origin
+        response = candid(canister_logs(S, A.canister_id, A.filter))
+        refunded_cycles = M.transferred_cycles - fetch_canister_logs_cost(S, A.canister_id)
+      }
+
+```
+
+The IC method `fetch_canister_logs` can also be invoked via management canister query calls.
+They are calls to `/api/v3/canister/<ECID>/query`
+with CBOR content `Q` such that `Q.canister_id = ic_principal`.
+
+Submitted request to `/api/v3/canister/<ECID>/query`
+
+```html
+
+E : Envelope
+
+```
+
+Conditions
+
+```html
+
+E.content = CanisterQuery Q
+Q.canister_id = ic_principal
+Q.method_name = 'fetch_canister_logs'
+|Q.nonce| <= 32
+is_effective_canister_id(E.content, ECID)
+S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
+Q.arg = candid(A)
+A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
+is_sender_authorized(S, A.canister_id, Q.sender)
+
+```
+
+Query response `R`:
+
+```html
+
+{status: "replied"; reply: {arg: candid(canister_logs(S, A.canister_id, A.filter))}, signatures: Sigs}
+
+```
+
+where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
+
+```html
+
+verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
+
+```
+
 #### Callback invocation
 
 When an inter-canister call has been responded to, we can queue the call to the callback.
@@ -4073,6 +4185,8 @@ S with
   canister_history[Canister_id] = (deleted)
   canister_log_visibility[New_canister_id] = S.canister_log_visibility[Canister_id]
   canister_log_visibility[Canister_id] = (deleted)
+  canister_log_memory_limit[New_canister_id] = S.canister_log_memory_limit[Canister_id]
+  canister_log_memory_limit[Canister_id] = (deleted)
   canister_snapshot_visibility[New_canister_id] = S.canister_snapshot_visibility[Canister_id]
   canister_snapshot_visibility[Canister_id] = (deleted)
   canister_logs[New_canister_id] = S.canister_logs[Canister_id]
@@ -4236,16 +4350,19 @@ S with
 
 ```
 
-#### Trimming canister logs
+#### Purging canister logs
 
-Canister logs can be trimmed if their total length exceeds 4KiB.
+Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
+
+The (unspecified) function `canister_log_memory_usage(logs)` models the total memory used by `logs`.
 
 Conditions
 
 ```html
 
 S.canister_logs[CanisterId] = Older_logs · Newer_logs
-SUM { |l| | l <- Older_logs } > 4KiB
+canister_log_memory_usage(Older_logs · Newer_logs) > S.canister_log_memory_limit[CanisterId]
+canister_log_memory_usage(Newer_logs) ≤ S.canister_log_memory_limit[CanisterId]
 
 ```
 
@@ -4255,66 +4372,6 @@ State after
 
 S with
     canister_logs[CanisterId] = Newer_logs
-
-```
-
-#### IC Management Canister: Canister logs (query call) {#ic-mgmt-canister-fetch-canister-logs}
-
-This section specifies management canister query calls.
-They are calls to `/api/v3/canister/<ECID>/query`
-with CBOR content `Q` such that `Q.canister_id = ic_principal`.
-
-The management canister offers the method `fetch_canister_logs`
-that can be called as a query call and
-returns logs of a requested canister.
-
-Submitted request to `/api/v3/canister/<ECID>/query`
-
-```html
-
-E : Envelope
-
-```
-
-Conditions
-
-```html
-
-E.content = CanisterQuery Q
-Q.canister_id = ic_principal
-Q.method_name = 'fetch_canister_logs'
-|Q.nonce| <= 32
-is_effective_canister_id(E.content, ECID)
-S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
-Q.arg = candid(A)
-A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (Q.sender_info = null):
-    verify_signature E.sender_pubkey Q.sender_info.sig ("\x0Eic-sender-info" · Q.sender_info.info)
-    Q.sender_info.signer = Signing_canister_id
-else:
-  Q.sender_info = null
-(S[A.canister_id].canister_log_visibility = Public)
-  or
-  (S[A.canister_id].canister_log_visibility = Controllers and Q.sender in S[A.canister_id].controllers)
-  or
-  (S[A.canister_id].canister_log_visibility = AllowedViewers Principals and (Q.sender in S[A.canister_id].controllers or Q.sender in Principals))
-
-```
-
-Query response `R`:
-
-```html
-
-{status: "replied"; reply: {arg: candid(S.canister_logs[A.canister_id])}, signatures: Sigs}
-
-```
-
-where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
-
-```html
-
-verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
 
 ```
 
