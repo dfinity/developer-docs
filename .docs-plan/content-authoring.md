@@ -19,7 +19,7 @@ When drafting a new docs page:
    - **Verify all internal links** — every `[text](path.md)` must point to a file that exists. Run `ls <target-path>` before submitting. If the target page doesn't exist, either link to an existing page that covers the topic, or file a page proposal issue and note the missing link in your PR description. Never link to a path that doesn't exist.
    - **Verify all external URLs** — use the linking rules table in AGENTS.md for known resources. For any URL not in the table (crate docs, npm packages, GitHub repos), verify it is correct. Do not guess or generalize from similar URLs (e.g., `docs.rs/ic-cdk` is NOT the same as `docs.rs/ic-stable-structures`).
    - **Self-consistency check** — before submitting, re-read your frontmatter description and body opening paragraph. They must not contradict each other (e.g., different time estimates, different scope claims).
-   - Use `.md` by default. Use `.mdx` only when the page needs interactive components like `<Tabs syncKey="lang">` (see `.docs-plan/decisions.md`). In `.mdx` files, use `{/* */}` for comments instead of `<!-- -->`.
+   - Use `.md` by default. Use `.mdx` only when the page needs interactive components like `<Tabs syncKey="lang">`. In `.mdx` files, use `{/* */}` for comments instead of `<!-- -->`.
    - **Stub → `.mdx` rename:** All stubs are `.md` files. If your page needs tabs (e.g., Motoko/Rust examples in the same section), rename the stub from `.md` to `.mdx`, delete the old `.md` file, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after the frontmatter, and convert any `<!-- -->` comments to `{/* */}`. Internal links pointing to `<page>.md` do not need updating — Astro resolves both extensions.
    - Ensure complete frontmatter (see CONTRIBUTING.md)
    - **Code examples — check for snippet pipeline first:** Before writing inline code, check whether the example exists in `.sources/examples` with `#region` markers:
@@ -57,7 +57,7 @@ When drafting a new docs page:
    Consider syncing when the upstream content is comprehensive, well-maintained, and a close fit. Prefer hand-writing when the page synthesizes multiple sources or serves a different audience than the upstream.
    **This must appear in two places:** (1) as a comment in the page file, and (2) as a "Sync recommendation" section in the PR body (see the PR template in "Submitting" in AGENTS.md). Both are required.
 6. **Propose missing pages:** If source material reveals topics that aren't covered by any existing page in the plan (e.g., a canister migration guide in icp-cli with no corresponding docs page), create a GitHub Issue with the `page-proposal` label. Include: what the page would cover, where it would live in the structure, and which upstream source it would draw from. Reference the issue in your PR description. Do not create the page — just flag it for human discussion.
-7. Submit: push branch, create PR, update Beads status to `draft` (see "Multi-agent workflow" in AGENTS.md)
+7. Submit: push branch, create PR (see "Submitting" in AGENTS.md)
 8. Review by the relevant team (see `.github/CODEOWNERS` and CONTRIBUTING.md review ownership table)
 
 ## Content rules
