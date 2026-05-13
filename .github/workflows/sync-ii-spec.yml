@@ -62,10 +62,11 @@ jobs:
           # Only proceed if the spec files themselves changed
           CHANGED=$(git -C .sources/internetidentity diff --name-only "${CURRENT}..${LATEST}" -- \
             docs/ii-spec.mdx \
+            docs/vc-spec.md \
             src/internet_identity/internet_identity.did)
 
           if [ -z "$CHANGED" ]; then
-            echo "No changes to ii-spec.mdx or internet_identity.did. Skipping."
+            echo "No changes to ii-spec.mdx, vc-spec.md, or internet_identity.did. Skipping."
             echo "needed=false" >> $GITHUB_OUTPUT
           else
             echo "Spec files changed:"
@@ -110,7 +111,7 @@ jobs:
 
           BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.short }}"
           git checkout -b "$BRANCH"
-          git add .sources/internetidentity docs/references/internet-identity-spec.md public/references/internet-identity.did
+          git add .sources/internetidentity docs/references/internet-identity-spec.md docs/references/verifiable-credentials-spec.md public/references/internet-identity.did
           git commit -m "chore: sync II spec from dfinity/internet-identity@${{ steps.latest.outputs.short }}"
           git push -u origin "$BRANCH"
 
@@ -127,18 +128,19 @@ jobs:
               [ -n "$f" ] && echo "- \`$f\`"
             done <<< "$CHANGED"
             echo ""
-            echo "- Ran \`npm run sync:ii-spec\` — regenerated \`docs/references/internet-identity-spec.md\`"
+            echo "- Ran \`npm run sync:ii-spec\` — regenerated \`docs/references/internet-identity-spec.md\` and \`docs/references/verifiable-credentials-spec.md\`"
             echo "- Build passed ✓"
             echo ""
             echo "## Checklist"
             echo ""
             echo "- [ ] Review the diff to \`docs/references/internet-identity-spec.md\` for content changes"
+            echo "- [ ] Review the diff to \`docs/references/verifiable-credentials-spec.md\` for content changes"
             echo "- [ ] Check for new absolute \`internetcomputer.org\` link patterns (script exits non-zero if any were missed)"
             echo "- [ ] Verify any renamed or restructured sections are reflected correctly"
             echo ""
             echo "## Sync recommendation"
             echo ""
-            echo "\`sync from dfinity/internet-identity — docs/ii-spec.mdx, src/internet_identity/internet_identity.did\`"
+            echo "\`sync from dfinity/internet-identity — docs/ii-spec.mdx, docs/vc-spec.md, src/internet_identity/internet_identity.did\`"
           } > /tmp/pr-body.md
 
           gh pr create \
