@@ -30,25 +30,28 @@ jobs:
           echo "hash=$HASH" >> $GITHUB_OUTPUT
           echo "short=$(git -C .sources/internetidentity rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Fetch latest main
-        run: git -C .sources/internetidentity fetch --depth 100 origin main
-
-      - name: Get latest main hash
+      - name: Fetch latest release tag and resolve hash
         id: latest
         run: |
-          HASH=$(git -C .sources/internetidentity rev-parse FETCH_HEAD)
+          git -C .sources/internetidentity fetch --tags --depth 100 origin
+          TAG=$(git -C .sources/internetidentity tag --sort=-version:refname \
+            | grep '^release-[0-9][0-9][0-9][0-9]-' | head -1)
+          echo "Latest release tag: $TAG"
+          HASH=$(git -C .sources/internetidentity rev-parse "$TAG")
+          SHORT=$(git -C .sources/internetidentity rev-parse --short "$TAG")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "hash=$HASH" >> $GITHUB_OUTPUT
-          echo "short=$(git -C .sources/internetidentity rev-parse --short FETCH_HEAD)" >> $GITHUB_OUTPUT
+          echo "short=$SHORT" >> $GITHUB_OUTPUT
 
       - name: Check if relevant files changed
         id: check
         run: |
           CURRENT="${{ steps.current.outputs.hash }}"
           LATEST="${{ steps.latest.outputs.hash }}"
-          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.short }}"
+          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.tag }}"
 
           if [ "$CURRENT" = "$LATEST" ]; then
-            echo "Already at latest main. No update needed."
+            echo "Already at latest release ${{ steps.latest.outputs.tag }}. No update needed."
             echo "needed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -103,25 +106,30 @@ jobs:
         if: steps.check.outputs.needed == 'true'
         run: npm run build
 
+      - name: Update VERSIONS
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          sed -i "s|^internetidentity.*|internetidentity      ${{ steps.latest.outputs.tag }}                                         ${{ steps.latest.outputs.short }}|" .sources/VERSIONS
+
       - name: Create PR
         if: steps.check.outputs.needed == 'true'
         run: |
           git config user.name "pr-automation-bot-public[bot]"
           git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
 
-          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.short }}"
+          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.tag }}"
           git checkout -b "$BRANCH"
-          git add .sources/internetidentity docs/references/internet-identity-spec.md docs/references/verifiable-credentials-spec.md public/references/internet-identity.did
-          git commit -m "chore: sync II spec from dfinity/internet-identity@${{ steps.latest.outputs.short }}"
+          git add .sources/internetidentity docs/references/internet-identity-spec.md docs/references/verifiable-credentials-spec.md public/references/internet-identity.did .sources/VERSIONS
+          git commit -m "chore: sync II spec to dfinity/internet-identity ${{ steps.latest.outputs.tag }}"
           git push -u origin "$BRANCH"
 
           CHANGED="${{ steps.check.outputs.changed_files }}"
           {
             echo "## Summary"
             echo ""
-            echo "Automated sync of the Internet Identity specification from \`dfinity/internet-identity\` main."
+            echo "Automated sync of the Internet Identity specification from \`dfinity/internet-identity\`."
             echo ""
-            echo "**Pin:** \`${{ steps.current.outputs.short }}\` → \`${{ steps.latest.outputs.short }}\`"
+            echo "**Release:** \`${{ steps.latest.outputs.tag }}\`  (pinned from \`${{ steps.current.outputs.short }}\` → \`${{ steps.latest.outputs.short }}\`)"
             echo ""
             echo "**Changed upstream files:**"
             while IFS= read -r f; do
@@ -144,7 +152,7 @@ jobs:
           } > /tmp/pr-body.md
 
           gh pr create \
-            --title "chore: sync II spec from dfinity/internet-identity@${{ steps.latest.outputs.short }}" \
+            --title "chore: sync II spec to dfinity/internet-identity ${{ steps.latest.outputs.tag }}" \
             --body-file /tmp/pr-body.md
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}

@@ -192,7 +192,7 @@ docs/                       # All documentation (.md only) — src/content/docs/
 All upstream source repos are pinned as **git submodules** under `.sources/`. This ensures every agent reads the exact same content, regardless of when they run.
 
 **Two pinning strategies:**
-- **Track latest release** — repos that publish versioned releases users install. Pin to the latest release tag.
+- **Track latest release** — repos where the release represents the live/deployed state. Pin to the latest release tag. Spec changes are only accurate once released.
 - **Track main/master** — content repos where the default branch *is* the canonical source.
 
 For current release hashes, see `.sources/VERSIONS`.
@@ -217,7 +217,7 @@ For current release hashes, see `.sources/VERSIONS`.
 | `.sources/dotskills` | `vincentkoc/dotskills` | `main` | Technical documentation skill (AGPL-3.0 — kept as submodule to avoid license mixing) |
 | `.agents/skills/icp-brand-voice` | n/a — lives directly in this repo | n/a | ICP / DFINITY brand voice: positioning, vocabulary, banned terms, voice attributes |
 | `.agents/skills/icp-brand-design` | n/a — lives directly in this repo | n/a | ICP / DFINITY brand design: color tokens, typography, layout, components, accessibility |
-| `.sources/internetidentity` | `dfinity/internet-identity` | `main` | Internet Identity spec (`docs/ii-spec.mdx`), VC spec (`docs/vc-spec.md`), Candid interface (`src/internet_identity/internet_identity.did`) |
+| `.sources/internetidentity` | `dfinity/internet-identity` | latest release | Internet Identity spec (`docs/ii-spec.mdx`), VC spec (`docs/vc-spec.md`), Candid interface (`src/internet_identity/internet_identity.did`) |
 
 ### Submodule initialization
 
@@ -292,7 +292,7 @@ EOF
 | `candid` | Check for spec changes affecting the Candid reference or type-mapping examples |
 | `response-verification` | Check for API changes affecting certified variables patterns |
 | `dotskills` | Check if the `technical-documentation` skill changed in ways that affect review criteria |
-| `internetidentity` | Run `npm run sync:ii-spec` — the script syncs both `ii-spec.mdx` → `docs/references/internet-identity-spec.md` and `vc-spec.md` → `docs/references/verifiable-credentials-spec.md`, handling all link rewrites, Candid inlining, and frontmatter in one pass. If the script exits with a warning about unhandled links, add the new pattern to `linkMap` (ii-spec) or `vcLinkMap` (vc-spec) in `scripts/sync-ii-spec.mjs`. The **Sync II spec** workflow (`.github/workflows/sync-ii-spec.yml`) can be triggered manually from GitHub Actions; it only opens a PR when `docs/ii-spec.mdx`, `docs/vc-spec.md`, or `internet_identity.did` actually changed — bumping for unrelated upstream code commits is not needed. |
+| `internetidentity` | Run `npm run sync:ii-spec` — the script syncs both `ii-spec.mdx` → `docs/references/internet-identity-spec.md` and `vc-spec.md` → `docs/references/verifiable-credentials-spec.md`, handling all link rewrites, Candid inlining, and frontmatter in one pass. If the script exits with a warning about unhandled links, add the new pattern to `linkMap` (ii-spec) or `vcLinkMap` (vc-spec) in `scripts/sync-ii-spec.mjs`. Pin to the latest `release-YYYY-MM-DD` tag — spec changes are only live once the canister is deployed at that release. The **Sync II spec** workflow (`.github/workflows/sync-ii-spec.yml`) checks the latest release tag and only opens a PR when `docs/ii-spec.mdx`, `docs/vc-spec.md`, or `internet_identity.did` actually changed. Trigger manually for early sync. |
 | `chain-fusion-signer` | Check for changed canister IDs, API methods, or key derivation patterns |
 | `papi` | Check for changed payment interface or cycle cost model |
 | `ic-pub-key` | Check for changed CLI flags or commands |
