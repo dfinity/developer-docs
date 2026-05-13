@@ -33,11 +33,11 @@ Technical reference material for ICP development. These pages cover exact specif
 ## Specifications
 
 - **[IC Interface Specification](ic-interface-spec/index.md)**: System API, HTTPS interface, certified data, management canister, and formal specification of the Internet Computer.
+- **[Message Execution Properties](message-execution-properties.md)**: The 11 properties governing atomicity, ordering, inter-canister call delivery, and cycle handling in ICP message execution.
 - **[HTTP Gateway Specification](http-gateway-protocol-spec.md)**: How boundary nodes serve canister HTTP responses with certification verification.
 - **[Candid Specification](candid-spec.md)**: The Candid interface description language: type system, encoding, and subtyping rules.
 - **[Internet Identity Specification](internet-identity-spec.md)**: Delegation chains, passkey management, and canister signatures.
 - **[Verifiable Credentials Specification](verifiable-credentials-spec.md)**: Normative protocol for issuing and verifying credentials on ICP.
-- **[Message Execution Properties](message-execution-properties.md)**: The 11 properties governing atomicity, ordering, inter-canister call delivery, and cycle handling in ICP message execution.
 
 ## Governance
 

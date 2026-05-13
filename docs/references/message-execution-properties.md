@@ -1,6 +1,8 @@
 ---
 title: "Properties of Message Executions on ICP"
 description: "The 11 properties of message execution on ICP, covering atomicity, ordering guarantees, inter-canister call delivery, and cycle handling for bounded-wait and unbounded-wait calls."
+sidebar:
+  order: 11
 ---
 
 ## Asynchronous messaging model

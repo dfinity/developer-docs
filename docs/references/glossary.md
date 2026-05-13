@@ -2,7 +2,7 @@
 title: "Glossary"
 description: "Definitions of ICP-specific terms: canister, cycle, principal, subnet, and more"
 sidebar:
-  order: 15
+  order: 17
 ---
 
 # Glossary
