@@ -134,6 +134,16 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
   - `query_stats`: query call statistics (total calls, instructions, request/response bytes)
 
+### `canister_metrics`
+
+Returns cycle consumption metrics for a canister broken down by use case. Metrics are monotonically increasing counters accumulating since canister creation (or since the metrics feature was introduced for existing canisters).
+
+- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, but query responses come from a single replica and are not suitable for security-sensitive use)
+- **Parameters:**
+  - `canister_id` (`principal`)
+- **Returns:** A record containing:
+  - `cycles_consumed`: a record with `nat` fields for each use case: `memory`, `compute_allocation`, `ingress_induction`, `instructions`, `request_and_response_transmission`, `uninstall`, `canister_creation`, `http_outcalls`, `burned_cycles`
+
 ### `canister_info`
 
 Returns the history, current module hash, and controllers of any canister. Unlike `canister_status`, any canister can call this on any other canister.
@@ -614,8 +624,6 @@ Methods that require explicit cycle attachment (`create_canister`, `sign_with_ec
 
 The complete Candid interface definition for the management canister is available at [`ic.did`](/references/ic.did). This file defines all types and method signatures in machine-readable Candid format and can be used for binding generation and type checking.
 
-<!-- sync public/references/ic.did from .sources/portal/docs/references/_attachments/ic.did -->
-
 ## Next steps
 
 - [Canister lifecycle guide](../guides/canister-management/lifecycle.md): practical workflows for creating, upgrading, and managing canisters
@@ -624,4 +632,4 @@ The complete Candid interface definition for the management canister is availabl
 - [Bitcoin integration](../guides/chain-fusion/bitcoin.md): building Bitcoin-native applications with chain-key signing
 - [IC interface specification](ic-interface-spec/management-canister.md#ic-management-canister): formal specification for the IC management canister
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md, docs/references/_attachments/ic.did; dfinity/icskills — skills/cycles-management/SKILL.md -->
+<!-- Upstream: informed by dfinity/icskills — skills/cycles-management/SKILL.md; ic.did maintained directly in public/references/ic.did -->

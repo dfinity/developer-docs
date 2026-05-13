@@ -696,10 +696,16 @@ The following predicate describes when an envelope `E` correctly signs the enclo
 ```
 verify_envelope({ content = C }, U, T)
   = { p : p is CanisterID } if U = anonymous_id
+  ∧ C.sender_info = null
 verify_envelope({ content = C, sender_pubkey = PK, sender_sig = Sig, sender_delegation = DS}, U, T)
-  = TS if U = mk_self_authenticating_id E.sender_pubkey
+  = TS if U = mk_self_authenticating_id PK
   ∧ (PK', TS) = verify_delegations(DS, PK, T, { p : p is CanisterId })
   ∧ verify_signature PK' Sig ("\x0Aic-request" · hash_of_map(C))
+  ∧ (if PK = canister_signature_pk Signing_canister_id _:
+       C.sender_info = null
+       ∨ (verify_signature PK C.sender_info.sig ("\x0Eic-sender-info" · C.sender_info.info)
+          ∧ C.sender_info.signer = Signing_canister_id)
+     else C.sender_info = null)
 verify_delegations([], PK, T, TS) = (PK, TS)
 verify_delegations([D] · DS, PK, T, TS)
   = verify_delegations(DS, D.pubkey, T, TS ∩ delegation_targets(D))
@@ -762,12 +768,6 @@ Conditions
 ```html
 
 E.content.canister_id ∈ verify_envelope(E, E.content.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (E.content.sender_info = null):
-    verify_signature E.sender_pubkey E.content.sender_info.sig ("\x0Eic-sender-info" · E.content.sender_info.info)
-    E.content.sender_info.signer = Signing_canister_id
-else:
-  E.content.sender_info = null
 if E.content.sender = mk_self_authenticating_id (canister_signature_pk Signing_canister_id Seed):
   if E.content.sender_info = null:
     Caller_info_data = ""
@@ -797,7 +797,7 @@ liquid_balance(S, E.content.canister_id) ≥ 0
   E.content.arg = candid({canister_id = CanisterId, …})
   E.content.sender ∈ S.controllers[CanisterId] ∪ S.subnet_admins[S.canister_subnet[CanisterId]]
   E.content.method_name ∈
-    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_status" }
+    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_status", "canister_metrics" }
 ) ∨ (
   E.content.canister_id = ic_principal
   E.content.sender ∈ S.subnet_admins[S.canister_subnet[ECID]]
@@ -867,12 +867,6 @@ Conditions
 ```html
 
 E.content.canister_id ∈ verify_envelope(E, E.content.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (E.content.sender_info = null):
-    verify_signature E.sender_pubkey E.content.sender_info.sig ("\x0Eic-sender-info" · E.content.sender_info.info)
-    E.content.sender_info.signer = Signing_canister_id
-else:
-  E.content.sender_info = null
 |E.content.nonce| <= 32
 E.content ∉ dom(S.requests)
 S.system_time <= E.content.ingress_expiry
@@ -1995,12 +1989,6 @@ is_effective_canister_id(E.content, ECID)
 S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
 Q.arg = candid(A)
 A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (Q.sender_info = null):
-    verify_signature E.sender_pubkey Q.sender_info.sig ("\x0Eic-sender-info" · Q.sender_info.info)
-    Q.sender_info.signer = Signing_canister_id
-else:
-  Q.sender_info = null
 Q.sender ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
 
 ```
@@ -2020,6 +2008,82 @@ where the query `Q`, the response `R`, and a certificate `Cert` that is obtained
 verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
 
 ```
+
+#### IC Management Canister: Canister metrics
+
+Only the controllers of the given canister or subnet admins can get metrics about it.
+
+```html
+
+S.messages = Older_messages · CallMessage M · Younger_messages
+(M.queue = Unordered) or (∀ msg ∈ Older_messages. msg.queue ≠ M.queue)
+M.callee = ic_principal
+M.method_name = 'canister_metrics'
+M.arg = candid(A)
+M.caller ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+
+R = <implementation-specific>
+
+```
+
+State after
+
+```html
+
+S with
+    messages = Older_messages · Younger_messages ·
+      ResponseMessage {
+        origin = M.origin
+        response = Reply (candid(R))
+        refunded_cycles = M.transferred_cycles
+      }
+
+```
+
+The IC method `canister_metrics` can also be invoked via management canister query calls.
+They are calls to `/api/v3/canister/<ECID>/query`
+with CBOR content `Q` such that `Q.canister_id = ic_principal`.
+
+Submitted request to `/api/v3/canister/<ECID>/query`
+
+```html
+
+E : Envelope
+
+```
+
+Conditions
+
+```html
+
+E.content = CanisterQuery Q
+Q.canister_id = ic_principal
+Q.method_name = 'canister_metrics'
+|Q.nonce| <= 32
+is_effective_canister_id(E.content, ECID)
+S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
+Q.arg = candid(A)
+A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
+Q.sender ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+
+```
+
+Query response `R`:
+
+```html
+
+{status: "replied"; reply: {arg: candid(<implementation-specific>)}, signatures: Sigs}
+
+```
+
+where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
+
+```html
+
+verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
+
+```
+
 
 #### IC Management Canister: Canister information
 
@@ -4288,12 +4352,6 @@ is_effective_canister_id(E.content, ECID)
 S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
 Q.arg = candid(A)
 A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (Q.sender_info = null):
-    verify_signature E.sender_pubkey Q.sender_info.sig ("\x0Eic-sender-info" · Q.sender_info.info)
-    Q.sender_info.signer = Signing_canister_id
-else:
-  Q.sender_info = null
 (S[A.canister_id].canister_log_visibility = Public)
   or
   (S[A.canister_id].canister_log_visibility = Controllers and Q.sender in S[A.canister_id].controllers)
@@ -4511,12 +4569,6 @@ Conditions
 
 E.content = CanisterQuery Q
 Q.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-if E.sender_pubkey = canister_signature_pk Signing_canister_id Seed:
-  if not (Q.sender_info = null):
-    verify_signature E.sender_pubkey Q.sender_info.sig ("\x0Eic-sender-info" · Q.sender_info.info)
-    Q.sender_info.signer = Signing_canister_id
-else:
-  Q.sender_info = null
 |Q.nonce| <= 32
 is_effective_canister_id(E.content, ECID)
 S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
@@ -4655,7 +4707,7 @@ Conditions
 E.content = ReadState RS
 TS = verify_envelope(E, RS.sender, S.system_time)
 |E.content.nonce| <= 32
-S.system_time <= RS.ingress_expiry
+S.system_time <= RS.ingress_expiry or RS.sender = anonymous_id
 ∀ path ∈ RS.paths. may_read_path_for_subnet(S, RS.sender, path)
 ∀ (["request_status", Rid] · _) ∈ RS.paths.  ∀ R ∈ dom(S.requests). hash_of_map(R) = Rid => R.canister_id ∈ TS
 
