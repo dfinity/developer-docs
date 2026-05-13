@@ -109,7 +109,6 @@ export const sidebar = [
         items: [
           { slug: "concepts/canisters" },
           { slug: "concepts/principals" },
-          { slug: "concepts/app-architecture" },
           { slug: "concepts/cycles" },
           { slug: "concepts/orthogonal-persistence" },
           { slug: "concepts/timers" },

@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-An application on the Internet Computer typically consists of one or more [canisters](canisters.md) that handle backend logic, store data, and optionally serve a web frontend: all without external servers, databases, or CDNs. This page explains how these pieces fit together and what architectural patterns are available as your application grows.
+An application on the Internet Computer typically consists of one or more [canisters](../concepts/canisters.md) that handle backend logic, store data, and optionally serve a web frontend: all without external servers, databases, or CDNs. This page explains how these pieces fit together and what architectural patterns are available as your application grows.
 
 ## The default two-canister model
 
@@ -16,7 +16,7 @@ Most ICP applications start with two canisters:
 
 When a user opens your application in a browser:
 
-1. The browser sends an HTTPS request to a [boundary node](network-overview.md).
+1. The browser sends an HTTPS request to a [boundary node](../concepts/network-overview.md).
 2. The boundary node routes the request to the frontend canister, which returns the HTML and JavaScript.
 3. The JavaScript uses an [agent library](https://js.icp.build) (like `@icp-sdk/core/agent`) to send messages to the backend canister.
 4. The backend canister processes the message, updates its state if needed, and returns a response.
@@ -28,12 +28,12 @@ This flow replaces the traditional web stack. There is no separate web server, a
 
 | Concern | Traditional web app | ICP application |
 |---------|-------------------|-----------------|
-| **Compute** | Application server (Node, Django, etc.) | [Backend canister](canisters.md) (Wasm) |
-| **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](orthogonal-persistence.md) (up to 500 GiB) |
+| **Compute** | Application server (Node, Django, etc.) | [Backend canister](../concepts/canisters.md) (Wasm) |
+| **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](../concepts/orthogonal-persistence.md) (up to 500 GiB) |
 | **Frontend hosting** | CDN + static file server | [Asset canister](../guides/frontends/asset-canister.md) |
 | **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
-| **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](timers.md) |
-| **External API calls** | Server-side HTTP requests | [HTTPS outcalls](https-outcalls.md) |
+| **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](../concepts/timers.md) |
+| **External API calls** | Server-side HTTP requests | [HTTPS outcalls](../concepts/https-outcalls.md) |
 | **Infrastructure management** | You manage servers, scaling, uptime | The network handles replication and availability |
 
 \* With Internet Identity, users authenticate using a passkey or an OAuth provider (Google, Apple, etc.). Either way, each app receives a unique, app-specific principal: your canister never sees the OAuth credential or any cross-app identifier. This gives stronger privacy guarantees than traditional OAuth flows.
@@ -65,7 +65,7 @@ For implementation details and common pitfalls, see [Inter-canister calls](../gu
 
 ### Canister-per-subnet
 
-For maximum throughput, distribute canisters across multiple [subnets](network-overview.md). Each subnet processes messages independently, so spreading load across subnets lets your application scale horizontally.
+For maximum throughput, distribute canisters across multiple [subnets](../concepts/network-overview.md). Each subnet processes messages independently, so spreading load across subnets lets your application scale horizontally.
 
 **When to use:** high-throughput applications that exceed what a single subnet can handle (thousands of concurrent users, heavy computation).
 
@@ -86,7 +86,7 @@ Each user gets their own canister that they control. The main application canist
 
 ## Data storage
 
-Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](orthogonal-persistence.md#stable-memory): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
+Canisters store data in heap memory during execution and can persist data across upgrades using [stable memory](../concepts/orthogonal-persistence.md#stable-memory): there is no external database. Libraries provide familiar data-structure abstractions on top of raw stable memory:
 
 - **Motoko:** the [`core` standard library](https://mops.one/core/docs) includes persistent data structures designed for upgrade-safe storage.
 - **Rust:** [`ic-stable-structures`](https://docs.rs/ic-stable-structures/latest/ic_stable_structures/) provides `StableBTreeMap` and other structures for stable memory.
@@ -117,9 +117,9 @@ Start with the simplest architecture that meets your requirements. You can alway
 
 ## Next steps
 
-- [Quickstart](../getting-started/quickstart.md): deploy your first application
+- [Choose your path](choose-your-path.md): pick a development track based on what you want to build
 - [Inter-canister calls](../guides/canister-calls/inter-canister-calls.md): inter-canister communication patterns
 - [Asset canister](../guides/frontends/asset-canister.md): frontend deployment
-- [Canisters](canisters.md): canister internals
+- [Canisters](../concepts/canisters.md): canister internals
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/application-architectures.mdx, docs/building-apps/getting-started/app-architecture.mdx; canister-per-user section ported from application-architectures.mdx -->

@@ -28,7 +28,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 - **[Canisters](canisters.md)**: Programs that run WebAssembly, hold state, serve HTTP, and pay for their own compute.
 - **[Principals](principals.md)**: The identity model: who can call a canister, and how caller identity works.
-- **[Application architecture](app-architecture.md)**: How ICP applications are structured: canisters, frontends, and inter-canister communication.
+- **[Application architecture](../getting-started/app-architecture.md)**: How ICP applications are structured: canisters, frontends, and inter-canister communication.
 - **[Cycles](cycles.md)**: How canisters pay for their own compute, storage, and bandwidth, and why users pay nothing.
 - **[Orthogonal persistence](orthogonal-persistence.md)**: How canister memory survives across executions and upgrades without databases.
 - **[Timers](timers.md)**: Periodic and one-shot scheduled tasks via the global timer mechanism.

@@ -143,7 +143,7 @@ This has a practical implication: if a canister modifies state and then makes an
 
 - [Cycles](cycles.md): how canisters pay for computation
 - [Principals](principals.md): the identity model and caller authentication
-- [App architecture](app-architecture.md): how canisters fit into application design
+- [App architecture](../getting-started/app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on
 

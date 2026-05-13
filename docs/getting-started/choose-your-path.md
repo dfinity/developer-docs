@@ -2,7 +2,7 @@
 title: "Choose your path"
 description: "Choose your development path based on what you want to build"
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Choose your next step based on what you want to build. Each path links to the first guide you should read, with a suggested progression from there.
