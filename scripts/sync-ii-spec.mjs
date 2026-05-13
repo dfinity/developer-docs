@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Syncs the Internet Identity specification from .sources/internetidentity into
-// docs/references/internet-identity-spec.md and public/references/internet-identity.did.
+// Syncs specs from .sources/internetidentity:
+//   - docs/ii-spec.mdx       → docs/references/internet-identity-spec.md
+//   - docs/vc-spec.md        → docs/references/verifiable-credentials-spec.md
+//   - src/internet_identity/internet_identity.did → public/references/internet-identity.did
 //
-// Transformations applied:
+// Transformations applied to ii-spec:
 //   - Strip MDX import lines
 //   - Remove the H1 heading (Starlight renders the frontmatter title as H1)
 //   - Rewrite absolute / relative links that point outside this site
@@ -10,9 +12,13 @@
 //   - Replace <CodeBlock> component with a download link to internet-identity.did
 //   - Copy internet_identity.did to public/references/internet-identity.did
 //
+// Transformations applied to vc-spec:
+//   - Remove the H1 heading (Starlight renders the frontmatter title as H1)
+//   - Rewrite absolute links that point to the retired portal
+//
 // Validation (exits non-zero on failure):
-//   - Unhandled absolute internetcomputer.org/docs links
-//   - Unconverted Mermaid blocks (unsupported diagram type added upstream)
+//   - Unhandled absolute internetcomputer.org/docs links (both specs)
+//   - Unconverted Mermaid blocks (ii-spec only)
 //
 // Usage: node scripts/sync-ii-spec.mjs
 //   or:  npm run sync:ii-spec
@@ -20,14 +26,24 @@
 import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
-const SOURCE_MDX = '.sources/internetidentity/docs/ii-spec.mdx';
-const SOURCE_DID = '.sources/internetidentity/src/internet_identity/internet_identity.did';
-const TARGET     = 'docs/references/internet-identity-spec.md';
-const TARGET_DID = 'public/references/internet-identity.did';
+const SOURCE_MDX    = '.sources/internetidentity/docs/ii-spec.mdx';
+const SOURCE_VC     = '.sources/internetidentity/docs/vc-spec.md';
+const SOURCE_DID    = '.sources/internetidentity/src/internet_identity/internet_identity.did';
+const TARGET        = 'docs/references/internet-identity-spec.md';
+const TARGET_VC     = 'docs/references/verifiable-credentials-spec.md';
+const TARGET_DID    = 'public/references/internet-identity.did';
 
 if (!existsSync(SOURCE_MDX)) {
   console.error(
     `ERROR: ${SOURCE_MDX} not found.\n` +
+    'Run: git submodule update --init --depth 1 .sources/internetidentity'
+  );
+  process.exit(1);
+}
+
+if (!existsSync(SOURCE_VC)) {
+  console.error(
+    `ERROR: ${SOURCE_VC} not found.\n` +
     'Run: git submodule update --init --depth 1 .sources/internetidentity'
   );
   process.exit(1);
@@ -77,7 +93,7 @@ const linkMap = [
   ],
   [
     '](vc-spec.md)',
-    '](../guides/authentication/verifiable-credentials.md)',
+    '](./verifiable-credentials-spec.md)',
   ],
 ];
 
@@ -140,7 +156,7 @@ content =
   `  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message\n` +
   `  - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-protocol-spec.md\n` +
   `  - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md\n` +
-  `  - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md\n` +
+  `  - vc-spec.md (relative, same dir in source repo) → ./verifiable-credentials-spec.md\n` +
   `Other changes from source:\n` +
   `  - \`# The Internet Identity Specification\` H1 removed (Starlight renders frontmatter title as H1)\n` +
   `  - \`<CodeBlock language="candid">{IICandidInterface}</CodeBlock>\` replaced with download link to /references/internet-identity.did\n` +
@@ -176,6 +192,69 @@ if (mermaidBlocks.length) {
     const line = content.slice(0, m.index).split('\n').length;
     console.warn(`  line ${line}`);
   }
+  failed = true;
+}
+
+// --- vc-spec sync ---
+console.log(`\nSyncing VC spec from dfinity/internet-identity@${version}...`);
+
+let vcContent = readFileSync(SOURCE_VC, 'utf8');
+
+// 1. Strip the H1 (Starlight renders it from frontmatter)
+vcContent = vcContent.replace(/^# II Verifiable Credential Spec \(MVP\)\n\n/m, '');
+
+// 2. Rewrite retired portal links to internal paths
+// Note: upstream still uses internetcomputer.org/docs/current/ — tracked in
+// https://github.com/dfinity/internet-identity/issues/3889
+const vcLinkMap = [
+  [
+    'https://internetcomputer.org/docs/current/references/ii-spec#alternative-frontend-origins',
+    './internet-identity-spec.md#alternative-frontend-origins',
+  ],
+  [
+    'https://internetcomputer.org/docs/current/references/ic-interface-spec#canister-signatures',
+    './ic-interface-spec/index.md#canister-signatures',
+  ],
+];
+
+for (const [old, replacement] of vcLinkMap) {
+  vcContent = vcContent.replaceAll(old, replacement);
+}
+
+// 3. Strip leading blank lines, then inject frontmatter
+vcContent = vcContent.replace(/^\n+/, '');
+vcContent =
+  `---\n` +
+  `title: "Verifiable Credentials specification"\n` +
+  `description: "Normative specification of the ICP Verifiable Credentials protocol: Issuer Candid API and Identity Provider window.postMessage interface."\n` +
+  `sidebar:\n` +
+  `  order: 15\n` +
+  `---\n\n` +
+  vcContent;
+
+// 4. Append the link-adaptation log and Upstream comment
+vcContent =
+  vcContent.trimEnd() +
+  '\n' +
+  `\n<!--\n` +
+  `Link replacements from source (source used absolute paths pointing to the retired portal):\n` +
+  `  - internetcomputer.org/docs/current/references/ii-spec#alternative-frontend-origins → ./internet-identity-spec.md#alternative-frontend-origins (×4)\n` +
+  `  - internetcomputer.org/docs/current/references/ic-interface-spec#canister-signatures → ./ic-interface-spec/index.md#canister-signatures\n` +
+  `Other changes from source:\n` +
+  `  - \`# II Verifiable Credential Spec (MVP)\` H1 removed (Starlight renders frontmatter title as H1)\n` +
+  `-->\n` +
+  `<!-- Upstream: sync from dfinity/internet-identity — docs/vc-spec.md -->\n`;
+
+writeFileSync(TARGET_VC, vcContent);
+console.log(`Written: ${TARGET_VC}`);
+
+// Validate vc-spec for unhandled portal links
+const vcRemaining = [...vcContent.matchAll(/https?:\/\/internetcomputer\.org\/docs[^\s\)">]*/g)]
+  .map(m => m[0]);
+const vcUnique = [...new Set(vcRemaining)];
+if (vcUnique.length) {
+  console.warn('\nWARNING: Unhandled absolute links in vc-spec — add them to vcLinkMap:');
+  vcUnique.forEach(l => console.warn(`  ${l}`));
   failed = true;
 }
 

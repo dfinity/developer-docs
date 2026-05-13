@@ -651,7 +651,7 @@ Must be called immediately after `openid_prepare_delegation`.
 
 ### Verifiable Credentials Protocol
 
-See [here](../guides/authentication/verifiable-credentials.md) for the specification of the verifiable credentials protocol.
+See [here](./verifiable-credentials-spec.md) for the specification of the verifiable credentials protocol.
 
 ### HTTP gateway protocol
 
@@ -726,7 +726,7 @@ Link replacements from source (source used absolute/relative paths pointing outs
   - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message
   - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-protocol-spec.md
   - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
-  - vc-spec.md (relative, same dir in source repo) → ../guides/authentication/verifiable-credentials.md
+  - vc-spec.md (relative, same dir in source repo) → ./verifiable-credentials-spec.md
 Other changes from source:
   - `# The Internet Identity Specification` H1 removed (Starlight renders frontmatter title as H1)
   - `<CodeBlock language="candid">{IICandidInterface}</CodeBlock>` replaced with download link to /references/internet-identity.did
