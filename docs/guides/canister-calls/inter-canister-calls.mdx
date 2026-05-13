@@ -264,6 +264,138 @@ Call::bounded_wait(callee, "method")
 
 **Calling third-party canisters:** When calling canisters outside your control, always use bounded wait and design for uncertainty. The callee may be upgraded, become unresponsive, or behave unexpectedly. Use idempotent operations where possible and provide a way to query the outcome of a call separately, so your canister can recover from ambiguous responses.
 
+## Calls with attached cycles
+
+Some canister methods require cycles to be attached to the incoming call as a per-request fee. The [exchange rate canister](../chain-fusion/exchange-rates.mdx) is a common example: each request costs one XDR's worth of cycles, which must arrive with the call.
+
+This is distinct from a canister's ongoing operational balance. The [cycles ledger](../../concepts/cycles.md#cycles-ledger) cannot forward calls with cycles attached, so you must attach them explicitly at the call site.
+
+### Sending cycles
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+Use the `(with cycles = amount)` parenthetical on any `await` expression:
+
+```motoko
+import Cycles "mo:core/Cycles";
+
+persistent actor {
+  let target = actor ("rrkah-fqaaa-aaaaa-aaaaq-cai") : actor {
+    someMethod : () -> async ();
+  };
+
+  public func callWithCycles() : async () {
+    await (with cycles = 500_000_000) target.someMethod();
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+Chain `.with_cycles()` on the `Call` builder before awaiting:
+
+```rust
+use candid::Principal;
+use ic_cdk::call::Call;
+use ic_cdk::update;
+
+#[update]
+async fn call_with_cycles() {
+    Call::unbounded_wait(
+        Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
+        "someMethod",
+    )
+    .with_cycles(500_000_000u128)
+    .await
+    .expect("call failed");
+}
+```
+
+</TabItem>
+</Tabs>
+
+The cycles come from the calling canister's own balance, not the cycles ledger. Top up the calling canister with `icp canister top-up` before using this pattern.
+
+### Charging a cycle fee
+
+A canister that charges per-call defines a required fee, rejects calls that don't meet it, and accepts exactly that amount before doing its work. Any cycles above the fee are returned to the caller automatically:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+```motoko
+import Cycles "mo:core/Cycles";
+import Runtime "mo:core/Runtime";
+
+persistent actor {
+  let fee : Nat = 100_000_000;
+
+  public func compute() : async () {
+    let available = Cycles.available();
+    if (available < fee) {
+      Runtime.trap("Insufficient cycles: requires " # debug_show fee)
+    };
+    ignore Cycles.accept<system>(fee); // accept exactly the fee; excess is returned automatically
+    // ... do work here
+  };
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+```rust
+use ic_cdk::update;
+
+const FEE: u128 = 100_000_000;
+
+#[update]
+fn compute() {
+    let available = ic_cdk::api::msg_cycles_available();
+    if available < FEE {
+        ic_cdk::trap("Insufficient cycles");
+    }
+    ic_cdk::api::msg_cycles_accept(FEE); // accept exactly the fee; excess is returned automatically
+    // ... do work here
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Attaching cycles from the CLI
+
+The CLI cannot attach cycles directly to a canister call. Two approaches address this:
+
+**Top up the target canister first** (preferred when you control it): transfer cycles to the target using `icp canister top-up`, then call the method normally. The canister uses its own balance when the method runs.
+
+```bash
+# Transfer 1T cycles to the target canister
+icp canister top-up rrkah-fqaaa-aaaaa-aaaaq-cai --amount 1T -n ic
+
+# Then call the method as normal
+icp canister call rrkah-fqaaa-aaaaa-aaaaq-cai someMethod '()' -n ic
+```
+
+**Proxy canister** (required when you cannot top up the target, or need cycles attached to each individual call): deploy a proxy canister that forwards calls with cycles attached.
+
+```bash
+# Deploy the proxy canister using the provided template
+icp new proxy --subfolder proxy
+cd proxy
+icp deploy -e ic
+
+# Get the proxy canister ID
+export PROXY_ID=$(icp canister status -e ic --id-only proxy)
+
+# Call any canister through the proxy with cycles attached
+icp canister call --proxy "$PROXY_ID" rrkah-fqaaa-aaaaa-aaaaq-cai someMethod '()' -n ic
+```
+
+The proxy canister template is available at [icp-cli-templates/proxy](https://github.com/dfinity/icp-cli-templates/tree/main/proxy). It deploys the [proxy-canister](https://github.com/dfinity/proxy-canister), which is automatically provisioned on local networks but must be deployed manually on mainnet.
+
 ## Pub/sub pattern
 
 The publisher/subscriber pattern is a natural fit for inter-canister communication on ICP. A publisher canister maintains a list of subscribers and notifies them when events occur. Unlike traditional pub/sub systems, ICP's reliable message delivery means subscribers are guaranteed to receive notifications (as long as both canisters have sufficient cycles).
@@ -400,7 +532,8 @@ Calls between canisters on the same subnet complete within a single round. Cross
 
 - [Parallel inter-canister calls](parallel-inter-canister-calls.md): make multiple calls concurrently and use composite queries for efficient read patterns
 - [Candid](candid.md): define the interface your canister exposes for inter-canister calls
+- [Cycles Management](../canister-management/cycles-management.md): acquire cycles, monitor balances, and set freezing thresholds
 - [Certified Variables](../backends/certified-variables.md): make query responses verifiable without update call overhead
 - [Inter-Canister Call Security](../security/inter-canister-calls.md): reentrancy guards, async safety patterns, and trust considerations
 
-{/* Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, icp-cli icskill, dfinity/icp-cli docs/concepts/canister-discovery.md, dfinity/examples motoko/pub-sub, and caffeinelabs/motoko doc/md/fundamentals/2-actors/1-actors-async.md (timeout parenthetical syntax, try/finally cleanup pattern) */}
+{/* Upstream: informed by dfinity/portal docs/building-apps/interact-with-canisters/advanced-calls.mdx, docs/building-apps/developer-tools/cdks/rust/intercanister.mdx, multi-canister icskill, icp-cli icskill, dfinity/icp-cli docs/concepts/canister-discovery.md, dfinity/examples motoko/pub-sub, caffeinelabs/motoko doc/md/fundamentals/2-actors/1-actors-async.md (timeout parenthetical syntax, try/finally cleanup pattern); cycles-attachment section moved from docs/guides/canister-management/cycles-management.mdx, proxy template from dfinity/icp-cli-templates */}

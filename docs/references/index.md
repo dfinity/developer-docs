@@ -36,6 +36,7 @@ Technical reference material for ICP development. These pages cover exact specif
 - **[HTTP Gateway Specification](http-gateway-protocol-spec.md)**: How boundary nodes serve canister HTTP responses with certification verification.
 - **[Candid Specification](candid-spec.md)**: The Candid interface description language: type system, encoding, and subtyping rules.
 - **[Internet Identity Specification](internet-identity-spec.md)**: Delegation chains, passkey management, and canister signatures.
+- **[Verifiable Credentials Specification](verifiable-credentials-spec.md)**: Normative protocol for issuing and verifying credentials on ICP.
 
 ## Governance
 

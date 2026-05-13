@@ -395,7 +395,7 @@ The VC protocol provides the following privacy guarantees:
 
 ## Next steps
 
-- Read the [VC specification](https://github.com/dfinity/internet-identity/blob/main/docs/vc-spec.md) for the full protocol details.
+- Read the [VC specification](../../references/verifiable-credentials-spec.md) for the full protocol details.
 - Explore the [verifiable credentials playground](https://github.com/dfinity/vc-playground) for issuer and relying party reference implementations.
 - Review [Internet Identity integration](internet-identity.md) for authentication setup.
 - See the [Internet Identity specification](../../references/internet-identity-spec.md) for alternative derivation origins and canister signature details.

@@ -1,0 +1,160 @@
+name: Sync II spec
+
+on:
+  schedule:
+    - cron: '0 9 * * 2' # Weekly on Tuesday (II releases are typically Monday/Tuesday)
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          client-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_CLIENT_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
+
+      - name: Initialize internetidentity submodule at current pin
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git submodule update --init --depth 1 .sources/internetidentity
+
+      - name: Get current pinned hash
+        id: current
+        run: |
+          HASH=$(git -C .sources/internetidentity rev-parse HEAD)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "short=$(git -C .sources/internetidentity rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Fetch latest release tag and resolve hash
+        id: latest
+        run: |
+          git -C .sources/internetidentity fetch --tags --depth 100 origin
+          TAG=$(git -C .sources/internetidentity tag --sort=-version:refname \
+            | grep '^release-[0-9][0-9][0-9][0-9]-' | head -1)
+          echo "Latest release tag: $TAG"
+          HASH=$(git -C .sources/internetidentity rev-parse "$TAG")
+          SHORT=$(git -C .sources/internetidentity rev-parse --short "$TAG")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "short=$SHORT" >> $GITHUB_OUTPUT
+
+      - name: Check if relevant files changed
+        id: check
+        run: |
+          CURRENT="${{ steps.current.outputs.hash }}"
+          LATEST="${{ steps.latest.outputs.hash }}"
+          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.tag }}"
+
+          if [ "$CURRENT" = "$LATEST" ]; then
+            echo "Already at latest release ${{ steps.latest.outputs.tag }}. No update needed."
+            echo "needed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" > /dev/null 2>&1; then
+            echo "Branch $BRANCH already exists — PR likely open, skipping."
+            echo "needed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Only proceed if the spec files themselves changed
+          CHANGED=$(git -C .sources/internetidentity diff --name-only "${CURRENT}..${LATEST}" -- \
+            docs/ii-spec.mdx \
+            docs/vc-spec.md \
+            src/internet_identity/internet_identity.did)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No changes to ii-spec.mdx, vc-spec.md, or internet_identity.did. Skipping."
+            echo "needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Spec files changed:"
+            echo "$CHANGED"
+            echo "needed=true" >> $GITHUB_OUTPUT
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump submodule to latest main
+        if: steps.check.outputs.needed == 'true'
+        run: git -C .sources/internetidentity checkout ${{ steps.latest.outputs.hash }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.check.outputs.needed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.check.outputs.needed == 'true'
+        run: npm ci
+
+      - name: Initialize examples submodule (required for build)
+        if: steps.check.outputs.needed == 'true'
+        run: git submodule update --init --depth 1 .sources/examples
+
+      - name: Run II spec sync
+        if: steps.check.outputs.needed == 'true'
+        run: npm run sync:ii-spec
+
+      - name: Build check
+        if: steps.check.outputs.needed == 'true'
+        run: npm run build
+
+      - name: Update VERSIONS
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          sed -i "s|^internetidentity.*|internetidentity      ${{ steps.latest.outputs.tag }}                                         ${{ steps.latest.outputs.short }}|" .sources/VERSIONS
+
+      - name: Create PR
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          git config user.name "pr-automation-bot-public[bot]"
+          git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
+
+          BRANCH="infra/sync-ii-spec-${{ steps.latest.outputs.tag }}"
+          git checkout -b "$BRANCH"
+          git add .sources/internetidentity docs/references/internet-identity-spec.md docs/references/verifiable-credentials-spec.md public/references/internet-identity.did .sources/VERSIONS
+          git commit -m "chore: sync II spec to dfinity/internet-identity ${{ steps.latest.outputs.tag }}"
+          git push -u origin "$BRANCH"
+
+          CHANGED="${{ steps.check.outputs.changed_files }}"
+          {
+            echo "## Summary"
+            echo ""
+            echo "Automated sync of the Internet Identity specification from \`dfinity/internet-identity\`."
+            echo ""
+            echo "**Release:** \`${{ steps.latest.outputs.tag }}\`  (pinned from \`${{ steps.current.outputs.short }}\` → \`${{ steps.latest.outputs.short }}\`)"
+            echo ""
+            echo "**Changed upstream files:**"
+            while IFS= read -r f; do
+              [ -n "$f" ] && echo "- \`$f\`"
+            done <<< "$CHANGED"
+            echo ""
+            echo "- Ran \`npm run sync:ii-spec\` — regenerated \`docs/references/internet-identity-spec.md\` and \`docs/references/verifiable-credentials-spec.md\`"
+            echo "- Build passed ✓"
+            echo ""
+            echo "## Checklist"
+            echo ""
+            echo "- [ ] Review the diff to \`docs/references/internet-identity-spec.md\` for content changes"
+            echo "- [ ] Review the diff to \`docs/references/verifiable-credentials-spec.md\` for content changes"
+            echo "- [ ] Check for new absolute \`internetcomputer.org\` link patterns (script exits non-zero if any were missed)"
+            echo "- [ ] Verify any renamed or restructured sections are reflected correctly"
+            echo ""
+            echo "## Sync recommendation"
+            echo ""
+            echo "\`sync from dfinity/internet-identity — docs/ii-spec.mdx, docs/vc-spec.md, src/internet_identity/internet_identity.did\`"
+          } > /tmp/pr-body.md
+
+          gh pr create \
+            --title "chore: sync II spec to dfinity/internet-identity ${{ steps.latest.outputs.tag }}" \
+            --body-file /tmp/pr-body.md
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

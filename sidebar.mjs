@@ -245,6 +245,7 @@ export const sidebar = [
       },
       { slug: "references/http-gateway-protocol-spec" },
       { slug: "references/internet-identity-spec" },
+      { slug: "references/verifiable-credentials-spec" },
       { slug: "references/glossary" },
     ],
   },

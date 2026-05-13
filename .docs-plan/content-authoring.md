@@ -5,8 +5,8 @@
 When drafting a new docs page:
 
 1. Read the stub page — it contains content brief, source material, and cross-links
-2. Read source material from `.sources/`. Stub references use shorthand — resolve them per the mapping in "Source material repos" above (e.g., `Portal: building-apps/foo.mdx` → `.sources/portal/docs/building-apps/foo.mdx`).
-   > **If source material is unavailable at the expected path:** (1) search `.sources/portal/` for the content under a different path, (2) if truly unavailable, write from the content brief + icskills + your training knowledge, and add `<!-- Source unavailable: [path] — written from content brief -->` so future contributors know to verify.
+2. Read source material from `.sources/`. Resolve paths using the "Source material repos" table in AGENTS.md.
+   > **If source material is unavailable at the expected path:** write from the content brief + icskills + your training knowledge, and add `<!-- Source unavailable: [path] — written from content brief -->` so future contributors know to verify.
 3. Read any related icskills skill file from `.sources/icskills/` for accurate canister IDs and code patterns.
 4. Write the content:
    - Follow the content brief in the stub
