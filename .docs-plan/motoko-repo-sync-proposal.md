@@ -712,23 +712,17 @@ potentially be synced directly once their `dfx` references are replaced with `ic
 With the above changes in place, `sync-motoko.sh` reduces to a plain file copy:
 
 ```bash
-rsync -r --delete --exclude='_category_.yml' \
-  .sources/motoko/doc/md/fundamentals/ docs/languages/motoko/fundamentals/
-rsync -r --delete --exclude='_category_.yml' \
-  .sources/motoko/doc/md/icp-features/  docs/languages/motoko/icp-features/
-rsync -r --delete --exclude='_category_.yml' \
-  .sources/motoko/doc/md/reference/     docs/languages/motoko/reference/
+rsync -r --delete .sources/motoko/doc/md/fundamentals/ docs/languages/motoko/fundamentals/
+rsync -r --delete .sources/motoko/doc/md/icp-features/  docs/languages/motoko/icp-features/
+rsync -r --delete .sources/motoko/doc/md/reference/     docs/languages/motoko/reference/
 cp .sources/motoko/doc/md/language-manual.md  docs/languages/motoko/reference/language-manual.md
 cp .sources/motoko/doc/md/style-guide.md      docs/languages/motoko/reference/style-guide.md
 cp .sources/motoko/doc/md/compiler-ref.md     docs/languages/motoko/reference/compiler-ref.md
 cp .sources/motoko/doc/md/base-core-migration.md docs/languages/motoko/base-core-migration.md
 ```
 
-The `--exclude='_category_.yml'` flag can be dropped once upstream deletes
-`_category_.yml` files. The `--exclude='index.md'` flags used in the current
-sync (to exclude Docusaurus nav pages) are no longer needed because upstream
-deletes those files as part of the Docusaurus cleanup (§11 + `index.md`
-guidance above).
+No exclude flags needed: upstream deletes `_category_.yml` files (§11) and the
+top-level section `index.md` nav pages as part of the Docusaurus cleanup.
 
 ### Symlink alternative
 
