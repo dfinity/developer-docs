@@ -32,7 +32,7 @@ persistent actor Reminder {
 }
 ```
 
-The underlying mechanism is a [global timer](https://internetcomputer.org/docs/references/ic-interface-spec#timer) that, by default, is issued with appropriate callbacks from a priority queue maintained by the Motoko runtime.
+The underlying mechanism is a [global timer](/references/ic-interface-spec/#timer) that, by default, is issued with appropriate callbacks from a priority queue maintained by the Motoko runtime.
 
 The timer mechanism can be disabled completely by passing the `--no-timer` flag to `moc`.
 

@@ -177,7 +177,7 @@ try {
 
 ## Traps
 
-Traps immediately stop execution and roll back [state](/languages/motoko/fundamentals/state). They are used for fatal errors that cannot be recovered.
+Traps immediately stop execution and roll back [state](/languages/motoko/fundamentals/actors/state). They are used for fatal errors that cannot be recovered.
 
 ```motoko no-repl
 import Runtime "mo:core/Runtime";

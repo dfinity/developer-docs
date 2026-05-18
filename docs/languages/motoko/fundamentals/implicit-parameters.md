@@ -282,4 +282,4 @@ Implicit arguments have no runtime overhead. The comparison function is resolved
 
 ## See also
 
-- [Language reference](https://docs.motoko.org#function-calls)
+- [Language reference](/languages/motoko/reference/language-manual#function-calls)
