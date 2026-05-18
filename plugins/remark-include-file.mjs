@@ -12,15 +12,22 @@
  *   ```motoko file=<motokoExamples>/todo-error.mo#L49-L58
  *   ```
  *
+ * Inline markdown inclusion (renders the file as prose, not a code block):
+ *
+ *   ```md file=<motokoRoot>/Changelog.md
+ *   ```
+ *
  * Placeholders:
  *   <rootDir>        — project root
  *   <motokoExamples> — .sources/motoko/doc/md/examples/
+ *   <motokoRoot>     — .sources/motoko/ (root of the motoko submodule)
  *
  * An optional #L<start>-L<end> suffix slices specific lines (1-based, inclusive).
+ * Line ranges are not supported with the `md` inline inclusion form.
  *
  * A missing file or out-of-range line slice causes a build error.
  */
-import { visit } from "unist-util-visit";
+import { visit, SKIP } from "unist-util-visit";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,11 +37,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLACEHOLDERS = {
   "<rootDir>": ROOT,
   "<motokoExamples>": join(ROOT, ".sources", "motoko", "doc", "md", "examples"),
+  "<motokoRoot>": join(ROOT, ".sources", "motoko"),
 };
 
 export default function remarkIncludeFile() {
-  return (tree, file) => {
-    visit(tree, "code", (node) => {
+  return function (tree, file) {
+    visit(tree, "code", (node, index, parent) => {
       const fileMeta = (node.meta || "")
         .split(" ")
         .find((m) => m.startsWith("file="));
@@ -79,6 +87,16 @@ export default function remarkIncludeFile() {
           );
         }
         content = lines.slice(lineStart - 1, lineEnd).join("\n");
+      }
+
+      // Inline markdown inclusion: parse the file and replace the code node with
+      // the resulting AST children so content renders as prose, not a code block.
+      // `this` is the unified processor; its parse() method is used so the same
+      // remark plugins apply to the included content.
+      if (node.lang === "md") {
+        const parsed = this.parse(content.trimEnd());
+        parent.children.splice(index, 1, ...parsed.children);
+        return [SKIP, index + parsed.children.length];
       }
 
       node.value = content.trimEnd();

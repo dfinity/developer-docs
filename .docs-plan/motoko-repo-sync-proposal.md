@@ -579,27 +579,39 @@ leaving the changelog page blank except for the frontmatter title.
 The post-processor currently handles this by reading `Changelog.md` from the
 pinned submodule (`.sources/motoko/Changelog.md`) and inlining its full contents.
 
-**Upstream fix:** copy `Changelog.md` into `doc/md/reference/changelog.md` as
-part of the Motoko release automation. The canonical approach is to have the
-release script write the frontmatter block once (if not already present) and
-then overwrite the file body with the current `Changelog.md` content:
+There is no need to copy `Changelog.md` — it already exists at exactly the right
+version in the submodule root at the pinned commit. The fix has two parts:
 
-```bash
-# In caffeinelabs/motoko — run as part of the release script, after version is set
-{
-  printf -- '---\ntitle: "Changelog"\ndescription: "Motoko compiler changelog"\nsidebar:\n  order: 3\n---\n\n'
-  cat Changelog.md
-} > doc/md/reference/changelog.md
+**developer-docs side (already done with this PR):** `remark-include-file` now
+supports inline markdown inclusion. A code fence with language `md` and a `file=`
+attribute is replaced with the parsed AST of the referenced file, so the content
+renders as prose (headings, lists, etc.), not as a code block. The new
+`<motokoRoot>` placeholder resolves to `.sources/motoko/` at build time.
+
+**Upstream fix:** replace the `md reference` block with a single inline include
+directive and rename the file from `changelog.mdx` to `changelog.md`:
+
+```markdown
+---
+title: "Changelog"
+description: "Motoko compiler changelog"
+sidebar:
+  order: 3
+---
+
+```md file=<motokoRoot>/Changelog.md
+```
 ```
 
-This approach ensures no drift: the changelog in `doc/md/reference/changelog.md`
-is always exactly the state of `Changelog.md` at the same commit. Developer-docs
-is pinned to a specific submodule commit, so the correct version is always shown
-regardless of when the sync runs. The post-processor's changelog inlining step
-can then be removed entirely.
+(The `<motokoRoot>` placeholder is developer-docs-specific and is a no-op on
+the Docusaurus site — Docusaurus ignores unknown code fence attributes and will
+render this as an empty fenced block. The Docusaurus site can keep its `md reference`
+block separately, or the two directives can coexist in the same file since only one
+will be processed at a time depending on the build environment.)
 
-The `changelog.mdx` file can be renamed `changelog.md` at the same time (the
-`md reference` block is the only reason it needed MDX).
+The post-processor's changelog inlining step can be removed once the upstream
+adopts this. The `changelog.mdx` file can be renamed `changelog.md` at the same
+time (the MDX extension was only needed for the `md reference` directive).
 
 ### 10. Replace `motoko-tooling` links with a valid external URL
 
@@ -707,13 +719,21 @@ in frontmatter will provide the correct sort order automatically.
    numeric prefixes, apply the special renames from step 1). Do this atomically
    with the renames — the Docusaurus site must not have broken links at any
    intermediate commit.
-9. Add release automation that copies `Changelog.md` into
-   `doc/md/reference/changelog.md` (with frontmatter prepended) as part of
-   every Motoko release. Rename `changelog.mdx` → `changelog.md` at the same
-   time (the MDX extension was only needed for the `md reference` directive).
+9. Replace the `md reference` block in `reference/changelog.mdx` with
+   `` ```md file=<motokoRoot>/Changelog.md ``` `` plus frontmatter.
+   Rename `changelog.mdx` → `changelog.md` (MDX was only needed for the
+   Docusaurus directive). No release automation needed — the file is a static
+   stub; `Changelog.md` at the same commit is always the correct version.
 10. Replace the two `../../motoko-tooling/3-mo-doc.md` links in
     `fundamentals/basic-syntax/comments.md` with
     `https://github.com/dfinity/motoko/releases`.
+
+**developer-docs side (already done):**
+- `remark-include-file` supports `<motokoRoot>` placeholder and inline markdown
+  inclusion (`md` language code fence → rendered prose, not a code block).
+- `remark-include-file` supports `<motokoExamples>` and `#L<n>-L<m>` ranges.
+- `postprocess-motoko.mjs` rewrites `../examples/` → `<motokoExamples>/` as a
+  bridge until the upstream adopts the placeholder directly.
 
 **developer-docs side (after upstream PR is merged and submodule bumped):**
 
