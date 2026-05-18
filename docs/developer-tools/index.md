@@ -176,7 +176,7 @@ Install: download a prebuilt binary from the [releases page](https://github.com/
 
 Resources:
 - [Candid GitHub repo](https://github.com/dfinity/candid)
-- Candid specification: [candid-spec.md](candid-spec.md)
+- Candid specification: [candid-spec.md](../references/candid-spec.md)
 
 ## Next steps
 
