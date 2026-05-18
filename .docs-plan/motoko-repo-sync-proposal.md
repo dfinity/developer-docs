@@ -89,16 +89,24 @@ links directly in the source removes the need for this rewrite.
 ### 6. Docusaurus-specific aside types
 
 ```
-:::info             ← 60 occurrences in source
-:::warn             ← 1 occurrence in source
+:::info             ← ~21 occurrences in synced sections (60+ across full doc/md tree)
+:::warn             ← 1 occurrence in synced sections
 :::info [Link](url) ← link in aside title (Starlight titles are plain text)
 ```
 
-Starlight supports `:::note`, `:::tip`, `:::caution`, and `:::danger`. It does
-not natively support `:::info` or `:::warn`. The post-processor currently maps
-`:::info` → `:::note` and `:::warn` → `:::caution`. Aside titles that are
-markdown links (`:::info [Iter](url)`) are also rewritten to strip the URL
-(Starlight titles cannot contain links).
+Starlight supports `:::note`, `:::tip`, `:::caution`, `:::danger`, and
+`:::warning` (the full word). It does NOT support `:::info` (renders as plain
+text) or `:::warn` (the shortened form — also renders as plain text). The
+post-processor maps `:::info` → `:::note` and `:::warn` → `:::caution`. Aside
+titles that are markdown links (`:::info [Iter](url)`) are also rewritten to
+strip the URL (Starlight titles cannot contain links).
+
+**Important distinction:** `:::warning` (full word) IS a valid Starlight type
+(rendered as `:::caution`). Only `:::warn` (three-letter shorthand) is invalid
+in Starlight. The source currently uses both — `:::warn` appears once
+(`fundamentals/3-types/12-advanced-types.md:235`) and `:::warning` appears twice
+(`fundamentals/3-types/9-mutable-arrays.md:89`, `12-base-core-migration.md:31`).
+Only `:::warn` needs to be replaced; `:::warning` is already valid.
 
 Docusaurus supports all four Starlight types natively, so switching `:::info` →
 `:::note` and `:::warn` → `:::caution` in the upstream source is a safe change
@@ -153,6 +161,64 @@ already the correct flag for this site.
 19 in `language-manual.md`) implicitly had a Run button in the portal. On this
 site they render identically to `no-repl` blocks — Expressive Code ignores the
 missing flag. However, they signal intent incorrectly to anyone reading the source.
+
+### 8. Internal relative links use numeric-prefixed paths
+
+Every relative cross-reference in the source uses the current numeric-prefixed
+directory and file names. For example, from `fundamentals/3-types/14-subtyping.md`:
+
+```markdown
+[immutable arrays (`[T]`)](../3-types/8-immutable-arrays.md)
+[mutable arrays](../3-types/9-mutable-arrays.md)
+[functions](../3-types/3-functions.md)
+```
+
+And from top-level fundamentals files like `0-hello-world.md`:
+
+```markdown
+[actor](../fundamentals/2-actors/1-actors-async.md)
+[stable variable](../fundamentals/3-types/13-stable-types.md)
+```
+
+After the directory and file renames in Proposed Change §1, all of these paths
+become invalid. The consuming site's post-processor (`postprocess-motoko.mjs`)
+currently rewrites every relative link by stripping numeric prefixes and doing a
+slug-index lookup. For a transform-free sync, the upstream must update all
+relative links to reflect the post-rename paths.
+
+In the sections this site syncs, **~146 relative links across ~20 files** use
+numeric-prefixed paths. The affected files are concentrated in `fundamentals/`
+(subdirs `types/`, `actors/`, `declarations/`, `control-flow/`, `basic-syntax/`
+and top-level standalone files) and `reference/1-error-codes.md`.
+
+### 9. `changelog.mdx` contains a Docusaurus `md reference` block
+
+`doc/md/reference/3-changelog.mdx` contains:
+
+````
+```md reference
+https://github.com/dfinity/motoko/blob/master/Changelog.md
+```
+````
+
+This is a Docusaurus-specific directive that fetches the content of
+`Changelog.md` from GitHub and renders it inline at build time. It has no
+equivalent in Starlight or standard Markdown. The post-processor currently
+handles this by reading `Changelog.md` from the pinned submodule and inlining
+the content. For a transform-free sync, the upstream must replace this block
+with actual changelog content or a plain markdown link.
+
+### 10. `motoko-tooling` links in `comments.md`
+
+`doc/md/fundamentals/1-basic-syntax/10-comments.md` links to the `motoko-tooling/`
+section (excluded from sync) via two relative paths:
+
+```markdown
+[mo-doc](../../motoko-tooling/3-mo-doc.md)
+```
+
+The post-processor currently rewrites these to `https://docs.motoko.org`. For a
+transform-free sync, the upstream must replace these with the direct external URL.
 
 ---
 
@@ -295,27 +361,39 @@ Replace all `internetcomputer.org/docs/...` links with the canonical
 developer-docs paths (relative or absolute using `docs.internetcomputer.org`).
 The mapping for common links:
 
+All `internetcomputer.org/docs/...` URLs currently in the synced source files
+(verified against source at time of writing):
+
 | Old portal URL | Current developer-docs path |
 |---|---|
 | `building-apps/essentials/canisters` | `/concepts/canisters` |
+| `building-apps/essentials/message-execution` | `/references/message-execution-properties` |
 | `building-apps/canister-management/upgrade` | `/guides/canister-management/lifecycle` |
-| `building-apps/canister-management/logs` | `/guides/canister-management/logs` |
 | `building-apps/canister-management/snapshots` | `/guides/canister-management/snapshots` |
 | `building-apps/canister-management/storage` | `/concepts/orthogonal-persistence` |
+| `building-apps/canister-management/resource-limits` | `/guides/canister-management/large-wasm` |
 | `building-apps/interact-with-canisters/candid/candid-concepts` | `/guides/canister-calls/candid` |
+| `building-apps/interact-with-canisters/candid/using-candid` | `/guides/canister-calls/candid` |
+| `building-apps/interact-with-canisters/agents/overview` | `/guides/canister-calls/calling-from-clients` |
+| `building-apps/interact-with-canisters/query-calls` | `/concepts/canisters` |
+| `building-apps/interact-with-canisters/update-calls` | `/concepts/canisters` |
 | `building-apps/network-features/periodic-tasks-timers` | `/guides/backends/timers` |
 | `building-apps/network-features/randomness` | `/guides/backends/randomness` |
-| `building-apps/security/iam/` | `/guides/security/identity-and-access-management` |
+| `references/async-code` | `/references/message-execution-properties` |
 | `references/ic-interface-spec` | `/references/ic-interface-spec/` |
 | `references/candid-ref` | `/references/candid-spec` |
 | `references/system-canisters/management-canister` | `/references/management-canister` |
+
+Note: `building-apps/canister-management/logs` and `building-apps/security/iam/`
+appeared in an earlier version of the source but are no longer present. No action
+needed for those two.
 
 ### 6. Use Starlight-native aside types
 
 Replace Docusaurus-only aside types with their Starlight equivalents:
 
 - `:::info` → `:::note` (both are supported by Docusaurus; no effect on the Docusaurus site)
-- `:::warn` → `:::caution` (same: Docusaurus supports both)
+- `:::warn` → `:::caution` (same: Docusaurus supports both). **Do not change `:::warning`** (full word) — it is already a valid Starlight type and renders correctly on both sites.
 - `:::info [LinkText](url)` → `:::note[LinkText]` (strip URL from title; link text becomes plain-text title)
 
 ### 7. Normalize REPL meta flags to `no-repl`
@@ -348,32 +426,136 @@ REPL infrastructure:
 - **`` ```motoko include=X ``** (without underscore): not present in any synced
   section — no action needed.
 
-This cleanup can be done with a few targeted `sed` commands scoped to the sections
-this site syncs:
+**Important:** a significant portion of code fences in the source use
+`` ``` motoko `` (with a space between the backticks and the language name),
+not `` ```motoko ``. This space variant must be normalised first, otherwise
+the subsequent `sed` commands that anchor to `^```motoko` will miss those blocks.
+
+This cleanup can be done with the following targeted commands, scoped to the
+sections this site syncs:
 
 ```bash
-# In caffeinelabs/motoko, scoped to synced sections only
+# In caffeinelabs/motoko — scoped to synced sections only
 # (do NOT apply to core/, base/, old/ — they have active REPL usage)
-for dir in doc/md/fundamentals doc/md/icp-features doc/md/reference; do
-  # bare motoko → no-repl
+
+SYNCED_DIRS="doc/md/fundamentals doc/md/icp-features doc/md/reference"
+SYNCED_TOP="doc/md/16-language-manual.md doc/md/14-style.md doc/md/15-compiler-ref.md doc/md/12-base-core-migration.md"
+
+# Step 1: normalise the space-before-language variant (``` motoko → ```motoko)
+# This is required first so the patterns below can match consistently.
+for dir in $SYNCED_DIRS; do
+  find "$dir" \( -name '*.md' -o -name '*.mdx' \) \
+    | xargs sed -i 's/^``` motoko/```motoko/g'
+done
+sed -i 's/^``` motoko/```motoko/g' $SYNCED_TOP
+
+# Step 2: bare ```motoko → ```motoko no-repl
+for dir in $SYNCED_DIRS; do
   find "$dir" \( -name '*.md' -o -name '*.mdx' \) \
     | xargs sed -i 's/^```motoko$/```motoko no-repl/'
-  # name=X → no-repl (covers "name=X" alone or combined with other flags)
+done
+sed -i 's/^```motoko$/```motoko no-repl/' $SYNCED_TOP
+
+# Step 3: strip name=X attribute (with or without no-repl)
+for dir in $SYNCED_DIRS; do
   find "$dir" \( -name '*.md' -o -name '*.mdx' \) \
-    | xargs sed -i 's/^```motoko\( [^ ]*\)* name=[^ ]*/```motoko no-repl/g'
-  # _include=X → strip attribute, keep no-repl
+    | xargs sed -i 's/^```motoko\(.*\) name=[^ ]*/```motoko\1/g'
+done
+
+# Step 4: strip _include=X attribute (always paired with no-repl)
+for dir in $SYNCED_DIRS; do
   find "$dir" \( -name '*.md' -o -name '*.mdx' \) \
     | xargs sed -i 's/ _include=[^ ]*//g'
 done
-# Also apply to top-level synced files
-sed -i 's/^```motoko$/```motoko no-repl/' \
-  doc/md/16-language-manual.md doc/md/14-style.md \
-  doc/md/15-compiler-ref.md doc/md/12-base-core-migration.md
 ```
 
 `no-repl` is already recognised by both Docusaurus (disables the Run button) and
 this site (syntax highlighting only). The cleanup is a safe no-op for the
 Docusaurus site.
+
+### 8. Update all internal relative links to use post-rename paths
+
+After the directory and file renames in Change §1, every relative cross-reference
+in the source that uses numeric-prefixed path components must be updated. This
+applies to ~146 links across ~20 files in the synced sections.
+
+The pattern is mechanical: strip the numeric prefix from each path component in
+relative links, and apply the special renames from Change §1 (`3-functions.md` →
+`function-types.md`, `index.md` → `overview.md`, `14-style.md` → `style-guide.md`).
+
+Examples of required rewrites:
+
+| Before | After |
+|---|---|
+| `../3-types/8-immutable-arrays.md` | `../types/immutable-arrays.md` |
+| `../2-actors/1-actors-async.md` | `../actors/actors-async.md` |
+| `../fundamentals/3-types/13-stable-types.md` | `./types/stable-types.md` |
+| `../fundamentals/2-actors/6-orthogonal-persistence/enhanced.md` | `./actors/orthogonal-persistence/enhanced.md` |
+| `../5-control-flow/5-switch.md` | `../control-flow/switch.md` |
+
+This step **must be completed alongside Change §1** — the renames and link
+updates form one atomic change. A broken intermediate state (files renamed but
+links not yet updated) would prevent the Docusaurus site from building.
+
+There is no single `sed` command for this — the correct replacement depends on
+each link's context (depth in the tree, target file, special renames). The
+recommended approach is to run the renames first, then use a link-checker to
+enumerate broken links, and update each one. The consuming site's
+`postprocess-motoko.mjs` contains the full mapping table in `syncRenames` and
+the slug index logic, which can serve as a reference for the expected post-rename
+paths.
+
+### 9. Replace the `changelog.mdx` Docusaurus `md reference` block
+
+`doc/md/reference/3-changelog.mdx` (after prefix removal: `reference/changelog.mdx`)
+contains the following Docusaurus-specific directive that has no standard Markdown
+equivalent:
+
+````
+```md reference
+https://github.com/dfinity/motoko/blob/master/Changelog.md
+```
+````
+
+Docusaurus fetches the content of `Changelog.md` from GitHub and renders it
+inline. Starlight and standard Markdown processors ignore this block entirely,
+leaving the changelog page blank except for the frontmatter title.
+
+The post-processor currently handles this by reading `Changelog.md` from the
+pinned submodule (`.sources/motoko/Changelog.md`) and inlining its full contents.
+
+**Upstream fix:** replace the `md reference` block with one of:
+- The full contents of `Changelog.md` copied directly into the file, updated on
+  each release (makes the file self-contained)
+- A plain Markdown link: `[Full changelog](https://github.com/dfinity/motoko/blob/master/Changelog.md)`
+  (simpler maintenance, but readers leave the docs site to read the history)
+
+The first option (inline content) is preferred for docs completeness. The file
+can be automatically updated as part of the Motoko release process using:
+```bash
+cat Changelog.md >> doc/md/reference/changelog.mdx  # after the frontmatter block
+```
+
+### 10. Replace `motoko-tooling` links with the external URL
+
+`doc/md/fundamentals/1-basic-syntax/10-comments.md` (after rename:
+`fundamentals/basic-syntax/comments.md`) contains two links to the
+`motoko-tooling/` section, which is excluded from sync:
+
+```markdown
+[mo-doc](../../motoko-tooling/3-mo-doc.md)
+```
+
+These appear twice: once inline in the text (line 17) and once in a "See also"
+list (line 49).
+
+The post-processor currently rewrites these to `https://docs.motoko.org`.
+
+**Upstream fix:** replace both occurrences with the direct external URL:
+
+```markdown
+[mo-doc](https://docs.motoko.org)
+```
 
 ---
 
@@ -437,11 +619,22 @@ in frontmatter will provide the correct sort order automatically.
    `https://mops.one/core/docs/<Module>`.
 5. Replace `internetcomputer.org/docs/...` links using the mapping table above.
 6. Replace `:::info` → `:::note` and `:::warn` → `:::caution` throughout.
+   Do NOT change `:::warning` (full word) — it is already valid in Starlight.
    Strip URLs from aside titles that use a markdown link as the title
    (`:::info [LinkText](url)` → `:::note[LinkText]`).
 7. Normalize REPL meta flags in `fundamentals/`, `icp-features/`, `reference/`,
-   and the four top-level synced files: bare `` ```motoko `` → `` ```motoko no-repl ``;
+   and the four top-level synced files: normalise space variant
+   (`` ``` motoko `` → `` ```motoko ``); bare `` ```motoko `` → `` ```motoko no-repl ``;
    strip `name=X` and `_include=X` attributes (use `no-repl` instead).
+8. Update all ~146 internal relative links to use the post-rename paths (no
+   numeric prefixes, apply the special renames from step 1). Do this atomically
+   with the renames — the Docusaurus site must not have broken links at any
+   intermediate commit.
+9. Replace the `md reference` block in `reference/changelog.mdx` with either
+   the full inlined content of `Changelog.md` or a plain link to the GitHub
+   release page.
+10. Replace the two `../../motoko-tooling/3-mo-doc.md` links in
+    `fundamentals/basic-syntax/comments.md` with `https://docs.motoko.org`.
 
 **developer-docs side (after upstream PR is merged and submodule bumped):**
 
