@@ -58,7 +58,7 @@ type Result<Ok, Err> = { #ok : Ok; #err : Err }
 Unlike option types, the Result type includes a second type parameter `Err` which allows you to specify exactly what kind of error occurred. This makes error handling more informative and flexible.
 
 ```motoko
-
+public type TodoError = { #notFound; #alreadyDone : Time };
 ```
 
 The previous example can be revised to use `Result` types:

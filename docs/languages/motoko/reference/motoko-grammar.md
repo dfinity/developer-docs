@@ -329,6 +329,7 @@ This section describes the concrete syntax, or grammar, of Motoko. The specifica
 <pat_bin> ::= 
     <pat_un>
     <pat_bin> 'or' <pat_bin>
+    <pat_bin> 'and' <pat_bin>
     <pat_bin> ':' <typ>
 
 <pat> ::= 
