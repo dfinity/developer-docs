@@ -170,12 +170,21 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
     return `https://docs.motoko.org${anchor}`;
   }
 
-  // Section index links (e.g. ./index.md) → section root
+  // Section index links (e.g. ./index.md) → overview page or section root
   const parts = cleanPath.split('/');
   const rawSlug = parts[parts.length - 1];
   if (rawSlug === 'index' || rawSlug === '' || rawSlug === '.') {
-    const sourceDir = sourceFile.split('/').slice(-2, -1)[0];
-    return `/languages/motoko/${sourceDir}/${anchor}`;
+    // Check for overview.md in the same directory (renamed from index.md during sync)
+    const parentDirName = sourceFile.split('/').slice(-2, -1)[0];
+    const overviewKey = `${parentDirName}/overview`;
+    if (fullSlugIndex.has(overviewKey)) {
+      return `${fullSlugIndex.get(overviewKey)}${anchor}`;
+    }
+    // Fallback: compute the full directory URL from the source file path
+    const sourceDirRel = sourceFile
+      .replace(/^docs\/languages\/motoko\//, '')
+      .replace(/\/[^/]+$/, '');
+    return `/languages/motoko/${sourceDirRel}/${anchor}`;
   }
 
   // Strip numeric prefix from the filename part of the path
@@ -381,12 +390,6 @@ for (const sub of ['basic-syntax', 'actors', 'types', 'declarations', 'control-f
     console.log(`  Removed fundamentals/${sub}/index.md`);
   }
 }
-const opIdx = join(MOTOKO_DIR, 'fundamentals', 'actors', 'orthogonal-persistence', 'index.md');
-if (existsSync(opIdx)) {
-  unlinkSync(opIdx);
-  console.log('  Removed fundamentals/actors/orthogonal-persistence/index.md');
-}
-
 removeNavFiles(MOTOKO_DIR);
 
 // ---------------------------------------------------------------------------

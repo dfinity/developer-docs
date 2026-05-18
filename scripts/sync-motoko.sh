@@ -180,6 +180,19 @@ find "$FUND_SRC" -mindepth 1 -maxdepth 1 -type d | sort | while read -r subdir; 
 done
 echo "    Copied fundamentals/ with subdirectory structure"
 
+# orthogonal-persistence/index.md → overview.md
+# This file contains real overview content comparing both persistence modes.
+# It is excluded by the generic '! -name index.md' filter above, so it is
+# copied explicitly here under the name overview.md.
+OP_INDEX="$FUND_SRC/2-actors/6-orthogonal-persistence/index.md"
+if [ -f "$OP_INDEX" ]; then
+  cp "$OP_INDEX" "$FUND_DST/actors/orthogonal-persistence/overview.md"
+  echo "    Copied actors/orthogonal-persistence/overview.md"
+else
+  echo "WARNING: orthogonal-persistence/index.md not found — overview.md not generated"
+  SYNC_WARNINGS="${SYNC_WARNINGS}  - orthogonal-persistence/index.md missing from source\n"
+fi
+
 # ---------------------------------------------------------------------------
 # Copy icp-features/ flat
 # ---------------------------------------------------------------------------
@@ -274,7 +287,7 @@ description: \"Motoko language documentation\"" "$f" 2>/dev/null \
 done
 
 # ---------------------------------------------------------------------------
-# Post-process: remove duplicate H1s, rewrite links, expand file-embeds,
+# Post-process: remove duplicate H1s, rewrite links, rewrite file-embed paths,
 #               clean up nav files, and rewrite external → internal links.
 # ---------------------------------------------------------------------------
 echo "  Post-processing..."

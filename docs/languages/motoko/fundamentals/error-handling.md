@@ -17,30 +17,12 @@ In the following example, if the `markDone` function sometimes fails and returns
 
 Function definition:
 
-```motoko
-switch (Map.get(todos, Int.compare, id)) {
-      case (?(#todo(todo))) {
-        let now = Time.now();
-        Map.add(todos, Int.compare, id, #done(now));
-        ?(secondsBetween(todo.opened, now))
-      };
-      case _ { null };
-    }
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L49-L58
 ```
 
 Function callsite:
 
-```motoko
-switch (await Todo.markDoneOption(id)) {
-      case null {
-        "Something went wrong."
-      };
-      case (?seconds) {
-        "Congrats! That took " # Int.toText(seconds) # " seconds."
-      };
-    };
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L117-L126
 ```
 
 The main drawback of using option types to signal errors is that all failures are represented by a single, non-descriptive `null` value. This means important information about why something failed is lost. As a result, the only message the program can show the user might be something vague like `"Something went wrong."`
@@ -57,77 +39,33 @@ type Result<Ok, Err> = { #ok : Ok; #err : Err }
 
 Unlike option types, the Result type includes a second type parameter `Err` which allows you to specify exactly what kind of error occurred. This makes error handling more informative and flexible.
 
-```motoko
-
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L60-L60
 ```
 
 The previous example can be revised to use `Result` types:
 
 Function definition:
 
-```motoko
-switch (Map.get(todos, Int.compare, id)) {
-      case (?(#todo(todo))) {
-        let now = Time.now();
-        Map.add(todos, Int.compare, id, #done(now));
-        #ok(secondsBetween(todo.opened, now))
-      };
-      case (?(#done(time))) {
-        #err(#alreadyDone(time))
-      };
-      case null {
-        #err(#notFound)
-      };
-    }
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L62-L76
 ```
 
 Function callsite:
 
-```motoko
-switch (await Todo.markDoneResult(id)) {
-      case (#err(#notFound)) {
-        "There is no Todo with that ID."
-      };
-      case (#err(#alreadyDone(at))) {
-        let doneAgo = secondsBetween(at, Time.now());
-        "You've already completed this todo " # Int.toText(doneAgo) # " seconds ago."
-      };
-      case (#ok(seconds)) {
-        "Congrats! That took " # Int.toText(seconds) # " seconds."
-      };
-    };
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L128-L141
 ```
 
 ## Pattern matching
 
 The most common way of working with `Option` and `Result` is to use pattern matching. If you have a value of type `?Text`, you can use the `switch` keyword to access the potential [`Text`](https://mops.one/core/docs/Text) contents:
 
-```motoko
-func greetOptional(optionalName : ?Text) : Text {
-  switch (optionalName) {
-    case (null) { "No name to be found." };
-    case (?name) { "Hello, " # name # "!" };
-  }
-};
-assert(greetOptional(?"Dominic") == "Hello, Dominic!");
-assert(greetOptional(null) ==  "No name to be found");
+```motoko no-repl file=<motokoExamples>/error-examples.mo#L3-L10
 ```
 
 Motoko does not let you access the optional value without also considering the case that it is missing.
 
 With a `Result` type, you can use pattern matching to handle both success and error cases. Unlike option types, the `#err` case carries detailed information about what went wrong, not just a `null` value.
 
-```motoko
-func greetResult(resultName : Result<Text, Text>) : Text {
-  switch (resultName) {
-    case (#err(error)) { "No name: " # error };
-    case (#ok(name)) { "Hello, " # name };
-  }
-};
-assert(greetResult(#ok("Dominic")) == "Hello, Dominic!");
-assert(greetResult(#err("404 Not Found")) == "No name: 404 Not Found");
+```motoko no-repl file=<motokoExamples>/error-examples.mo#L12-L19
 ```
 
 Sometimes you need to convert between `Option` and `Result` types. For example, a HashMap lookup returns `null` on failure (an `Option`), but if the caller has more context, they can turn that failure into a meaningful `Result` with an error message. On the other hand, sometimes you don’t need the extra detail from a `Result` and just want to convert any error (`#err`) into `null`.
@@ -146,33 +84,12 @@ Here’s how the `markDone` function might look using exceptions:
 
 Function definition:
 
-```motoko
-switch (Map.get(todos, Int.compare, id)) {
-      case (?(#todo(todo))) {
-        let now = Time.now();
-        Map.add(todos, Int.compare, id, #done(now));
-        secondsBetween(todo.opened, now)
-      };
-      case (?(#done _)) {
-        throw Error.reject("Already done")
-      };
-      case null {
-        throw Error.reject("Not Found")
-      };
-    }
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L78-L92
 ```
 
 Function callsite:
 
-```motoko
-try {
-      let seconds = await Todo.markDoneException(id);
-      "Congrats! That took " # Int.toText(seconds) # " seconds.";
-    } catch _ {
-      "Something went wrong.";
-    }
-  };
+```motoko no-repl file=<motokoExamples>/todo-error.mo#L143-L150
 ```
 
 ## Traps

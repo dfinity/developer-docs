@@ -68,35 +68,7 @@ A trap will only revoke changes made since the last commit point. In particular,
 
 Consider the following stateful `Atomicity` actor:
 
-```motoko
-persistent actor Atomicity {
-
-  transient var s = 0;
-  transient var pinged = false;
-
-  public func ping() : async () {
-    pinged := true;
-  };
-
-  // an atomic method
-  public func atomic() : async () {
-    s := 1;
-    ignore ping();
-    ignore 0/0; // trap!
-  };
-
-  // a non-atomic method
-  public func nonAtomic() : async () {
-    s := 1;
-    let f = ping(); // this will not be rolled back!
-    s := 2;
-    await f;
-    s := 3; // this will not be rolled back!
-    await f;
-    ignore 0/0; // trap!
-  };
-
-};
+```motoko no-repl file=<motokoExamples>/atomicity.mo
 ```
 
 Calling the shared function `atomic()` results in an error because it traps before completing. Since the trap happens before any `await` or return, all changes are discarded. The variable `s` stays at 0, and `pinged` remains false. Even though `atomic()` calls `ping()`, that message is only queued and never sent because no commit point is reached.
@@ -108,20 +80,7 @@ Calling `nonAtomic()` also fails with an error, but the state is partially updat
 
 Here is an example program that uses async functions:
 
-```motoko
-persistent actor Counter {
-
-  var count = 0;
-
-  public shared func inc() : async () { count += 1 };
-
-  public shared func read() : async Nat { count };
-
-  public shared func bump() : async Nat {
-    count += 1;
-    count;
-  };
-};
+```motoko file=<motokoExamples>/counter-actor.mo
 ```
 
 The `Counter` actor declares one field and three public, shared functions:

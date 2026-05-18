@@ -199,6 +199,7 @@ export const sidebar = [
                     label: "Orthogonal persistence",
                     collapsed: true,
                     items: [
+                      { slug: "languages/motoko/fundamentals/actors/orthogonal-persistence/overview" },
                       { slug: "languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced" },
                       { slug: "languages/motoko/fundamentals/actors/orthogonal-persistence/classical" },
                     ],

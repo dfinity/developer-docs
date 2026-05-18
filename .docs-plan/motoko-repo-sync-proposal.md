@@ -56,19 +56,21 @@ them in its sidebar config.
 ````
 
 This site has a `remark-include-file` plugin that runs at build time and handles
-`file=<path>` syntax. However, two gaps prevent a drop-in replacement:
+`file=<path>` syntax. Both historical gaps have been resolved on the developer-docs
+side:
 
-- The plugin does not support line-range slicing (`#L1-L30`). Of the 47 file-embed
-  blocks in the Motoko source, 9 use line ranges and 38 embed whole files.
-- After sync, the source files land in `docs/languages/motoko/fundamentals/...`
-  while the example files stay in `.sources/motoko/doc/md/examples/`. A relative
-  path from the synced location would be 6 directories deep and would break
-  whenever the sync layout changes.
+- **Line-range slicing**: the plugin now supports `#L<start>-L<end>` suffixes. Of
+  the file-embed blocks in the Motoko source, roughly 9 use line ranges and 38
+  embed whole files — both forms now work.
+- **Path incompatibility**: synced files land in `docs/languages/motoko/...` while
+  examples stay in `.sources/motoko/doc/md/examples/`. The `<motokoExamples>`
+  placeholder bridges this: `postprocess-motoko.mjs` rewrites `../examples/` →
+  `<motokoExamples>/` at sync time, and `remark-include-file` resolves the
+  placeholder to the examples directory inside the pinned submodule at build time.
 
-Inlining the code directly in the source is the cleanest solution: it makes the
-documentation self-contained, works in both Docusaurus and Starlight without any
-plugin, and removes the dependency on the examples directory structure. For examples
-longer than ~30 lines, link to the `dfinity/examples` repository instead.
+The upstream change (Proposed Change §3 below) makes this bridge permanent by
+adopting `<motokoExamples>` paths directly in the source, after which the sync-time
+rewrite becomes a no-op.
 
 ### 4. Links to retired portal URLs
 
@@ -148,6 +150,12 @@ Files that currently share a basename after prefix-stripping need distinct names
 (the one collision today is `types/functions.md` vs `basic-syntax/functions.md`;
 proposed rename: `types/function-types.md`).
 
+`fundamentals/2-actors/6-orthogonal-persistence/index.md` must be renamed to
+`overview.md` (not just stripped of its prefix). The simple sync uses
+`--exclude='index.md'` to drop Docusaurus section-index pages, which would
+inadvertently exclude this file. It contains real overview content comparing both
+persistence modes and must be preserved.
+
 ### 2. Replace `sidebar_position` with Starlight-native `sidebar.order`
 
 In every file, replace:
@@ -174,6 +182,16 @@ explicit page list.
 Note: a few files in `2-actors/` have duplicate `sidebar_position` values (e.g.
 both `4-compatibility.md` and `5-messaging.md` carry `sidebar_position: 4`). Fix
 these so values are unique and match the numeric filename order.
+
+`icp-features/7-view-queries.md` has no `sidebar_position`. Add one matching the
+numeric filename prefix so autogenerate sorts it correctly.
+
+Three files have no frontmatter at all and will receive a generated title from the
+sync script as a fallback. Adding explicit frontmatter upstream is preferred:
+
+- `fundamentals/2-actors/7-mixins.md` — add `title`, `description`, and `sidebar_position: 7`
+- `fundamentals/10-contextual-dot.md` — add `title`, `description`, and `sidebar_position`
+- `fundamentals/11-implicit-parameters.md` — add `title`, `description`, and `sidebar_position`
 
 ### 3. Use `<motokoExamples>` paths for file-embed blocks
 
@@ -299,8 +317,13 @@ in frontmatter will provide the correct sort order automatically.
    `14-style.md` → `style-guide.md`, `15-compiler-ref.md` → `compiler-ref.md`,
    `16-language-manual.md` → `language-manual.md`,
    `12-base-core-migration.md` → `base-core-migration.md`).
+   Rename `fundamentals/2-actors/6-orthogonal-persistence/index.md` →
+   `overview.md` (so the simple rsync `--exclude='index.md'` does not drop it).
 2. Replace `sidebar_position: N` with `sidebar: { order: N }` in every file.
-   Fix duplicate `sidebar_position` values in `2-actors/`.
+   Fix duplicate `sidebar_position` values in `2-actors/`. Add `sidebar_position`
+   to `icp-features/7-view-queries.md` (currently missing). Add complete
+   frontmatter (`title`, `description`, `sidebar_position`) to `7-mixins.md`,
+   `10-contextual-dot.md`, and `11-implicit-parameters.md` (currently have none).
 3. Replace `file=../examples/` (and `file=../../examples/`) with
    `file=<motokoExamples>/` throughout — one `sed` command covers all cases.
 4. Replace `./base/<Module>.md` and `./core/<Module>.md` links with
@@ -312,9 +335,9 @@ in frontmatter will provide the correct sort order automatically.
 
 **developer-docs side (after upstream PR is merged and submodule bumped):**
 
-3. Simplify `sync-motoko.sh` to the `rsync` + `cp` commands shown above.
-4. Delete `postprocess-motoko.mjs`.
-5. Update `sidebar.mjs` to use `autogenerate: { directory: "..." }` for all
+1. Simplify `sync-motoko.sh` to the `rsync` + `cp` commands shown above.
+2. Delete `postprocess-motoko.mjs`.
+3. Update `sidebar.mjs` to use `autogenerate: { directory: "..." }` for all
    Motoko subsections (fundamentals, icp-features, reference, and each
    fundamentals subgroup), since `sidebar.order` will be correct in frontmatter.
 
