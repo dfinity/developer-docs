@@ -7,7 +7,8 @@
  * 4. Redirect core library links to mops.one
  * 5. Redirect motoko-tooling links to docs.motoko.org (section is not synced)
  * 6. Remove _category_.yml and sub-section index.md files
- * 7. Expand Docusaurus file-embed blocks (```lang file=<path>[#L<n>-L<m>])
+ * 7. Rewrite Docusaurus file-embed paths to use <motokoExamples> placeholder
+ *    (remark-include-file resolves these at build time from the pinned submodule)
  * 8. Convert Docusaurus remote-reference blocks (```md reference) to links
  * 9. Normalize Starlight aside syntax
  *
@@ -30,7 +31,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const MOTOKO_DIR = join(ROOT, 'docs', 'languages', 'motoko');
-const MOTOKO_SOURCE_MD = join(ROOT, '.sources', 'motoko', 'doc', 'md');
 
 // ---------------------------------------------------------------------------
 // Slug index: basename (without .md) → absolute URL path
@@ -254,35 +254,20 @@ function processFile(filePath) {
   const relPath = filePath.replace(ROOT + '/', '');
   let changed = false;
 
-  // Expand Docusaurus file-embed blocks: ```lang [attrs...] file=<path>[#L<start>-L<end>]
-  const fileEmbedRe = /^```[ \t]*(\w+)[^\n]*?\bfile=([^\s\n#]+)(?:#L(\d+)-L(\d+))?[^\n]*\n```/gm;
-  content = content.replace(fileEmbedRe, (match, lang, filePath, lineStart, lineEnd) => {
-    const sectionMatch = relPath.match(/docs\/languages\/motoko\/([^/]+)\//);
-    const section = sectionMatch ? sectionMatch[1] : 'reference';
-    const fp = filePath.trim();
-    let abs = null;
-    for (let depth = 0; depth <= 2; depth++) {
-      const candidate = resolve(join(MOTOKO_SOURCE_MD, section, 'x/'.repeat(depth)), fp);
-      if (existsSync(candidate)) { abs = candidate; break; }
-    }
-    if (abs) {
-      let fileContent = readFileSync(abs, 'utf-8');
-      if (lineStart && lineEnd) {
-        const lines = fileContent.split('\n');
-        const start = parseInt(lineStart, 10);
-        const end = parseInt(lineEnd, 10);
-        fileContent = lines.slice(start - 1, end).join('\n');
-      }
-      const trimmed = fileContent.trim();
-      if (!trimmed) {
-        console.warn(`  FILE-EMBED EMPTY: ${fp}#L${lineStart}-L${lineEnd} in ${relPath} — line range resolved to empty content`);
-      }
-      changed = true;
-      return `\`\`\`${lang}\n${trimmed}\n\`\`\``;
-    }
-    console.warn(`  FILE-EMBED UNRESOLVED: ${fp}${lineStart ? `#L${lineStart}-L${lineEnd}` : ''} in ${relPath}`);
-    return match;
-  });
+  // Rewrite Docusaurus file-embed paths to use the <motokoExamples> placeholder.
+  // remark-include-file resolves <motokoExamples> to .sources/motoko/doc/md/examples/
+  // at build time, so examples always stay live from the pinned submodule.
+  // Also normalises the leading space that the Motoko source uses before the language
+  // identifier (``` motoko → ```motoko) so remark parses the lang correctly.
+  // Line-range suffixes (#L49-L58) are passed through unchanged.
+  //
+  // Once the upstream adopts <motokoExamples> paths directly, this rewrite
+  // becomes a no-op and can be removed.
+  const rewritten = content.replace(
+    /^```[ \t]*(\w+)([^\n]*?\bfile=)(?:\.\.\/)+examples\//gm,
+    '```$1$2<motokoExamples>/',
+  );
+  if (rewritten !== content) { content = rewritten; changed = true; }
 
   // Expand Docusaurus remote-reference blocks
   const remoteRefRe = /^```(\w+) reference\n(https?:\/\/[^\n]+)\n```/gm;

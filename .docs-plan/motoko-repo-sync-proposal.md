@@ -175,18 +175,44 @@ Note: a few files in `2-actors/` have duplicate `sidebar_position` values (e.g.
 both `4-compatibility.md` and `5-messaging.md` carry `sidebar_position: 4`). Fix
 these so values are unique and match the numeric filename order.
 
-### 3. Inline file-embed examples
+### 3. Use `<motokoExamples>` paths for file-embed blocks
 
-Replace Docusaurus file-embed blocks:
+Replace Docusaurus-relative paths in file-embed blocks:
 
 ````
-```motoko file=../examples/counter.mo#L1-L30
+```motoko file=../examples/counter.mo
+```motoko file=../../examples/todo-error.mo#L49-L58
 ```
 ````
 
-with the actual inline code. This removes the `file=` attribute processing step
-and makes the documentation self-contained. For longer examples (>30 lines),
-link to the `dfinity/examples` repository rather than embedding.
+with the `<motokoExamples>` placeholder:
+
+````
+```motoko file=<motokoExamples>/counter.mo
+```motoko file=<motokoExamples>/todo-error.mo#L49-L58
+```
+````
+
+`<motokoExamples>` is a path placeholder recognised by the `remark-include-file`
+build plugin on `docs.internetcomputer.org`. It resolves to
+`.sources/motoko/doc/md/examples/` — the examples directory inside the pinned
+`caffeinelabs/motoko` submodule — at Astro build time. This means:
+
+- Examples are always live: the plugin reads from the pinned submodule at build
+  time, so a submodule bump automatically picks up updated examples.
+- No sync-time processing: the path rewrite that `postprocess-motoko.mjs`
+  currently performs (`../examples/` → `<motokoExamples>/`) will become a
+  no-op once the upstream source uses `<motokoExamples>` paths directly, and
+  can then be removed from the postprocess script.
+- `#L<start>-L<end>` line-range suffixes are supported as-is; the plugin slices
+  the specified lines and raises a hard build error if the range is out of bounds.
+
+This is a mechanical search-and-replace in the upstream source:
+```bash
+# In caffeinelabs/motoko — replace all relative example paths
+find doc/md -name '*.md' -o -name '*.mdx' | \
+  xargs sed -i 's|file=\(\.\./\)*examples/|file=<motokoExamples>/|g'
+```
 
 ### 4. Use `mops.one` for `mo:core` links
 
@@ -250,7 +276,9 @@ The `--exclude='_category_.yml'` flag drops Docusaurus category files that
 have no meaning in Starlight. The `--exclude='index.md'` flag drops Docusaurus
 section index pages that Starlight doesn't use.
 
-`postprocess-motoko.mjs` can be deleted entirely.
+`postprocess-motoko.mjs` can be deleted entirely. The `remark-include-file`
+build plugin already handles `<motokoExamples>` paths at build time — no
+sync-time file expansion is needed.
 
 `sidebar.mjs` can switch every `items: [{ slug: "..." }, ...]` list inside the
 Motoko section to `autogenerate: { directory: "..." }`, since `sidebar.order`
@@ -260,10 +288,33 @@ in frontmatter will provide the correct sort order automatically.
 
 ## Migration path
 
-1. Open a PR in `caffeinelabs/motoko` with the structural changes above.
-2. Once merged and released, update the `.sources/motoko` submodule pin.
-3. Simplify `sync-motoko.sh` and delete `postprocess-motoko.mjs`.
-4. Update `sidebar.mjs` to use `autogenerate: { directory: "..." }` for all
+**developer-docs side (already done):**
+- `remark-include-file` supports `<motokoExamples>` and `#L<n>-L<m>` ranges.
+- `postprocess-motoko.mjs` rewrites `../examples/` → `<motokoExamples>/` at
+  sync time as a bridge until the upstream adopts the placeholder directly.
+
+**upstream side (one PR in `caffeinelabs/motoko`):**
+
+1. Remove numeric prefixes from all directories and files (including top-level
+   `14-style.md` → `style-guide.md`, `15-compiler-ref.md` → `compiler-ref.md`,
+   `16-language-manual.md` → `language-manual.md`,
+   `12-base-core-migration.md` → `base-core-migration.md`).
+2. Replace `sidebar_position: N` with `sidebar: { order: N }` in every file.
+   Fix duplicate `sidebar_position` values in `2-actors/`.
+3. Replace `file=../examples/` (and `file=../../examples/`) with
+   `file=<motokoExamples>/` throughout — one `sed` command covers all cases.
+4. Replace `./base/<Module>.md` and `./core/<Module>.md` links with
+   `https://mops.one/core/docs/<Module>`.
+5. Replace `internetcomputer.org/docs/...` links using the mapping table above.
+6. Replace `:::info` → `:::note` and `:::warn` → `:::caution` throughout.
+   Strip URLs from aside titles that use a markdown link as the title
+   (`:::info [LinkText](url)` → `:::note[LinkText]`).
+
+**developer-docs side (after upstream PR is merged and submodule bumped):**
+
+3. Simplify `sync-motoko.sh` to the `rsync` + `cp` commands shown above.
+4. Delete `postprocess-motoko.mjs`.
+5. Update `sidebar.mjs` to use `autogenerate: { directory: "..." }` for all
    Motoko subsections (fundamentals, icp-features, reference, and each
    fundamentals subgroup), since `sidebar.order` will be correct in frontmatter.
 

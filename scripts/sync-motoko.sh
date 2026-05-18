@@ -282,9 +282,7 @@ POSTPROCESS_OUTPUT=$(node scripts/postprocess-motoko.mjs 2>&1)
 echo "$POSTPROCESS_OUTPUT"
 while IFS= read -r line; do
   case "$line" in
-    *"FILE-EMBED UNRESOLVED:"*) SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
-    *"FILE-EMBED EMPTY:"*)      SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
-    *"UNRESOLVED-EXTERNAL:"*)   SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
+    *"UNRESOLVED-EXTERNAL:"*) SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
   esac
 done <<< "$POSTPROCESS_OUTPUT"
 
