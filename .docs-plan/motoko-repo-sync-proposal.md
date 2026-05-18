@@ -371,12 +371,27 @@ delete `sidebar-motoko.mjs`.
 carry `sidebar_position: 4`. Fix so values are unique and match the numeric
 filename order.
 
-Three files have no frontmatter at all and will receive a generated title from the
-sync script as a fallback. Adding explicit frontmatter upstream is preferred:
+**Add `title:` and `description:` frontmatter to every file, and remove the H1
+heading from the body.** Starlight requires `title:` as a schema field — without
+it the build fails. All 68 synced upstream files currently carry `# Title` as an
+H1 heading (Docusaurus convention) but have no `title:` in frontmatter. The
+developer-docs postprocessor currently bridges this by extracting the H1 as
+`title:` and adding a generic `description: "Motoko language documentation"`
+fallback. Moving this into the upstream source eliminates that extraction step and
+is a prerequisite for the symlink approach.
 
-- `fundamentals/2-actors/7-mixins.md` — add `title`, `description`, and `sidebar_position: 7`
-- `fundamentals/10-contextual-dot.md` — add `title`, `description`, and `sidebar_position`
-- `fundamentals/11-implicit-parameters.md` — add `title`, `description`, and `sidebar_position`
+The `title:` value is derived from the existing H1 heading. `description:` should
+be a genuine one-line summary for each page; the postprocessor's generic fallback
+is acceptable as a placeholder during the transition.
+
+After adding `title:` frontmatter, remove the `# Title` H1 from the body — Starlight
+renders the page heading from `title:` frontmatter and would show it twice otherwise.
+
+Three files have no frontmatter at all:
+
+- `fundamentals/2-actors/7-mixins.md` — add `title`, `description`, and `sidebar: { order: 7 }`
+- `fundamentals/10-contextual-dot.md` — add `title`, `description`, and `sidebar: { order: N }`
+- `fundamentals/11-implicit-parameters.md` — add `title`, `description`, and `sidebar: { order: N }`
 
 ### 3. Use `<motokoExamples>` paths for file-embed blocks
 
@@ -785,9 +800,24 @@ the developer-docs repo. The copy approach keeps synced content committed, so
 every submodule bump produces a reviewable `git diff` showing exactly what changed.
 Both are valid; the copy is preferred for auditability.
 
-`postprocess-motoko.mjs` can be deleted entirely. The `remark-include-file`
-build plugin already handles `<motokoExamples>` paths at build time — no
-sync-time file expansion is needed.
+`postprocess-motoko.mjs` can be deleted entirely once §2 is fully completed
+upstream, including adding `title:` and `description:` frontmatter to every file
+and removing the `# Title` H1 heading from the body. Without `title:` in the
+upstream frontmatter, Starlight's build schema validation fails; this is a hard
+prerequisite for the symlink approach.
+
+Once §2 lands, the postprocessor's H1-extraction step becomes a no-op and the
+remaining tasks split by approach:
+
+- **Copy approach (preferred for auditability):** the postprocessor rewrites
+  `docs.internetcomputer.org/<path>` links to root-relative `/<path>` internal
+  links. Every submodule bump produces a reviewable `git diff`.
+- **Symlink approach:** `docs.internetcomputer.org/` links remain as absolute
+  external URLs pointing to the consumer site itself (self-referential but
+  acceptable). Bumping the submodule is the entire update.
+
+In both cases, `<motokoExamples>` paths are handled by `remark-include-file` at
+build time — no sync-time file expansion is needed.
 
 `sidebar.mjs` changes after the upstream PR:
 - `icp-features/` — switch to `autogenerate: { directory: "languages/motoko/icp-features" }`.
