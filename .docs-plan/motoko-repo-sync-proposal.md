@@ -503,6 +503,18 @@ Notes on anchored entries:
   appeared in an earlier version of the source but are no longer present. No
   action needed for those two.
 
+**developer-docs side — postprocessor update when §5 lands:** the current
+`externalToInternal` map in `postprocess-motoko.mjs` handles the old
+`internetcomputer.org/docs/...` pattern. After §5 replaces those with
+`docs.internetcomputer.org/...` paths, add a general prefix rule to the map:
+```javascript
+['docs.internetcomputer.org/', '/']
+```
+This single entry rewrites all `docs.internetcomputer.org/<path>` links to
+root-relative `/<path>` internal paths, replacing the entire set of specific
+entries above. Remove the `internetcomputer.org/docs/...` entries at the same
+time — they will no longer appear in the upstream source.
+
 ### 6. Use Starlight-native aside types
 
 Replace Docusaurus-only aside types with their Starlight equivalents:

@@ -134,8 +134,15 @@ const externalToInternal = new Map([
   ['internetcomputer.org/docs/current/developer-docs/getting-started/development-workflow','/getting-started/quickstart'],
 
   // docs.motoko.org (non-existent domain) → developer-tools page
-  // Upstream fix tracked as caffeinelabs/motoko#6131 §10.
+  // Upstream fix (caffeinelabs/motoko#6131 §10) replaces the broken link with
+  // https://docs.internetcomputer.org/developer-tools/#mo-doc — handle both so
+  // the rewrite works before and after the upstream change lands.
   ['docs.motoko.org', '/developer-tools/#mo-doc'],
+  ['docs.internetcomputer.org/developer-tools/#mo-doc', '/developer-tools/#mo-doc'],
+  // NOTE: when upstream §5 lands (all internetcomputer.org/docs/... links replaced
+  // with docs.internetcomputer.org/... paths), add a general prefix rule here:
+  //   ['docs.internetcomputer.org/', '/']
+  // and remove the now-redundant internetcomputer.org/docs/... entries above.
 
   // Motoko-internal links using old portal paths
   ['internetcomputer.org/docs/motoko/language-manual',                          '/languages/motoko/reference/language-manual'],
