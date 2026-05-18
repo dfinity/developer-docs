@@ -190,7 +190,7 @@ export const sidebar = [
       },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer tools" },
+  { slug: "developer-tools", label: "Developer tools" },
   {
     label: "References",
     collapsed: true,
