@@ -213,7 +213,7 @@ land at the top of `function-types.md` with no indication where the concept is.
 
 ````
 ```md reference
-https://github.com/dfinity/motoko/blob/master/Changelog.md
+https://github.com/caffeinelabs/motoko/blob/master/Changelog.md
 ```
 ````
 
@@ -472,6 +472,7 @@ wherever the target page has a matching section:
 | `building-apps/canister-management/storage` | `/concepts/orthogonal-persistence` |
 | `building-apps/canister-management/storage#heap-memory` | `/concepts/orthogonal-persistence#heap-wasm-linear-memory` |
 | `building-apps/canister-management/storage#stable-memory` | `/concepts/orthogonal-persistence#stable-memory` |
+| `building-apps/canister-management/storage#motoko-storage-handling` | `/concepts/orthogonal-persistence#motoko-true-orthogonal-persistence` |
 | `building-apps/canister-management/resource-limits` | `/guides/canister-management/large-wasm` |
 | `building-apps/network-features/periodic-tasks-timers` | `/guides/backends/timers` |
 | `building-apps/network-features/periodic-tasks-timers#timers` | `/guides/backends/timers#recurring-timers` |
@@ -491,9 +492,11 @@ Notes on anchored entries:
   `{#heartbeat}` attribute in `canister-interface.md` — Starlight auto-generates
   the slug `heartbeat` from the `#### Heartbeat` heading, so the link resolves.
 - `building-apps/canister-management/storage` (with and without fragments) maps
-  to `/concepts/orthogonal-persistence`. The old portal page had `#heap-memory`
-  and `#stable-memory`; the developer-docs page has `#heap-wasm-linear-memory`
-  and `#stable-memory` (exact match for stable; different slug for heap).
+  to `/concepts/orthogonal-persistence`. The old portal anchors differ: `#heap-memory`
+  → `#heap-wasm-linear-memory`, `#motoko-storage-handling` → `#motoko-true-orthogonal-persistence`,
+  `#stable-memory` is an exact match. The postprocessor handles these with explicit
+  anchored entries in the rewrite map and tries the full URL (with anchor) before
+  stripping — entries without anchors act as a fallback for bare URLs.
 - `building-apps/canister-management/logs` and `building-apps/security/iam/`
   appeared in an earlier version of the source but are no longer present. No
   action needed for those two.
@@ -627,7 +630,7 @@ equivalent:
 
 ````
 ```md reference
-https://github.com/dfinity/motoko/blob/master/Changelog.md
+https://github.com/caffeinelabs/motoko/blob/master/Changelog.md
 ```
 ````
 
@@ -692,7 +695,7 @@ does not exist.
 the `mo-doc` binary is distributed:
 
 ```markdown
-[mo-doc](https://github.com/dfinity/motoko/releases)
+[mo-doc](https://github.com/caffeinelabs/motoko/releases)
 ```
 
 **developer-docs side:** the `motoko-tooling/` section covers Canpack, dev
@@ -810,7 +813,7 @@ _(Note: §4 also includes removing `doc/md/core/`, `doc/md/base/`, and the CI ge
    stub; `Changelog.md` at the same commit is always the correct version.
 10. Replace the two `../../motoko-tooling/3-mo-doc.md` links in
     `fundamentals/basic-syntax/comments.md` with
-    `https://github.com/dfinity/motoko/releases`.
+    `https://github.com/caffeinelabs/motoko/releases`.
 11. Replace the `index.md` files in each `fundamentals/` subdirectory with a
     metadata-only version containing just `sidebar.order` and `sidebar.label`
     frontmatter (no content). Also add a new `fundamentals/actors/index.md`

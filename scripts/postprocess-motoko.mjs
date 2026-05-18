@@ -5,7 +5,7 @@
  * 2. Rewrite relative links to match the new directory structure
  * 3. Rewrite external internetcomputer.org/docs links to internal paths
  * 4. Redirect core library links to mops.one
- * 5. Redirect motoko-tooling links to docs.motoko.org (section is not synced)
+ * 5. Redirect motoko-tooling links to GitHub releases (section is not synced)
  * 6. Remove _category_.yml and sub-section index.md files
  * 7. Rewrite Docusaurus file-embed paths to use <motokoExamples> placeholder
  *    (remark-include-file resolves these at build time from the pinned submodule)
@@ -121,6 +121,10 @@ const externalToInternal = new Map([
   ['internetcomputer.org/docs/references/system-canisters/management-canister', '/references/management-canister'],
 
   // Storage (heap / stable memory concepts)
+  // Anchor-specific entries must come before the base URL so the full-URL lookup hits first.
+  // The old portal used #heap-memory and #motoko-storage-handling; developer-docs has different slugs.
+  ['internetcomputer.org/docs/building-apps/canister-management/storage#heap-memory',            '/concepts/orthogonal-persistence#heap-wasm-linear-memory'],
+  ['internetcomputer.org/docs/building-apps/canister-management/storage#motoko-storage-handling', '/concepts/orthogonal-persistence#motoko-true-orthogonal-persistence'],
   ['internetcomputer.org/docs/building-apps/canister-management/storage', '/concepts/orthogonal-persistence'],
 
   // Getting started (old portal install/deploy paths)
@@ -165,9 +169,10 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
     return `https://mops.one/core/docs/${mod}${anchor}`;
   }
 
-  // motoko-tooling (section not synced) → docs.motoko.org
+  // motoko-tooling (section not synced) → GitHub releases (where mo-doc binary lives).
+  // docs.motoko.org does not exist. Upstream fix tracked as caffeinelabs/motoko#6131 §10.
   if (cleanPath.includes('motoko-tooling')) {
-    return `https://docs.motoko.org${anchor}`;
+    return `https://github.com/caffeinelabs/motoko/releases`;
   }
 
   // Section index links (e.g. ./index.md) → overview page or section root
@@ -242,6 +247,12 @@ function rewriteExternalLink(url) {
   const normalized = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const withoutAnchor = normalized.replace(/#.*$/, '');
   const anchor = normalized.includes('#') ? '#' + normalized.split('#').slice(1).join('#') : '';
+
+  // Try exact match with anchor first — some anchor slugs differ between the old
+  // portal and developer-docs (e.g. #heap-memory → #heap-wasm-linear-memory).
+  if (anchor && externalToInternal.has(normalized)) {
+    return externalToInternal.get(normalized);
+  }
 
   if (externalToInternal.has(withoutAnchor)) {
     return externalToInternal.get(withoutAnchor) + anchor;
