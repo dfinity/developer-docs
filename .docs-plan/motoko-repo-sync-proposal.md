@@ -79,12 +79,18 @@ DFINITY portal. The sync post-processor maintains a rewrite table to map these
 to internal developer-docs paths, but that table needs manual updates with
 every Motoko release.
 
-### 5. `base/` library links
+### 5. `base/` and `core/` library links
 
-Several files link to `./base/<Module>.md`, which is an excluded section. These
-are post-processed to `mops.one/core/docs/<Module>` because `mo:base` is
-deprecated in favour of `mo:core`. Using `https://mops.one/core/docs/<Module>`
-links directly in the source removes the need for this rewrite.
+Several files link to `./base/<Module>.md` or `./core/<Module>.md` — both
+excluded sections. These are post-processed to `https://mops.one/core/docs/<Module>`
+because `mo:base` is deprecated in favour of `mo:core`. Using the mops.one URL
+directly in the source removes the need for this rewrite.
+
+The `core/` directory (49 files: `Array.md`, `Map.md`, etc.) is auto-generated
+from `caffeinelabs/motoko-core` using `mo-doc` as a separate CI step in the
+motoko repo. Once all `./core/<Module>.md` links are replaced with mops.one
+URLs, the generated `doc/md/core/` directory is no longer needed in the docs
+tree and the CI generation step can be dropped from the motoko repo.
 
 ### 6. Docusaurus-specific aside types
 
@@ -191,6 +197,16 @@ numeric-prefixed paths. The affected files are concentrated in `fundamentals/`
 (subdirs `types/`, `actors/`, `declarations/`, `control-flow/`, `basic-syntax/`
 and top-level standalone files) and `reference/1-error-codes.md`.
 
+**Content quality issue to fix during this pass:** `fundamentals/1-basic-syntax/3-printing-values.md`
+links to `../3-types/3-functions.md` (post-rename: `types/function-types.md`) using
+the link text "pure functions". However, `function-types.md` has no heading or
+anchor for "pure functions" — the concept is only implicit in the "## Local functions"
+section. When updating this link's path in Change §8, also fix the link destination:
+either add a `{#pure-functions}` anchor inside `function-types.md` (preferred — makes
+the concept explicit) or point to `function-types.md#local-functions` and adjust the
+link text to "local functions". Without this fix, readers who click "pure functions"
+land at the top of `function-types.md` with no indication where the concept is.
+
 ### 9. `changelog.mdx` contains a Docusaurus `md reference` block
 
 `doc/md/reference/3-changelog.mdx` contains:
@@ -202,11 +218,18 @@ https://github.com/dfinity/motoko/blob/master/Changelog.md
 ````
 
 This is a Docusaurus-specific directive that fetches the content of
-`Changelog.md` from GitHub and renders it inline at build time. It has no
-equivalent in Starlight or standard Markdown. The post-processor currently
-handles this by reading `Changelog.md` from the pinned submodule and inlining
-the content. For a transform-free sync, the upstream must replace this block
-with actual changelog content or a plain markdown link.
+`Changelog.md` from GitHub at build time. It has no equivalent in Starlight or
+standard Markdown — the page renders blank on this site (except for the title)
+unless the post-processor inlines the content at sync time.
+
+The post-processor currently reads `Changelog.md` from the pinned submodule
+(`./sources/motoko/Changelog.md`) and inlines it. This works but creates a
+dependency on postprocess-motoko.mjs for what should be a simple file copy.
+
+`Changelog.md` is 2474 lines and grows with every release. The consumer site
+is pinned to a specific submodule commit. If the changelog content lived
+directly in `doc/md/reference/changelog.md` at the same commit, there can be
+no drift: the file always reflects exactly the entries up to that release.
 
 ### 10. `motoko-tooling` links in `comments.md`
 
@@ -217,8 +240,12 @@ section (excluded from sync) via two relative paths:
 [mo-doc](../../motoko-tooling/3-mo-doc.md)
 ```
 
-The post-processor currently rewrites these to `https://docs.motoko.org`. For a
-transform-free sync, the upstream must replace these with the direct external URL.
+The `motoko-tooling/` section covers: Canpack, dev containers, mo-doc, and the
+Motoko VS Code extension. It is excluded from sync because it uses `dfx` commands
+(banned in developer-docs) and contains Docusaurus JSX (`import Tabs`).
+
+The post-processor currently rewrites these links to `https://docs.motoko.org`,
+which does not exist and produces a broken link.
 
 ---
 
@@ -355,6 +382,16 @@ links to `https://mops.one/core/docs/<Module>`. This is more durable (no
 relative path that changes with directory restructuring) and points to the
 authoritative documentation for the `mo:core` library.
 
+The mops.one URL pattern uses the exact module name: `https://mops.one/core/docs/Map`,
+`https://mops.one/core/docs/List`, etc. The module name matches the source file
+name in `caffeinelabs/motoko-core/src/<Module>.mo` exactly, so the mapping is
+mechanical and stable across releases.
+
+As a consequence: once all `./core/<Module>.md` links are replaced, the
+auto-generated `doc/md/core/` directory is no longer needed and can be removed.
+The CI step in the motoko repo that runs `mo-doc` to generate those files from
+`caffeinelabs/motoko-core` can then be dropped.
+
 ### 5. Use `docs.internetcomputer.org` internal paths
 
 Replace all `internetcomputer.org/docs/...` links with the canonical
@@ -362,31 +399,49 @@ developer-docs paths (relative or absolute using `docs.internetcomputer.org`).
 The mapping for common links:
 
 All `internetcomputer.org/docs/...` URLs currently in the synced source files
-(verified against source at time of writing):
+(verified against source at time of writing), with specific section anchors
+wherever the target page has a matching section:
 
 | Old portal URL | Current developer-docs path |
 |---|---|
 | `building-apps/essentials/canisters` | `/concepts/canisters` |
 | `building-apps/essentials/message-execution` | `/references/message-execution-properties` |
-| `building-apps/canister-management/upgrade` | `/guides/canister-management/lifecycle` |
-| `building-apps/canister-management/snapshots` | `/guides/canister-management/snapshots` |
-| `building-apps/canister-management/storage` | `/concepts/orthogonal-persistence` |
-| `building-apps/canister-management/resource-limits` | `/guides/canister-management/large-wasm` |
+| `building-apps/interact-with-canisters/update-calls` | `/concepts/canisters#update-calls` |
+| `building-apps/interact-with-canisters/query-calls` | `/concepts/canisters#query-calls` |
+| `building-apps/interact-with-canisters/query-calls#composite-queries` | `/concepts/canisters#composite-queries` |
 | `building-apps/interact-with-canisters/candid/candid-concepts` | `/guides/canister-calls/candid` |
 | `building-apps/interact-with-canisters/candid/using-candid` | `/guides/canister-calls/candid` |
 | `building-apps/interact-with-canisters/agents/overview` | `/guides/canister-calls/calling-from-clients` |
-| `building-apps/interact-with-canisters/query-calls` | `/concepts/canisters` |
-| `building-apps/interact-with-canisters/update-calls` | `/concepts/canisters` |
+| `building-apps/canister-management/upgrade` | `/guides/canister-management/lifecycle#upgrade-a-canister` |
+| `building-apps/canister-management/snapshots` | `/guides/canister-management/snapshots` |
+| `building-apps/canister-management/storage` | `/concepts/orthogonal-persistence` |
+| `building-apps/canister-management/storage#heap-memory` | `/concepts/orthogonal-persistence#heap-wasm-linear-memory` |
+| `building-apps/canister-management/storage#stable-memory` | `/concepts/orthogonal-persistence#stable-memory` |
+| `building-apps/canister-management/resource-limits` | `/guides/canister-management/large-wasm` |
 | `building-apps/network-features/periodic-tasks-timers` | `/guides/backends/timers` |
+| `building-apps/network-features/periodic-tasks-timers#timers` | `/guides/backends/timers#recurring-timers` |
 | `building-apps/network-features/randomness` | `/guides/backends/randomness` |
 | `references/async-code` | `/references/message-execution-properties` |
 | `references/ic-interface-spec` | `/references/ic-interface-spec/` |
+| `references/ic-interface-spec#ic-raw_rand` | `/references/ic-interface-spec/management-canister#ic-raw_rand` |
+| `references/ic-interface-spec#global-timer` | `/references/ic-interface-spec/canister-interface#global-timer` |
+| `references/ic-interface-spec#system-api-inspect-message` | `/references/ic-interface-spec/canister-interface#system-api-inspect-message` |
+| `references/ic-interface-spec#heartbeat` | `/references/ic-interface-spec/canister-interface#heartbeat` |
 | `references/candid-ref` | `/references/candid-spec` |
 | `references/system-canisters/management-canister` | `/references/management-canister` |
 
-Note: `building-apps/canister-management/logs` and `building-apps/security/iam/`
-appeared in an earlier version of the source but are no longer present. No action
-needed for those two.
+Notes on anchored entries:
+- The ic-interface-spec is split across multiple pages on developer-docs. Old
+  portal anchors map to specific sub-files. `#heartbeat` has no explicit
+  `{#heartbeat}` attribute in `canister-interface.md` — Starlight auto-generates
+  the slug `heartbeat` from the `#### Heartbeat` heading, so the link resolves.
+- `building-apps/canister-management/storage` (with and without fragments) maps
+  to `/concepts/orthogonal-persistence`. The old portal page had `#heap-memory`
+  and `#stable-memory`; the developer-docs page has `#heap-wasm-linear-memory`
+  and `#stable-memory` (exact match for stable; different slug for heap).
+- `building-apps/canister-management/logs` and `building-apps/security/iam/`
+  appeared in an earlier version of the source but are no longer present. No
+  action needed for those two.
 
 ### 6. Use Starlight-native aside types
 
@@ -524,19 +579,29 @@ leaving the changelog page blank except for the frontmatter title.
 The post-processor currently handles this by reading `Changelog.md` from the
 pinned submodule (`.sources/motoko/Changelog.md`) and inlining its full contents.
 
-**Upstream fix:** replace the `md reference` block with one of:
-- The full contents of `Changelog.md` copied directly into the file, updated on
-  each release (makes the file self-contained)
-- A plain Markdown link: `[Full changelog](https://github.com/dfinity/motoko/blob/master/Changelog.md)`
-  (simpler maintenance, but readers leave the docs site to read the history)
+**Upstream fix:** copy `Changelog.md` into `doc/md/reference/changelog.md` as
+part of the Motoko release automation. The canonical approach is to have the
+release script write the frontmatter block once (if not already present) and
+then overwrite the file body with the current `Changelog.md` content:
 
-The first option (inline content) is preferred for docs completeness. The file
-can be automatically updated as part of the Motoko release process using:
 ```bash
-cat Changelog.md >> doc/md/reference/changelog.mdx  # after the frontmatter block
+# In caffeinelabs/motoko — run as part of the release script, after version is set
+{
+  printf -- '---\ntitle: "Changelog"\ndescription: "Motoko compiler changelog"\nsidebar:\n  order: 3\n---\n\n'
+  cat Changelog.md
+} > doc/md/reference/changelog.md
 ```
 
-### 10. Replace `motoko-tooling` links with the external URL
+This approach ensures no drift: the changelog in `doc/md/reference/changelog.md`
+is always exactly the state of `Changelog.md` at the same commit. Developer-docs
+is pinned to a specific submodule commit, so the correct version is always shown
+regardless of when the sync runs. The post-processor's changelog inlining step
+can then be removed entirely.
+
+The `changelog.mdx` file can be renamed `changelog.md` at the same time (the
+`md reference` block is the only reason it needed MDX).
+
+### 10. Replace `motoko-tooling` links with a valid external URL
 
 `doc/md/fundamentals/1-basic-syntax/10-comments.md` (after rename:
 `fundamentals/basic-syntax/comments.md`) contains two links to the
@@ -549,13 +614,25 @@ cat Changelog.md >> doc/md/reference/changelog.mdx  # after the frontmatter bloc
 These appear twice: once inline in the text (line 17) and once in a "See also"
 list (line 49).
 
-The post-processor currently rewrites these to `https://docs.motoko.org`.
+The post-processor currently rewrites these to `https://docs.motoko.org`, which
+does not exist.
 
-**Upstream fix:** replace both occurrences with the direct external URL:
+**Upstream fix:** replace both occurrences with the GitHub releases page, where
+the `mo-doc` binary is distributed:
 
 ```markdown
-[mo-doc](https://docs.motoko.org)
+[mo-doc](https://github.com/dfinity/motoko/releases)
 ```
+
+**developer-docs side:** the `motoko-tooling/` section covers Canpack, dev
+containers, mo-doc, and the Motoko VS Code extension. These are currently excluded
+from sync because they contain `dfx` commands (banned) and Docusaurus JSX. Rather
+than linking to an external URL, consider adding a hand-written `mo-doc` guide
+under `docs/guides/tools/` (separate from this sync work). The `developer-tools`
+reference page (`docs/references/developer-tools.md`) already covers the Motoko
+toolchain at a high level and could link to a future `mo-doc` guide. If Docusaurus
+is dropped from the upstream, mo-doc and the VS Code extension pages could
+potentially be synced directly once their `dfx` references are replaced with `icp`.
 
 ---
 
@@ -630,11 +707,13 @@ in frontmatter will provide the correct sort order automatically.
    numeric prefixes, apply the special renames from step 1). Do this atomically
    with the renames — the Docusaurus site must not have broken links at any
    intermediate commit.
-9. Replace the `md reference` block in `reference/changelog.mdx` with either
-   the full inlined content of `Changelog.md` or a plain link to the GitHub
-   release page.
+9. Add release automation that copies `Changelog.md` into
+   `doc/md/reference/changelog.md` (with frontmatter prepended) as part of
+   every Motoko release. Rename `changelog.mdx` → `changelog.md` at the same
+   time (the MDX extension was only needed for the `md reference` directive).
 10. Replace the two `../../motoko-tooling/3-mo-doc.md` links in
-    `fundamentals/basic-syntax/comments.md` with `https://docs.motoko.org`.
+    `fundamentals/basic-syntax/comments.md` with
+    `https://github.com/dfinity/motoko/releases`.
 
 **developer-docs side (after upstream PR is merged and submodule bumped):**
 
@@ -648,3 +727,38 @@ The Docusaurus site in `caffeinelabs/motoko` is unaffected: Docusaurus ignores
 `sidebar.order` and continues to use `_category_.yml` position values.
 Both `sidebar_position` and `sidebar.order` can coexist in the same frontmatter
 during the transition period.
+
+---
+
+## Appendix: additional decisions
+
+### If Docusaurus is dropped from the upstream repo
+
+The motoko team is considering moving away from Docusaurus in `caffeinelabs/motoko`.
+If that happens, some of the changes above become simpler or can be deferred:
+
+- **§2 (sidebar.order)**: If Docusaurus is dropped, `sidebar_position` can be
+  removed entirely rather than migrated. `sidebar.order` in Starlight frontmatter
+  remains the right replacement.
+- **§6 (aside types)**: Without Docusaurus compatibility to maintain, `:::info` can
+  simply become `:::note` with no concern about backward breakage on the docs site.
+- **§7 (REPL flags)**: `no-repl` is Docusaurus-specific. Without Docusaurus, REPL
+  flags can be removed entirely rather than normalized. Bare `` ```motoko `` is the
+  correct form for a static site.
+- **§9 (changelog)**: The `md reference` block is Docusaurus-specific and would
+  need replacing regardless of which framework replaces it.
+- **§1, §3, §4, §5, §8, §10**: Framework-independent — required regardless of
+  which docs tool the upstream uses.
+
+In practice: proceed with this plan without waiting for a Docusaurus decision. The
+changes are safe whether Docusaurus stays or goes.
+
+### `base-core-migration.md` in the sidebar
+
+`base-core-migration.md` is currently excluded from the sidebar and linked from
+the Motoko overview (`docs/languages/motoko/index.md`) only. This is the right
+call: `mo:base` has been deprecated for a while and most new developers will never
+need the migration guide. Keeping it off the sidebar avoids adding a dead-weight
+entry that implies the base library is still relevant. The guide remains fully
+discoverable via site search and via the overview link for developers who do need
+it. No change recommended.
