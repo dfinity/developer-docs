@@ -723,9 +723,11 @@ examples: `compatibility.md`, `data-persistence.md`,
 `modules-imports.md`, and `reference/changelog.md` (historical entries).
 
 Upstream PR [caffeinelabs/motoko#6069](https://github.com/caffeinelabs/motoko/pull/6069)
-is a first attempt at replacing these. This should be merged and followed up
-independently of the sync reorganization — no sync script change is needed once
-`dfx` references are gone from the source.
+is a first attempt at replacing these. **It should not be merged before the sync
+reorganization PR (§1–§11) lands**: §1 renames files, so #6069's branch needs to
+be rebased on the post-reorganization state and extended with any remaining `dfx`
+references before merging. Em-dash fixes (see below) can be included in the same
+follow-up PR.
 
 ### Em-dashes in prose
 
