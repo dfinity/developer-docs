@@ -795,10 +795,20 @@ docs/languages/motoko/reference     → ../../.sources/motoko/doc/md/reference
 Astro follows symlinks (the site already uses them for `src/content/docs/`), so
 this works. Bumping the submodule is the entire update — no sync script runs.
 
-The tradeoff: with symlinks, changes to Motoko docs are not visible as a diff in
-the developer-docs repo. The copy approach keeps synced content committed, so
-every submodule bump produces a reviewable `git diff` showing exactly what changed.
-Both are valid; the copy is preferred for auditability.
+**The copy approach is preferred.** Three reasons:
+
+1. **Internal links**: the postprocessor converts `docs.internetcomputer.org/<path>`
+   absolute URLs to root-relative `/<path>` internal paths. Internal paths are
+   validated at Astro build time, work in local dev (`npm run dev`), and work in
+   preview deployments. Symlinks leave these as absolute external URLs, which skip
+   build-time validation and always point to production regardless of environment.
+2. **Anchor routing**: the postprocessor maps old portal anchor slugs to the
+   correct developer-docs sub-page (e.g. `#global-timer` →
+   `canister-interface#global-timer`). Upstream cannot encode this mapping —
+   it requires knowledge of the developer-docs structure that lives here.
+3. **Auditability**: every submodule bump produces a reviewable `git diff` showing
+   exactly what changed in the docs. With symlinks, content changes are invisible
+   in this repo.
 
 `postprocess-motoko.mjs` can be deleted entirely once §2 is fully completed
 upstream, including adding `title:` and `description:` frontmatter to every file
