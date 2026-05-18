@@ -415,22 +415,37 @@ find doc/md -name '*.md' -o -name '*.mdx' | \
   xargs sed -i 's|file=\(\.\./\)*examples/|file=<motokoExamples>/|g'
 ```
 
-### 4. Use `mops.one` for `mo:core` links
+### 4. Replace `./core/` and `./base/` links with mops.one URLs, then remove those directories
 
-Replace links to `./base/<Module>.md` and `./core/<Module>.md` with direct
-links to `https://mops.one/core/docs/<Module>`. This is more durable (no
-relative path that changes with directory restructuring) and points to the
-authoritative documentation for the `mo:core` library.
+A core maintainer confirmed: "I'd honestly prefer that. Mops docs should be the
+single source of truth." — mops.one is the intended canonical home for `mo:core`
+library docs. This makes the link replacement + directory removal the actively
+desired outcome, not just a side-effect.
+
+**Step 1 — replace links:** Replace all `./base/<Module>.md` and
+`./core/<Module>.md` links with `https://mops.one/core/docs/<Module>`. The
+module name matches the source file name exactly; the mapping is mechanical.
+
+```markdown
+[Map](./core/Map.md)   →  [Map](https://mops.one/core/docs/Map)
+[Bool](./base/Bool.md) →  [Bool](https://mops.one/core/docs/Bool)
+```
+
+**Step 2 — remove `doc/md/core/` and its CI generation step:** Once all
+`./core/<Module>.md` links are replaced, the auto-generated `doc/md/core/`
+directory (49 files) is no longer needed and should be deleted. The CI step
+that runs `mo-doc` to generate those files from `caffeinelabs/motoko-core` can
+be dropped at the same time. This removes a CI dependency and keeps the doc tree
+clean.
+
+**Step 3 — consider removing `doc/md/base/`:** `mo:base` is deprecated in
+favour of `mo:core`. Once `./base/<Module>.md` links are replaced with mops.one
+URLs, the `doc/md/base/` directory is also redundant and can be removed.
 
 The mops.one URL pattern uses the exact module name: `https://mops.one/core/docs/Map`,
 `https://mops.one/core/docs/List`, etc. The module name matches the source file
 name in `caffeinelabs/motoko-core/src/<Module>.mo` exactly, so the mapping is
 mechanical and stable across releases.
-
-As a consequence: once all `./core/<Module>.md` links are replaced, the
-auto-generated `doc/md/core/` directory is no longer needed and can be removed.
-The CI step in the motoko repo that runs `mo-doc` to generate those files from
-`caffeinelabs/motoko-core` can then be dropped.
 
 ### 5. Use `docs.internetcomputer.org` internal paths
 
@@ -759,6 +774,7 @@ sync-time file expansion is needed.
 **Required for `fundamentals/` autogenerate (eliminates manual sidebar maintenance):** §11
 **Optional — only needed for a fully transform-free rsync:** §1 + §8 (do both or neither)
 **Optional cleanup (silently handled today):** §7
+_(Note: §4 also includes removing `doc/md/core/`, `doc/md/base/`, and the CI generation step once links are replaced — confirmed as desired by a core maintainer.)_
 
 1. Remove numeric prefixes from all directories and files (including top-level
    `14-style.md` → `style-guide.md`, `15-compiler-ref.md` → `compiler-ref.md`,
