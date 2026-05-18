@@ -6,19 +6,31 @@
  *   ```candid file=<rootDir>/public/references/ic.did
  *   ```
  *
- * The plugin resolves <rootDir> to the project root and reads the file
- * synchronously at build time, replacing the empty code block body with the
- * file's contents.
+ *   ```motoko file=<motokoExamples>/counter.mo
+ *   ```
  *
- * A missing file causes a build error.
+ *   ```motoko file=<motokoExamples>/todo-error.mo#L49-L58
+ *   ```
+ *
+ * Placeholders:
+ *   <rootDir>        — project root
+ *   <motokoExamples> — .sources/motoko/doc/md/examples/
+ *
+ * An optional #L<start>-L<end> suffix slices specific lines (1-based, inclusive).
+ *
+ * A missing file or out-of-range line slice causes a build error.
  */
 import { visit } from "unist-util-visit";
 import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { dirname, join } from "node:path";
+import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+const PLACEHOLDERS = {
+  "<rootDir>": ROOT,
+  "<motokoExamples>": join(ROOT, ".sources", "motoko", "doc", "md", "examples"),
+};
 
 export default function remarkIncludeFile() {
   return (tree, file) => {
@@ -28,7 +40,26 @@ export default function remarkIncludeFile() {
         .find((m) => m.startsWith("file="));
       if (!fileMeta) return;
 
-      const rawPath = fileMeta.slice("file=".length).replace(/^<rootDir>/, ROOT);
+      let rawPath = fileMeta.slice("file=".length);
+
+      // Extract optional #L<start>-L<end> line range before resolving the path
+      let lineStart = null;
+      let lineEnd = null;
+      const rangeMatch = rawPath.match(/#L(\d+)-L(\d+)$/);
+      if (rangeMatch) {
+        lineStart = parseInt(rangeMatch[1], 10);
+        lineEnd = parseInt(rangeMatch[2], 10);
+        rawPath = rawPath.slice(0, -rangeMatch[0].length);
+      }
+
+      // Expand placeholders
+      for (const [placeholder, expansion] of Object.entries(PLACEHOLDERS)) {
+        if (rawPath.startsWith(placeholder)) {
+          rawPath = expansion + rawPath.slice(placeholder.length);
+          break;
+        }
+      }
+
       const absPath = resolve(file.dirname || ROOT, rawPath);
 
       if (!existsSync(absPath)) {
@@ -37,7 +68,20 @@ export default function remarkIncludeFile() {
         );
       }
 
-      node.value = readFileSync(absPath, "utf-8").trimEnd();
+      let content = readFileSync(absPath, "utf-8");
+
+      if (lineStart !== null) {
+        const lines = content.split("\n");
+        if (lineStart < 1 || lineEnd > lines.length) {
+          throw new Error(
+            `remark-include-file: line range L${lineStart}-L${lineEnd} out of bounds ` +
+            `(file has ${lines.length} lines): ${absPath}`,
+          );
+        }
+        content = lines.slice(lineStart - 1, lineEnd).join("\n");
+      }
+
+      node.value = content.trimEnd();
     });
   };
 }
