@@ -709,17 +709,14 @@ potentially be synced directly once their `dfx` references are replaced with `ic
 
 ## What the sync becomes after these changes
 
-With the above changes in place, `sync-motoko.sh` reduces to:
+With the above changes in place, `sync-motoko.sh` reduces to a plain file copy:
 
 ```bash
-rsync -r --delete \
-  --exclude='_category_.yml' --exclude='/index.md' \
+rsync -r --delete --exclude='_category_.yml' \
   .sources/motoko/doc/md/fundamentals/ docs/languages/motoko/fundamentals/
-rsync -r --delete \
-  --exclude='_category_.yml' --exclude='index.md' \
+rsync -r --delete --exclude='_category_.yml' \
   .sources/motoko/doc/md/icp-features/  docs/languages/motoko/icp-features/
-rsync -r --delete \
-  --exclude='_category_.yml' --exclude='index.md' \
+rsync -r --delete --exclude='_category_.yml' \
   .sources/motoko/doc/md/reference/     docs/languages/motoko/reference/
 cp .sources/motoko/doc/md/language-manual.md  docs/languages/motoko/reference/language-manual.md
 cp .sources/motoko/doc/md/style-guide.md      docs/languages/motoko/reference/style-guide.md
@@ -727,23 +724,30 @@ cp .sources/motoko/doc/md/compiler-ref.md     docs/languages/motoko/reference/co
 cp .sources/motoko/doc/md/base-core-migration.md docs/languages/motoko/base-core-migration.md
 ```
 
-The `--exclude='_category_.yml'` flag is a transitional safety net. The correct
-end state is that upstream deletes all `_category_.yml` files entirely: once
-`index.md` ordering stubs are in place (Change §11), `_category_.yml` is
-unconditionally redundant — both Starlight and Docusaurus can derive ordering
-from `index.md`. The exclude handles any files that remain during transition.
+The `--exclude='_category_.yml'` flag can be dropped once upstream deletes
+`_category_.yml` files. The `--exclude='index.md'` flags used in the current
+sync (to exclude Docusaurus nav pages) are no longer needed because upstream
+deletes those files as part of the Docusaurus cleanup (§11 + `index.md`
+guidance above).
 
-For `fundamentals/`, the exclude uses `--exclude='/index.md'` (leading slash
-anchors the pattern to the transfer root). This drops only the top-level
-`fundamentals/index.md` (a Docusaurus section landing page with a navigation
-list) while **keeping** subdirectory `index.md` files such as
-`fundamentals/basic-syntax/index.md` and `fundamentals/actors/index.md`. Those
-are the Starlight ordering stubs added by Change §11 — Starlight needs them to
-override alphabetical subdirectory order. Using a global
-`--exclude='index.md'` (without `/`) would incorrectly exclude those stubs too.
+### Symlink alternative
 
-For `icp-features/` and `reference/`, the global `--exclude='index.md'` is
-correct: neither section has subdirectory ordering stubs to preserve.
+Once all upstream changes are in place, the copy step could be replaced entirely
+with committed symlinks:
+
+```
+docs/languages/motoko/fundamentals → ../../.sources/motoko/doc/md/fundamentals
+docs/languages/motoko/icp-features  → ../../.sources/motoko/doc/md/icp-features
+docs/languages/motoko/reference     → ../../.sources/motoko/doc/md/reference
+```
+
+Astro follows symlinks (the site already uses them for `src/content/docs/`), so
+this works. Bumping the submodule is the entire update — no sync script runs.
+
+The tradeoff: with symlinks, changes to Motoko docs are not visible as a diff in
+the developer-docs repo. The copy approach keeps synced content committed, so
+every submodule bump produces a reviewable `git diff` showing exactly what changed.
+Both are valid; the copy is preferred for auditability.
 
 `postprocess-motoko.mjs` can be deleted entirely. The `remark-include-file`
 build plugin already handles `<motokoExamples>` paths at build time — no
@@ -863,10 +867,9 @@ the upstream changes are in place).
 
 1. Replace `sync-motoko.sh` with the simplified rsync version shown above. Add a
    structure guard at the top: if `$SOURCE_DIR/fundamentals/1-basic-syntax` still
-   exists (old numeric-prefix layout), exit with a clear error. Use
-   `--exclude='/index.md'` (anchored) for the `fundamentals/` rsync so subdir
-   ordering stubs are kept; use `--exclude='index.md'` (global) for `icp-features/`
-   and `reference/` which have no ordering stubs. Remove the postprocess call.
+   exists (old numeric-prefix layout), exit with a clear error. Once upstream
+   deletes the top-level section `index.md` files, the `--exclude='index.md'` flags
+   become no-ops and can be removed. Remove the postprocess call.
 2. Delete `postprocess-motoko.mjs`.
 3. Delete `sidebar-motoko.mjs`. Replace its import in `sidebar.mjs` with:
    ```js
@@ -973,13 +976,12 @@ stub for order 2 / label "Actors" (the `_category_.yml` position and label).
 
 **Do NOT touch** `fundamentals/2-actors/6-orthogonal-persistence/index.md` —
 this file contains real conceptual content comparing both persistence modes.
-It must be **renamed** to `overview.md` (Change §1) so the sync script's
-`--exclude='/index.md'` does not drop it.
+It must be **renamed** to `overview.md` (Change §1) to distinguish it as a
+content page from the ordering stubs.
 
 The top-level `fundamentals/index.md`, `icp-features/index.md`, and
-`reference/index.md` section landing pages are excluded from sync entirely.
-Delete them or leave them for Docusaurus — they have no effect on the
-developer-docs build either way.
+`reference/index.md` are Docusaurus section landing pages (nav scaffold with
+no Starlight equivalent). **Delete them** as part of the Docusaurus cleanup.
 
 ### `base-core-migration.md` in the sidebar
 
