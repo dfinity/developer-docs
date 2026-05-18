@@ -244,8 +244,10 @@ The `motoko-tooling/` section covers: Canpack, dev containers, mo-doc, and the
 Motoko VS Code extension. It is excluded from sync because it uses `dfx` commands
 (banned in developer-docs) and contains Docusaurus JSX (`import Tabs`).
 
-The post-processor currently rewrites these links to `https://docs.motoko.org`,
-which does not exist and produces a broken link.
+The post-processor previously rewrote these links to `https://docs.motoko.org`,
+which does not exist. This is now fixed: the postprocessor redirects both
+`motoko-tooling/` relative paths and the `docs.motoko.org` domain to the
+internal developer-docs page at `/developer-tools/#mo-doc`.
 
 ---
 
@@ -675,7 +677,7 @@ The post-processor's changelog inlining step can be removed once the upstream
 adopts this. The `changelog.mdx` file can be renamed `changelog.md` at the same
 time (the MDX extension was only needed for the `md reference` directive).
 
-### 10. Replace `motoko-tooling` links with a valid external URL
+### 10. Replace `motoko-tooling` links with a valid URL
 
 `doc/md/fundamentals/1-basic-syntax/10-comments.md` (after rename:
 `fundamentals/basic-syntax/comments.md`) contains two links to the
@@ -688,25 +690,48 @@ time (the MDX extension was only needed for the `md reference` directive).
 These appear twice: once inline in the text (line 17) and once in a "See also"
 list (line 49).
 
-The post-processor currently rewrites these to `https://docs.motoko.org`, which
-does not exist.
+The post-processor previously rewrote these to `https://docs.motoko.org`, which
+does not exist. This is now fixed: both `motoko-tooling/` relative paths and the
+`docs.motoko.org` domain redirect to `/developer-tools/#mo-doc`.
 
-**Upstream fix:** replace both occurrences with the GitHub releases page, where
-the `mo-doc` binary is distributed:
+**Upstream fix:** replace both occurrences with the developer-docs mo-doc page:
 
 ```markdown
-[mo-doc](https://github.com/caffeinelabs/motoko/releases)
+[mo-doc](https://docs.internetcomputer.org/developer-tools/#mo-doc)
 ```
 
-**developer-docs side:** the `motoko-tooling/` section covers Canpack, dev
-containers, mo-doc, and the Motoko VS Code extension. These are currently excluded
-from sync because they contain `dfx` commands (banned) and Docusaurus JSX. Rather
-than linking to an external URL, consider adding a hand-written `mo-doc` guide
-under `docs/guides/tools/` (separate from this sync work). The `developer-tools`
-reference page (`docs/references/developer-tools.md`) already covers the Motoko
-toolchain at a high level and could link to a future `mo-doc` guide. If Docusaurus
-is dropped from the upstream, mo-doc and the VS Code extension pages could
-potentially be synced directly once their `dfx` references are replaced with `icp`.
+**developer-docs side (done):** `docs/developer-tools/index.md` now has a
+dedicated `### mo-doc` section covering what it does, how to install it from the
+Motoko compiler tarball, and usage examples. The `motoko-tooling/` section
+remains excluded from sync because it still contains `dfx` commands and
+Docusaurus JSX — see the note on `dfx` references below.
+
+---
+
+## Known content issues — outside the sync scope
+
+The items below are content quality issues found in synced files. They are upstream
+problems that cannot be fixed on the developer-docs side (synced files must not be
+edited directly). They should be addressed in a separate upstream PR, independent
+of the sync reorganization effort.
+
+### `dfx` references in prose
+
+Several synced files contain `dfx` and `dfx.json` references in prose and code
+examples: `compatibility.md`, `data-persistence.md`,
+`orthogonal-persistence/classical.md`, `orthogonal-persistence/enhanced.md`,
+`modules-imports.md`, and `reference/changelog.md` (historical entries).
+
+Upstream PR [caffeinelabs/motoko#6069](https://github.com/caffeinelabs/motoko/pull/6069)
+is a first attempt at replacing these. This should be merged and followed up
+independently of the sync reorganization — no sync script change is needed once
+`dfx` references are gone from the source.
+
+### Em-dashes in prose
+
+`enhanced-multi-migration.md` and `compatibility.md` contain em-dashes in body
+prose. Em-dashes are banned in developer-docs content. These should be replaced
+with colons, semicolons, or commas in the upstream source.
 
 ---
 
@@ -813,7 +838,7 @@ _(Note: §4 also includes removing `doc/md/core/`, `doc/md/base/`, and the CI ge
    stub; `Changelog.md` at the same commit is always the correct version.
 10. Replace the two `../../motoko-tooling/3-mo-doc.md` links in
     `fundamentals/basic-syntax/comments.md` with
-    `https://github.com/caffeinelabs/motoko/releases`.
+    `https://docs.internetcomputer.org/developer-tools/#mo-doc`.
 11. Replace the `index.md` files in each `fundamentals/` subdirectory with a
     metadata-only version containing just `sidebar.order` and `sidebar.label`
     frontmatter (no content). Also add a new `fundamentals/actors/index.md`
