@@ -5,7 +5,7 @@
  * 2. Rewrite relative links to match the new directory structure
  * 3. Rewrite external internetcomputer.org/docs links to internal paths
  * 4. Redirect core library links to mops.one
- * 5. Redirect motoko-tooling links to GitHub releases (section is not synced)
+ * 5. Redirect motoko-tooling and docs.motoko.org links to /developer-tools/#mo-doc
  * 6. Remove _category_.yml and sub-section index.md files
  * 7. Rewrite Docusaurus file-embed paths to use <motokoExamples> placeholder
  *    (remark-include-file resolves these at build time from the pinned submodule)
@@ -133,6 +133,10 @@ const externalToInternal = new Map([
   ['internetcomputer.org/docs/current/developer-docs/getting-started/deploy-and-manage', '/getting-started/quickstart'],
   ['internetcomputer.org/docs/current/developer-docs/getting-started/development-workflow','/getting-started/quickstart'],
 
+  // docs.motoko.org (non-existent domain) → developer-tools page
+  // Upstream fix tracked as caffeinelabs/motoko#6131 §10.
+  ['docs.motoko.org', '/developer-tools/#mo-doc'],
+
   // Motoko-internal links using old portal paths
   ['internetcomputer.org/docs/motoko/language-manual',                          '/languages/motoko/reference/language-manual'],
   ['internetcomputer.org/docs/current/motoko/main/reference/language-manual',   '/languages/motoko/reference/language-manual'],
@@ -169,10 +173,10 @@ function rewriteLink(matchedPath, anchor, sourceFile) {
     return `https://mops.one/core/docs/${mod}${anchor}`;
   }
 
-  // motoko-tooling (section not synced) → GitHub releases (where mo-doc binary lives).
-  // docs.motoko.org does not exist. Upstream fix tracked as caffeinelabs/motoko#6131 §10.
+  // motoko-tooling (section not synced) → developer-tools page.
+  // docs.motoko.org does not exist; upstream fix tracked as caffeinelabs/motoko#6131 §10.
   if (cleanPath.includes('motoko-tooling')) {
-    return `https://github.com/caffeinelabs/motoko/releases`;
+    return `/developer-tools/#mo-doc`;
   }
 
   // Section index links (e.g. ./index.md) → overview page or section root
