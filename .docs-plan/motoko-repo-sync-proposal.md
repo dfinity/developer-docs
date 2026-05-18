@@ -810,24 +810,29 @@ sync-time file expansion is needed.
     The `fundamentals/index.md` (top-level section landing page) is still
     excluded by the sync — only subdir `index.md` files are kept.
 
-**developer-docs side (already done):**
+**developer-docs side (done in PR 261 — `docs/motoko-sync-fixes`):**
 - `remark-include-file` supports `<motokoRoot>` placeholder and inline markdown
   inclusion (`md` language code fence → rendered prose, not a code block).
 - `remark-include-file` supports `<motokoExamples>` and `#L<n>-L<m>` ranges.
-- `postprocess-motoko.mjs` is deprecated (header says so). It is no longer
-  called by `sync-motoko.sh` and will be deleted with the sync PR.
-- `sync-motoko.sh` is the simplified rsync version shown above. It has a
-  structure guard: if the old numeric-prefix directories are detected (e.g.
-  `fundamentals/1-basic-syntax/`), the script exits with a clear error. This
-  means the automated weekly sync CI will fail until the upstream PR merges —
-  which is the intended behavior.
+- `postprocess-motoko.mjs` rewrites `../examples/` → `<motokoExamples>/` at
+  sync time as a bridge until the upstream adopts the placeholder directly.
 - `sidebar-motoko.mjs` contains the explicit Motoko sidebar as a transitional
   file. It is deleted in the step below once step 11 above lands.
 
-**developer-docs side (after upstream PR is merged and submodule bumped):**
+**developer-docs side (separate PR — do after upstream PR merges):**
 
-1. Run `npm run sync:motoko` — the new `sync-motoko.sh` will pass the structure
-   guard once the upstream has the reorganized layout.
+The following changes must NOT be merged until the upstream reorganization PR
+has landed and the submodule has been bumped. Merging them early permanently
+breaks the automated weekly sync CI (`sync-motoko.yml` runs `npm run sync:motoko`
+weekly; it would fail on the structure guard with every new Motoko release until
+the upstream changes are in place).
+
+1. Replace `sync-motoko.sh` with the simplified rsync version shown above. Add a
+   structure guard at the top: if `$SOURCE_DIR/fundamentals/1-basic-syntax` still
+   exists (old numeric-prefix layout), exit with a clear error. Use
+   `--exclude='/index.md'` (anchored) for the `fundamentals/` rsync so subdir
+   ordering stubs are kept; use `--exclude='index.md'` (global) for `icp-features/`
+   and `reference/` which have no ordering stubs. Remove the postprocess call.
 2. Delete `postprocess-motoko.mjs`.
 3. Delete `sidebar-motoko.mjs`. Replace its import in `sidebar.mjs` with:
    ```js
