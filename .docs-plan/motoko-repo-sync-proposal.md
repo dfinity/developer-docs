@@ -688,7 +688,7 @@ With the above changes in place, `sync-motoko.sh` reduces to:
 
 ```bash
 rsync -r --delete \
-  --exclude='_category_.yml' --exclude='index.md' \
+  --exclude='_category_.yml' --exclude='/index.md' \
   .sources/motoko/doc/md/fundamentals/ docs/languages/motoko/fundamentals/
 rsync -r --delete \
   --exclude='_category_.yml' --exclude='index.md' \
@@ -703,8 +703,19 @@ cp .sources/motoko/doc/md/base-core-migration.md docs/languages/motoko/base-core
 ```
 
 The `--exclude='_category_.yml'` flag drops Docusaurus category files that
-have no meaning in Starlight. The `--exclude='index.md'` flag drops Docusaurus
-section index pages that Starlight doesn't use.
+have no meaning in Starlight.
+
+For `fundamentals/`, the exclude uses `--exclude='/index.md'` (leading slash
+anchors the pattern to the transfer root). This drops only the top-level
+`fundamentals/index.md` (a Docusaurus section landing page with a navigation
+list) while **keeping** subdirectory `index.md` files such as
+`fundamentals/basic-syntax/index.md` and `fundamentals/actors/index.md`. Those
+are the Starlight ordering stubs added by Change §11 — Starlight needs them to
+override alphabetical subdirectory order. Using a global
+`--exclude='index.md'` (without `/`) would incorrectly exclude those stubs too.
+
+For `icp-features/` and `reference/`, the global `--exclude='index.md'` is
+correct: neither section has subdirectory ordering stubs to preserve.
 
 `postprocess-motoko.mjs` can be deleted entirely. The `remark-include-file`
 build plugin already handles `<motokoExamples>` paths at build time — no
@@ -803,17 +814,20 @@ sync-time file expansion is needed.
 - `remark-include-file` supports `<motokoRoot>` placeholder and inline markdown
   inclusion (`md` language code fence → rendered prose, not a code block).
 - `remark-include-file` supports `<motokoExamples>` and `#L<n>-L<m>` ranges.
-- `postprocess-motoko.mjs` rewrites `../examples/` → `<motokoExamples>/` as a
-  bridge until the upstream adopts the placeholder directly.
+- `postprocess-motoko.mjs` is deprecated (header says so). It is no longer
+  called by `sync-motoko.sh` and will be deleted with the sync PR.
+- `sync-motoko.sh` is the simplified rsync version shown above. It has a
+  structure guard: if the old numeric-prefix directories are detected (e.g.
+  `fundamentals/1-basic-syntax/`), the script exits with a clear error. This
+  means the automated weekly sync CI will fail until the upstream PR merges —
+  which is the intended behavior.
 - `sidebar-motoko.mjs` contains the explicit Motoko sidebar as a transitional
   file. It is deleted in the step below once step 11 above lands.
 
 **developer-docs side (after upstream PR is merged and submodule bumped):**
 
-1. Simplify `sync-motoko.sh`: use the `rsync` commands shown above but change
-   the `fundamentals/` rsync to `--exclude='fundamentals/index.md'` (targeted)
-   instead of the global `--exclude='index.md'`, so subdir `index.md` files are
-   kept for Starlight ordering.
+1. Run `npm run sync:motoko` — the new `sync-motoko.sh` will pass the structure
+   guard once the upstream has the reorganized layout.
 2. Delete `postprocess-motoko.mjs`.
 3. Delete `sidebar-motoko.mjs`. Replace its import in `sidebar.mjs` with:
    ```js
@@ -854,6 +868,79 @@ If that happens, some of the changes above become simpler or can be deferred:
 
 In practice: proceed with this plan without waiting for a Docusaurus decision. The
 changes are safe whether Docusaurus stays or goes.
+
+### Upstream agent instructions: `_category_.yml` and `index.md`
+
+The upstream `caffeinelabs/motoko` currently uses two Docusaurus-specific
+constructs for sidebar navigation that have no equivalent in Starlight. Both
+must be replaced as part of the reorganization (or removed if Docusaurus is
+dropped).
+
+#### `_category_.yml` files
+
+Each `_category_.yml` defines the label, position, and collapsed state for a
+directory in the Docusaurus sidebar. In Starlight, this information goes into
+an `index.md` file in the same directory with `sidebar.order` and
+`sidebar.label` frontmatter.
+
+**Mapping for all `_category_.yml` files in the synced sections:**
+
+| Directory (post-rename) | `_category_.yml` | Action |
+|---|---|---|
+| `fundamentals/` | `position: 3, label: 'Fundamentals'` | Delete — label comes from `sidebar.mjs` in developer-docs, not from upstream |
+| `fundamentals/basic-syntax/` | `position: 2, label: 'Basic syntax'` | Create `index.md` stub with `sidebar: { order: 1, label: "Basic syntax" }` |
+| `fundamentals/actors/` | `position: 3, label: 'Actors'` | Create `index.md` stub with `sidebar: { order: 2, label: "Actors" }` |
+| `fundamentals/types/` | `position: 4, label: 'Types'` | Create `index.md` stub with `sidebar: { order: 3, label: "Types" }` |
+| `fundamentals/declarations/` | `position: 5, label: 'Declarations'` | Create `index.md` stub with `sidebar: { order: 4, label: "Declarations" }` |
+| `fundamentals/control-flow/` | `position: 6, label: 'Control flow'` | Create `index.md` stub with `sidebar: { order: 5, label: "Control flow" }` |
+| `icp-features/` | `position: 4, label: 'ICP features'` | Delete — label comes from `sidebar.mjs` |
+| `reference/` | `position: 13, label: 'Motoko references'` | Delete — label comes from `sidebar.mjs` |
+
+Note: the Starlight `sidebar.order` values (1–5) for fundamentals subdirs do
+not match the Docusaurus `position` values (2–6). The difference is that
+Docusaurus counts `hello-world.md` (position 1) as a sibling, while Starlight
+uses the subdir `index.md` order only among subdirs. What matters is the
+relative order among the five subdirs, not the absolute number.
+
+The metadata stub format:
+```yaml
+---
+sidebar:
+  order: 1
+  label: "Basic syntax"
+---
+```
+No title, description, or body content. This is a Starlight navigation
+control file only.
+
+After creating the `index.md` stubs, delete every `_category_.yml` in the repo
+(they have no meaning outside Docusaurus).
+
+#### `index.md` files in `fundamentals/` subdirs
+
+The current `index.md` files in `fundamentals/1-basic-syntax/`,
+`fundamentals/3-types/`, `fundamentals/4-declarations/`, and
+`fundamentals/5-control-flow/` are Docusaurus section landing pages. Their
+content is a numbered list of links to pages in the section — useful in
+Docusaurus where the section heading is a clickable link. In Starlight, the
+sidebar handles navigation automatically; these pages are not needed.
+
+**Replace** each of these `index.md` files with the metadata stub described
+above (matching the `_category_.yml` values for that directory). The existing
+list content is Docusaurus navigation scaffold and can be discarded.
+
+`fundamentals/2-actors/` currently has no `index.md`. **Create** one with the
+stub for order 2 / label "Actors" (the `_category_.yml` position and label).
+
+**Do NOT touch** `fundamentals/2-actors/6-orthogonal-persistence/index.md` —
+this file contains real conceptual content comparing both persistence modes.
+It must be **renamed** to `overview.md` (Change §1) so the sync script's
+`--exclude='/index.md'` does not drop it.
+
+The top-level `fundamentals/index.md`, `icp-features/index.md`, and
+`reference/index.md` section landing pages are excluded from sync entirely.
+Delete them or leave them for Docusaurus — they have no effect on the
+developer-docs build either way.
 
 ### `base-core-migration.md` in the sidebar
 

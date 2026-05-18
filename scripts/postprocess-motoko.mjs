@@ -1,5 +1,14 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED: This script is no longer called by sync-motoko.sh.
+ *
+ * It was needed when the upstream caffeinelabs/motoko used numeric directory
+ * prefixes, Docusaurus frontmatter, and Docusaurus-specific syntax that had to
+ * be transformed at sync time. Once the upstream applies the reorganization
+ * described in .docs-plan/motoko-repo-sync-proposal.md, this file can be
+ * deleted entirely. The new sync-motoko.sh is a plain rsync with no postprocess
+ * step.
+ *
  * Post-process synced Motoko docs:
  * 1. Remove duplicate H1 headings (Starlight renders title from frontmatter)
  * 2. Rewrite relative links to match the new directory structure
