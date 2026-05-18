@@ -170,7 +170,7 @@ export const sidebar = [
               { slug: "languages/motoko/fundamentals/hello-world" },
               {
                 label: "Basic syntax",
-                collapsed: false,
+                collapsed: true,
                 items: [
                   { slug: "languages/motoko/fundamentals/basic-syntax/defining-an-actor" },
                   { slug: "languages/motoko/fundamentals/basic-syntax/imports" },
@@ -268,12 +268,12 @@ export const sidebar = [
             label: "Reference",
             collapsed: true,
             items: [
+              { slug: "languages/motoko/reference/language-manual" },
               { slug: "languages/motoko/reference/error-codes" },
               { slug: "languages/motoko/reference/motoko-grammar" },
-              { slug: "languages/motoko/reference/changelog" },
-              { slug: "languages/motoko/reference/language-manual" },
               { slug: "languages/motoko/reference/style-guide" },
               { slug: "languages/motoko/reference/compiler-ref" },
+              { slug: "languages/motoko/reference/changelog" },
             ],
           },
         ],
