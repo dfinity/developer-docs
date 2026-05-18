@@ -44,6 +44,20 @@ Quill is suited for:
 Resources:
 - [Quill GitHub repo](https://github.com/dfinity/quill)
 
+### mo-doc
+
+`mo-doc` is a documentation generator for Motoko source code. It reads `///` and `/** */` doc comments and produces documentation in HTML (default), Markdown (`--format plain`), or AsciiDoc (`--format adoc`) format.
+
+```bash
+mo-doc                                    # HTML output to ./docs
+mo-doc --format plain --output ./api-docs # Markdown output to ./api-docs
+mo-doc --source ./src --output ./out      # custom source and output paths
+```
+
+`mo-doc` ships bundled with the Motoko compiler. Download the binary for your platform from the [Motoko releases page](https://github.com/caffeinelabs/motoko/releases).
+
+For how to write doc comments in Motoko source, see [Comments](../languages/motoko/fundamentals/basic-syntax/comments.md).
+
 ## Canister development kits (CDKs)
 
 A canister development kit (CDK) provides a programming language with the libraries and toolchain support needed to compile code to WebAssembly and interact with the ICP system API.
@@ -170,4 +184,4 @@ Resources:
 - **Rust development:** [Rust language guide](../languages/rust/index.md)
 - **Motoko development:** [Motoko language guide](../languages/motoko/index.md)
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip; caffeinelabs/motoko — doc/md/motoko-tooling/3-mo-doc.md -->
