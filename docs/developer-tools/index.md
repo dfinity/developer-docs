@@ -54,9 +54,7 @@ For language documentation, see [languages/motoko](../languages/motoko/index.md)
 
 ### Motoko VS Code extension
 
-The [Motoko extension for VS Code](https://github.com/dfinity/vscode-motoko) (`dfinity/vscode-motoko`) adds Motoko language support to VS Code: syntax highlighting, type checking, auto-completion, and inline diagnostics.
-
-Install by searching for "Motoko" in the VS Code extensions panel, or visit the [vscode-motoko repository](https://github.com/dfinity/vscode-motoko) for details.
+The [Motoko extension for VS Code](https://github.com/dfinity/vscode-motoko) adds Motoko language support to VS Code: syntax highlighting, type checking, auto-completion, and inline diagnostics. Install by searching for "Motoko" in the VS Code extensions panel.
 
 ### mo-doc
 
