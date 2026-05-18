@@ -1,5 +1,6 @@
 ---
-sidebar_position: 4
+sidebar:
+  order: 4
 description: "Motoko language documentation"
 title: "Candid serialization"
 ---

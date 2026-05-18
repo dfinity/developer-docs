@@ -1,5 +1,6 @@
 ---
-sidebar_position: 3
+sidebar:
+  order: 3
 description: "Motoko language documentation"
 title: "Caller identification"
 ---

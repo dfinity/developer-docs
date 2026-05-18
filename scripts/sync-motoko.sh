@@ -58,6 +58,42 @@ if [ -z "$MIGRATION_SOURCE" ]; then
   SYNC_WARNINGS="${SYNC_WARNINGS}  - base-core-migration.md missing from source\n"
 fi
 
+# ---------------------------------------------------------------------------
+# Guard: detect slug collisions — two source files that would produce the same
+# basename after stripping numeric prefixes. Each collision requires a rename
+# entry in both sync-motoko.sh and syncRenames in postprocess-motoko.mjs.
+# ---------------------------------------------------------------------------
+echo "  Checking for slug collisions in source..."
+python3 - <<'PYEOF'
+import os, re, sys
+from collections import defaultdict
+
+source = ".sources/motoko/doc/md"
+sections = ["fundamentals", "icp-features", "reference"]
+found = False
+for section in sections:
+    seen = defaultdict(list)
+    base = os.path.join(source, section)
+    if not os.path.isdir(base):
+        continue
+    for root, dirs, files in os.walk(base):
+        for f in files:
+            if not (f.endswith(".md") or f.endswith(".mdx")):
+                continue
+            if f == "index.md":
+                continue
+            flat = re.sub(r"^\d+-", "", f)
+            rel = os.path.relpath(os.path.join(root, f), base)
+            seen[flat].append(rel)
+    for name, paths in sorted(seen.items()):
+        if len(paths) > 1:
+            print(f"WARNING: slug collision in {section}/: '{name}' produced by: {', '.join(paths)}")
+            print(f"  Add a rename entry to sync-motoko.sh and syncRenames in postprocess-motoko.mjs")
+            found = True
+if not found:
+    print("  No slug collisions found.")
+PYEOF
+
 VERSION=$(git -C .sources/motoko describe --tags --exact-match 2>/dev/null \
   || git -C .sources/motoko rev-parse --short HEAD)
 echo "Syncing Motoko docs from caffeinelabs/motoko@$VERSION..."
@@ -248,6 +284,7 @@ while IFS= read -r line; do
   case "$line" in
     *"FILE-EMBED UNRESOLVED:"*) SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
     *"FILE-EMBED EMPTY:"*)      SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
+    *"UNRESOLVED-EXTERNAL:"*)   SYNC_WARNINGS="${SYNC_WARNINGS}  - $line\n" ;;
   esac
 done <<< "$POSTPROCESS_OUTPUT"
 

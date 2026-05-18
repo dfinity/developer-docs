@@ -1,5 +1,6 @@
 ---
-sidebar_position: 5
+sidebar:
+  order: 5
 description: "Motoko language documentation"
 title: "Stable memory and regions"
 ---

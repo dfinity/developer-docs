@@ -262,15 +262,7 @@ export const sidebar = [
           {
             label: "ICP features",
             collapsed: true,
-            items: [
-              { slug: "languages/motoko/icp-features/randomness" },
-              { slug: "languages/motoko/icp-features/timers" },
-              { slug: "languages/motoko/icp-features/caller-identification" },
-              { slug: "languages/motoko/icp-features/candid-serialization" },
-              { slug: "languages/motoko/icp-features/stable-memory" },
-              { slug: "languages/motoko/icp-features/system-functions" },
-              { slug: "languages/motoko/icp-features/view-queries" },
-            ],
+            autogenerate: { directory: "languages/motoko/icp-features" },
           },
           {
             label: "Reference",

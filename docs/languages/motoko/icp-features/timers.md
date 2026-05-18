@@ -1,5 +1,6 @@
 ---
-sidebar_position: 2
+sidebar:
+  order: 2
 description: "Motoko language documentation"
 title: "Timers"
 ---

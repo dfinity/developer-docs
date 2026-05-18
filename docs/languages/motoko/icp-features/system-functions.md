@@ -1,5 +1,6 @@
 ---
-sidebar_position: 6
+sidebar:
+  order: 6
 description: "Motoko language documentation"
 title: "System functions"
 ---

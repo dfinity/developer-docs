@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+sidebar:
+  order: 1
 description: "Motoko language documentation"
 title: "Randomness"
 ---

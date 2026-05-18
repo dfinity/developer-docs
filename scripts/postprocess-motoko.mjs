@@ -143,6 +143,7 @@ const externalToInternal = new Map([
 // sourceFile:  the file containing the link (absolute path), used for disambiguation
 // ---------------------------------------------------------------------------
 let unresolvedCount = 0;
+let unresolvedExternalCount = 0;
 
 function rewriteLink(matchedPath, anchor, sourceFile) {
   const cleanPath = matchedPath.replace(/\.md$/, '').replace(/\/index$/, '');
@@ -306,6 +307,17 @@ function processFile(filePath) {
     .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
   if (normalized !== content) { content = normalized; changed = true; }
 
+  // Convert sidebar_position → sidebar.order for sections using autogenerate
+  // (currently icp-features). Explicitly-listed sections (fundamentals, reference)
+  // ignore sidebar.order so we only do this where autogenerate is active.
+  if (relPath.includes('/icp-features/')) {
+    const posMatch = content.match(/^sidebar_position:\s*(\d+)\s*$/m);
+    if (posMatch && !/^sidebar:/m.test(content)) {
+      content = content.replace(/^sidebar_position:\s*\d+\s*$/m, `sidebar:\n  order: ${posMatch[1]}`);
+      changed = true;
+    }
+  }
+
   // Remove duplicate H1 when frontmatter already has a title
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
   if (fmMatch && /^title:/m.test(fmMatch[1])) {
@@ -339,6 +351,8 @@ function processFile(filePath) {
       changed = true;
       return inParen ? `(${internal})` : internal;
     }
+    unresolvedExternalCount++;
+    console.warn(`  UNRESOLVED-EXTERNAL: ${url} in ${relPath}`);
     return match;
   });
 
@@ -406,5 +420,8 @@ walkAndProcess(MOTOKO_DIR);
 console.log(`\nPost-processing complete: ${filesChanged} files updated.`);
 
 if (unresolvedCount > 0) {
-  console.error(`\nWARNING: ${unresolvedCount} unresolved link(s) — review output above.`);
+  console.error(`\nWARNING: ${unresolvedCount} unresolved relative link(s) — review output above.`);
+}
+if (unresolvedExternalCount > 0) {
+  console.error(`\nWARNING: ${unresolvedExternalCount} UNRESOLVED-EXTERNAL link(s) — add missing entries to externalToInternal in postprocess-motoko.mjs.`);
 }
