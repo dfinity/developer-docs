@@ -48,7 +48,7 @@ Resources:
 
 `mo-doc` is a documentation generator for Motoko source code. It reads `///` and `/** */` doc comments and produces documentation in HTML (default), Markdown (`--format plain`), or AsciiDoc (`--format adoc`) format.
 
-Install: `mo-doc` is bundled inside the Motoko compiler tarball. Download the archive for your platform from the [Motoko releases page](https://github.com/caffeinelabs/motoko/releases) (e.g. `motoko-Darwin-arm64-<version>.tar.gz`), then extract it — the binary is at `bin/mo-doc` inside the archive.
+Install: `mo-doc` is bundled inside the Motoko compiler tarball. Download the archive for your platform from the [Motoko releases page](https://github.com/caffeinelabs/motoko/releases) (e.g. `motoko-Darwin-arm64-<version>.tar.gz`), then extract it; the binary is at `bin/mo-doc` inside the archive.
 
 ```bash
 tar xzf motoko-<platform>-<version>.tar.gz
