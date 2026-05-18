@@ -305,7 +305,9 @@ function processFile(filePath) {
     .replace(/^:::info\b/gm, ':::note')
     .replace(/^:::warn\b/gm, ':::caution')
     // :::type [LinkText](url) → :::type[LinkText]  (Starlight titles don't support links)
-    .replace(/^(:::(?:note|tip|caution|danger|warning))\s+\[([^\]]+)\]\([^)]+\)/gm, '$1[$2]')
+    // Use [^\S\n]+ (non-newline whitespace) so multi-line notes with a link as
+    // the first content line are not accidentally merged into the aside title.
+    .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+\[([^\]]+)\]\([^)]+\)/gm, '$1[$2]')
     // :::type plain text title → :::type[plain text title]
     .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
   if (normalized !== content) { content = normalized; changed = true; }
