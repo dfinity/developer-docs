@@ -1,5 +1,6 @@
 ---
-sidebar_position: 3
+sidebar:
+  order: 3
 description: "Motoko language documentation"
 title: "Caller identification"
 ---
@@ -34,46 +35,14 @@ Access control can be added to an application by recording a caller's principal 
 
 For example, if you have an actor called `Counter`, you can record the principal that installed the actor by binding it to an `owner` variable. Then, you can implement a check that verifies that the caller of each method the actor exposes is equal to the principal stored in `owner`:
 
-```motoko
-shared(msg) persistent actor class Counter(init : Nat) {
-
-  transient let owner = msg.caller;
-
-  var count = init;
-
-  public shared(msg) func inc() : async () {
-    assert (owner == msg.caller);
-    count += 1;
-  };
-
-  public func read() : async Nat {
-    count
-  };
-
-  public shared(msg) func bump() : async Nat {
-    assert (owner == msg.caller);
-    count := 1;
-    count;
-  };
-}
+```motoko file=<motokoExamples>/Counters-caller.mo
 ```
 
 In this example, the `assert (owner == msg.caller)` expression causes the functions `inc()` and `bump()` to trap if the call is unauthorized, preventing any modification of the `count` variable. However, the `read()` function permits any caller.
 
 The argument to `shared` is just a pattern. You can rewrite the above to use pattern matching:
 
-```motoko
-shared({caller = owner}) persistent actor class Counter(init : Nat) {
-
-  var count : Nat = init;
-
-  public shared({caller}) func inc() : async () {
-    assert (owner == caller);
-    count += 1;
-  };
-
-  // ...
-}
+```motoko file=<motokoExamples>/Counters-caller-pat.mo
 ```
 
 :::note
@@ -101,32 +70,7 @@ The data type of `Principal` in Motoko supports equality, ordering, and hashing.
 
 Below is an example of how you can record a function's caller `Principal`s in a set and check if a caller is already in the set:
 
-```motoko
-import Principal "mo:core/Principal";
-import Set "mo:core/pure/Set";
-import Error "mo:core/Error";
-
-persistent actor {
-
-    // Create set to record principals
-    var principals : Set.Set<Principal> = Set.empty();
-
-    // Check if principal is recorded
-    public shared query(msg) func isRecorded() : async Bool {
-        let caller = msg.caller;
-        Set.contains(principals, Principal.compare, caller);
-    };
-
-    // Record a new principal
-    public shared(msg) func recordPrincipal() : async () {
-        let caller = msg.caller;
-        if (Principal.isAnonymous(caller)) {
-            throw Error.reject("Anonymous principal not allowed");
-        };
-
-        principals := Set.add(principals, Principal.compare, caller)
-    };
-};
+```motoko file=<motokoExamples>/RecordPrincipals.mo
 ```
 
 

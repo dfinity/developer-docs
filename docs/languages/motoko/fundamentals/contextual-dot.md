@@ -162,4 +162,4 @@ Contextual dot notation has some intentional limitations:
 ## See also
 
 - [Modules and imports](modules-imports)
-- [Language reference](https://docs.motoko.org#dotted-function-calls)
+- [Language reference](/languages/motoko/reference/language-manual#dotted-function-calls)

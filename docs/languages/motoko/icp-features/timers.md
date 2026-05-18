@@ -1,5 +1,6 @@
 ---
-sidebar_position: 2
+sidebar:
+  order: 2
 description: "Motoko language documentation"
 title: "Timers"
 ---
@@ -10,29 +11,10 @@ Canisters can set recurring timers that execute a piece of code after a specifie
 
 A simple example is a periodic reminder that logs a new year's message:
 
-```motoko
-import { print } = "mo:core/Debug";
-import { abs } = "mo:core/Int";
-import { now } = "mo:core/Time";
-import { setTimer; recurringTimer } = "mo:core/Timer";
-
-persistent actor Reminder {
-
-  transient let solarYearSeconds = 356_925_216;
-
-  private func remind() : async () {
-    print("Happy New Year!");
-  };
-
-  ignore setTimer<system>(#seconds (solarYearSeconds - abs(now() / 1_000_000_000) % solarYearSeconds),
-    func () : async () {
-      ignore recurringTimer<system>(#seconds solarYearSeconds, remind);
-      await remind();
-  });
-}
+```motoko no-repl file=<motokoExamples>/Reminder.mo
 ```
 
-The underlying mechanism is a [global timer](https://internetcomputer.org/docs/references/ic-interface-spec#timer) that, by default, is issued with appropriate callbacks from a priority queue maintained by the Motoko runtime.
+The underlying mechanism is a [global timer](/references/ic-interface-spec/#timer) that, by default, is issued with appropriate callbacks from a priority queue maintained by the Motoko runtime.
 
 The timer mechanism can be disabled completely by passing the `--no-timer` flag to `moc`.
 

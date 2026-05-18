@@ -7,7 +7,11 @@
  *
  * Format follows the Starlight sidebar schema:
  *   https://starlight.astro.build/reference/configuration/#sidebar
+ *
+ * The Motoko section is maintained in sidebar-motoko.mjs. Update that file
+ * when Motoko pages are added, removed, or reordered.
  */
+import { motokoSidebar } from "./sidebar-motoko.mjs";
 
 export const sidebar = [
   {
@@ -158,31 +162,7 @@ export const sidebar = [
     label: "Languages",
     items: [
       { slug: "languages", label: "Overview" },
-      {
-        label: "Motoko",
-        collapsed: true,
-        items: [
-          { slug: "languages/motoko", label: "Overview" },
-          {
-            label: "Fundamentals",
-            autogenerate: {
-              directory: "languages/motoko/fundamentals",
-            },
-          },
-          {
-            label: "ICP features",
-            autogenerate: {
-              directory: "languages/motoko/icp-features",
-            },
-          },
-          {
-            label: "Reference",
-            autogenerate: {
-              directory: "languages/motoko/reference",
-            },
-          },
-        ],
-      },
+      motokoSidebar,
       {
         label: "Rust",
         collapsed: true,
