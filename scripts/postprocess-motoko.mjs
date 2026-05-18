@@ -25,7 +25,7 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
+import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -304,6 +304,9 @@ function processFile(filePath) {
   const normalized = content
     .replace(/^:::info\b/gm, ':::note')
     .replace(/^:::warn\b/gm, ':::caution')
+    // :::type [LinkText](url) → :::type[LinkText]  (Starlight titles don't support links)
+    .replace(/^(:::(?:note|tip|caution|danger|warning))\s+\[([^\]]+)\]\([^)]+\)/gm, '$1[$2]')
+    // :::type plain text title → :::type[plain text title]
     .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
   if (normalized !== content) { content = normalized; changed = true; }
 

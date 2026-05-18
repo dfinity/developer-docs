@@ -17,7 +17,7 @@ let symbol : Char = '✮';
 ```
 
 
-:::note [Iter](https://mops.one/core/docs/Iter)
+:::note[Iter]
 An `Iter<T>` is an object that sequentially produces values of specified type `T` until no more values remain.
 :::
 ``` motoko
