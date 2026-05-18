@@ -253,6 +253,15 @@ which does not exist and produces a broken link.
 
 ### 1. Remove numeric prefixes from all directories and files
 
+> **Optional for the current sync.** `sync-motoko.sh` already strips numeric
+> prefixes via `strip_num()` and handles the one slug collision
+> (`types/functions.md` → `function-types.md`) with an explicit rename rule.
+> §1 is only *required* if the goal is a fully transform-free rsync with no
+> post-processing at all. If the Motoko team prefers to keep numbers for local
+> navigation clarity, they can skip §1 and §8 entirely — the sync handles both
+> automatically. The remaining 9 changes (§2–§7, §9–§11) are independent of
+> whether files are numbered.
+
 Change the directory structure from:
 
 ```
@@ -561,6 +570,10 @@ Docusaurus site.
 
 ### 8. Update all internal relative links to use post-rename paths
 
+> **Only needed if §1 is done.** If numeric prefixes are kept, skip this
+> section — `postprocess-motoko.mjs` already rewrites all numeric-prefixed
+> relative links via its `syncRenames` map and slug-index lookup.
+
 After the directory and file renames in Change §1, every relative cross-reference
 in the source that uses numeric-prefixed path components must be updated. This
 applies to ~146 links across ~20 files in the synced sections.
@@ -741,6 +754,11 @@ sync-time file expansion is needed.
   sync time as a bridge until the upstream adopts the placeholder directly.
 
 **upstream side (one PR in `caffeinelabs/motoko`):**
+
+**Required (fix rendering/content bugs in the consumer site):** §2, §3, §4, §5, §6, §9, §10
+**Required for `fundamentals/` autogenerate (eliminates manual sidebar maintenance):** §11
+**Optional — only needed for a fully transform-free rsync:** §1 + §8 (do both or neither)
+**Optional cleanup (silently handled today):** §7
 
 1. Remove numeric prefixes from all directories and files (including top-level
    `14-style.md` → `style-guide.md`, `15-compiler-ref.md` → `compiler-ref.md`,
