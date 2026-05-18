@@ -114,7 +114,14 @@ const externalToInternal = new Map([
   ['internetcomputer.org/docs/building-apps/security/iam',                                              '/guides/security/identity-and-access-management'],
   ['internetcomputer.org/docs/current/developer-docs/security/security-best-practices/inter-canister-calls', '/guides/security/inter-canister-calls'],
 
-  // References
+  // References — anchor-specific entries must come before the base URL so the
+  // exact-match lookup in rewriteExternalLink() hits before the fallback.
+  // The IC interface spec is split across sub-pages on developer-docs; the old
+  // portal anchors map to specific sub-files.
+  ['internetcomputer.org/docs/references/ic-interface-spec#global-timer',               '/references/ic-interface-spec/canister-interface#global-timer'],
+  ['internetcomputer.org/docs/references/ic-interface-spec#heartbeat',                   '/references/ic-interface-spec/canister-interface#heartbeat'],
+  ['internetcomputer.org/docs/references/ic-interface-spec#system-api-inspect-message',  '/references/ic-interface-spec/canister-interface#system-api-inspect-message'],
+  ['internetcomputer.org/docs/references/ic-interface-spec#ic-raw_rand',                 '/references/ic-interface-spec/management-canister#ic-raw_rand'],
   ['internetcomputer.org/docs/references/ic-interface-spec',         '/references/ic-interface-spec/'],
   ['internetcomputer.org/docs/current/references/ic-interface-spec', '/references/ic-interface-spec/'],
   ['internetcomputer.org/docs/current/references/ic-interface-spec/','/references/ic-interface-spec/'],
@@ -362,9 +369,17 @@ function processFile(filePath) {
     return match;
   });
 
-  // Rewrite external internetcomputer.org/docs links to internal paths.
+  // Rewrite external links to internal paths.
   // Matches both markdown link parens (url) and bare URLs in text.
-  const extLinkRe = /\((https?:\/\/(?:www\.)?internetcomputer\.org\/docs\/[^)\s]+)\)|(?<!\()(https?:\/\/(?:www\.)?internetcomputer\.org\/docs\/[^\s)]+)/g;
+  // Domains covered:
+  //   internetcomputer.org/docs/  — retired portal (current upstream state)
+  //   docs.internetcomputer.org/  — consumer site (upstream §5/§10 target state)
+  //   docs.motoko.org             — non-existent domain used by some upstream links
+  const extDomain = '(?:(?:www\\.)?internetcomputer\\.org\\/docs\\/|docs\\.internetcomputer\\.org\\/|docs\\.motoko\\.org)';
+  const extLinkRe = new RegExp(
+    `\\((https?:\\/\\/${extDomain}[^)\\s]*)\\)|(?<!\\()(https?:\\/\\/${extDomain}[^\\s)]*)`,
+    'g',
+  );
   content = content.replace(extLinkRe, (match, inParen, bare) => {
     const url = inParen || bare;
     const internal = rewriteExternalLink(url);
