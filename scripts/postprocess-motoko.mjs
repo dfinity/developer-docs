@@ -357,8 +357,8 @@ function processFile(filePath) {
     }
   }
 
-  // Rewrite relative links (./ and ../ paths)
-  const linkRe = /\]\((\.[^)#]*?)(#[^)]+)?\)/g;
+  // Rewrite relative links (./ and ../ paths, plus bare numeric-prefix .md links like 10-name.md)
+  const linkRe = /\]\((\.[^)#]*?|\d+[^)#/\s]*\.md)(#[^)]+)?\)/g;
   content = content.replace(linkRe, (match, path, anchor) => {
     anchor = anchor || '';
     const newUrl = rewriteLink(path, anchor, relPath);
@@ -391,6 +391,15 @@ function processFile(filePath) {
     console.warn(`  UNRESOLVED-EXTERNAL: ${url} in ${relPath}`);
     return match;
   });
+
+  // Replace em-dashes in prose (banned per style guide). Skip fenced code blocks.
+  {
+    const parts = content.split(/(^```[\s\S]*?^```)/m);
+    const fixed = parts
+      .map((part, i) => (i % 2 === 0 ? part.replace(/ — /g, ': ') : part))
+      .join('');
+    if (fixed !== content) { content = fixed; changed = true; }
+  }
 
   if (changed) writeFileSync(filePath, content);
   return changed;
