@@ -22,6 +22,16 @@ $(dfx cache show)/moc --version
 
 # Motoko compiler changelog
 
+## 1.8.0 (2026-05-15)
+
+* motoko (`moc`)
+
+  * feat: Implicit argument derivation: the compiler can derive implicit arguments from functions that themselves have implicit parameters (e.g., `compare` for `[Nat]` from `Array.compare<Nat>` + `Nat.compare`). Works transitively and is depth-limited via `--implicit-derivation-depth` (#5966).
+
+  * feat: `and`-patterns: `p1 and p2` matches when both legs match, binding from both (#6049).
+
+  * bugfix: M0236 dot-notation auto-fix on unparenthesized single-argument calls (e.g. `List.reverse b`) no longer rewrites them into a bare function reference (`b.reverse`), which silently turned a call into a no-op; the suggestion now produces `b.reverse()` (#6096).
+
 ## 1.7.0 (2026-04-29)
 
 * motoko (`moc`)
@@ -96,7 +106,7 @@ $(dfx cache show)/moc --version
 * motoko (`moc`)
 
   * feat: Preserve named types in variable pattern bindings, so error messages show e.g. `Map.Map<Text, Text>` instead of expanding the full structural type (#5940).
-  * bugfix: implement `Float32` `ModOp` (`%`) — Wasm has no `f32.rem` instruction; the fix promotes operands to `f64`, applies `fmod`, then demotes the result back to `f32` (#5950).
+  * bugfix: implement `Float32` `ModOp` (`%`): Wasm has no `f32.rem` instruction; the fix promotes operands to `f64`, applies `fmod`, then demotes the result back to `f32` (#5950).
 
 ## 1.4.0 (2026-03-27)
 

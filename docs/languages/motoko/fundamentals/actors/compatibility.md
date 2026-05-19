@@ -250,19 +250,19 @@ When using [enhanced multi-migration](/languages/motoko/fundamentals/actors/enha
 
 Motoko uses three versions of the stable signature format, each corresponding to a different migration style:
 
-**Version 1.0.0 — Single.** The original format, listing the actor's stable fields. Used when the actor has no migration function.
+**Version 1.0.0: Single.** The original format, listing the actor's stable fields. Used when the actor has no migration function.
 
 ```motoko no-repl file=<motokoExamples>/count-v1.most
 ```
 
-**Version 3.0.0 — Pre/Post.** Used when the actor declares a single migration function via `(with migration = ...)`. The signature contains a pre-signature (the fields the migration function consumes from the old actor) and a post-signature (the new actor's stable fields):
+**Version 3.0.0: Pre/Post.** Used when the actor declares a single migration function via `(with migration = ...)`. The signature contains a pre-signature (the fields the migration function consumes from the old actor) and a post-signature (the new actor's stable fields):
 
 ```motoko no-repl file=<motokoExamples>/count-v9.most
 ```
 
 Fields marked `in` are required inputs that must be present in the previous actor. Fields marked `stable` are carried through or newly declared.
 
-**Version 4.0.0 — Multi (enhanced).** Used with `--enhanced-migration`. The signature contains the full migration chain followed by the actor's stable fields. Each entry in the chain records a migration module's name and function signature:
+**Version 4.0.0: Multi (enhanced).** Used with `--enhanced-migration`. The signature contains the full migration chain followed by the actor's stable fields. Each entry in the chain records a migration module's name and function signature:
 
 ```
 // Version: 4.0.0
