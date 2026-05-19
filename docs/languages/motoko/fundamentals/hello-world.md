@@ -29,12 +29,12 @@ persistent actor HelloWorld {
 
 In this example:
 
-1. The code begins by defining an [actor](/languages/motoko/fundamentals/actors-async) named `HelloWorld`. In Motoko, an actor is an object capable of maintaining state and communicating with other entities via message passing.
+1. The code begins by defining an [actor](/languages/motoko/fundamentals/actors/actors-async) named `HelloWorld`. In Motoko, an actor is an object capable of maintaining state and communicating with other entities via message passing.
 
-2. It then declares the variable `greeting`. This is a [stable variable](/languages/motoko/fundamentals/stable-types) because the actor is declared with the keyword `persistent`. Stable variables are used to store data that persists across canister upgrades. [Read more about canister upgrades.](https://internetcomputer.org/docs/building-apps/canister-management/upgrade)
+2. It then declares the variable `greeting`. This is a [stable variable](/languages/motoko/fundamentals/types/stable-types) because the actor is declared with the keyword `persistent`. Stable variables are used to store data that persists across canister upgrades. [Read more about canister upgrades.](/guides/canister-management/lifecycle)
 
-3. An [update method](https://internetcomputer.org/docs/building-apps/interact-with-canisters/update-calls) named `setGreeting` is used to modify the canister’s state. This method specifically updates the value stored in `greeting`.
+3. An [update method](/concepts/canisters) named `setGreeting` is used to modify the canister’s state. This method specifically updates the value stored in `greeting`.
 
-4. Finally, a [query method](https://internetcomputer.org/docs/building-apps/interact-with-canisters/query-calls) named `greet` is defined. Query methods are read-only and return information from the canister without changing its state. This method returns the current `greeting` value, followed by the input text. The method body produces a response by concatenating `"Hello, "` with the input `name`, followed by an exclamation point.
+4. Finally, a [query method](/concepts/canisters) named `greet` is defined. Query methods are read-only and return information from the canister without changing its state. This method returns the current `greeting` value, followed by the input text. The method body produces a response by concatenating `"Hello, "` with the input `name`, followed by an exclamation point.
 
-[Learn more about actors and basic syntax](/languages/motoko/fundamentals/defining-an-actor).
+[Learn more about actors and basic syntax](/languages/motoko/fundamentals/basic-syntax/defining-an-actor).

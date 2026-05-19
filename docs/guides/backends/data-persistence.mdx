@@ -253,7 +253,7 @@ When upgrading a Motoko canister, the type of every persistent field must be com
 
 **Unsafe changes (will trap on upgrade):**
 - Remove or rename a persistent field
-- Change a field's type (e.g., `Nat` → `Int`)
+- Change a field's type to an incompatible type (e.g., `Int` → `Float`, or `Nat` → `Text`)
 - Change a non-optional field to a different type
 
 </TabItem>

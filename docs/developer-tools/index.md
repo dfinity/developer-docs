@@ -1,11 +1,11 @@
 ---
 title: "Developer tools"
-description: "Overview of the ICP developer toolchain: icp-cli, CDKs, JS SDK, PocketIC, and more"
+description: "Overview of the ICP developer toolchain: icp-cli, Motoko, CDKs, JS SDK, PocketIC, and more"
 sidebar:
   hidden: true
 ---
 
-Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
+Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, Motoko, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
 
 ## Command-line tools
 
@@ -44,17 +44,37 @@ Quill is suited for:
 Resources:
 - [Quill GitHub repo](https://github.com/dfinity/quill)
 
-## Canister development kits (CDKs)
+## Motoko
 
-A canister development kit (CDK) provides a programming language with the libraries and toolchain support needed to compile code to WebAssembly and interact with the ICP system API.
-
-### Motoko
-
-Motoko is ICP's native programming language, designed around the actor model, orthogonal persistence, and asynchronous message passing. It compiles directly to WebAssembly and includes a standard library (`mo:core`) with modules for common data structures, cryptography, and system interaction.
+Motoko is ICP's native programming language, designed specifically for the actor model, orthogonal persistence, and asynchronous message passing. It compiles directly to WebAssembly without requiring a separate CDK and includes a standard library (`mo:core`) with modules for common data structures, cryptography, and system interaction.
 
 Third-party Motoko libraries are distributed through [Mops](https://mops.one), the Motoko package manager. Use `mops add <package>` to add a dependency to your project.
 
 For language documentation, see [languages/motoko](../languages/motoko/index.md).
+
+### Motoko VS Code extension
+
+The [Motoko extension for VS Code](https://github.com/caffeinelabs/vscode-motoko) adds Motoko language support to VS Code: syntax highlighting, type checking, auto-completion, and inline diagnostics. Install by searching for "Motoko" in the VS Code extensions panel.
+
+### mo-doc
+
+`mo-doc` generates documentation for Motoko source code from `///` doc comments, producing HTML (default), Markdown (`--format plain`), or AsciiDoc (`--format adoc`) output.
+
+Install: `mo-doc` is bundled inside the Motoko compiler tarball. Download the archive for your platform from the [Motoko releases page](https://github.com/caffeinelabs/motoko/releases), then extract it; the binary is at `bin/mo-doc` inside the archive.
+
+```bash
+# Platform: Darwin-arm64, Darwin-x86_64, Linux-aarch64, Linux-x86_64
+tar xzf motoko-<platform>-<version>.tar.gz
+./bin/mo-doc                                    # HTML output to ./docs
+./bin/mo-doc --format plain --output ./api-docs # Markdown output to ./api-docs
+./bin/mo-doc --source ./src --output ./out      # custom source and output paths
+```
+
+For how to write doc comments in Motoko source, see [Comments](../languages/motoko/fundamentals/basic-syntax/comments.md).
+
+## Canister development kits (CDKs)
+
+A canister development kit (CDK) provides an existing programming language with the libraries and toolchain support needed to compile code to WebAssembly and interact with the ICP system API.
 
 ### Rust CDK (`ic-cdk`)
 
@@ -144,14 +164,6 @@ Limitations:
 - Projects are limited to 5 MB and 2 canisters
 - ICP Ninja is not a replacement for icp-cli for production workflows
 
-## Editor tooling
-
-### Motoko VS Code extension
-
-The [Motoko extension for VS Code](https://github.com/dfinity/vscode-motoko) (`dfinity/vscode-motoko`) adds Motoko language support to VS Code: syntax highlighting, type checking, auto-completion, and inline diagnostics.
-
-Install by searching for "Motoko" in the VS Code extensions panel, or visit the [vscode-motoko repository](https://github.com/dfinity/vscode-motoko) for details.
-
 ## Candid tools
 
 ### didc
@@ -162,7 +174,7 @@ Install: download a prebuilt binary from the [releases page](https://github.com/
 
 Resources:
 - [Candid GitHub repo](https://github.com/dfinity/candid)
-- Candid specification: [candid-spec.md](candid-spec.md)
+- Candid specification: [candid-spec.md](../references/candid-spec.md)
 
 ## Next steps
 
@@ -170,4 +182,4 @@ Resources:
 - **Rust development:** [Rust language guide](../languages/rust/index.md)
 - **Motoko development:** [Motoko language guide](../languages/motoko/index.md)
 
-<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip -->
+<!-- Upstream: informed by dfinity/portal — docs/building-apps/developer-tools/dev-tools-overview.mdx, docs/building-apps/developer-tools/icp-ninja.mdx, docs/building-apps/developer-tools/cdks/index.mdx, docs/tutorials/developer-liftoff/level-1/1.2-dev-env.mdx; dfinity/icp-cli — docs/telemetry.md, docs/guides/installation.md, docs/guides/creating-recipes.md, docs/guides/creating-templates.md; dfinity/candid — README.md; dfinity/icp-js-sdk-docs — core/latest.zip (agent, candid, principal, identity), auth/latest.zip, bindgen/latest.zip, pic-js/latest.zip; caffeinelabs/motoko — doc/md/motoko-tooling/3-mo-doc.md -->
