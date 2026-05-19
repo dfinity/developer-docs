@@ -6,7 +6,7 @@ title: "Enhanced multi-migration"
 
 Enhanced multi-migration lets you manage canister state changes over time through a series of migration modules, each stored in its own file. Instead of writing a single inline migration function, one builds up a chain of small, self-contained migrations that the compiler and runtime apply in order.
 
-This approach is especially useful for long-lived canisters whose data shape evolves across many deployments. Each migration captures one logical change — adding a field, renaming a field, changing a type — and the compiler verifies that the entire chain is consistent.
+This approach is especially useful for long-lived canisters whose data shape evolves across many deployments. Each migration captures one logical change: adding a field, renaming a field, changing a type: and the compiler verifies that the entire chain is consistent.
 
 ## Overview
 
@@ -17,7 +17,7 @@ With enhanced multi-migration you:
 3. Each migration module exports a `public func migration({...}) : {...}` that transforms a subset of stable fields.
 4. Pass `--enhanced-migration ./migrations` to `moc` when compiling.
 
-The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed — already-applied migrations are skipped automatically.
+The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed: already-applied migrations are skipped automatically.
 
 :::note
 Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](/languages/motoko/fundamentals/actors/compatibility#explicit-migration-using-a-migration-function).
@@ -52,7 +52,7 @@ module {
 }
 ```
 
-The input record describes which stable fields this migration reads from the current state. The output record describes which fields this migration produces. The input field types must be compatible with the state at that point in the chain, and the output field types must ultimately be compatible with the new actor's declared stable fields. A migration only needs to mention the fields it cares about — all other stable fields are carried through unchanged.
+The input record describes which stable fields this migration reads from the current state. The output record describes which fields this migration produces. The input field types must be compatible with the state at that point in the chain, and the output field types must ultimately be compatible with the new actor's declared stable fields. A migration only needs to mention the fields it cares about: all other stable fields are carried through unchanged.
 
 ### The actor
 
@@ -71,7 +71,7 @@ actor {
 }
 ```
 
-The initial value of each uninitialized variable is determined entirely by the migration chain. When the canister is first deployed, every migration runs in order and the final state provides the values. On subsequent upgrades, only newly added migrations execute, but the result is the same: the migration chain — not the actor source — is the single source of truth for stable variable values.
+The initial value of each uninitialized variable is determined entirely by the migration chain. When the canister is first deployed, every migration runs in order and the final state provides the values. On subsequent upgrades, only newly added migrations execute, but the result is the same: the migration chain: not the actor source: is the single source of truth for stable variable values.
 
 The compiler rejects any stable variable that carries an initializer when `--enhanced-migration` is enabled. This prevents ambiguity about whether the value comes from the migration chain or from the inline expression.
 
@@ -81,7 +81,7 @@ Non-stable declarations (local variables inside functions, private helper fields
 
 ### Static actor body
 
-Because the migration chain is the sole source of stable variable values, the top-level code in the actor body must be **static** — it must evaluate without immediate side effects. Arbitrary function calls, mutable updates to non-stable state, and other effectful expressions at the top level of the actor are rejected by the compiler.
+Because the migration chain is the sole source of stable variable values, the top-level code in the actor body must be **static**: it must evaluate without immediate side effects. Arbitrary function calls, mutable updates to non-stable state, and other effectful expressions at the top level of the actor are rejected by the compiler.
 
 The one exception is calls to functions that require `<system>` capability, such as setting up ICP timers or configuring Candid decoding limits. These calls are permitted because they do not alter stable variable state; their effects are confined to system-level configuration.
 
@@ -118,13 +118,13 @@ moc --enhanced-orthogonal-persistence \
 
 Each migration's `migration` function declares which fields it reads (input) and which fields it produces (output). The relationship between input and output fields determines what happens to the state:
 
-- **Input and output** — the migration transforms this field. It reads the old value and produces a new one, potentially with a different type. The output value replaces the old one in the state.
+- **Input and output**: the migration transforms this field. It reads the old value and produces a new one, potentially with a different type. The output value replaces the old one in the state.
 
-- **Output only** — the migration introduces a new field. The field is added to the state with the value and type returned by the migration.
+- **Output only**: the migration introduces a new field. The field is added to the state with the value and type returned by the migration.
 
-- **Input only** — the migration consumes and removes this field. The field is dropped from the state. Later migrations can no longer reference it.
+- **Input only**: the migration consumes and removes this field. The field is dropped from the state. Later migrations can no longer reference it.
 
-- **Neither input nor output** — the field is untouched by this migration and carried through to the next migration (or the final actor) as-is.
+- **Neither input nor output**: the field is untouched by this migration and carried through to the next migration (or the final actor) as-is.
 
 For example, given the state `{a : Nat; b : Text; c : Bool}` and a migration:
 
@@ -272,7 +272,7 @@ module {
 
 Here is how an actor's state might evolve across several deployments:
 
-**Step 1 — Initial deployment:**
+**Step 1: Initial deployment:**
 
 ```motoko no-repl
 // migrations/20250101_000000_Init.mo
@@ -291,7 +291,7 @@ actor {
 
 State: `{a : Nat}`
 
-**Step 2 — Add field `b`:**
+**Step 2: Add field `b`:**
 
 ```motoko no-repl
 // migrations/20250201_000000_AddB.mo
@@ -311,7 +311,7 @@ actor {
 
 State: `{a : Nat; b : Int}`
 
-**Step 3 — Change `b` from `Int` to `Bool`:**
+**Step 3: Change `b` from `Int` to `Bool`:**
 
 ```motoko no-repl
 // migrations/20250301_000000_ChangeBType.mo
@@ -331,7 +331,7 @@ actor {
 
 State: `{a : Nat; b : Bool}`
 
-**Step 4 — Drop field `a`:**
+**Step 4: Drop field `a`:**
 
 ```motoko no-repl
 // migrations/20250401_000000_DropA.mo
@@ -350,7 +350,7 @@ actor {
 
 State: `{b : Bool}`
 
-**Step 5 — Reintroduce `a` with a new type:**
+**Step 5: Reintroduce `a` with a new type:**
 
 ```motoko no-repl
 // migrations/20250501_000000_AddAText.mo

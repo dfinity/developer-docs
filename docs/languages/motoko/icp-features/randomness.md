@@ -105,7 +105,7 @@ persistent actor {
 
 ## Resources
 
-- [`raw_rand`](/references/ic-interface-spec/#ic-raw_rand)
+- [`raw_rand`](/references/ic-interface-spec/management-canister#ic-raw_rand)
 - [`Random`](https://mops.one/core/docs/Random)
 - [`fuzz`](https://mops.one/fuzz)
 - [`idempotency-keys`](https://mops.one/idempotency-keys)

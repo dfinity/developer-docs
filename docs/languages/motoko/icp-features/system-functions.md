@@ -7,12 +7,12 @@ title: "System functions"
 
 ICP supports five system functions that canisters can call to interact with the ICP runtime environment:
 
-- [`timer`](/references/ic-interface-spec/#global-timer)
+- [`timer`](/references/ic-interface-spec/canister-interface#global-timer)
 - [`preupgrade`](#preupgrade)
 - [`postupgrade`](#postupgrade)
 - [`lowmemory`](#lowmemory)
-- [`inspect`](/references/ic-interface-spec/#system-api-inspect-message)
-- [`heartbeat`](/references/ic-interface-spec/#heartbeat)
+- [`inspect`](/references/ic-interface-spec/canister-interface#system-api-inspect-message)
+- [`heartbeat`](/references/ic-interface-spec/canister-interface#heartbeat)
   
 
 Declaring any other system function will result in an error. Canisters can use these functions to efficiently manage state transitions, automate tasks, or handle system-level operations. 
@@ -122,7 +122,7 @@ The following properties apply to the low memory hook:
 
 ## `inspect()`
 
-The [`inspect()` system function](/references/ic-interface-spec/#system-api-inspect-message) allows a canister to inspect ingress messages before execution, determining whether to accept or reject them. The function receives a record of message attributes, including the caller’s principal, the raw argument `Blob`, and a variant identifying the target function.
+The [`inspect()` system function](/references/ic-interface-spec/canister-interface#system-api-inspect-message) allows a canister to inspect ingress messages before execution, determining whether to accept or reject them. The function receives a record of message attributes, including the caller’s principal, the raw argument `Blob`, and a variant identifying the target function.
  
 It returns a `Bool`, where `true` permits execution and `false` rejects the message. Similar to a [query](/references/message-execution-properties), any side effects are discarded. If `inspect()` traps, it is equivalent to returning `false`. Unlike other system functions, the argument type of `inspect()` depends on the actor's exposed interface, meaning it can selectively handle different methods or ignore unnecessary fields. 
 
@@ -179,6 +179,6 @@ Since `heartbeat()` is async, it can invoke other asynchronous functions and awa
 
 Every async call in Motoko causes a context switch, which means the actual execution of the heartbeat function may be delayed relative to when the subnet triggers it. The function’s result is ignored, so any errors or traps during execution do not impact future heartbeat calls.
 
-If a canister exports a function named `canister_heartbeat`, it must have the type `() -> ()`, ensuring it adheres to the expected [system function signature](/references/ic-interface-spec/#heartbeat).
+If a canister exports a function named `canister_heartbeat`, it must have the type `() -> ()`, ensuring it adheres to the expected [system function signature](/references/ic-interface-spec/canister-interface#heartbeat).
 
 Heartbeats should be considered deprecated as they have been superseded by timers.
