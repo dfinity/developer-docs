@@ -45,7 +45,7 @@ ic-wasm --version
 icp new hello-icp --subfolder hello-world --silent && cd hello-icp
 ```
 
-This creates a fullstack project from the `hello-world` template with a Motoko backend and React frontend. `--silent` skips the interactive prompt and applies the template's default values. To use different values, add `--define <property>=<value>` (for example, `--define backend_type=rust`).
+This creates a fullstack project from the [`hello-world` template](https://github.com/dfinity/icp-cli-templates/tree/main/hello-world) with a Motoko backend and React frontend. `--silent` skips the interactive prompt and applies the template's default values. To use different values, add `--define <placeholder>=<value>` (for example, `--define backend_type=rust`). See the [template placeholders](https://github.com/dfinity/icp-cli-templates/blob/main/hello-world/cargo-generate.toml) for all available options.
 
 > **Prefer Rust?** Add `--define backend_type=rust` to the command. You'll also need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
 
