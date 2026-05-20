@@ -1,5 +1,5 @@
 ---
-title: "Cycles costs"
+title: "Cycle costs"
 description: "Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations"
 sidebar:
   order: 8
@@ -102,27 +102,6 @@ When a canister grows its memory (via `memory.grow`, `ic0.stable_grow()`, or Was
 
 Reserved cycles are non-transferable. Controllers can disable reservation by setting `reserved_cycles_limit = 0`, but opted-out canisters cannot allocate new memory when subnet usage exceeds 750 GiB.
 
-## Resource limits
-
-| Limit | Value |
-|-------|-------|
-| Instructions per update call / heartbeat / timer | 40 billion |
-| Instructions per query call | 5 billion |
-| Instructions per canister install / upgrade | 300 billion |
-| Instructions per `inspect_message` | 200 million |
-| Max ingress message payload | 2 MiB |
-| Max cross-subnet inter-canister message payload | 2 MiB |
-| Max same-subnet inter-canister request payload | 10 MiB |
-| Max response size (replicated execution) | 2 MiB |
-| Max response size (query) | 3 MiB |
-| Wasm heap memory per canister | 4 GiB (wasm32) / 6 GiB (wasm64) |
-| Wasm stable memory per canister | 500 GiB |
-| Subnet capacity (total memory) | 2 TiB |
-| Wasm module total size | 100 MiB |
-| Wasm code section size | 10 MiB |
-
-<!-- Needs human verification: A dedicated canister resource limits page does not yet exist in this site. The table above is adapted from dfinity/portal docs/building-apps/canister-management/resource-limits.mdx. Add a link here once that page is created. -->
-
 ## Special features
 
 Certain ICP features have additional cycle costs beyond the base execution and messaging fees:
@@ -139,5 +118,6 @@ Certain ICP features have additional cycle costs beyond the base execution and m
 - [Cycles management](../guides/canister-management/cycles-management.md): Topping up and monitoring canister balances
 - [Cycles](../concepts/cycles.md): Why canisters (not users) pay for execution
 - [Subnet types](subnet-types.md): Cost multipliers per subnet type
+- [Resource limits](resource-limits.md): Instruction limits, memory caps, and message size constraints
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx, docs/building-apps/canister-management/resource-limits.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx -->

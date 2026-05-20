@@ -120,7 +120,7 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
 - [Calls with attached cycles](../guides/canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an inter-canister call and use the proxy canister pattern for the CLI
 - [Cycles ledger reference](../references/system-canisters.md#cycles-ledger): canister IDs, interface specification, and CMC integration
-- [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
+- [Cycle costs](../references/cycle-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; learn hub staging: canister-smart-contracts/cycles.md, canister-smart-contracts/cycles-ledger.md -->

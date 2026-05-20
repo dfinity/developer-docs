@@ -19,7 +19,8 @@ Technical reference material for ICP development. These pages cover exact specif
 - **[ICRC Standards](icrc-standards.md)**: Index of all adopted ICRC standards grouped by category.
 - **[Digital Asset Standards](digital-asset-standards.md)**: ICRC-1, ICRC-2, ICRC-3, ICRC-7, and ICRC-37 in full detail.
 - **[Chain-Key Token Canister IDs](chain-key-canister-ids.md)**: Mainnet and testnet canister IDs for ckBTC, ckETH, ckERC20, ckDOGE, and ckSOL.
-- **[Cycles costs](cycles-costs.md)**: Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations.
+- **[Cycle costs](cycle-costs.md)**: Exact cycle costs for compute, storage, HTTPS outcalls, signing, and canister operations.
+- **[Resource limits](resource-limits.md)**: Instruction limits, memory caps, message sizes, Wasm module limits, and execution thread counts.
 - **[Subnet Types](subnet-types.md)**: All subnet types with node counts, replication factors, and cycle cost multipliers.
 
 ## Errors and debugging

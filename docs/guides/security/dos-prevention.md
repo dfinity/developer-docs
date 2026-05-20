@@ -30,7 +30,7 @@ In a shared resource environment like the Internet Computer, multiple canisters 
 To mitigate the "noisy neighbor" issue, manage your canister's resource allocation effectively:
 * **Memory allocation**: Memory can be reserved per canister by setting `memory_allocation`, ensuring that your canister can always allocate memory up to the requested `memory_allocation` and preventing other canisters from using up the subnet's available memory. Note that memory availability is not guaranteed beyond the memory allocation and thus monitoring actual memory usage against this value is important to avoid availability issues.
 * **Compute reservation**: Similar to memory, computing power can also be reserved by setting `compute_allocation` to a value between 0 and 100, which denotes the percentage of one CPU core to be reserved for this canister. A value of 50 means that every 2 rounds, the canister will be scheduled to execute a message. This guarantees the minimal progress your canister can make, which protects against noisy neighbors. Both allocations are reserving resources for your canister on the subnet, which prevents the other canisters from using them. Hence, they come at a cost. Memory allocation is charged as if all that memory would be allocated. Compute allocation is currently charged at 10M cycles per percentage point.
-Learn more about managing memory and compute resources in the [cycles costs reference](../../references/cycles-costs.md).
+Learn more about managing memory and compute resources in the [cycles costs reference](../../references/cycle-costs.md).
 * **Subnet and canister distribution**: Implement a smart canister deployment strategy by monitoring the load on subnets. You can choose to deploy new canisters on less busy subnets or adopt a multi-canister architecture that balances the load across subnets. Be mindful to minimize inter-subnet communication for canisters that frequently interact with each other. Additionally, avoid deploying to known high-traffic subnets where possible, though keep in mind that resource usage can change unexpectedly with new apps.
 
 :::note
@@ -41,7 +41,7 @@ When the subnet grows above 750GiB, then the new reservation mechanism activates
 
 ### Security concern
 
-Some calls (update or query) might be expensive in terms of the memory or cycles they consume. For example, any function using chain-key signing or HTTPS outcalls is relatively expensive. See the [cycles costs reference](../../references/cycles-costs.md) for pricing details and a full list of expensive call types.
+Some calls (update or query) might be expensive in terms of the memory or cycles they consume. For example, any function using chain-key signing or HTTPS outcalls is relatively expensive. See the [cycles costs reference](../../references/cycle-costs.md) for pricing details and a full list of expensive call types.
 
 An attacker will target expensive calls to drain the cycles balance or available memory quickly.
 
