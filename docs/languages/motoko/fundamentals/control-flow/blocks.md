@@ -1,7 +1,8 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Block expressions"
+description: "A block expression in Motoko is a sequence of declarations enclosed in { ..."
+sidebar:
+  order: 4
 ---
 
 A block expression in Motoko is a sequence of declarations enclosed in `{ ... }`.

@@ -1,8 +1,8 @@
 ---
+title: "Candid serialization"
+description: "Candid is an interface description language and serialization format designed specifically for the Internet Computer Protocol."
 sidebar:
   order: 4
-description: "Motoko language documentation"
-title: "Candid serialization"
 ---
 
 Candid is an interface description language and serialization format designed specifically for the Internet Computer Protocol. Candid serves as the standard communication protocol between canisters. When one canister calls another, the arguments are serialized to Candid, transmitted, and then deserialized by the receiving canister. This standardization enables developers to create frontends in languages like JavaScript that can easily interact with backend canisters written in Motoko or Rust. Candid uses strong typing to guarantee accurate data interpretation and an efficient binary format for encoding data, making it ideal for network transmission. Importantly, Candid's design allows for backwards-compatible upgrades of canister interfaces.
@@ -102,7 +102,7 @@ Dynamic calls are particularly useful when working with canisters or services th
 
 In this example, use the imported `call` function to make a dynamic call on the actor:
 
-``` motoko no-repl
+```motoko no-repl
 import Principal "mo:core/Principal";
 import { call } "mo:core/InternetComputer";
 

@@ -1,7 +1,8 @@
 ---
-sidebar_position: 6
-description: "Motoko language documentation"
 title: "Expression declarations"
+description: "An expression declaration is a declaration that consists of a single expression."
+sidebar:
+  order: 6
 ---
 
 An expression declaration is a declaration that consists of a single expression. The expression is evaluated solely for its value and side effects. Unlike other declarations, it does not declare any new names.
@@ -31,7 +32,7 @@ In Motoko, expressions of type `()` play the role of statements in other languag
 
 ## Basic usage
 
-Expression declarations are commonly used for functions or operations that produce side effects, such as printing or modifying [state](/languages/motoko/fundamentals/actors/state).
+Expression declarations are commonly used for functions or operations that produce side effects, such as printing or modifying [state](../actors/state.md).
 
 ```motoko no-repl
 Debug.print("Hello, Motoko!");
@@ -65,7 +66,7 @@ The expression `x * 2;` returns a value of type `Nat`, but since it is not assig
 
 Motoko supports anonymous functions as a type of expression.
 
-``` motoko no-repl
+```motoko no-repl
 func applyFunction(f :  Int -> Int, value : Int) : Int { f(value) };
 applyFunction( func (x : Int) : Int { x * 2 } , 2);
 ```
@@ -75,6 +76,6 @@ This is just an anonymous version of the function named `double` above.
 
 The compiler can infer the argument and result types of anonymous functions, when the types are determined from the context, so you can even just write:
 
-``` motoko no-repl
+```motoko no-repl
 applyFunction( func x { x * 2 } , 2);
 ```

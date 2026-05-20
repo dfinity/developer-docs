@@ -1,7 +1,8 @@
 ---
-sidebar_position: 8
-description: "Motoko language documentation"
 title: "Pattern matching"
+description: "Pattern matching in Motoko is a language feature that makes it easy to test and break down complex data structures."
+sidebar:
+  order: 8
 ---
 
 Pattern matching in Motoko is a language feature that makes it easy to test and break down complex data structures. It is commonly used in `switch` expressions to extract and work with parts of a value.
@@ -44,7 +45,7 @@ To prevent runtime errors when no `switch` case matches, the Motoko compiler per
 
 Consider the following function call:
 
-```motoko
+```motoko no-repl
 let name : Text = fullName({ first = "Motoko"; mid = "X"; last = "Ghost" });
 ```
 
@@ -52,7 +53,7 @@ This creates a record with three fields and passes it to the `fullName` function
 
 Now, look at the function itself:
 
-```motoko
+```motoko no-repl
 func fullName({ first : Text; mid : Text; last : Text }) : Text {
   first # " " # mid # " " # last
 };
@@ -60,7 +61,7 @@ func fullName({ first : Text; mid : Text; last : Text }) : Text {
 
 Here, the input record is*destructured. Its fields are matched and their values are assigned to the variables `first`, `mid`, and `last`, which are then used in the function body. This example uses name punning, where the field name (e.g., `first`) is reused as the variable name. A more flexible pattern lets you give the value a different name, like this:
 
-```motoko
+```motoko no-repl
 mid = m : Text
 ```
 

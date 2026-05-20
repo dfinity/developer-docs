@@ -1,7 +1,8 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Numbers"
+description: "The Nat type represents natural numbers, which are all non-negative integers (i.e., 0 and positive numbers)."
+sidebar:
+  order: 4
 ---
 
 ## Natural numbers
@@ -16,7 +17,7 @@ let zero : Nat = 0;
 
 Defining a `Nat` with a negative value is a compile time error:
 
-``` motoko
+```motoko no-repl
 let negative : Nat = -1; // Error: Cannot assign a negative value to Nat
 ```
 
@@ -47,7 +48,7 @@ let trappingNat8 : Nat8 = 255+1; // trap: arithmetic overflow
 
 [`Int`](https://mops.one/core/docs/Int) represents all integers, both positive and negative (e.g., -2, -1, 0, 1, 2).
 
-For scenarios requiring fixed-size integers, Motoko offers bounded variants with specific bit-widths ([`Int8`](https://mops.one/core/docs/Int8), [`Int16`](https://mops.one/core/docs/Int16), [`Int32`](https://mops.one/core/docs/Int32), [`Int64`](https://mops.one/core/docs/Int64)). These types can overflow if their limits are exceeded, resulting in a [runtime error](/languages/motoko/fundamentals/error-handling).
+For scenarios requiring fixed-size integers, Motoko offers bounded variants with specific bit-widths ([`Int8`](https://mops.one/core/docs/Int8), [`Int16`](https://mops.one/core/docs/Int16), [`Int32`](https://mops.one/core/docs/Int32), [`Int64`](https://mops.one/core/docs/Int64)). These types can overflow if their limits are exceeded, resulting in a [runtime error](../error-handling.md).
 
 ```motoko no-repl
 let a : Int = -42;
@@ -70,7 +71,7 @@ let bigNumber : Int = 999_999_999_999_999;
 - [`Int32`](https://mops.one/core/docs/Int32) (32-bit signed integer)
 - [`Int64`](https://mops.one/core/docs/Int64) (64-bit signed integer)
 
-Arithmetic on bounded integers can overflow if their limits are exceeded, resulting in a [runtime error](/languages/motoko/fundamentals/error-handling).
+Arithmetic on bounded integers can overflow if their limits are exceeded, resulting in a [runtime error](../error-handling.md).
 
 ```motoko no-repl
 let trappingInt8 : Int8 = 127+1; // trap: arithmetic overflow

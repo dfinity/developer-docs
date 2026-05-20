@@ -1,7 +1,8 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Primitive types"
+description: "Motoko provides several primitive types that form the foundation of all computations."
+sidebar:
+  order: 1
 ---
 
 Motoko provides several primitive types that form the foundation of all computations. These include numeric types, characters and text, booleans, and floating-point numbers.
@@ -12,7 +13,7 @@ More esoteric functions, not supported by dedicated operators, can be found in t
 
 For example, the library function `Int.toText: Int -> Text`, declared in core package `Int`, returns the textual representation of its argument.
 
-```motoko name=int
+```motoko no-repl
 import Int "mo:core/Int";
 Int.toText(0); // returns "0"
 ```
@@ -32,7 +33,7 @@ This means that every expression of type [`Nat`](https://mops.one/core/docs/Nat)
 
 An [`Int`](https://mops.one/core/docs/Int) cannot be directly assigned to a [`Nat`](https://mops.one/core/docs/Nat) since it may be a negative number and the [`Nat`](https://mops.one/core/docs/Nat) type only contains non-negative numbers.
 
-```motoko
+```motoko no-repl
 let x : Int = -5;
 let y : Nat = x; // Error
 ```
@@ -46,7 +47,7 @@ let y : Nat = Int.abs(x); // Allowed, y = 5
 
 Fixed-size numeric types ([`Int8`](https://mops.one/core/docs/Int8), [`Nat32`](https://mops.one/core/docs/Nat32), etc.) support additional operations, including bitwise shifts.
 
-```motoko
+```motoko no-repl
 let x : Nat32 = 0xA; // 10 in hexadecimal
 let y = x << 2; // 0x28 (40 in decimal)
 ```
@@ -55,7 +56,7 @@ let y = x << 2; // 0x28 (40 in decimal)
 
 `Char` represents a single Unicode scalar value, while [`Text`](https://mops.one/core/docs/Text) represents a sequence of characters.
 
-```motoko
+```motoko no-repl
 import Char "mo:core/Char";
 import Text  "mo:core/Text";
 
@@ -76,7 +77,7 @@ The [`Bool`](https://mops.one/core/docs/Bool) type represents boolean values, `t
 
 The logical operators `and` and `or` will only evaluate their second operand if necessary.
 
-```motoko
+```motoko no-repl
 let flag : Bool = true or false; // true
 let opposite = not flag; // false
 
@@ -87,7 +88,7 @@ let isEqual =  true == false ; // false
 
 [`Float`](https://mops.one/core/docs/Float) is a 64-bit floating-point type that provides mathematical operations.
 
-```motoko
+```motoko no-repl
 import Float "mo:core/Float";
 let pi = Float.pi;
 let radius : Float = 2.5;
@@ -107,7 +108,7 @@ single-precision values.
 Values are written as float literals with a `Float32` type ascription, or produced by
 arithmetic on `Float32` operands, or by explicit conversion from `Float`:
 
-```motoko
+```motoko no-repl
 let a : Float32 = 3.14;              // literal rounded to single precision at compile time
 let b : Float32 = a * 2.0;           // arithmetic stays in Float32
 let c : Float32 = floatToFloat32 3.14;   // explicit conversion from Float

@@ -1,7 +1,8 @@
 ---
-sidebar_position: 11
-description: "Motoko language documentation"
 title: "Results"
+description: "While options are a built-in type, the Result is defined as a variant type:"
+sidebar:
+  order: 11
 ---
 
 | Type    | Syntax                  | Purpose                          | Application                                 |
@@ -10,7 +11,7 @@ title: "Results"
 
 While options are a built-in type, the `Result` is defined as a variant type:
 
-``` motoko no-repl
+```motoko no-repl
 type Result<Ok, Err> = { #ok : Ok; #err : Err }
 ```
 
@@ -18,7 +19,7 @@ Because of the second type parameter `Err`, the `Result` type lets you select th
 
 Here’s a simple function that validates a username. If it's non-empty, it will return a greeting of type `Text`. If not, it will return an error of type `Text`.
 
-```motoko
+```motoko no-repl
 import Result "mo:core/Result";
 
 func greet(name : Text) : Result.Result<Text, Text> {
@@ -32,7 +33,7 @@ When a Motoko value has type `Result<T, E>`, it is either a success, written `#o
 
 ### `switch`
 
-```motoko
+```motoko no-repl
 import Result "mo:core/Result";
 
 func greet(name : Text) : Result.Result<Text, Text> {
@@ -56,7 +57,7 @@ The verbosity of `switch` expressions can make code harder to read, so Motoko al
 
 Values can be extracted from `Result` using the `let ... else` pattern. This can be preferable to a `switch` expression when only the success `case` is needed, and the else branch can cleanly handle or exit on failure. It allows concise early returns or alternative flows when the result is `#err`.
 
-```motoko
+```motoko no-repl
 import Result "mo:core/Result";
 
 func greet(name : Text) : Result.Result<Text, Text> {

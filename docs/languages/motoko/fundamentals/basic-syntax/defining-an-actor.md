@@ -1,13 +1,13 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Defining an actor"
-hide_table_of_contents: true
+description: "In Motoko, an actor is a computational process with its own state and behavior."
+sidebar:
+  order: 1
 ---
 
-In Motoko, an **actor** is a computational process with its own [state](/languages/motoko/fundamentals/actors/state) and behavior. Actors are declared with the `actor` keyword.
+In Motoko, an **actor** is a computational process with its own [state](../actors/state.md) and behavior. Actors are declared with the `actor` keyword.
 
-Unlike traditional functions or objects in other programming languages, actors operate independently and communicate via [asynchronous](/languages/motoko/fundamentals/actors/actors-async#async--await) messaging. Each actor maintains its own message queue, enabling concurrent execution.
+Unlike traditional functions or objects in other programming languages, actors operate independently and communicate via [asynchronous](../actors/actors-async.md#async--await) messaging. Each actor maintains its own message queue, enabling concurrent execution.
 
 An actor's state is defined by its private variables, while its behavior is defined by the public functions it exposes to other actors.
 
@@ -28,7 +28,7 @@ Each actor maintains separate queues of incoming messages, one per sender. Messa
 Since actors process messages independently, multiple actors can handle messages in parallel, enabling concurrent execution across actors.
 
 
-```motoko name=Main
+```motoko no-repl
 // Declares an actor named Main.
 persistent actor Main {
   // Define a private variable called 'count' to track the number of greetings.
@@ -53,7 +53,7 @@ persistent actor Main {
 This code defines an actor that can be deployed on ICP.
 The actor is declared as `persistent` so that its state, `count`, will be preserved
 when the actor is upgraded.
-Learn more about [persistence](/languages/motoko/fundamentals/actors/data-persistence).
+Learn more about [persistence](../actors/data-persistence.md).
 :::
 
 Another actor can call `Main.greet()` with an argument and await the result:
@@ -62,7 +62,7 @@ Another actor can call `Main.greet()` with an argument and await the result:
 await Main.greet("Programmer");
 ```
 
-A Motoko actor always presents its interface as a suite of named [functions](/languages/motoko/fundamentals/basic-syntax/functions) (also called methods) with defined argument and return types. When Motoko code is compiled, this interface is automatically translated to [Candid](/guides/canister-calls/candid), an interface description language. The Candid description can be consumed by other canisters, including canisters written in another language such as Rust.
+A Motoko actor always presents its interface as a suite of named [functions](./functions.md) (also called methods) with defined argument and return types. When Motoko code is compiled, this interface is automatically translated to [Candid](/guides/canister-calls/candid), an interface description language. The Candid description can be consumed by other canisters, including canisters written in another language such as Rust.
 
 The above example's corresponding Candid interface can be found below.
 
@@ -76,5 +76,5 @@ service : {
 
 ## Resources
 
-- [Actors](/languages/motoko/fundamentals/actors/actors-async)
+- [Actors](../actors/actors-async.md)
 

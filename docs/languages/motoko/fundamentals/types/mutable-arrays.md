@@ -1,10 +1,11 @@
 ---
-sidebar_position: 9
-description: "Motoko language documentation"
 title: "Mutable arrays"
+description: "Mutable arrays allow direct modification of elements, making them suitable for scenarios where data needs to be updated frequently."
+sidebar:
+  order: 9
 ---
 
-Mutable arrays allow direct modification of elements, making them suitable for scenarios where data needs to be updated frequently. Unlike [immutable arrays](/languages/motoko/fundamentals/types/immutable-arrays), which require creating a new array to reflect changes, mutable arrays support in place modifications, improving performance in some cases.
+Mutable arrays allow direct modification of elements, making them suitable for scenarios where data needs to be updated frequently. Unlike [immutable arrays](./immutable-arrays.md), which require creating a new array to reflect changes, mutable arrays support in place modifications, improving performance in some cases.
 
 ## Creating a mutable array
 
@@ -12,7 +13,7 @@ Mutable array types are written with square brackets `[var T]`. The `var` keywor
 
 A mutable array is created using a mutable array expression:
 
- ``` motoko
+ ```motoko no-repl
  [var 1, 2, 3, 4, 5];
  ```
 
@@ -22,13 +23,13 @@ Its type is inferred to be `[var Nat]`.
 
 If you want to update the array with negative elements, use a type annotation:
 
- ```motoko
+ ```motoko no-repl
  [var 1, 2, 3, 4, 5] : [var Int]
  ```
 
 A named array can be declared using either `let` or `var`:
 
-```motoko
+```motoko no-repl
 let digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 ```
 
@@ -36,7 +37,7 @@ The function `Array.tabulateVar(size, f)` creates a mutable array of `size` elem
 
 Example:
 
-```motoko
+```motoko no-repl
 import Nat "mo:core/Nat";
 import Array "mo:core/Array";
 
@@ -53,7 +54,7 @@ Each element is mutable and can be updated later.
 
 To initialize a large array where every element starts with the same value, use `Array.init(size, value)`:
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 
 let optArr = Array.repeat<?Int>(null, 10);
@@ -86,7 +87,7 @@ Mutable arrays are beneficial when:
 | Conversion      | Can be converted to mutable with `Array.thaw`. | Can be converted to immutable with `Array.freeze`. |
 | Use case        |  Tabular fixed, data       |  Iterative algorithms |
 
-:::warning
+:::caution
 
 Unlike some other programming languages that support resizable arrays, Motoko's arrays (both mutable and immutable) are fixed-size. Motoko arrays cannot shrink or grow in length, and operations like `Array.concat` always construct new arrays.
 For dynamically-sized, array-like data structures, consider using modules in `core` (e.g. `List`) or other `mops` packages (e.g. [`vector`](https://mops.one/vector)).
@@ -97,7 +98,7 @@ For dynamically-sized, array-like data structures, consider using modules in `co
 
 Mutable arrays use the `var` keyword inside the square brackets `[var T]`. The type of the array is also specified within the square brackets, e.g., `[var Nat]` declares a mutable array of natural numbers. In place element modification is supported in mutable arrays.
 
-```motoko
+```motoko no-repl
 let mutableArray : [var Nat] = [var 1, 2, 3, 4, 5];
 
 mutableArray[0] := 10;  // Updates the first element to 10
@@ -107,9 +108,9 @@ mutableArray;
 
 ## Accessing and modifying elements
 
-Mutable array elements can be read and modified using indexed access. Attempting to access an index that does not exist will result in a [trap](/languages/motoko/fundamentals/basic-syntax/traps).
+Mutable array elements can be read and modified using indexed access. Attempting to access an index that does not exist will result in a [trap](../basic-syntax/traps.md).
 
-```motoko
+```motoko no-repl
 let numbers : [var Nat] = [var 10, 20, 30];
 
 numbers[0] := 100;  // updating first element
@@ -119,7 +120,7 @@ debug_show(numbers[0]);  // 100
 
 The size of an array `a` is available as `a.size()`, a `Nat`.  Array elements are zero-indexed, allowing indices `0` up to `a.size() - 1`.
 
-Attempting to access an array's index that does not exist will cause a [trap](/languages/motoko/fundamentals/basic-syntax/traps).
+Attempting to access an array's index that does not exist will cause a [trap](../basic-syntax/traps.md).
 
 ```motoko no-repl
 let numbers : [var Nat] = [var 10, 20, 30];
@@ -157,7 +158,7 @@ for (i in arr.keys()) {
 
 ## Converting a mutable array to an immutable array
 
-You can convert a mutable array into an immutable array using `Array.freeze`, ensuring that the contents cannot be modified after conversion. Since mutable arrays are not [sharable](/languages/motoko/fundamentals/types/shared-types), freezing them is useful when passing data across [functions](/languages/motoko/fundamentals/types/function-types) or [actors](/languages/motoko/fundamentals/actors/actors-async) to ensure immutability.
+You can convert a mutable array into an immutable array using `Array.freeze`, ensuring that the contents cannot be modified after conversion. Since mutable arrays are not [sharable](./shared-types.md), freezing them is useful when passing data across [functions](./function-types.md) or [actors](../actors/actors-async.md) to ensure immutability.
 
 ```motoko no-repl
 import Array "mo:core/Array";
@@ -175,7 +176,7 @@ A Tic-tac-toe board is a `3x3` grid that requires updates as players take turns.
 
 `VarArray.tabulate` is used to create a mutable board initialized with `"_"` (empty space).
 
-```motoko
+```motoko no-repl
 import VarArray "mo:core/VarArray";
 import Debug "mo:core/Debug";
 
@@ -237,7 +238,7 @@ To see why, suppose the following was allowed: `[var Nat] <: [var Int]` (since `
 
 Then, consider the following code:
 
-```motoko
+```motoko no-repl
 let ns :  [var Nat] = [var 0];
 let is  :  [var Int] = ns; // only allowed if [var Nat] <: [var Int]
 is[0] := -1; // [var Nat] is not a subtype of [var Int] — even though Nat <: Int.

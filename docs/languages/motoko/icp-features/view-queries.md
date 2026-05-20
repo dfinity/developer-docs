@@ -1,6 +1,8 @@
 ---
-title: "Stable Variable Inspection with `--generate-view-queries`"
-description: "Motoko language documentation"
+title: "Stable variable inspection"
+description: "Using --generate-view-queries to auto-generate query methods that expose stable variable contents in Motoko."
+sidebar:
+  order: 7
 ---
 
 The `--generate-view-queries` compiler flag instructs `moc` to auto-generate **query methods** that expose the contents of an actor's stable variables for inspection at runtime. This enables tooling, dashboards, and generic front-end UIs to browse canister state without writing boilerplate accessor code.
@@ -26,7 +28,7 @@ When generation proceeds, the compiler chooses one of two strategies:
 
 If the expression `id.view()` resolves to a function with shared argument types `(T1, ..., TN)` and shared result type `R`, the compiler generates:
 
-```motoko
+```motoko no-repl
 public shared ({ caller }) query func __id(arg1 : T1, ..., argN : TN) : async R {
   <access-control>;
   id.view()(arg1, ..., argN)
@@ -39,7 +41,7 @@ The `.view()` call may rely on implicit arguments (such as `compare`) provided t
 
 If no `.view()` method is available but `<typ>` is a shared type, the compiler generates a simple accessor:
 
-```motoko
+```motoko no-repl
 public shared ({ caller }) query func __id() : async <typ> {
   <access-control>;
   id
@@ -72,7 +74,7 @@ A `.view()` method is a function resolved via contextual dot syntax on a stable 
 
 ### Signature pattern
 
-```motoko
+```motoko no-repl
 module MyView {
   public func view<...>(self : <DataType>, ...) : (arg1 : T1, ..., argN : TN) -> R = ...
 }
@@ -82,7 +84,7 @@ Implicit arguments (like `compare` for ordered collections) are supported and re
 
 ### Example: paginated map view
 
-```motoko
+```motoko no-repl
 module MapView {
   public func view<K, V>(
     self : Map.Map<K, V>,
@@ -103,13 +105,13 @@ module MapView {
 
 Given a stable variable:
 
-```motoko
+```motoko no-repl
 let customers : Map.Map<Text, Customer> = Map.empty();
 ```
 
 The compiler generates a query with the Motoko signature:
 
-```motoko
+```motoko no-repl
 public shared query func __customers(ko : ?Text, count : ?Nat) : async [(Text, Customer)]
 ```
 
@@ -123,7 +125,7 @@ __customers : (ko : opt text, count : opt nat) -> (vec record { text; Customer }
 
 View modules for common core data structures (`Map`, `Set`, arrays, `List`, `Stack`, `Queue`, and their pure counterparts) can be collected into a **mixin** and included in any actor:
 
-```motoko
+```motoko no-repl
 import Views "views";
 
 persistent actor {
@@ -136,7 +138,7 @@ persistent actor {
 
 ## Example: full actor
 
-```motoko
+```motoko no-repl
 //MOC-FLAG --generate-view-queries
 import Array "mo:core/Array";
 

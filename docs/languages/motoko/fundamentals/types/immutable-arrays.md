@@ -1,10 +1,11 @@
 ---
-sidebar_position: 8
-description: "Motoko language documentation"
 title: "Immutable arrays"
+description: "Immutable arrays are fixed-size, read-only data structures that allow efficiently storing elements of the same type."
+sidebar:
+  order: 8
 ---
 
-Immutable arrays are fixed-size, read-only data structures that allow efficiently storing elements of the same type. Unlike [mutable arrays](/languages/motoko/fundamentals/types/mutable-arrays), they cannot be modified after creation, ensuring data integrity and predictable behavior.
+Immutable arrays are fixed-size, read-only data structures that allow efficiently storing elements of the same type. Unlike [mutable arrays](./mutable-arrays.md), they cannot be modified after creation, ensuring data integrity and predictable behavior.
 
 ## When to use immutable arrays
 
@@ -20,7 +21,7 @@ If the number of elements may change, collections like `List` is a better choice
 
 Immutable arrays are declared using square brackets `[T]`. The type of the array is specified within the square brackets, e.g., `[Nat]` declares an immutable array of natural numbers.
 
-```motoko
+```motoko no-repl
 let arr : [Nat] = [1, 2, 3, 4, 5];
 ```
 
@@ -30,9 +31,9 @@ The size of an array `a` is available as `a.size()`, a `Nat`.
 
 Array elements are zero-indexed, allowing indices `0` up to `a.size() - 1`.
 
-Attempting to access an array's index that does not exist will cause a [trap](/languages/motoko/fundamentals/basic-syntax/traps). Attempting to modify an immutable array will result in an error `expected mutable assignment target(M0073)`.
+Attempting to access an array's index that does not exist will cause a [trap](../basic-syntax/traps.md). Attempting to modify an immutable array will result in an error `expected mutable assignment target(M0073)`.
 
-```motoko
+```motoko no-repl
 import Debug "mo:core/Debug";
 
 let numbers : [Nat] = [10, 20, 30];
@@ -64,7 +65,7 @@ The `array.keys()` function returns an iterator that is used to iterate over the
 
 A `for` loop can also be used to iterate over an array by accessing elements via their index.
 
-```motoko
+```motoko no-repl
 import Debug "mo:core/Debug";
 
 let arr : [Nat] = [1, 2, 3, 4, 5];
@@ -89,7 +90,7 @@ mutableCopy[0] := 10;
 
 Motoko supports passing collections to a function, ensuring that all arguments are handled as a collection rather than individual parameters.
 
-```motoko
+```motoko no-repl
 import Debug "mo:core/Debug"
 
 func printAllStrings(strings : [Text]) {
@@ -134,7 +135,7 @@ Unlike some languages, Motoko does not compare arrays by reference; instead, it 
 
 The [`Array`](https://mops.one/core/docs/Array) module in Motoko's core package contains built-in functions for mapping over elements, filtering values, and summing numerical arrays.
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 
 func transformArray() : [Nat] {
@@ -148,7 +149,7 @@ transformArray();
 
 To demonstrate nested immutable arrays, consider the following:
 
-A chessboard is a fixed `8×8` grid. Using immutable arrays to represent the initial [state](/languages/motoko/fundamentals/actors/state) of the board ensures that the setup remains unchanged, preventing accidental modifications. This is useful because the starting position of pieces in chess is fixed, and any changes should be intentional, such as when making a move. Immutable arrays provide stability and help maintain the integrity of the initial board [state](/languages/motoko/fundamentals/actors/state).
+A chessboard is a fixed `8×8` grid. Using immutable arrays to represent the initial [state](../actors/state.md) of the board ensures that the setup remains unchanged, preventing accidental modifications. This is useful because the starting position of pieces in chess is fixed, and any changes should be intentional, such as when making a move. Immutable arrays provide stability and help maintain the integrity of the initial board [state](../actors/state.md).
 
 ```motoko no-repl
 import Array "mo:core/Array";

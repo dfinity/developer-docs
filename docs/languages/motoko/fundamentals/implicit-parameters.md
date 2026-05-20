@@ -1,6 +1,8 @@
 ---
 title: "Implicit parameters"
-description: "Motoko language documentation"
+description: "Using implicit parameters to pass values to functions without explicit arguments in Motoko."
+sidebar:
+  order: 11
 ---
 
 ## Overview
@@ -27,7 +29,7 @@ The `implicit` marker on the type of parameter `compare` indicates the call-site
 A function can declare more than one implicit parameter, even of the same name.
 
 
-```motoko
+```motoko no-repl
 func show<T, U>(
     self: (T, U),
     toTextT : (implicit : (toText : T -> Text)),
@@ -44,7 +46,7 @@ The inner name (under `implicit`) overrides the local name of the parameter in t
 
 When calling a function with implicit parameters, you can omit the implicit arguments if the compiler can infer them:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -69,13 +71,13 @@ An ambiguous call can always be disambiguated by supplying the explicit argument
 
 ### Contextual dot notation
 
-Implicit parameters dovetail nicely with [contextual dot notation](/languages/motoko/fundamentals/contextual-dot).
+Implicit parameters dovetail nicely with [contextual dot notation](contextual-dot.md).
 The dot notation and implicit arguments can be used in conjunction to shorten code.
 
 For example, since the first parameter of `Map.add` is called `self`, we can both use `map` as the receiver of `add` "method" calls
 and omit the tedious `compare` argument:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -95,7 +97,7 @@ The primary use case for implicit arguments is simplifying code that uses maps a
 
 ### Map Example
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -120,7 +122,7 @@ let item2 = inventory.get(102);
 ### Set example
 
 The core `Set` type also takes advantage of implicit `compare` parameters.
-```motoko
+```motoko no-repl
 import Set "mo:core/Set";
 import Text "mo:core/Text";
 
@@ -141,7 +143,7 @@ let hasTag2 = tags.contains("urgent");
 
 Implicit arguments make imperative collection operations much cleaner:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 
@@ -215,7 +217,7 @@ module MyArray {
 
 With derivation, the compiler handles this automatically. It recognizes that `Array.compare<Nat>`, after removing its implicit `compare` parameter and instantiating `T := Nat`, has the right type. It then recursively resolves the inner implicit (`Nat.compare`) and synthesizes the wrapper for you.
 
-This works transitively: a `compare` for `[[Nat]]` is derived via `Array.compare<[Nat]>`, which needs `[Nat]` compare, which is derived via `Array.compare<Nat>`, which needs `Nat.compare`: all resolved automatically.
+This works transitively: a `compare` for `[[Nat]]` is derived via `Array.compare<[Nat]>`, which needs `[Nat]` compare, which is derived via `Array.compare<Nat>`, which needs `Nat.compare`, all resolved automatically.
 
 The resolution depth is bounded to guarantee termination. If you encounter a depth limit, you can increase it with `--implicit-derivation-depth` or provide the argument explicitly.
 
@@ -239,7 +241,7 @@ Other implicit parameters declared by the core library are `equals : (implicit :
 
 You can always provide implicit arguments explicitly when needed:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import {type Order} "mo:core/Order";
@@ -264,7 +266,7 @@ This is useful when:
 
 To use implicit arguments with your own custom types, define a comparison function:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import {type Order} "mo:core/Order";
@@ -306,7 +308,7 @@ let email = directory.get({ name = "Alice"; age = 30 });
 
 Existing code with explicit comparison functions will continue to work. You can adopt implicit arguments gradually:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -328,4 +330,4 @@ Implicit arguments are resolved at compile time.
 
 ## See also
 
-- [Language reference](/languages/motoko/reference/language-manual#function-calls)
+- [Language reference](../language-manual#function-calls)

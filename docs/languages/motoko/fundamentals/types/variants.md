@@ -1,14 +1,15 @@
 ---
-sidebar_position: 7
-description: "Motoko language documentation"
 title: "Variants"
+description: "Variant type describe values that take on one of several forms, each labeled with a distinct  tag."
+sidebar:
+  order: 7
 ---
 
-Variant type describe values that take on one of several forms, each labeled with a distinct  tag. Unlike [records](/languages/motoko/fundamentals/types/records), where all fields exist at once, a value of a variant type holds exactly one of the type's possible values. This makes variants useful for representing mutually exclusive alternatives such as states, enumerations, categories and even trees.
+Variant type describe values that take on one of several forms, each labeled with a distinct  tag. Unlike [records](./records.md), where all fields exist at once, a value of a variant type holds exactly one of the type's possible values. This makes variants useful for representing mutually exclusive alternatives such as states, enumerations, categories and even trees.
 
 ## Defining a variant
 
-```motoko no-repl name=status
+```motoko no-repl
 type Status = {
   #Active;
   #Inactive;
@@ -22,14 +23,14 @@ type Status = {
 
 To assign a variant value, use one of the defined tags.
 
-```motoko
+```motoko no-repl
 let activeUser = #Active;
 let bannedUser = #Banned("Violation of rules");
 ```
 
 ## Accessing a variant's value
 
-To work with a variant, use a [`switch`](/languages/motoko/fundamentals/control-flow/switch) expression to match each possible case.
+To work with a variant, use a [`switch`](../control-flow/switch.md) expression to match each possible case.
 
 ```motoko no-repl
 import Debug "mo:core/Debug";
@@ -59,11 +60,11 @@ A traffic light cycles between three distinct states:
 - Yellow: Vehicles should prepare to stop.
 - Green: Vehicles may proceed.
 
-Since the traffic light can only be in one of these states at a time, a variant is well-suited to model it. There is no invalid [state](/languages/motoko/fundamentals/actors/state), as every possible value is explicitly defined. The transitions are controlled and predictable.
+Since the traffic light can only be in one of these states at a time, a variant is well-suited to model it. There is no invalid [state](../actors/state.md), as every possible value is explicitly defined. The transitions are controlled and predictable.
 
 ### Defining the traffic light state
 
-```motoko no-repl name=lights
+```motoko no-repl
 type TrafficLight = {
   #red;
   #yellow;
@@ -73,7 +74,7 @@ type TrafficLight = {
 
 ### Transitioning between states
 
-A function can define how the traffic light cycles from one [state](/languages/motoko/fundamentals/actors/state) to the next.
+A function can define how the traffic light cycles from one [state](../actors/state.md) to the next.
 
 ```motoko no-repl
 func nextState(light : TrafficLight) : TrafficLight {
@@ -113,7 +114,7 @@ for (_ in Iter.range(0, 5)) {
 
 A binary tree is a data structure where each node has up to two child nodes. A variant can be used to represent this structure since a node can either contain a value with left and right children or be an empty leaf. This tree type is recursive as it refers to itself in its definition.
 
-```motoko no-repl name=tree
+```motoko no-repl
 type Tree = {
   #node : {
     value : Nat;
@@ -183,7 +184,7 @@ traverseInOrder(tree);
 
 ### Using generic types
 
-Currently, the example tree only supports [`Nat`](https://mops.one/core/docs/Nat) values. To allow it to store any type of data, a [generic type](/languages/motoko/fundamentals/types/advanced-types#generic-types) can be used. A generic type allows a data structure to work with multiple types by using a placeholder type `T`, which is replaced with a specific type when used.
+Currently, the example tree only supports [`Nat`](https://mops.one/core/docs/Nat) values. To allow it to store any type of data, a [generic type](./advanced-types.md#generic-types) can be used. A generic type allows a data structure to work with multiple types by using a placeholder type `T`, which is replaced with a specific type when used.
 
 ```motoko no-repl
 type Tree<T> = {

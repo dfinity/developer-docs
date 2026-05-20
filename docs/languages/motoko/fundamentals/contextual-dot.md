@@ -1,6 +1,8 @@
 ---
 title: "Contextual dot notation"
-description: "Motoko language documentation"
+description: "Using contextual dot notation to call module functions with method-like syntax in Motoko."
+sidebar:
+  order: 10
 ---
 
 Contextual dot notation is a language feature that allows you to call functions from modules using object-oriented style syntax, where a value appears as the receiver of a method call. This feature bridges the gap between Motoko's procedural and object-oriented programming styles.
@@ -13,7 +15,7 @@ In Motoko, there are two main approaches to organizing and calling related funct
 
 Consider a common operation on data structures. Without contextual dot notation, you would write:
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 
 let numbers = [1, 2, 3, 4, 5];
@@ -30,7 +32,7 @@ This functional style, while powerful, has some drawbacks:
 
 With contextual dot notation, you can rewrite the same code as:
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 
 let numbers = [1, 2, 3, 4, 5];
@@ -57,7 +59,7 @@ The self parameter is indicated by its position as the first parameter and its t
 
 Here's a more comprehensive example using the `Array` module:
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
 
@@ -121,7 +123,7 @@ While any function can use contextual dot notation based on its first parameter 
 
 Contextual dot notation works seamlessly with generic types:
 
-```motoko
+```motoko no-repl
 import Array "mo:core/Array";
 
 // These work with any type T
@@ -162,4 +164,4 @@ Contextual dot notation has some intentional limitations:
 ## See also
 
 - [Modules and imports](modules-imports)
-- [Language reference](/languages/motoko/reference/language-manual#dotted-function-calls)
+- [Language reference](../language-manual#dotted-function-calls)

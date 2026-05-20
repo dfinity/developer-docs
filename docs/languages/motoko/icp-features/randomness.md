@@ -1,8 +1,8 @@
 ---
+title: "Randomness"
+description: "Randomness is used for generating unique identifiers, ensuring fairness in games, cryptographic protocols, and much more."
 sidebar:
   order: 1
-description: "Motoko language documentation"
-title: "Randomness"
 ---
 
 [Randomness](/guides/backends/randomness) is used for generating unique identifiers, ensuring fairness in games, cryptographic protocols, and much more. On ICP, all computations, including [randomness](/guides/backends/randomness), must be **verifiable and reproducible** across the network's nodes.

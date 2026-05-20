@@ -1,13 +1,13 @@
 ---
-sidebar_position: 5
-description: "Motoko language documentation"
 title: "Switch"
-hide_table_of_contents: true
+description: "A switch expression is a control flow construct that, given a value, selects a control flow path based on the pattern or shape of the value."
+sidebar:
+  order: 5
 ---
 
 A `switch` expression is a control flow construct that, given a value, selects a control flow path based on the pattern or shape of the value.
 
-A switch is constructed from an expression and a sequence of cases. Each case consists of a [pattern](/languages/motoko/fundamentals/pattern-matching) guarding an expression or block that defines a possible branch of execution.
+A switch is constructed from an expression and a sequence of cases. Each case consists of a [pattern](../pattern-matching.md) guarding an expression or block that defines a possible branch of execution.
 
 Switch evaluates its expression and based on its value, selects the first case whose pattern matches the value.
 Any identifiers bound by the pattern are available in the selected branch, allowing you to access case-specific data in the branch.
@@ -24,7 +24,7 @@ Only the first case of a `switch` expression that matches will execute. The wild
 
 The simplest use of switch is to emulate an `if-else` expression:
 
-``` motoko
+```motoko no-repl
 func toText(b : Bool) : Text {
    switch b {
       case true "true";
@@ -35,7 +35,7 @@ func toText(b : Bool) : Text {
 
 If you add a second case for `true`, Motoko issues a warning that it will never be matched and is unreachable or dead code:
 
-``` motoko
+```motoko no-repl
 func toText(b : Bool) : Text {
    switch b {
       case true "true";
@@ -47,7 +47,7 @@ func toText(b : Bool) : Text {
 
 If you forget the case for `false`, Motoko will also issue a warning that `false is not covered by any case`:
 
-``` motoko
+```motoko no-repl
 func toText(b : Bool) : Text {
    switch b {
       case true "true";
@@ -77,7 +77,7 @@ Above, the example `switch` expressions have only matched against simple constan
 
 Here's a simple example of matching against an option:
 
-``` motoko no-repl
+```motoko no-repl
 func value<T>(option : ?T, default : T) : T {
    switch option {
       case null default;
@@ -92,7 +92,7 @@ If either case is omitted, Motoko will warn that the switch does not cover the `
 
 Here's an example of a nested pattern:
 
-``` motoko no-repl
+```motoko no-repl
 type List<T> = ?(T, List<T>);
 
 func size<T>(list : List<T>) : Nat {
@@ -111,7 +111,7 @@ In this example, the branches are enclosed in blocks to demonstrate that it is s
 
 A more complex example can be found below:
 
-``` motoko no-repl
+```motoko no-repl
 type Exp = {#Lit : Nat; #Div : (Exp, Exp); #If : (Exp, Exp, Exp)};
 func eval(e : Exp) : ? Nat {
   switch e {
@@ -146,7 +146,7 @@ eval(expr);
 
 Using option blocks this code can be rewritten to reduce the need for nested switches, if that's preferred:
 
-``` motoko no-repl
+```motoko no-repl
 type Exp = {#Lit : Nat; #Div : (Exp, Exp); #If : (Exp, Exp, Exp)};
 func eval(e : Exp) : ? Nat {
   do ? {

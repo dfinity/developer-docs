@@ -1,7 +1,8 @@
 ---
-sidebar_position: 14
-description: "Motoko language documentation"
 title: "Subtyping"
+description: "Subtyping is a fundamental concept in type systems that allows values of one type to be used wherever values of another type are expected, p"
+sidebar:
+  order: 14
 ---
 
 Subtyping is a fundamental concept in type systems that allows values of one type to be used wherever values of another type are expected, provided
@@ -73,12 +74,12 @@ In this table:
 [`Nat`](https://mops.one/core/docs/Nat) is a subtype of [`Int`](https://mops.one/core/docs/Int) (`Nat <: Int`), meaning a [`Nat`](https://mops.one/core/docs/Nat) value can be used where an `Int` is expected. This works because every [`Nat`](https://mops.one/core/docs/Nat) is an `Int`, but not every `Int` is a [`Nat`](https://mops.one/core/docs/Nat) (as negative numbers exist in `Int`).
 
 
-```motoko
+```motoko no-repl
 let n : Nat = 5;
 let i : Int = n;        // Allowed, since `Int <: Nat`
 ```
 
-```motoko
+```motoko no-repl
 let i : Int = -5;
 let n : Nat = i;        // Not allowed, since `Int </: Nat`
 ```
@@ -91,7 +92,7 @@ This makes `None` the least type in the subtype hierarchy.
 
 The `None` type is used to type expressions that never produce a value, such as an infinite loop (`loop {}`).
 
-``` motoko no-repl
+```motoko no-repl
 func impossible() : None { loop {} };
 
 impossible() # impossible();  // Allowed, since `None <: Text`
@@ -113,7 +114,7 @@ This makes `Any` the greatest type in the subtype hierarchy.
 
 A function that takes an argument of type `Any` can be applied to a value of any type, since all types are compatible with `Any`.
 
-``` motoko no-repl
+```motoko no-repl
 func discard(a : Any) {};
 
 discard(0); // Allowed, since `Nat <: Any`
@@ -125,7 +126,7 @@ discard("abc"); // Allowed, since `Text <: Any`
 
 ## Options
 
-If `T <: U`, then `?T <: ?U` because option subtyping is covariant. This means an [optional value](/languages/motoko/fundamentals/types/options) of a subtype can be used as an optional value of a supertype.
+If `T <: U`, then `?T <: ?U` because option subtyping is covariant. This means an [optional value](./options.md) of a subtype can be used as an optional value of a supertype.
 
 ```motoko no-repl
 let a : ?Nat = ?5;
@@ -144,7 +145,7 @@ let ot : ?Text = n;     // Allowed, since `Null <: ?Text`
 
 ## Records and objects
 
-[Records](/languages/motoko/fundamentals/types/records) and, more generally, [objects](/languages/motoko/fundamentals/types/objects-classes)
+[Records](./records.md) and, more generally, [objects](./objects-classes.md)
 support subtyping, both in the required fields and the types of those fields.
 
 An object type `T` is a subtype of another object type `U`, if `T` requires all the fields required by `U`,
@@ -182,7 +183,7 @@ However, both `A` and `B` are still subtypes of `C`, since `C` lacks the `age` f
 
 ## Variants
 
-[Variants](/languages/motoko/fundamentals/types/variants) also support subtyping, both in the allowed fields and the types of those fields.
+[Variants](./variants.md) also support subtyping, both in the allowed fields and the types of those fields.
 
 A variant type `T` is a subtype of another variant type `U` if every value in `T` also appears in `U`, and the associated types in `T` are subtypes of those in `U`. `T` may allow fewer fields than `U`.
 
@@ -190,21 +191,21 @@ In other words, `T` can define a subset of the fields defined in `U`, as long as
 
 For example, you can define a variant `WeekDay` that is a subtype of `Day` (adding weekends):
 
-```motoko no-repl name=Days
+```motoko no-repl
 type WeekDay = { #mon; #tue; #wed; #thu; #fri };
 type Day = { #mon; #tue; #wed; #thu; #fri; #sat; #sun};
 ```
 
 Now every weekday is a day:
 
-```motoko no-repl _include=Days
+```motoko no-repl
 let wd : WeekDay = #mon;
 let d : Day = wd;  // Allowed, since `WeekDay <: Day`
 ```
 
 But not the other way round:
 
-```motoko no-repl _include=Days
+```motoko no-repl
 let d : Day = #mon;
 let wd : WeekDay = d;  // Not allowed, since `Day </: WeekDay` (`d` could also be `#sat`)
 ```
@@ -227,7 +228,7 @@ let rok : Result<Int, Text> = ok; // Allowed, since `{#ok : Nat} <: {#ok : Int; 
 
 ## Immutable arrays
 
-[Immutable arrays (`[T]`)](/languages/motoko/fundamentals/types/immutable-arrays) support covariant subtyping, meaning if `T <: U`, then `[T] <: [U]`.
+[Immutable arrays (`[T]`)](./immutable-arrays.md) support covariant subtyping, meaning if `T <: U`, then `[T] <: [U]`.
 
 If `T <: U`, then an (immutable) array of type `[T]` can be used as an array of type `[U]`.
 
@@ -238,7 +239,7 @@ let ints : [Int] = nats;  // Allowed, since `Nat <: Int` we also have `[Nat] <: 
 
 ## Mutable arrays
 
-[Mutable arrays](/languages/motoko/fundamentals/types/mutable-arrays) of the form `[var T]` do not support interesting subtyping.
+[Mutable arrays](./mutable-arrays.md) of the form `[var T]` do not support interesting subtyping.
 The mutable array constructor `[var T]` is invariant in `T`.
 
 This means that `[var T]` is a subtype of `[var U]` only if `T` and `U` are equivalent types, that is, both `T <: U` and `U <: T` must hold.
@@ -252,7 +253,7 @@ let ints : [var Int] = nats;  // Not allowed, because `[var Nat] </: [var Int]`.
 
 ## Functions
 
-[Functions](/languages/motoko/fundamentals/types/function-types) also support subtyping.
+[Functions](./function-types.md) also support subtyping.
 A function type `T1 -> T2` is a subtype of another function type `U1 -> U2` provided that:
 
 1. The argument types are related in the opposite direction (`U1 <: T1` ).
@@ -266,7 +267,7 @@ This ensures safety because the function will never be passed arguments it canâ€
 
 As a simple example, consider the `magnitude` function that returns the absolute value, or magnitude, of an integer.
 
-```motoko no-repl name=magnitude
+```motoko no-repl
 import Int "mo:core/Int"
 func magnitude(i : Int) : Nat { Int.abs(i) };
 ```
@@ -274,7 +275,7 @@ func magnitude(i : Int) : Nat { Int.abs(i) };
 Its most precise type is `Int -> Nat`, but, due to subtyping, it also has types `Nat -> Nat` (making the argument more specific),
 `Int -> Int`  (making the result more general) and `Int -> Int` (doing both).
 
-``` motoko no-repl _include=magnitude
+```motoko no-repl
 let i2n : Int -> Nat = magnitude;
 let n2n : Nat -> Nat = magnitude;
 let i2i : Int-> Int = magnitude;
@@ -298,11 +299,11 @@ In the case of actors, which can only contain shared functions as fields, this m
 
 ## Recursive and generic types
 
-[Recursive and generic types](/languages/motoko/fundamentals/types/advanced-types) can be subtypes of each other when their definitions allow it.
+[Recursive and generic types](./advanced-types.md) can be subtypes of each other when their definitions allow it.
 
 Consider the following recursive point types, where the second extends the first by adding a color field:
 
-```motoko no-repl name=Point
+```motoko no-repl
 type Point = {
   x : Int;
   move: Int -> Point
@@ -317,7 +318,7 @@ type ColorPoint = {
 
 `ColorPoint` is a subtype of `Point`:
 
-``` motoko no-repl _include=Point
+```motoko no-repl
 let cp : ColorPoint = {
   color = #red;
   x = 0;

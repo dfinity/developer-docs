@@ -1,10 +1,11 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Class declarations"
+description: "A class in Motoko serves as a blueprint for creating objects that encapsulate both state and behavior."
+sidebar:
+  order: 4
 ---
 
-A class in Motoko serves as a blueprint for creating [objects](/languages/motoko/fundamentals/declarations/object-declaration) that encapsulate both [state](/languages/motoko/fundamentals/actors/state) and behavior. It defines fields to hold data and methods to operate on that data. Unlike records and plain objects, classes support constructors, allowing developers to initialize each instance with unique values at creation time.
+A class in Motoko serves as a blueprint for creating [objects](./object-declaration.md) that encapsulate both [state](../actors/state.md) and behavior. It defines fields to hold data and methods to operate on that data. Unlike records and plain objects, classes support constructors, allowing developers to initialize each instance with unique values at creation time.
 
 Classes in Motoko are not the same as classes in other object oriented programming languages, but they serve the same purpose. Motoko also doesn’t have a `this` or `self` keyword because you can simply call other methods directly by name or name the entire object using an identifier of your choice.
 
@@ -165,5 +166,5 @@ Using this `system` syntax, developers can:
 - Manually install, upgrade, or reinstall canisters.
 - Access lower-level canister management features provided by ICP.
 
-[Learn more about actor class management](/languages/motoko/reference/language-manual#actor-class-management).
+[Learn more about actor class management](../../language-manual.md#actor-class-management).
 

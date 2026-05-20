@@ -1,7 +1,8 @@
 ---
-sidebar_position: 15
-description: "Motoko language documentation"
 title: "Type conversions"
+description: "Conversions are used to transform values between different types to ensure compatibility and ease of manipulation."
+sidebar:
+  order: 15
 ---
 
 Conversions are used to transform values between different types to ensure compatibility and ease of manipulation. Common conversions include numeric transformation, such as converting [`Float`](https://mops.one/core/docs/Float) or [`Int`](https://mops.one/core/docs/Int) to [`Nat`](https://mops.one/core/docs/Nat), and text manipulation, like converting [`Text`](https://mops.one/core/docs/Text) to [`Float`](https://mops.one/core/docs/Float) or encoding [`Text`](https://mops.one/core/docs/Text) as a [`Blob`](https://mops.one/core/docs/Blob). Arrays and tuples can be converted into structured types, such as records or hashmaps, for better organization. Additionally, time conversions enable transforming `Time.now()` (nanoseconds since 1970) into human-readable date formats, with optional timezone adjustments. These conversions provide flexibility when working with different data types.
@@ -14,7 +15,7 @@ Motoko provides methods for converting both [`Float`](https://mops.one/core/docs
 
 A [`Float`](https://mops.one/core/docs/Float) can be converted to [`Nat`](https://mops.one/core/docs/Nat) using `Float.toInt`, followed by `Int.abs` to ensure a non-negative value.
 
-```motoko
+```motoko no-repl
 import Float "mo:core/Float";
 import Int "mo:core/Int";
 
@@ -30,7 +31,7 @@ let result2 = floatToNat(-15.6);  // 15 (absolute value is taken)
 
 [`Int`](https://mops.one/core/docs/Int) can be directly converted to [`Nat`](https://mops.one/core/docs/Nat) using `Int.abs`, which removes any negative sign.
 
-```motoko
+```motoko no-repl
 import Int "mo:core/Int";
 
 func intToNat(i : Int) : Nat {
@@ -162,7 +163,7 @@ assert arrayOfNatToText([1, 2, 3]) == "1 2 3";
 
 ### `Array` of tuples to an object
 
-Motoko lacks support for dynamic objects, so an array of tuples is converted into a [record](/languages/motoko/fundamentals/types/records) or a structured representation.
+Motoko lacks support for dynamic objects, so an array of tuples is converted into a [record](./records.md) or a structured representation.
 
 ```motoko no-repl
 import HashMap "mo:core/HashMap";
@@ -181,7 +182,7 @@ persistent actor MapConverter {
 arrayToMap([("Motoko", 4), ("Ghost", 21)]);
 ```
 
-To convert an array of tuples `[(Text, Nat)]` into a custom [record](/languages/motoko/fundamentals/types/records) type, such as `User`, `Array.map` is used to transform each tuple into a structured [record](/languages/motoko/fundamentals/types/records).
+To convert an array of tuples `[(Text, Nat)]` into a custom [record](./records.md) type, such as `User`, `Array.map` is used to transform each tuple into a structured [record](./records.md).
 
 ```motoko no-repl
 import Array "mo:core/Array";

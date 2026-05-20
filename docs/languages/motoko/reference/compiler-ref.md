@@ -1,7 +1,8 @@
 ---
-sidebar_position: 15
-description: "Motoko language documentation"
 title: "Compiler reference"
+description: "The Motoko compiler (moc) is the primary tool for compiling Motoko programs into executable WebAssembly (Wasm) modules."
+sidebar:
+  order: 5
 ---
 
 The Motoko compiler (`moc`) is the primary tool for compiling Motoko programs into executable WebAssembly (Wasm) modules. The compiler runs in the background when you build projects using the [IC SDK](https://github.com/dfinity/sdk). If you invoke the compiler directly on the command-line, you can press CTRL-C to exit.
@@ -52,7 +53,7 @@ You can use the following options with the `moc` command.
 | `--incremental-gc`                        | Use incremental GC (default, works with both enhanced orthogonal persistence and legacy/classical persistence).                                       |
 | `--idl`                                   | Compile binary and emit Candid IDL specification to `.did` file.                                                                                      |
 | `-i`                                      | Runs the compiler in an interactive read–eval–print loop (REPL) shell so you can evaluate program execution (implies -r).                             |
-| `--implicit-derivation-depth <n>`         | Maximum recursion depth for [implicit](/languages/motoko/fundamentals/implicit-parameters) argument derivation (default 100). Raise if a complex derivation is rejected as depth-limited.                                                                                                |
+| `--implicit-derivation-depth <n>`         | Maximum recursion depth for [implicit](./fundamentals/11-implicit-parameters.md) argument derivation (default 100). Raise if a complex derivation is rejected as depth-limited.                                                                                                |
 | `--legacy-persistence`                    | Use legacy (classical) persistence. This also enables the usage of --copying-gc, --compacting-gc, and --generational-gc. Deprecated in favor of the new enhanced orthogonal persistence, which is default. Legacy persistence will be removed in the future.|
 | `--map`                                   | Outputs a JavaScript source map.                                                                                                                      |
 | `--max-stable-pages <n>`                  | Set maximum number of pages available for library `ExperimentStableMemory.mo` (default 65536).                                                        |

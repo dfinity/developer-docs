@@ -1,8 +1,8 @@
 ---
+title: "Timers"
+description: "Canisters can set recurring timers that execute a piece of code after a specified period of time or regular interval."
 sidebar:
   order: 2
-description: "Motoko language documentation"
-title: "Timers"
 ---
 
 Canisters can set recurring timers that execute a piece of code after a specified period of time or regular interval. Timers in Motoko are implemented using the [`Timer.mo`](https://mops.one/core/docs/Timer) module and return a `TimerId`. `TimerId`s are unique for each timer instance. A canister can contain multiple active timers.
@@ -26,7 +26,7 @@ If the `timer` system method is declared, the [`Timer.mo`](https://mops.one/core
 
 The following example of a global timer expiration callback gets called immediately after the canister starts, i.e. after install, and periodically every twenty seconds thereafter:
 
-``` motoko no-repl
+```motoko no-repl
 system func timer(setGlobalTimer : Nat64 -> ()) : async () {
   let next = Nat64.fromIntWrap(Time.now()) + 20_000_000_000;
   setGlobalTimer(next); // absolute time in nanoseconds

@@ -1,7 +1,8 @@
 ---
-sidebar_position: 2
-description: "Motoko language documentation"
 title: "Function declarations"
+description: "A function in Motoko is a reusable block of code that accepts inputs, performs computations or actions, and optionally returns a result."
+sidebar:
+  order: 2
 ---
 
 A function in Motoko is a reusable block of code that accepts inputs, performs computations or actions, and optionally returns a result. Functions can be either named or anonymous and may explicitly define the types of their parameters and return values for clarity and type safety.
@@ -98,7 +99,7 @@ assert echoTwice("Hello") == "Hello!!";
 
 ## Shared functions in actors
 
-In actors, functions can be marked as `shared` to allow [asynchronous](/languages/motoko/fundamentals/actors/actors-async#async--await) [inter-canister](/references/message-execution-properties) communication.
+In actors, functions can be marked as `shared` to allow [asynchronous](../actors/actors-async.md#async--await) [inter-canister](/references/message-execution-properties) communication.
 
 ```motoko no-repl
 actor Counter {
@@ -120,7 +121,7 @@ await Counter.getCount();
 
 One key advantage of shared functions in Motoko is that they have access to the caller's Principal, which uniquely identifies the entity (user or another canister) that made the request. This capability allows actors to implement access control by verifying the caller’s identity before performing sensitive operations.
 
-```motoko
+```motoko no-repl
 actor Example {
     // msg.caller retrieves the Principal of the caller.
     public shared(msg) func whoAmI() : async Principal {

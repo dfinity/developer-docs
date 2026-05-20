@@ -1,16 +1,17 @@
 ---
-sidebar_position: 12
-description: "Motoko language documentation"
 title: "Advanced types"
+description: "Advanced type features enable more flexible and expressive type definitions, including structural equality, generic types, subtyping, recursive types, and ty..."
+sidebar:
+  order: 12
 ---
 
 Advanced type features enable more flexible and expressive type definitions, including structural equality, generic types, subtyping, recursive types, and type bounds.
 
 ## Structural equality
 
-Structural equality determines whether two values are equal based on their contents. This applies to immutable data structures, such as [records](/languages/motoko/fundamentals/types/records) and [variants](/languages/motoko/fundamentals/types/variants), but does not apply to mutable structures for safety reasons.
+Structural equality determines whether two values are equal based on their contents. This applies to immutable data structures, such as [records](./records.md) and [variants](./variants.md), but does not apply to mutable structures for safety reasons.
 
-```motoko
+```motoko no-repl
 type Point = { x : Int; y : Int };
 
 let p1 : Point = { x = 1; y = 2 };
@@ -23,7 +24,7 @@ Even though `p1` and `p2` are distinct objects, they are considered equal becaus
 
 This remains true even if different fields are added to the point values, since the `==` on `Point`  values only considers the `x` and `y` fields and ignores other fields.
 
-```motoko
+```motoko no-repl
 type Point = { x : Int; y : Int };
 
 let p1 : Point = { x = 1; y = 2; z = 3 };
@@ -34,9 +35,9 @@ p1 == p2;  // true (structural equality at type `Point`)
 
 ## Generic types
 
-Generic types are used to define type parameters that work with multiple data types, commonly used in [functions](/languages/motoko/fundamentals/types/function-types), [classes](/languages/motoko/fundamentals/types/objects-classes), and data structures.
+Generic types are used to define type parameters that work with multiple data types, commonly used in [functions](./function-types.md), [classes](./objects-classes.md), and data structures.
 
-```motoko
+```motoko no-repl
 // Generic function
 func identity<T>(x : T) : T {
   return x;
@@ -47,7 +48,7 @@ identity<Nat>(42);  // num is Nat
 
 A generic class can store any type while maintaining type safety:
 
-```motoko
+```motoko no-repl
 class Box<T>(value : T) {
   public func open() : T { value };
 };
@@ -70,7 +71,7 @@ This defines a recursive type for representing a linked list of natural number. 
 
 - `?(head, tail)`, where `head` is a `Nat` and `tail` is another `List`.
 
-```motoko
+```motoko no-repl
 ?(1, ?(2, ?(3, null)))  // A list: 1 → 2 → 3
 ```
 
@@ -88,7 +89,7 @@ Reversing a linked list involves iterating through the list and prepending each 
 
 Non-parameterized type:
 
-```motoko name=List
+```motoko no-repl
 // Lists of naturals
 type List = ?(Nat, List);
 
@@ -111,14 +112,14 @@ func reverseNat(l : List) : List {
 };
 ```
 
-```motoko _include=List no-repl
+```motoko no-repl
 let numbers : List = ?(1, ?(2, ?(3, null)));
 reverseNat(numbers); // ?(3, ?(2, ?(1, null)))
 ```
 
 Parameterized:
 
-```motoko name=GenList
+```motoko no-repl
 // Lists of naturals
 type List<T> = ?(T, List<T>);
 
@@ -144,13 +145,13 @@ These type and function definitions generalize the previous code to work not jus
 
 You can reverse a list of numbers.
 
-``` motoko _include=GenList no-repl
+```motoko no-repl
 let numbers : List<Nat> = ?(1, ?(2, ?(3, null)));
 reverse<Nat>(numbers); // ?(3, ?(2, ?(1, null)))
 ```
 But you can also reverse a list of characters:
 
-```motoko _include=GenList no-repl
+```motoko no-repl
 
 let chars : List<Char> = ?('a', ?('b', ?('c', null)));
 reverse<Char>(numbers); // ?('c', ?('b', ?('a', null)))
@@ -171,7 +172,7 @@ This approach balances the flexibility of generic programming with the safety of
 <!-- TODO better example that requires bounds (this one doesn't) -->
 The following examples illustrate this behavior:
 
-```motoko
+```motoko no-repl
 func printName<T <: { name : Text }>(x : T): Text {
   debug_show(x.name);
 };
@@ -180,13 +181,13 @@ let ghost = { name = "Motoko"; age = 30 };
 printName(ghost);  // Allowed since 'ghost' has a 'name' field.
 ```
 
-In the example above, `T <: { name : Text }` requires that any type used for `T` must be a subtype of the [record](/languages/motoko/fundamentals/types/records) `{ name : Text }`, that is, it must have at least a `name` field of type [`Text`](https://mops.one/core/docs/Text). Extra fields are permitted, but the `name` field is mandatory.
+In the example above, `T <: { name : Text }` requires that any type used for `T` must be a subtype of the [record](./records.md) `{ name : Text }`, that is, it must have at least a `name` field of type [`Text`](https://mops.one/core/docs/Text). Extra fields are permitted, but the `name` field is mandatory.
 
 Type bounds are not limited to records.
 In general, the notation `T <: A` in a parameter declaration mandates that any type provided for type parameter `T` must be a subtype of the specified type `A`.
 For example, it is possible to constrain a generic type to be a subtype of a primitive type.
 
-```motoko name=max
+```motoko no-repl
 func max<T <: Int>(x : T, y : T) : T {
   if (x <= y) y else x
 };
@@ -197,7 +198,7 @@ Here, `T <: Int` constrains `T` to be a subtype of [`Int`](https://mops.one/core
 
 But the function can also be used to return the maximum of two `Nat`s and still produce a `Nat` (not an `Int`).
 
-```motoko _include=max no-repl
+```motoko no-repl
 max<Nat>(5, 10); // returns 10 : Nat
 ```
 
@@ -208,7 +209,7 @@ The *actor reference* expression `actor <exp>` compute a reference to an actor f
 
 A simple example of using actor references is to access the management canister with textual address `"aaaaa-aa"`. Amongst other things, it has a method `raw_rand` for generating cryptographically random bytes as a `Blob`.
 
-```motoko
+```motoko no-repl
 persistent actor Coin {
   public func flip() : async Bool {
     let managementCanister = actor "aaaaa-aa" : actor { raw_rand : () -> async Blob };
@@ -220,7 +221,7 @@ persistent actor Coin {
 
 A variation computes the textual canister identifier from a given principal. A call to `flipWith(p)` will succeed is called with `Principal.fromBlob("aaaaa-aa")`, but may fail with another argument, if the canister does not exist or does not have a `raw_rand` function:
 
-```motoko
+```motoko no-repl
 import Principal "mo:core/Principal";
 
 persistent actor Coin {

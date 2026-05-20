@@ -1,8 +1,8 @@
 ---
-sidebar_position: 6
-description: "Motoko language documentation"
 title: "Literals"
-hide_table_of_contents: true
+description: "Literals are constant expressions that require no further evaluation:"
+sidebar:
+  order: 6
 ---
 
 Literals are constant expressions that require no further evaluation:
@@ -19,11 +19,11 @@ Literals are constant expressions that require no further evaluation:
 
 You can use literals directly in expressions.
 
-```motoko
+```motoko no-repl
 100 + 50
 ```
 
 ## Resources
 
-- [Literals](/languages/motoko/reference/language-manual#literals)
+- [Literals](../../language-manual.md#literals)
 

@@ -1,7 +1,8 @@
 ---
-sidebar_position: 10
-description: "Motoko language documentation"
 title: "Options"
+description: "Options provide a structured way to represent values that may or may not be present."
+sidebar:
+  order: 10
 ---
 
 | Type    | Syntax                  | Purpose                          | Application                              |
@@ -12,7 +13,7 @@ Options provide a structured way to represent values that may or may not be pres
 
 An option is defined using `?` followed by the type of the value it can hold.
 
-```motoko name=user
+```motoko no-repl
 var username : ?Text = null;
 username;
 ```
@@ -27,7 +28,7 @@ The constant `null` is the sole value of Motoko’s trivial `Null` type. It also
 
 When a Motoko value has type `?T`, it is either `null` or contains a value, written as `?value` (note the leading `?`). The fundamental way to access this value is by using a `switch` expression, which explicitly handles both cases:
 
-``` motoko no-repl
+```motoko no-repl
 func displayName(option : ?Text) : Text {
   switch option {
     case (?user) { user };
@@ -43,7 +44,7 @@ Sometimes, the verbosity of a `switch` expression can make code harder to read. 
 
 To determine if an option contains a value, function `Option.isSome` returns `true` if its argument is not `null`.
 
-```motoko
+```motoko no-repl
 import Option "mo:core/Option";
 import Debug "mo:core/Debug";
 
@@ -53,11 +54,11 @@ if (Option.isSome(value)) {
 }
 ```
 
-By leveraging the `Option` module, handling optional values becomes more concise and expressive, reducing the need for explicit [`switch`](/languages/motoko/fundamentals/control-flow/switch) statements.
+By leveraging the `Option` module, handling optional values becomes more concise and expressive, reducing the need for explicit [`switch`](../control-flow/switch.md) statements.
 
 ### Providing default values
 
-Instead of manually handling `null` cases with [pattern matching](/languages/motoko/fundamentals/pattern-matching), `Option.get` allows for cleaner fallback logic to ensure that missing values are safely replaced with a default.
+Instead of manually handling `null` cases with [pattern matching](../pattern-matching.md), `Option.get` allows for cleaner fallback logic to ensure that missing values are safely replaced with a default.
 
 ```motoko no-repl
 import Option "mo:core/Option";
@@ -67,9 +68,9 @@ Option.get(username, "Guest"); // "Guest" if username is null
 
 ### Using options for error handling
 
-Options can be used to catch expected failures instead of calling a [`trap`](/languages/motoko/fundamentals/basic-syntax/traps), making a function return `null` when it encounters an invalid input.
+Options can be used to catch expected failures instead of calling a [`trap`](../basic-syntax/traps.md), making a function return `null` when it encounters an invalid input.
 
-```motoko
+```motoko no-repl
 func safeDivide(a : Int, b : Int) : ?Int {
   if (b == 0) null else ?(a / b);
 };
@@ -96,7 +97,7 @@ The `let` statement matches the option against the pattern `?value`, extracting 
 
 The same logic can be expressed using a `switch`, though the result is more verbose and introduces an additional level of nesting:
 
-``` motoko no-repl
+```motoko no-repl
 func get<T>(option : ?T, defaultValue : T) : T {
   switch option {
     case null defaultValue;
@@ -111,7 +112,7 @@ Although convenient for option patterns, `let-else` also works with other types 
 
 The `Option.map` function applies a transformation only if the value is present.
 
-```motoko
+```motoko no-repl
 import Option "mo:core/Option";
 
 let number : ?Nat = ?10;
@@ -124,7 +125,7 @@ In this example, if `number` is `null`, `map` ensures the result remains `null` 
 
 Sometimes, both the function and value are optional. `Option.apply` calls a function only if both are present. This is useful when chaining optional operations that may return `null`.
 
-```motoko
+```motoko no-repl
 import Option "mo:core/Option";
 
 let maybeIncrement : ?(Nat -> Nat) = ?(func x: Nat = x + 1);
@@ -139,7 +140,7 @@ If either `maybeFunction` or `maybeValue` is `null`, the result remains `null`.
 
 When working with multiple optional values, using `Option.chain` processes them safely without unnecessary `switch` statements.
 
-```motoko
+```motoko no-repl
 import Option "mo:core/Option";
 
 let firstName : ?Text = ?"Motoko";
@@ -164,7 +165,7 @@ Within a `do ? <block>`, the `!` operator is used to unwrap values of unrelated 
 
 The `do ? <block>` construct is similar to the `?` operator in Rust, providing a concise and expressive way to propagate `null` values.
 
-```motoko
+```motoko no-repl
  // Returns the sum of optional values `n` and `m` or `null`, if either is `null`
 func addOpt(n : ?Nat, m : ?Nat) : ?Nat {
   do ? {
@@ -175,7 +176,7 @@ func addOpt(n : ?Nat, m : ?Nat) : ?Nat {
 
 The following example defines a simple function that evaluates expressions built from natural numbers, division, and a zero test, encoded as a variant type:
 
-```motoko
+```motoko no-repl
 type Exp = {#Lit : Nat; #Div : (Exp, Exp); #If : (Exp, Exp, Exp)};
 func eval(e : Exp) : ? Nat {
   do ? {

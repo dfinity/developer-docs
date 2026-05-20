@@ -1,7 +1,8 @@
 ---
-sidebar_position: 2
-description: "Motoko language documentation"
 title: "Enhanced orthogonal persistence"
+description: "Enhanced orthogonal persistence implements the vision of efficient and scalable orthogonal persistence in Motoko that combines:"
+sidebar:
+  order: 2
 ---
 
 Enhanced orthogonal persistence implements the vision of efficient and scalable orthogonal persistence in Motoko that combines:
@@ -19,8 +20,8 @@ Moreover, it is advised to have a backup possibility for rescuing data even when
 :::
 
 :::note
-[Classical orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/classical) with 32-bit main memory and Candid stabilization was the previous default compilation mode for `moc`. If necessary, it can be re-enabled with compiler flag `--legacy-persistence`.
-See [orthogonal persistence modes](/languages/motoko/fundamentals/actors/orthogonal-persistence/overview) for a comparison.
+[Classical orthogonal persistence](./classical.md) with 32-bit main memory and Candid stabilization was the previous default compilation mode for `moc`. If necessary, it can be re-enabled with compiler flag `--legacy-persistence`.
+See [orthogonal persistence modes](./index.md) for a comparison.
 :::
 
 ## Design
@@ -53,7 +54,7 @@ Compatible changes for immutable types are largely analogous to the allowed Moto
 
 The runtime system checks migration compatibility on upgrade, and if not fulfilled, rolls back the upgrade. This compatibility check serves as an additional safety measure on top of the `dfx` warning that can be bypassed by users.
 
-Any more complex change can be performed with programmatic instruction, see [explicit migration](/languages/motoko/fundamentals/actors/data-persistence#explicit-migration).
+Any more complex change can be performed with programmatic instruction, see [explicit migration](../data-persistence.md#explicit-migration).
 
 ### Migration path
 When migrating from the old serialization-based stabilization to the new persistent heap, the old data is deserialized one last time from stable memory and then placed in the new persistent heap layout. Once operating on the persistent heap, the system should prevent downgrade attempts to the old serialization-based persistence.

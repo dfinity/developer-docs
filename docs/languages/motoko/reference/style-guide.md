@@ -1,7 +1,8 @@
 ---
-sidebar_position: 14
-description: "Motoko language documentation"
 title: "Motoko style guidelines"
+description: "To increase readability and uniformity of Motoko source code, the style guide provides suggestions for formatting Motoko sources and other basic conventions."
+sidebar:
+  order: 4
 ---
 
 To increase readability and uniformity of Motoko source code, the style guide provides suggestions for formatting Motoko sources and other basic conventions.

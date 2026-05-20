@@ -1,7 +1,8 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Tuples"
+description: "A tuple is a fixed-size, ordered collection of values, where each element can have a different type."
+sidebar:
+  order: 4
 ---
 
 A tuple is a fixed-size, ordered collection of values, where each element can have a different type. Tuples provide a way to group values by position, without the overhead of defining a record of named fields.
@@ -14,13 +15,13 @@ Unit values are typically used as placeholder arguments or return values for fun
 
 ## Defining a tuple
 
-```motoko
+```motoko no-repl
 let ghost = ("Motoko", 25);
 ```
 
 The tuple's type is automatically inferred as `(Text, Nat)`, since `"Motoko"` is of type [`Text`](https://mops.one/core/docs/Text) and `25` is of type [`Nat`](https://mops.one/core/docs/Nat).
 
-```motoko
+```motoko no-repl
 let ghost : (Text, Nat) = ("Motoko", 25);
 ```
 
@@ -32,7 +33,7 @@ Motoko **does not** support length-one tuples. This is in contrast to languages 
 
 Elements are accessed using `.n` where `n` is the index (0-based indexing).
 
-```motoko
+```motoko no-repl
 // Ghost is a tuple of length 2
 let ghost : (firstName : Text, age : Nat) = ("Motoko", 25);
 let first = ghost.0; // "Motoko"
@@ -43,7 +44,7 @@ let second = ghost.1; // 25
 
 Tuples are useful for returning multiple values from a function without requiring a separate data structure.
 
-```motoko
+```motoko no-repl
 func getUserInfo() : (Text, Nat) {
     ("Ghost", 30);
 };
@@ -55,17 +56,17 @@ getUserInfo();
 
 Tuples can be stored in arrays or other data structures. Tuples can be constructed with named types, improving readability. By naming the types in the tuple in the collection, the intent of each component is clarified, reducing ambiguity.
 
-```motoko
+```motoko no-repl
 let users : [(Text, Nat)] = [("Motoko", 25), ("Ghost", 30)];
 ```
 
-This structure efficiently represents a collection of key-value pairs without requiring a dedicated [record](/languages/motoko/fundamentals/types/records) type.
+This structure efficiently represents a collection of key-value pairs without requiring a dedicated [record](./records.md) type.
 
 ## Pattern matching on tuples
 
 In addition to dot notation, tuples can be decomposed using tuple patterns. When combined with `let` or `switch`, this allows you to access the components of a tuple through simple pattern matching.
 
-```motoko
+```motoko no-repl
 let users : [(Text, Nat)] = [("Motoko", 25), ("Ghost", 30)];
 
 let (firstUserName, _) = users[0] // "Motoko"
@@ -85,7 +86,7 @@ $$
 
 Using nested tuples, this can be implemented in Motoko as follows:
 
-```motoko
+```motoko no-repl
 // Point is a tuple of coordinate floats
 type Point = (Float, Float);
 // Line is a tuple of points, that is, a nested tuple

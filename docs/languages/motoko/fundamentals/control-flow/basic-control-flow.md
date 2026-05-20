@@ -1,7 +1,8 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Basic control flow"
+description: "In Motoko, code normally executes sequentially, evaluating expressions and declarations in order."
+sidebar:
+  order: 1
 ---
 
 In Motoko, code normally executes sequentially, evaluating expressions and declarations in order.
@@ -14,7 +15,7 @@ However, certain constructs can alter the flow of control, such as exiting a blo
 | `return` | Exits a function and returns a value. |
 | `if` | Executes a block if the condition is `true`. |
 | `if/else` | Executes different blocks based on a condition. |
-| `switch` | [Pattern matching](/languages/motoko/fundamentals/pattern-matching) for variants, options, results, etc. |
+| `switch` | [Pattern matching](../pattern-matching.md) for variants, options, results, etc. |
 | `let-else` | Destructure a pattern and handle the failure case inline. |
 | `option block` | Evaluates an expression and wraps the result in an option type, allowing scoped handling of `null` values. |
 | `label/break` | Allows exiting loops early. |
@@ -134,7 +135,7 @@ let o4 = addOpt(null, null);  // null
 
 Instead of having to switch on the options `n` and `m` in a verbose manner the use of the postfix operator `!` makes it easy to unwrap their values but exit the block with `null` when either is `null`.
 
-A more interesting example of option blocks can be found at the end of the section on [switch](/languages/motoko/fundamentals/control-flow/switch).
+A more interesting example of option blocks can be found at the end of the section on [switch](./switch.md).
 
 ## `label` and `break`
 
@@ -245,7 +246,7 @@ A `continue` expression skips the remainder of the current iteration in a loop a
 
 For example, computing the product we can skip a multiplication when the number is `1`:
 
-``` motoko no-repl
+```motoko no-repl
 func product(numbers : [Int]) : Int {
   var prod : Int = 1;
   for (number in numbers.vals()) {
@@ -258,7 +259,7 @@ func product(numbers : [Int]) : Int {
 
 When you have nested loops and need to continue a specific outer loop, you can use a label:
 
-``` motoko no-repl
+```motoko no-repl
 func product(numbers : [Int]) : Int {
   var prod : Int = 1;
   label l for (number in numbers.vals()) {
@@ -278,7 +279,7 @@ You can also exit any loop in a function using `return` or (in an asynchronous f
 
 ## Function calls
 
-A function call executes a function by passing arguments and receiving a result. In Motoko, function calls can be synchronous (executing immediately within the same [canister](/concepts/canisters)) or [asynchronous](/languages/motoko/fundamentals/actors/actors-async#async--await) (message passing between canisters). Asynchronous calls use `async`/`await` and are essential for inter-canister communication.
+A function call executes a function by passing arguments and receiving a result. In Motoko, function calls can be synchronous (executing immediately within the same [canister](/concepts/canisters)) or [asynchronous](../actors/actors-async.md#async--await) (message passing between canisters). Asynchronous calls use `async`/`await` and are essential for inter-canister communication.
 
 ```motoko no-repl
 persistent actor {

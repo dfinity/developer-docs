@@ -1,7 +1,8 @@
 ---
-sidebar_position: 2
-description: "Motoko language documentation"
 title: "Loops"
+description: "In Motoko, loops provide flexible control over repetition, such as iterating over collections, looping while some condition holds, or just looping until an e..."
+sidebar:
+  order: 2
 ---
 
 <!-- TODO: consolidate with basic-control-flow - some redundant material here -->
@@ -52,7 +53,7 @@ label countLoop loop {
 
 A `loop-while` executes the loop body at least once, then repeats as long as the condition remains true.
 
-``` motoko no-repl
+```motoko no-repl
 import Debug "mo:core/Debug";
 
 var count = 0;

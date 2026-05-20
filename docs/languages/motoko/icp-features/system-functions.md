@@ -1,25 +1,25 @@
 ---
+title: "System functions"
+description: "ICP supports five system functions that canisters can call to interact with the ICP runtime environment:"
 sidebar:
   order: 6
-description: "Motoko language documentation"
-title: "System functions"
 ---
 
 ICP supports five system functions that canisters can call to interact with the ICP runtime environment:
 
-- [`timer`](/references/ic-interface-spec/canister-interface#global-timer)
+- [`timer`](#timer)
 - [`preupgrade`](#preupgrade)
 - [`postupgrade`](#postupgrade)
 - [`lowmemory`](#lowmemory)
-- [`inspect`](/references/ic-interface-spec/canister-interface#system-api-inspect-message)
-- [`heartbeat`](/references/ic-interface-spec/canister-interface#heartbeat)
+- [`inspect`](#inspect)
+- [`heartbeat`](#heartbeat)
   
 
 Declaring any other system function will result in an error. Canisters can use these functions to efficiently manage state transitions, automate tasks, or handle system-level operations. 
 
 ## `timer()`
 
-The [`timer()` system function](/guides/backends/timers#timers) lets canisters schedule a task to execute after a specified delay. To make the timer repeat, the function must explicitly call `setGlobalTimer()` within its body to reset the timer. It accepts a single argument to set the global timer and returns `async ()`.
+The [`timer()` system function](/guides/backends/timers#recurring-timers) lets canisters schedule a task to execute after a specified delay. To make the timer repeat, the function must explicitly call `setGlobalTimer()` within its body to reset the timer. It accepts a single argument to set the global timer and returns `async ()`.
 
 Unlike `heartbeat()`, which runs automatically every subnet round, `timer()` requires manual rescheduling after each execution. This design gives canisters precise control over whether the timer runs once or continuously, depending on if and when `setGlobalTimer()` is called again.
 
