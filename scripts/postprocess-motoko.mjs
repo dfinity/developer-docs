@@ -228,7 +228,7 @@ if (unresolvedExternalCount > 0) {
 // If sidebar.mjs is absent (submodule pinned to an older release), this step
 // is skipped and the committed sidebar-motoko.mjs is used as-is.
 // ---------------------------------------------------------------------------
-const UPSTREAM_SIDEBAR = join(ROOT, '.sources/motoko/doc/md/sidebar.mjs');
+const UPSTREAM_SIDEBAR = join(ROOT, '.sources/motoko/doc/site/sidebar.mjs');
 const PREFIX = 'languages/motoko';
 
 function transformEntry(entry) {
