@@ -129,6 +129,20 @@ function processFile(filePath) {
   const relPath = filePath.replace(ROOT + '/', '');
   let changed = false;
 
+  // Mark subdirectory index.md stubs as sidebar.hidden so Starlight autogenerate
+  // doesn't surface them as duplicate entries alongside the explicit sidebar groups.
+  // These stubs have no body (only frontmatter); the root index.md has content and
+  // is excluded by the path check below.
+  const isSubdirIndex =
+    filePath !== join(MOTOKO_DIR, 'index.md') &&
+    filePath.endsWith('/index.md');
+  if (isSubdirIndex && !content.includes('hidden:')) {
+    content = content.replace(/^(sidebar:\s*\n(?:[ \t]+.*\n)*)/m, (match) => {
+      changed = true;
+      return match.trimEnd() + '\n  hidden: true\n';
+    });
+  }
+
   // Redirect remaining core/base relative links to mops.one (safety net — should
   // be a no-op for content fixed in PR #6132, but catches any stragglers).
   const relLinkRe = /\]\((\.[^)#]*?\.md)(#[^)]+)?\)/g;
