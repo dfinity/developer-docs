@@ -133,7 +133,7 @@ Subnets enforce a storage reservation policy above 750 GiB of total utilization.
 
 If you expect your canister to use significant storage, check the current utilization of candidate subnets on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before deploying. Choosing a subnet with available headroom avoids unexpected reservation costs as your canister grows.
 
-For details on storage costs and the reservation formula, see [Cycles costs](../../references/cycles-costs.md#storage-reservation).
+For details on storage costs and the reservation formula, see [Cycles costs](../../references/cycle-costs.md#storage-reservation).
 
 ## Troubleshooting
 
@@ -152,7 +152,7 @@ Note that any canister ID change means losing access to any threshold signature 
 
 ## Next steps
 
-- [Cycles costs](../../references/cycles-costs.md#replication-factors): Cost tables and the subnet multiplier formula
+- [Cycles costs](../../references/cycle-costs.md#replication-factors): Cost tables and the subnet multiplier formula
 - [Subnet types reference](../../references/subnet-types.md): Full reference for all subnet types with node counts and properties
 - [Canister snapshots](snapshots.md#example-transferring-state-between-canisters): Download/upload workflow for transferring state to another canister
 - [Canister migration](canister-migration.md): Complete workflow for moving a canister to a different subnet, with or without preserving the canister ID

@@ -181,7 +181,8 @@ export const sidebar = [
         collapsed: true,
         items: [
           { slug: "references/management-canister" },
-          { slug: "references/cycles-costs" },
+          { slug: "references/cycle-costs" },
+          { slug: "references/resource-limits" },
           { slug: "references/subnet-types" },
           { slug: "references/execution-errors" },
         ],

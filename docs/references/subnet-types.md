@@ -7,7 +7,7 @@ sidebar:
 
 The Internet Computer is composed of independent [**subnets**](../concepts/network-overview.md#subnets): each an autonomous blockchain that hosts a set of canisters. Subnets differ in node count, replication factor, costs, geographic distribution, and what canisters they accept. This page lists all subnet types and their properties.
 
-For guidance on choosing a subnet for deployment, see [Subnet selection](../guides/canister-management/subnet-selection.md). For per-operation cycle costs, see [Cycles costs](cycles-costs.md).
+For guidance on choosing a subnet for deployment, see [Subnet selection](../guides/canister-management/subnet-selection.md). For per-operation cycle costs, see [Cycles costs](cycle-costs.md).
 
 ## Subnet properties explained
 
@@ -74,7 +74,7 @@ The fiduciary subnet hosts the active threshold signature keys used by all chain
 
 > **Note:** Check the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) for the authoritative current node count and full principal ID of the fiduciary subnet. The node count determines the exact cycle cost multiplier for operations on this subnet.
 
-**Cost example (based on 34 nodes):** An update call that costs 5 million cycles on a 13-node subnet costs approximately 13 million cycles on the fiduciary subnet (`5M × 34/13 ≈ 13M`). See [Cycles costs](cycles-costs.md) for complete tables.
+**Cost example (based on 34 nodes):** An update call that costs 5 million cycles on a 13-node subnet costs approximately 13 million cycles on the fiduciary subnet (`5M × 34/13 ≈ 13M`). See [Cycles costs](cycle-costs.md) for complete tables.
 
 To deploy to the fiduciary subnet (verify the full principal ID on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets) before deploying):
 
@@ -129,7 +129,7 @@ For a fiduciary subnet, the multiplier depends on the current node count: verify
 | European | 13 | 500,000,000,000 | ~$0.68 |
 | Fiduciary | verify on dashboard | base × n / 13 | varies with node count |
 
-USD values are approximate and vary with the ICP/XDR exchange rate. See [Cycles costs](cycles-costs.md) for current figures and the full cost table including storage, execution, Xnet calls, and HTTPS outcalls.
+USD values are approximate and vary with the ICP/XDR exchange rate. See [Cycles costs](cycle-costs.md) for current figures and the full cost table including storage, execution, Xnet calls, and HTTPS outcalls.
 
 ## Finding subnet IDs
 
@@ -145,6 +145,6 @@ To find which subnet an existing canister is on, search for the canister ID on t
 ## Next steps
 
 - [Subnet selection](../guides/canister-management/subnet-selection.md): How to choose a subnet for your deployment
-- [Cycles costs](cycles-costs.md): Full cost tables and per-operation pricing
+- [Cycles costs](cycle-costs.md): Full cost tables and per-operation pricing
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/developing-canisters/deploy-specific-subnet.mdx; dfinity/icp-cli docs/guides/deploying-to-specific-subnets.md -->

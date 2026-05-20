@@ -215,7 +215,7 @@ Timer tasks are added to the canister's input queue. If the canister or subnet i
 
 The canister output queue is limited to 500 messages. This caps how many timers can fire in a single round. The CDK also enforces internal rate limits (250 concurrent timer calls globally, 5 per interval timer).
 
-See [Cycles and costs](../../references/cycles-costs.md#cost-table) for current pricing.
+See [Cycles and costs](../../references/cycle-costs.md#cost-table) for current pricing.
 
 ## Heartbeats (legacy)
 
@@ -279,6 +279,6 @@ For a complete working example with cycle tracking and multiple timers:
 
 - [Canister lifecycle](../canister-management/lifecycle.md#what-happens-during-an-upgrade): init, pre/post-upgrade hooks
 - [Timers (concept)](../../concepts/timers.md): how the IC protocol timer works
-- [Cycles and costs](../../references/cycles-costs.md#cost-table): current pricing
+- [Cycles and costs](../../references/cycle-costs.md#cost-table): current pricing
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/network-features/periodic-tasks-timers.mdx, docs/building-apps/network-features/time-and-timestamps.mdx, dfinity/cdk-rs ic-cdk-timers/src/lib.rs, and caffeinelabs/motoko-core src/Timer.mo */}
