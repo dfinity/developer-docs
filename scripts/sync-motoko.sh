@@ -26,9 +26,12 @@ rm -rf "$TARGET_DIR"
 mkdir -p "$TARGET_DIR"
 
 # Plain rsync. Exclude examples/ (referenced via <motokoExamples> file embeds,
-# resolved at build time from the pinned submodule — not page content).
+# resolved at build time from the pinned submodule — not page content) and
+# sidebar.mjs (read directly from the submodule by postprocess-motoko.mjs;
+# not a content page and not needed in the docs directory).
 rsync -a \
   --exclude="examples/" \
+  --exclude="sidebar.mjs" \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
 echo "  Post-processing..."
