@@ -102,4 +102,4 @@ For the full specification of these constraints, see [WebAssembly module require
 - [Subnet types](subnet-types.md): Subnet-specific constraints and cost multipliers
 - [Canister optimization](../guides/canister-management/optimization.md): Reducing instruction count and memory footprint
 
-<!-- Upstream: adapted from dfinity/portal docs/building-apps/canister-management/resource-limits.mdx -->
+<!-- Upstream: informed by dfinity/portal docs/building-apps/canister-management/resource-limits.mdx -->
