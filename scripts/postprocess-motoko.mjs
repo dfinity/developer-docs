@@ -192,6 +192,30 @@ function processFile(filePath) {
 }
 
 // ---------------------------------------------------------------------------
+// Inline Changelog.md at sync time — before walkAndProcess so that
+// em-dash replacement and link rewrites apply to the inlined content too.
+//
+// The upstream changelog.md stub uses ```md file=<motokoRoot>/Changelog.md```
+// (a build-time file include). That mechanism relies on .sources/motoko being
+// present during `npm run build`, which is true locally but not when `icp
+// deploy` runs the build inside its own recipe (the submodule is not in scope
+// at that point). To avoid a silent empty page, we expand the include here at
+// sync time so the file is fully self-contained in docs/.
+// ---------------------------------------------------------------------------
+const CHANGELOG_STUB = join(MOTOKO_DIR, 'reference', 'changelog.md');
+const UPSTREAM_CHANGELOG = join(ROOT, '.sources', 'motoko', 'Changelog.md');
+
+if (existsSync(CHANGELOG_STUB) && existsSync(UPSTREAM_CHANGELOG)) {
+  const stub = readFileSync(CHANGELOG_STUB, 'utf-8');
+  if (stub.includes('file=<motokoRoot>/Changelog.md')) {
+    const changelogContent = readFileSync(UPSTREAM_CHANGELOG, 'utf-8');
+    const inlined = stub.replace(/```md file=<motokoRoot>\/Changelog\.md\n```/, changelogContent.trimEnd());
+    writeFileSync(CHANGELOG_STUB, inlined);
+    console.log('  Inlined Changelog.md into reference/changelog.md');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Walk and process all .md files (including index.md stubs)
 // ---------------------------------------------------------------------------
 let filesChanged = 0;
