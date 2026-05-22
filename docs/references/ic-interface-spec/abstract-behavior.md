@@ -1245,13 +1245,14 @@ Conditions
 S.messages = Older_messages · FuncMessage M · Younger_messages
 (M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
 (∀ FuncMessage M' ∈ Older_messages · Younger_messages. M'.receiver ≠ M.receiver or M.entry_point ≠ OnLowWasmMemory)
-S.on_low_wasm_memory_hook_status[M.receiver] ≠ Ready
 S.canisters[M.receiver] ≠ EmptyCanister
 Mod = S.canisters[M.receiver].module
 Ctxt = S.call_contexts[M.call_context]
 Deadline = deadline_of_context(Ctxt)
 
 Is_response = M.entry_point == Callback _ _ _
+
+S.on_low_wasm_memory_hook_status[M.receiver] ≠ Ready or Is_response
 
 Env = {
   time = S.time[M.receiver];
