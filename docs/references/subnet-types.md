@@ -123,7 +123,7 @@ For a fiduciary subnet, the multiplier depends on the current node count: verify
 
 **Example: canister creation cost**
 
-| Subnet | Node count | Cycles | ~USD (May 2025) |
+| Subnet | Node count | Cycles | ~USD (May 2026) |
 |--------|-----------|--------|-----------------|
 | Application | 13 | 500,000,000,000 | ~$0.68 |
 | European | 13 | 500,000,000,000 | ~$0.68 |
