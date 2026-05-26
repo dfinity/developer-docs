@@ -581,7 +581,7 @@ Every EVM RPC call requires cycles. The cost depends on the request size, respon
 - Use `requestCost` to get an exact estimate before making a raw JSON-RPC call.
 - The Candid-RPC methods (like `eth_getBlockByNumber`) automatically retry with larger response sizes if needed, consuming more cycles from your budget.
 
-An additional collateral of `10_000_000 * nodes * rpc_services` cycles must be attached; these are currently refunded in full.
+An additional `10_000_000 * nodes * rpc_services` collateral cycles must be attached per call; these are consumed by the EVM RPC canister as a reserve for future pricing changes and are not returned. Any cycles above the total minimum are returned, so it is safe to send more than needed.
 
 ## Development setup
 

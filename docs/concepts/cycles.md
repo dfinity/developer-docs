@@ -12,7 +12,8 @@ Cycles cover four resource categories:
 - **Compute**: executing instructions (update calls, timers, heartbeats)
 - **Storage**: Wasm heap memory and stable memory, charged per byte per second
 - **Messaging**: ingress messages from users, inter-canister calls, responses
-- **Special features**: HTTPS outcalls, threshold signatures, Bitcoin integration, EVM RPC
+- **Threshold cryptography**: threshold ECDSA/Schnorr signing and VetKeys key derivation
+- **Chain integrations**: HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin
 
 Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
@@ -68,7 +69,9 @@ Each resource category is metered and charged differently:
 
 **Messaging** costs are charged to the sending canister. Ingress messages (user to canister) are charged to the receiving canister. Each inter-canister call has a fixed base cost plus a per-byte variable cost. The calling canister also prepays the maximum-size reply cost upfront; if the actual reply is smaller, the difference is refunded.
 
-**Special features** (HTTPS outcalls, threshold signatures, Bitcoin API calls) charge the calling canister an additional amount on top of standard messaging costs. These features require extra protocol-level work and are priced accordingly.
+**Threshold cryptography** (threshold ECDSA/Schnorr signing, VetKeys key derivation) charges the calling canister an additional amount on top of standard messaging costs. The extra cost reflects the computationally intensive threshold cryptographic operations and cross-subnet coordination required to produce the result. For exact amounts, see [Threshold cryptography costs](../references/cycle-costs.md#threshold-cryptography).
+
+**Chain integrations** (HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin) charge an additional amount because every node on the relevant subnet must participate in each outbound call to an external network. For exact amounts, see [Chain integration costs](../references/cycle-costs.md#chain-integrations).
 
 ## Cycles ledger
 

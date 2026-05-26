@@ -5,45 +5,11 @@ sidebar:
   order: 8
 ---
 
-Canisters pay for the resources they consume and operations they perform using [**cycles**](../concepts/cycles.md). The price of cycles is pegged to [XDR](glossary.md#xdr) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. See the [XDR exchange rate](#xdr-exchange-rate) section for the rate used in USD columns throughout this page.
+Canisters pay for the resources they consume and operations they perform using [**cycles**](../concepts/cycles.md). The price of cycles is pegged to [XDR](glossary.md#xdr) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. USD values throughout this page use **1 XDR = $1.366430**; see [XDR exchange rate](#xdr-exchange-rate) at the end of this page for the current rate and how to look it up programmatically.
 
 You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io/) to estimate the cost for your app.
 
-## XDR exchange rate
-
-The cycle price is fixed by protocol: **1 trillion cycles = 1 XDR**. This ratio is set by NNS governance and does not change with ICP token price movements.
-
-All USD values on this page use **1 XDR = $1.366430** (May 22, 2026). Use cycle counts for precise budgeting; only the USD conversion fluctuates.
-
-### How the CMC tracks the rate
-
-The [Cycles Minting Canister (CMC)](../references/system-canisters.md#cycles-minting-canister-cmc) (`rkp4c-7iaaa-aaaaa-aaaca-cai`) calls the [exchange rate canister (XRC)](../references/protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes for the current ICP/XDR rate. The CMC exposes `get_icp_xdr_conversion_rate`, which returns `xdr_permyriad_per_icp`: the number of XDR per ICP, expressed in units of 1/10000 (for example, `19482` means 1 ICP = 1.9482 XDR). This is an ICP/XDR rate; the CMC does not track XDR/USD.
-
-### Getting the current XDR/USD rate
-
-**Manual lookup:** The [IMF's SDR valuation page](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) is the authoritative source. The page returns HTTP 403 to automated HTTP clients and cannot be fetched programmatically.
-
-**ICP Dashboard API (unsigned, easy for scripts):** Fetch the ICP/USD price and the ICP/XDR rate, then derive XDR/USD:
-
-```bash
-# ICP/USD (returns [[timestamp, "price_as_string"]])
-GET https://ic-api.internetcomputer.org/api/v3/icp-usd-rate
-
-# ICP/XDR in permyriad (returns [[timestamp, xdr_permyriad_per_icp]])
-GET https://ic-api.internetcomputer.org/api/v3/icp-xdr-conversion-rates?limit=1
-
-xdr_usd = icp_usd / (xdr_permyriad_per_icp / 10_000)
-```
-
-Example: ICP/USD = $2.67, ICP/XDR = 19482 / 10000 = 1.9482 → XDR/USD = 2.67 / 1.9482 ≈ $1.37.
-
-The ICP Dashboard API is not certified: responses are unsigned and not verifiable on-chain.
-
-**CMC metrics endpoint (Prometheus, unsigned):** The CMC exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` that includes `cmc_icp_xdr_conversion_rate` (current ICP/XDR) and `cmc_avg_icp_xdr_conversion_rate` (30-day moving average used for node provider rewards). Neither is certified. Apply the same formula to derive XDR/USD.
-
-**On-chain (certified, from a canister):** Call the XRC for `ICP/USD` as a crypto/fiat pair (1B cycles, refunded if unused), and call the CMC `get_icp_xdr_conversion_rate` for ICP/XDR. Derive XDR/USD = ICP_USD / (xdr_permyriad_per_icp / 10_000). See [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md) for XRC integration code.
-
-## Cycles units
+## Cycle units
 
 | Abbreviation | Name     | In numbers        | XDR value | Approx. USD value |
 |--------------|----------|-------------------|-----------|-------------------|
@@ -63,7 +29,7 @@ See [Subnet types](subnet-types.md) for subnet-specific details.
 
 ## Cost table
 
-USD values use the rate in the [XDR exchange rate](#xdr-exchange-rate) section. Use cycle counts for precise budgeting.
+USD values use the rate stated in the intro. Use cycle counts for precise budgeting.
 
 <!-- Needs human verification: cloud pricing comparison requested in content brief — no upstream source found in .sources/ for ICP vs. cloud provider cost comparison. -->
 
@@ -118,27 +84,9 @@ When a canister grows its memory (via `memory.grow`, `ic0.stable_grow()`, or Was
 
 Reserved cycles are non-transferable. Controllers can disable reservation by setting `reserved_cycles_limit = 0`, but opted-out canisters cannot allocate new memory when subnet usage exceeds 750 GiB.
 
-## Protocol integrations
+## Threshold cryptography
 
-The following ICP features involve calls to external networks or specialized subnets and carry additional cycle costs beyond the base execution and messaging fees.
-
-### HTTPS outcalls
-
-HTTPS outcall costs scale with subnet size (`n` = number of nodes):
-
-```
-total_fee  = base_fee + size_fee
-base_fee   = (3_000_000 + 60_000 * n) * n
-size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
-```
-
-`request_bytes` is the total serialized request size (URL + headers + body + transform name/context). `max_response_bytes` defaults to 2 MiB if not explicitly set by the canister.
-
-| Component | 13-node cycles | ~USD | 34-node cycles | ~USD |
-|-----------|----------------|------|----------------|------|
-| Per call (base) | 49_140_000 | ~$0.0000671 | 171_360_000 | ~$0.000234 |
-| Per request byte | 5_200 | ~$0.0000000071 | 13_600 | ~$0.0000000186 |
-| Per reserved response byte | 10_400 | ~$0.0000000142 | 27_200 | ~$0.0000000372 |
+Threshold signing and key derivation are core ICP protocol capabilities: the cryptographic operations happen entirely within the ICP network, distributed across the nodes of a designated subnet. The extra cost reflects computationally intensive threshold cryptography and cross-subnet coordination.
 
 ### Threshold ECDSA and Schnorr signing
 
@@ -162,6 +110,28 @@ If the canister may be blackholed or called by other canisters, send more cycles
 
 If the canister may be blackholed or called by other canisters, send more cycles than the listed cost: unused cycles are refunded.
 
+## Chain integrations
+
+These features involve outbound calls to external networks. Every node on the relevant subnet participates in each call, which is the primary driver of the additional cost. The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
+
+### HTTPS outcalls
+
+HTTPS outcall costs scale with subnet size (`n` = number of nodes):
+
+```
+total_fee  = base_fee + size_fee
+base_fee   = (3_000_000 + 60_000 * n) * n
+size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
+```
+
+`request_bytes` is the total serialized request size (URL + headers + body + transform name/context). `max_response_bytes` defaults to 2 MiB if not explicitly set by the canister.
+
+| Component | 13-node cycles | ~USD | 34-node cycles | ~USD |
+|-----------|----------------|------|----------------|------|
+| Per call (base) | 49_140_000 | ~$0.0000671 | 171_360_000 | ~$0.000234 |
+| Per request byte | 5_200 | ~$0.0000000071 | 13_600 | ~$0.0000000186 |
+| Per reserved response byte | 10_400 | ~$0.0000000142 | 27_200 | ~$0.0000000372 |
+
 ### EVM RPC canister
 
 Calls to the EVM RPC canister use an HTTPS-outcall-based pricing structure with higher per-byte constants than standard HTTPS outcalls, scaled by the number of RPC services used for multi-provider consistency:
@@ -177,7 +147,25 @@ Calls to the EVM RPC canister use an HTTPS-outcall-based pricing structure with 
 
 Typical cost: 10^8 to 10^9 cycles (~$0.0001 to $0.001 USD). On a 34-node subnet with a 1 kB request and 1 kB response using one RPC service: ~$0.00052.
 
-An additional `10_000_000 * nodes_in_subnet * rpc_services` collateral cycles must be attached; these are currently refunded in full. Start with 10_000_000_000 cycles and adjust based on observed costs. Use the `requestCost` query method on the EVM RPC canister to estimate costs before calling.
+An additional `10_000_000 * nodes_in_subnet * rpc_services` collateral cycles must be attached per call; these are consumed by the EVM RPC canister as a reserve for future pricing changes and are not returned to the caller. Any cycles you attach above the total minimum (formula + collateral) are returned, so it is safe to send more than needed. Start with 10_000_000_000 cycles and adjust based on observed costs. Use the `requestCost` query method on the EVM RPC canister to get an exact estimate before calling.
+
+### SOL RPC canister
+
+The SOL RPC canister prices each call using the standard HTTPS outcall formula plus a `10_000_000 cycles × n` per-node processing fee, scaled by the number of RPC providers used:
+
+```
+total_fee = (
+  (3_000_000 + 60_000 * n) * n             // base HTTP outcall fee
+  + (400 * request_bytes + 800 * max_response_bytes) * n  // size fee
+  + 10_000_000 * n                         // processing fee
+) * rpc_providers
+```
+
+`n` is the number of nodes in the subnet hosting the SOL RPC canister. Because each method uses a different default `max_response_bytes` and request serialization size, costs vary per method. As a reference point: `getBalance` with 3 RPC providers on a 34-node subnet costs approximately 1.7 billion cycles (~$0.0023 USD).
+
+To get the exact cycle estimate for a specific call before attaching cycles, use the corresponding query endpoint on the SOL RPC canister: `getBalanceCyclesCost`, `getBlockCyclesCost`, `getSlotCyclesCost`, `getTransactionCyclesCost`, `sendTransactionCyclesCost`, and equivalents for each method.
+
+See the [Solana guide](../guides/chain-fusion/solana.mdx) for integration examples.
 
 ### Bitcoin integration API
 
@@ -226,23 +214,39 @@ The Dogecoin integration API follows the same two-tier pricing model as the Bitc
 
 See the [Dogecoin guide](../guides/chain-fusion/dogecoin.md) for integration patterns.
 
-### SOL RPC canister
+## XDR exchange rate
 
-The SOL RPC canister prices each call using the standard HTTPS outcall formula plus a `10_000_000 cycles × n` per-node processing fee, scaled by the number of RPC providers used:
+The cycle price is fixed by protocol: **1 trillion cycles = 1 XDR**. This ratio is set by NNS governance and does not change with ICP token price movements.
 
+All USD values on this page use **1 XDR = $1.366430** (May 22, 2026). Use cycle counts for precise budgeting; only the USD conversion fluctuates.
+
+### How the CMC tracks the rate
+
+The [Cycles Minting Canister (CMC)](../references/system-canisters.md#cycles-minting-canister-cmc) (`rkp4c-7iaaa-aaaaa-aaaca-cai`) calls the [exchange rate canister (XRC)](../references/protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes for the current ICP/XDR rate. The CMC exposes `get_icp_xdr_conversion_rate`, which returns `xdr_permyriad_per_icp`: the number of XDR per ICP, expressed in units of 1/10000 (for example, `19482` means 1 ICP = 1.9482 XDR). This is an ICP/XDR rate; the CMC does not track XDR/USD.
+
+### Getting the current XDR/USD rate
+
+**Manual lookup:** The [IMF's SDR valuation page](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) is the authoritative source. The page returns HTTP 403 to automated HTTP clients and cannot be fetched programmatically.
+
+**ICP Dashboard API (unsigned, easy for scripts):** Fetch the ICP/USD price and the ICP/XDR rate, then derive XDR/USD:
+
+```bash
+# ICP/USD (returns [[timestamp, "price_as_string"]])
+GET https://ic-api.internetcomputer.org/api/v3/icp-usd-rate
+
+# ICP/XDR in permyriad (returns [[timestamp, xdr_permyriad_per_icp]])
+GET https://ic-api.internetcomputer.org/api/v3/icp-xdr-conversion-rates?limit=1
+
+xdr_usd = icp_usd / (xdr_permyriad_per_icp / 10_000)
 ```
-total_fee = (
-  (3_000_000 + 60_000 * n) * n             // base HTTP outcall fee
-  + (400 * request_bytes + 800 * max_response_bytes) * n  // size fee
-  + 10_000_000 * n                         // processing fee
-) * rpc_providers
-```
 
-`n` is the number of nodes in the subnet hosting the SOL RPC canister. Because each method uses a different default `max_response_bytes` and request serialization size, costs vary per method. As a reference point: `getBalance` with 3 RPC providers on a 34-node subnet costs approximately 1.7 billion cycles (~$0.0023 USD).
+Example: ICP/USD = $2.67, ICP/XDR = 19482 / 10000 = 1.9482 → XDR/USD = 2.67 / 1.9482 ≈ $1.37.
 
-To get the exact cycle estimate for a specific call before attaching cycles, use the corresponding query endpoint on the SOL RPC canister: `getBalanceCyclesCost`, `getBlockCyclesCost`, `getSlotCyclesCost`, `getTransactionCyclesCost`, `sendTransactionCyclesCost`, and equivalents for each method.
+The ICP Dashboard API is not certified: responses are unsigned and not verifiable by the network.
 
-See the [Solana guide](../guides/chain-fusion/solana.mdx) for integration examples.
+**CMC metrics endpoint (Prometheus, unsigned):** The CMC exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` that includes `cmc_icp_xdr_conversion_rate` (current ICP/XDR) and `cmc_avg_icp_xdr_conversion_rate` (30-day moving average used for node provider rewards). Neither is certified. Apply the same formula to derive XDR/USD.
+
+**From canister code (certified):** Call the XRC for `ICP/USD` as a crypto/fiat pair (1B cycles, refunded if unused), and call the CMC `get_icp_xdr_conversion_rate` for ICP/XDR. Derive XDR/USD = ICP_USD / (xdr_permyriad_per_icp / 10_000). See [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md) for XRC integration code.
 
 ## Related pages
 
