@@ -1,12 +1,13 @@
 ---
-sidebar_position: 7
-description: "Motoko language documentation"
 title: "Module declarations"
+description: "In Motoko, a module is a collection of related types, values, and functions grouped under a single namespace."
+sidebar:
+  order: 7
 ---
 
 In Motoko, a **module** is a collection of related types, values, and functions grouped under a single namespace. Unlike actors and objects, modules cannot declare mutable state or have side effects during their construction. This restriction makes them ideal for defining code libraries, since you don’t need to worry about the side effects or state implications of importing the same library multiple times or removing an unused one.
 
-Modules are mainly used to build libraries, such as those in the [core package](https://mops.one/core) or packages available through [Mops, the Motoko package manager](https://mops.one).
+Modules are mainly used to build libraries, such as those in the [core package](https://mops.one/core/docs/index) or packages available through [Mops, the Motoko package manager](https://mops.one).
 
 A module in Motoko can define:
 
@@ -90,7 +91,7 @@ A module can declare classes that use state, provided it doesn't instantiate tho
 
 For example, a module can define a class of stateful `Counters` :
 
-``` motoko no-repl
+```motoko no-repl
 module Counters {
    public class Counter() {
       var count : Nat = 0;
@@ -133,7 +134,7 @@ If you'd prefer to avoid dot notation, you can also import individual values dir
 
 This allows you to bind specific names from the module into your local scope, making the code more concise and readable when those values are used frequently.
 
-``` motoko no-repl
+```motoko no-repl
 import {init; identity} "Matrix";
 
 let zero = init(3, 3, 0);

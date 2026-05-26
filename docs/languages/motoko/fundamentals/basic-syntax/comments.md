@@ -1,7 +1,8 @@
 ---
-sidebar_position: 10
-description: "Motoko language documentation"
 title: "Comments"
+description: "Motoko supports single-line, multi-line, and nested comments."
+sidebar:
+  order: 10
 ---
 
 Motoko supports single-line, multi-line, and nested comments.
@@ -44,7 +45,7 @@ Multi-line comments can be nested within each other.
 
 ## Resources
 
-- [Comment style guide](/languages/motoko/reference/style-guide#comments)
+- [Comment style guide](../../reference/style-guide.md#comments)
 
 - [Generating Motoko documentation](/developer-tools/#mo-doc)
 

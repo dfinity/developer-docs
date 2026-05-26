@@ -1,14 +1,15 @@
 ---
-sidebar_position: 5
-description: "Motoko language documentation"
 title: "Characters & text"
+description: "The Char type in Motoko represents a single Unicode character delimited with a single quotation mark (')."
+sidebar:
+  order: 5
 ---
 
 ## Characters
 
 The `Char` type in Motoko represents a single Unicode character delimited with a single quotation mark (`'`).
 
-```motoko
+```motoko no-repl
 let letter : Char = 'A';
 let symbol : Char = '✮';
 
@@ -20,7 +21,7 @@ let symbol : Char = '✮';
 :::note[Iter]
 An `Iter<T>` is an object that sequentially produces values of specified type `T` until no more values remain.
 :::
-``` motoko
+```motoko no-repl
 import Char "mo:core/Char";
 
 func reverse(t: Text) : Text {
@@ -36,7 +37,7 @@ reverse("Motoko");
 
 The operator `#` concatenates two `Text` values.
 
-```motoko
+```motoko no-repl
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Char "mo:core/Char";
@@ -81,13 +82,13 @@ persistent actor Alternator {
 
 Strings of characters, familiar from other languages, are called **text** in Motoko, and represented using the [`Text`](https://mops.one/core/docs/Text) type. A text value is an immutable sequence of Unicode characters delimited with a double quotation mark (`"`).
 
-```motoko
+```motoko no-repl
 let greeting : Text = "Hello, world!";
 ```
 
 The `#` operator concatenates two `Text` values:
 
-``` motoko
+```motoko no-repl
 // Concatenating text
 
 "ICP " # "❤️" # " Motoko" // "ICP ❤️ Motoko"
@@ -95,13 +96,13 @@ The `#` operator concatenates two `Text` values:
 
 `t.size()` can be used to return the number of characters in the text `t`.
 
-```motoko
+```motoko no-repl
 "abc".size() == 3
 ```
 
 `t.chars()` returns an iterator enumerating the characters in `t`. For example:
 
-```motoko
+```motoko no-repl
 import Char "mo:core/Char";
 import Debug "mo:core/Debug";
 

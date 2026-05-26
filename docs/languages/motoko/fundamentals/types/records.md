@@ -1,18 +1,19 @@
 ---
-sidebar_position: 5
-description: "Motoko language documentation"
 title: "Records"
+description: "Records allow you to group related values using named fields, with each field potentially having a different type."
+sidebar:
+  order: 5
 ---
 
 Records allow you to group related values using named fields, with each field potentially having a different type.
-Unlike [tuples](/languages/motoko/fundamentals/types/tuples), which use positional access, records provide field-based access, improving readability and maintainability.
+Unlike [tuples](./tuples.md), which use positional access, records provide field-based access, improving readability and maintainability.
 
 Records also support **mutable fields**, declared using the `var` keyword.
 In contrast, all fields in a tuple are always **immutable**.
 
 ## Defining a record
 
-```motoko
+```motoko no-repl
 let person = {
    name : Text = "Motoko";
    age : Nat = 25;
@@ -26,7 +27,7 @@ Without an explicit annotation, the compiler might infer a more specific type th
 
 Example:
 
-```motoko
+```motoko no-repl
 let account = { name = "Motoko"; var balance = 0 };
 // Inferred as { name : Text; var balance : Nat }
 account.balance := -100; //  Rejected, -100 is an Int not a Nat
@@ -53,7 +54,7 @@ Unlike tuples, the order of record fields is immaterial and all record types wit
 
 Fields in a record can be accessed using the dot (`.`) notation.
 
-```motoko
+```motoko no-repl
 let person = {
    name : Text = "Motoko";
    age : Nat = 25;
@@ -71,7 +72,7 @@ Attempting to access a field that isn't available in the type of the record is a
 
 By default, record fields are immutable. To create a mutable field, use `var`.
 
-```motoko
+```motoko no-repl
 let person = {
     var name : Text = "Motoko";
     var age : Nat = 25;
@@ -82,7 +83,7 @@ This `person` has type `{var age : Nat; var name : Text}`.
 
 `var name` and `var age` allow the values to be updated later.
 
-```motoko
+```motoko no-repl
 let person = {
    var name : Text = "Motoko";
    var age : Nat = 25;
@@ -100,7 +101,7 @@ Attempting to update an immutable field is a compile-time type error.
 
 Records can contain other records, allowing for hierarchical data structures that maintain organization while ensuring type safety and clarity.
 
-```motoko
+```motoko no-repl
 type Address = {
     city : Text;
     street : Text;
@@ -120,9 +121,9 @@ let individual : Individual = {
 
 ## Pattern matching on records
 
-Records can be destructured using [`switch`](/languages/motoko/fundamentals/control-flow/switch), allowing selective extraction of fields. This approach makes accessing deeply nested fields more explicit and readable.
+Records can be destructured using [`switch`](../control-flow/switch.md), allowing selective extraction of fields. This approach makes accessing deeply nested fields more explicit and readable.
 
-```motoko
+```motoko no-repl
 type Address = {
     city : Text;
     street : Text;
@@ -149,7 +150,7 @@ The field pattern `name` is just shorthand for `name = name`: it binds the conte
 
 Records are commonly used in arrays and other collections for structured data storage, allowing efficient  data organization and retrieval.
 
-```motoko
+```motoko no-repl
 type Product = {
     name : Text;
     price : Float;
@@ -187,7 +188,7 @@ debug_show(profile);
 
 The `with` keyword modifies, overrides, or adds fields when combining records.
 
-```motoko
+```motoko no-repl
 let person = { name : Text = "Motoko"; age : Nat =  25; };
 // age = 26; updates the existing age field.
 // city = "New York" adds a new field to the record.
@@ -205,7 +206,7 @@ If `person` contained a mutable (`var`) field, `with` must redefine it, preventi
 
 ### Combining `and` and `with`
 
-```motoko
+```motoko no-repl
 let person = {name : Text = "Motoko"; age : Nat = 25};
 let contact = {email : Text = "motoko@example.com"};
 

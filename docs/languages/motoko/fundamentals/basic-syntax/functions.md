@@ -1,13 +1,13 @@
 ---
-sidebar_position: 8
-description: "Motoko language documentation"
 title: "Functions"
-hide_table_of_contents: true
+description: "Functions in Motoko can have various attributes, the most fundamental being whether they are public or private."
+sidebar:
+  order: 8
 ---
 
 Functions in Motoko can have various attributes, the most fundamental being whether they are public or private. Public functions can be called by users or other [canisters](/concepts/canisters), while private functions are only accessible within the program that defines them.
 
-The most basic Motoko [function declaration](/languages/motoko/fundamentals/declarations/function-declarations) is:
+The most basic Motoko [function declaration](../declarations/function-declarations.md) is:
 
 ```motoko no-repl
 func exampleFunction() : () {};
@@ -15,7 +15,7 @@ func exampleFunction() : () {};
 
 In objects, modules, and actors, all functions are private by default unless explicitly declared as `public`.
 
-```motoko
+```motoko no-repl
 object Counter  {
    var value = 0;
    func reset() { value := 0 };
@@ -48,13 +48,13 @@ Shared functions come in several forms:
 - `shared composite query` functions, which behave like queries but can also call other queries.
 All shared function, unlike ordinary functions, provide access to the identity of their caller, for applications like access control.
 
-[Learn more about function types](/languages/motoko/fundamentals/types/function-types).
+[Learn more about function types](../types/function-types.md).
 
 :::
 
 For example, you can rewrite the object above as an actor:
 
-``` motoko
+```motoko no-repl
 persistent actor Digit {
    var value = 0;
    func reset() { value := 0 };
@@ -70,7 +70,7 @@ persistent actor Digit {
 
 Since the public functions of an actor must be `shared`, you can omit the `shared` keyword:
 
-``` motoko
+```motoko no-repl
 persistent actor Digit {
    var value = 0;
    func reset() { value := 0 };

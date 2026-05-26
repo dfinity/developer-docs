@@ -1,8 +1,8 @@
 ---
+title: "Caller identification"
+description: "On ICP, every user and canister has a unique principal identifier."
 sidebar:
   order: 3
-description: "Motoko language documentation"
-title: "Caller identification"
 ---
 
 On ICP, every user and canister has a unique **principal** identifier. When a canister receives a message, such as a function call, the principal identifying the caller of the function is included in the message.
@@ -13,7 +13,7 @@ Motoko’s `shared` keyword is used to declare a shared function. Shared functio
 
 For example, when a shared function is called by a user or another canister, the caller's principal can be captured with `msg.caller`:
 
-``` motoko no-repl
+```motoko no-repl
 shared(msg) func inc() : async () {
   // ... msg.caller ...
 }
@@ -23,7 +23,7 @@ In this example, the shared function `inc()` specifies a `msg` parameter, a reco
 
 To access the caller of an actor class constructor, you use the same syntax on the actor class declaration:
 
-``` motoko
+```motoko no-repl
 shared(msg) persistent actor class Counter(init : Nat) {
   // ... msg.caller ...
 }

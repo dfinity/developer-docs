@@ -1,20 +1,22 @@
 ---
-sidebar_position: 3
-description: "Motoko language documentation"
 title: "Object declarations"
+description: "In Motoko, records and objects are both used to group related values using named fields."
+sidebar:
+  order: 3
 ---
 
 In Motoko, records and objects are both used to group related values using named fields. Record and objects have the same types, but differ in the way they are created and used. The types of record and objects are both described using object types, which are unordered sequences of named fields describing the content and mutability of each public field. Both record and object fields can be accessed by either dot notation or by pattern matching on the names of the fields.
 
 While records expressions are ideal for lightweight data representation, objects expressions are more verbose. Object expressions can define full objects in the sense of object-oriented programming where an object is a collection of named fields and methods acting on private state. In Motoko, the private declarations define the encapsulated state, while the public definitions define the object's visible members.
 
-Record and object both use the `var` keyword to define [mutable](/languages/motoko/fundamentals/declarations/variable-declarations) and declarations. Both records and objects support `and` and `with` for merging and updating object fields to create new records and objects.
+Record and object both use the `var` keyword to define [mutable](./variable-declarations.md) and declarations. Both records and objects support `and` and `with` for merging and updating object fields to create new records and objects.
 
 **Record expressions** are used to construct simple data structures that consist of named fields holding values. The fields can be mutable or immutable. The fields of a record cannot refer to each other by name and are mainly used to store plain data, like the records in a database.
 
 Record values can only be declared using `let`:
 
-```motoko name=record no-repl
+```motoko no-repl
+
 let Motoko = {
   name : Text = "Motoko";
   var age : Nat = 25;
@@ -60,7 +62,8 @@ This defines an object with three public members, the field `name` and the metho
 
 Motoko also supports object declarations, which stress the definition of an object by using the `object` keyword in place of `let`:
 
-```motoko name=Object no-repl
+```motoko no-repl
+
 object Motoko = {
   public let name = "Motoko";
   var age = 6;

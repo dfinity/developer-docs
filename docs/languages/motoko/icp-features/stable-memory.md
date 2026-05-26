@@ -1,8 +1,8 @@
 ---
+title: "Stable memory and regions"
+description: "Canisters have two types of storage: Wasm memory and stable memory."
 sidebar:
   order: 5
-description: "Motoko language documentation"
-title: "Stable memory and regions"
 ---
 
 Canisters have two types of storage: Wasm memory and stable memory. The Wasm memory is often referred to as the [heap memory](/concepts/orthogonal-persistence#heap-wasm-linear-memory). It is automatically used for heap-allocated objects and has a maximum size limitation of 4 GiB or 6 GiB respective to whether you are using 32-bit or 64-bit heap storage without enhanced orthogonal persistence. When a canister is upgraded, the heap memory is cleared, only retaining data stored in stable variables.
@@ -12,7 +12,7 @@ Stable memory has a maximum size of 500 GiB and is preserved across canister upg
 The system automatically commits all memory modifications, both Wasm and stable, after the successful execution of a message. If a message execution fails, the changes are not committed.
 
 :::caution
-The `Regions` library should only be used if [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced) does not fit your use case.
+The `Regions` library should only be used if [enhanced orthogonal persistence](../fundamentals/actors/orthogonal-persistence/enhanced.md) does not fit your use case.
 :::
 
 ## What is a `Region`?

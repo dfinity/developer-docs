@@ -1,7 +1,8 @@
 ---
-sidebar_position: 9
-description: "Motoko language documentation"
 title: "Operators"
+description: "Motoko provides various operators for working with numbers, text, and boolean values."
+sidebar:
+  order: 9
 ---
 
 Motoko provides various operators for working with numbers, text, and boolean values. They can be categorized as follows:
@@ -170,13 +171,13 @@ Operators follow precedence rules, meaning that, in the absence of explicit pare
 
 For example:
 
-```motoko
+```motoko no-repl
 let result = 10 + 5 * 2; // result = 20
 ```
 
 Use parentheses to enforce a different order.
 
-```motoko
+```motoko no-repl
 let result = (10 + 5) * 2; // result = 30
 ```
 
@@ -184,7 +185,7 @@ let result = (10 + 5) * 2; // result = 30
 
 Pipes (`|>`) chain together function calls in a readable way. Instead of nesting function calls, pipes pass the result of one expression as an argument to the next function. The value of the left side of the pipe is referenced on the right side using an underscore (`_`).
 
-```motoko
+```motoko no-repl
 func double(n : Int) : Int { n * 2 };
 func increment(n : Int) : Int { n + 1 };
 

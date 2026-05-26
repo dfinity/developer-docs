@@ -1,10 +1,9 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Verifying upgrade compatibility"
+description: "When upgrading a canister, it is important to verify that the upgrade can proceed without:"
+sidebar:
+  order: 4
 ---
-
-
 
 When upgrading a canister, it is important to verify that the upgrade can proceed without:
 
@@ -12,7 +11,7 @@ When upgrading a canister, it is important to verify that the upgrade can procee
 -   Breaking clients due to a Candid interface change.
 
 `dfx` checks these properties statically before attempting the upgrade.
-Moreover, with [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced), Motoko rejects incompatible changes of stable declarations.
+Moreover, with [enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md), Motoko rejects incompatible changes of stable declarations.
 
 ## Upgrade example
 
@@ -52,12 +51,12 @@ You can think of this as the interior interface of the actor, that it presents t
 
 For example, `v1`'s stable types:
 
-```motoko no-repl file=<motokoExamples>/count-v1.most
+```motoko no-repl title="count-v1.most" file=<motokoExamples>/count-v1.most
 ```
 
 An upgrade from `v1` to `v2`'s stable types consumes a [`Nat`](https://mops.one/core/docs/Nat) as an [`Int`](https://mops.one/core/docs/Nat), which is valid because `Nat <: Int`, that is,  `Nat` is a subtype of `Int`.
 
-```motoko no-repl file=<motokoExamples>/count-v2.most
+```motoko no-repl title="count-v2.most" file=<motokoExamples>/count-v2.most
 ```
 
 ## Evolving the Candid interface
@@ -74,38 +73,38 @@ An upgrade is safe provided that both the Candid interface and stable type signa
   does not involve promotion to `Any` or dropping object fields.
 * The Candid interface evolves to a subtype.
 
-Consider the following four versions of the counter example:
+Consider the following four versions of the counter example. The `// Version: 1.0.0` comment at the top of each `.most` file is the stable signature format version, not the application version. See [Stable signature versions](#stable-signature-versions) below for the full taxonomy.
 
 Version `v0` with Candid interface `v0.did` and stable type interface `v0.most`:
 
-```candid file=<motokoExamples>/count-v0.did
+``` candid file=<motokoExamples>/count-v0.did
 ```
 
-```motoko no-repl file=<motokoExamples>/count-v0.most
+```motoko no-repl title="count-v0.most" file=<motokoExamples>/count-v0.most
 ```
 
 Version `v1` with Candid interface `v1.did` and stable type interface `v1.most`,
 
-```candid file=<motokoExamples>/count-v1.did
+``` candid file=<motokoExamples>/count-v1.did
 ```
 
-```motoko no-repl file=<motokoExamples>/count-v1.most
+```motoko no-repl title="count-v1.most" file=<motokoExamples>/count-v1.most
 ```
 
 Version `v2` with Candid interface `v2.did` and stable type interface `v2.most`,
 
-```candid file=<motokoExamples>/count-v2.did
+``` candid file=<motokoExamples>/count-v2.did
 ```
 
-```motoko no-repl file=<motokoExamples>/count-v2.most
+```motoko no-repl title="count-v2.most" file=<motokoExamples>/count-v2.most
 ```
 
 Version `v3` with Candid interface `v3.did` and stable type interface `v3.most`:
 
-```candid file=<motokoExamples>/count-v3.did
+``` candid file=<motokoExamples>/count-v3.did
 ```
 
-```motoko no-repl file=<motokoExamples>/count-v3.most
+```motoko no-repl title="count-v3.most" file=<motokoExamples>/count-v3.most
 ```
 
 ## Incompatible upgrade
@@ -121,7 +120,7 @@ This version is neither compatible to stable type declarations, nor to the Candi
 - The change in the return type of `read` is also not safe.
   If the change were accepted, then existing clients of the `read` method, that still expect to receive integers, would suddenly start receiving incompatible floats.
 
-With [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced), Motoko actively rejects any upgrades that require type-incompatible state changes.
+With [enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md), Motoko actively rejects any upgrades that require type-incompatible state changes.
 
 This is to guarantee that the stable state is always kept safe.
 
@@ -134,7 +133,7 @@ In addition to Motoko's runtime check, `dfx` raises a warning message for these 
 Motoko tolerates Candid interface changes, since these are more likely to be intentional, breaking changes.
 
 :::danger
-Versions of Motoko using [classical orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/classical) will drop the state and reinitialize the counter with `0.0`, if the `dfx` warning is ignored.
+Versions of Motoko using [classical orthogonal persistence](./orthogonal-persistence/classical.md) will drop the state and reinitialize the counter with `0.0`, if the `dfx` warning is ignored.
 
 For this reason, users should always heed any compatibility warnings issued by `dfx`.
 :::
@@ -232,7 +231,7 @@ The stable signature of an actor with a migration function now consists of two o
 
 For example, this is the combined signature of the previous example:
 
-```motoko no-repl file=<motokoExamples>/count-v9.most
+```motoko no-repl title="count-v9.most" file=<motokoExamples>/count-v9.most
 ```
 
 The second signature is determined solely by the actor's stable variable declarations.
@@ -244,7 +243,7 @@ The migration function can be deleted or adjusted on the next upgrade.
 
 ## Enhanced stable signatures
 
-When using [enhanced multi-migration](/languages/motoko/fundamentals/actors/enhanced-multi-migration), the compiler produces an **enhanced stable signature** that records the entire migration chain alongside the actor's final stable fields. This extended signature enables the tooling to verify upgrade compatibility across the full history of migrations.
+When using [enhanced multi-migration](./enhanced-multi-migration.md), the compiler produces an **enhanced stable signature** that records the entire migration chain alongside the actor's final stable fields. This extended signature enables the tooling to verify upgrade compatibility across the full history of migrations.
 
 ### Stable signature versions
 
@@ -252,12 +251,12 @@ Motoko uses three versions of the stable signature format, each corresponding to
 
 **Version 1.0.0: Single.** The original format, listing the actor's stable fields. Used when the actor has no migration function.
 
-```motoko no-repl file=<motokoExamples>/count-v1.most
+```motoko no-repl title="count-v1.most" file=<motokoExamples>/count-v1.most
 ```
 
 **Version 3.0.0: Pre/Post.** Used when the actor declares a single migration function via `(with migration = ...)`. The signature contains a pre-signature (the fields the migration function consumes from the old actor) and a post-signature (the new actor's stable fields):
 
-```motoko no-repl file=<motokoExamples>/count-v9.most
+```motoko no-repl title="count-v9.most" file=<motokoExamples>/count-v9.most
 ```
 
 Fields marked `in` are required inputs that must be present in the previous actor. Fields marked `stable` are carried through or newly declared.
@@ -368,10 +367,10 @@ cannot be consumed at new type
   var Float
 ```
 
-With [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced), compatibility errors of stable variables are always detected in the runtime system and if failing, the upgrade is safely rolled back.
+With [enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md), compatibility errors of stable variables are always detected in the runtime system and if failing, the upgrade is safely rolled back.
 
 :::danger
-With [classical orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/classical), however, an upgrade attempt from `v2.wasm` to `v3.wasm` is unpredictable and may lead to partial or complete data loss if the `dfx` warning is ignored.
+With [classical orthogonal persistence](./orthogonal-persistence/classical.md), however, an upgrade attempt from `v2.wasm` to `v3.wasm` is unpredictable and may lead to partial or complete data loss if the `dfx` warning is ignored.
 :::
 
 ## Adding record fields
@@ -403,8 +402,8 @@ cannot be consumed at new type
 
 Do you want to proceed? yes/No
 ```
-It is recommended not to continue, as you will lose the state in older versions of Motoko that use [classical orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/classical).
-Upgrading with [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced) will trap and roll back, keeping the old state.
+It is recommended not to continue, as you will lose the state in older versions of Motoko that use [classical orthogonal persistence](./orthogonal-persistence/classical.md).
+Upgrading with [enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md) will trap and roll back, keeping the old state.
 
 Adding a new record field to the type of existing stable variable is not supported. The reason is simple: the upgrade would need to supply values for the new field out of thin air. In this example, the upgrade would need to conjure up some value for the `description` field of every existing `card` in `map`. Moreover, allowing adding optional fields is also a problem, as a record can be shared from various variables with different static types, some of them already declaring the added field or adding a same-named optional field with a potentially different type (and/or different semantics).
 

@@ -1,8 +1,8 @@
 ---
-sidebar_position: 7
-description: "Motoko language documentation"
 title: "Identifiers"
-hide_table_of_contents: true
+description: "Identifiers are names used for variables, functions, types, and other entities."
+sidebar:
+  order: 7
 ---
 
 Identifiers are names used for variables, functions, types, and other entities. They must start with a letter or an underscore and can contain letters, digits, and underscores.
@@ -16,4 +16,4 @@ let snake_case_identifier = "for compatibility with other languages";
 
 ## Reserved syntax keywords
 
-Motoko reserves [keywords](/languages/motoko/reference/language-manual#keywords) for its syntax and they cannot be used as identifiers.
+Motoko reserves [keywords](../../reference/language-manual.md#keywords) for its syntax and they cannot be used as identifiers.

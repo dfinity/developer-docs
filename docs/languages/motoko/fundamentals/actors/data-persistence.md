@@ -1,7 +1,8 @@
 ---
-sidebar_position: 3
-description: "Motoko language documentation"
 title: "Data persistence"
+description: "One key feature of Motoko is its ability to automatically persist the program's state without explicit user instruction."
+sidebar:
+  order: 3
 ---
 
 One key feature of Motoko is its ability to automatically persist the program's state without explicit user instruction. This is called **orthogonal persistence**. Data persists across transactions and canister upgrades.
@@ -80,7 +81,7 @@ __Discouraged and not recommended__: [Pre- and post-upgrade hooks](#preupgrade-a
 The collection of stable variable declarations in an actor can be summarized in a stable signature. The textual representation of an actor’s stable signature resembles the internals of a Motoko actor type. It specifies the names, types, and mutability of the actor’s stable fields, possibly preceded by relevant Motoko type declarations.
 
 
-``` motoko no-repl
+```motoko no-repl
 actor {
   stable x : Nat;
   stable var y : Int;
@@ -120,7 +121,7 @@ When upgrading a canister, it is important to verify that the upgrade can procee
 -   Introducing an incompatible change in stable declarations.
 -   Breaking clients due to a Candid interface change.
 
-With [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced), Motoko rejects incompatible changes of stable declarations during an upgrade attempt.
+With [enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md), Motoko rejects incompatible changes of stable declarations during an upgrade attempt.
 Moreover, `dfx` checks the two conditions before attempting the upgrade and warns users as necessary.
 
 A Motoko canister upgrade is safe provided:
@@ -129,7 +130,7 @@ A Motoko canister upgrade is safe provided:
 -  The canister’s Motoko stable signature evolves to a stable-compatible one.
 
 :::danger
-With [classical orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/classical), the upgrade can still fail due to resource constraints. This is problematic as the canister can then not be upgraded. It is therefore strongly advised to test the scalability of upgrades extensively. This does not apply to enhanced orthogonal persistence.
+With [classical orthogonal persistence](./orthogonal-persistence/classical.md), the upgrade can still fail due to resource constraints. This is problematic as the canister can then not be upgraded. It is therefore strongly advised to test the scalability of upgrades extensively. This does not apply to enhanced orthogonal persistence.
 :::
 
 
@@ -178,8 +179,8 @@ A cleaner, more maintainable solution, is to declare an explicit migration expre
 
 Both of these data migration paths are supported by static and dynamic checks that prevent data loss or corruption. A user may still lose data due to coding errors, so should tread carefully.
 
-For more information, see the [example of explicit migration](/languages/motoko/fundamentals/actors/compatibility#explicit-migration-using-a-migration-function) and the
-reference material on [migration expressions](/languages/motoko/reference/language-manual#migration-expressions).
+For more information, see the [example of explicit migration](./compatibility.md#explicit-migration-using-a-migration-function) and the
+reference material on [migration expressions](../../reference/language-manual.md#migration-expressions).
 
 ## Legacy features
 

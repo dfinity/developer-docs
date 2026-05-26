@@ -1,8 +1,8 @@
 ---
-sidebar_position: 2
-description: "Motoko language documentation"
 title: "Mutable state"
-hide_table_of_contents: true
+description: "In Motoko, each actor can use internal mutable state but cannot share it directly with other actors."
+sidebar:
+  order: 2
 ---
 
 In Motoko, each actor can use internal mutable state but cannot share it directly with other actors. Immutable data, however, can be shared among actors and accessed via their external entry points, which act as shareable functions.

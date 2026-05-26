@@ -1,6 +1,8 @@
 ---
 title: "Mixins"
-description: "Motoko language documentation"
+description: "Using mixins to compose reusable actor components in Motoko."
+sidebar:
+  order: 7
 ---
 
 Mixins allow defining parts of actors in separate re-usable files that can be combined/included into a complete actor.

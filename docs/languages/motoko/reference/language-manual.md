@@ -1,7 +1,8 @@
 ---
-sidebar_position: 16
-description: "Motoko language documentation"
 title: "Language reference"
+description: "Complete Motoko language reference covering syntax, types, expressions, declarations, and built-in operations."
+sidebar:
+  order: 1
 ---
 
 <!--
@@ -25,7 +26,7 @@ title: "Language reference"
 * [X] Remove Shared type
 * [X] Explain dot keys, dot vals and iterators
 * [X] Debug expressions
-* [X] Document punning in type record patterns: https://github.com/dfinity/motoko/pull/964
+* [X] Document punning in type record patterns: https://github.com/caffeinelabs/motoko/pull/964
 * [X] Update ErrorCode section
 * [Floats] Literals type and operations
 * [ ] Re-section so headings appear in content outline
@@ -59,21 +60,21 @@ In the definition of some lexemes, the quick reference uses the symbol `␣` to 
 
 Single line comments are all characters following `//` until the end of the same line.
 
-``` motoko no-repl
+```motoko no-repl
 // single line comment
 x = 1
 ```
 
 Single or multi-line comments are any sequence of characters delimited by `/*` and `*/`:
 
-``` motoko no-repl
+```motoko no-repl
 /* multi-line comments
    look like this, as in C and friends */
 ```
 
 Comments delimited by `/*` and `*/` may be nested, provided the nesting is well-bracketed.
 
-``` motoko no-repl
+```motoko no-repl
 /// I'm a documentation comment
 /// for a function
 ```
@@ -651,7 +652,7 @@ The category of a type determines the operators (unary, binary, relational and i
 | [`Error`](https://mops.one/core/docs/Error)         |          | (Opaque) error values                                                  |
 | [`Region`](https://mops.one/core/docs/Region)       |          | (Opaque) stable memory region objects                                  |
 
-Although many of these types have linguistic support for literals and operators, each primitive type also has an eponymous library in the core package providing related [functions and values](https://mops.one/core). For example, the [`Text`](https://mops.one/core/docs/Text) library provides common functions on `Text` values.
+Although many of these types have linguistic support for literals and operators, each primitive type also has an eponymous library in the core package providing related [functions and values](https://mops.one/core/docs/index). For example, the [`Text`](https://mops.one/core/docs/Text) library provides common functions on `Text` values.
 
 ### Type [`Bool`](https://mops.one/core/docs/Bool)
 
@@ -741,7 +742,7 @@ The type [`Principal`](https://mops.one/core/docs/Principal) of category O (Orde
 
 Assuming core package import:
 
-``` motoko no-repl
+```motoko no-repl
 import E "mo:core/Error";
 ```
 
@@ -755,7 +756,7 @@ Errors are opaque values constructed and examined with operations:
 
 Type `E.ErrorCode` is equivalent to variant type:
 
-``` motoko no-repl
+```motoko no-repl
 type ErrorCode = {
   // Fatal error.
   #system_fatal;
@@ -805,7 +806,7 @@ The type `Region` represents opaque stable memory regions. Region objects are dy
 
 The region type is stable but not shared and its objects, which are stateful, may be stored in stable variables and data structures.
 
-Objects of type `Region` are created and updated using the functions provided by base libary `Region`. See [stable regions](/languages/motoko/icp-features/stable-memory) and library [Region](https://mops.one/core/docs/Region) for more information.
+Objects of type `Region` are created and updated using the functions provided by base libary `Region`. See [stable regions](./icp-features/stable-memory) and library [Region](https://mops.one/core/docs/Region) for more information.
 
 ### Constructed types
 
@@ -1272,13 +1273,13 @@ This constructor takes an additional first argument that tailors the installatio
 
 Given some actor class constructor:
 
-``` motoko no-repl
+```motoko no-repl
 Lib.<id> : (U1, ...​, Un) -> async T
 ```
 
 Its secondary constructor is accessed as `(system Lib.<id>)` with typing:
 
-``` motoko no-repl
+```motoko no-repl
 (system Lib.<id>) :
   { #new : CanisterSettings;
     #install : Principal;
@@ -1289,7 +1290,7 @@ Its secondary constructor is accessed as `(system Lib.<id>)` with typing:
 
 where:
 
-``` motoko no-repl
+```motoko no-repl
   type CanisterSettings = {
      settings : ?{
         controllers : ?[Principal];
@@ -1724,7 +1725,7 @@ Motoko requires all type declarations to be productive.
 
 For example, the following type definitions are all productive and legal:
 
-``` motoko no-repl
+```motoko no-repl
   type Person = { first : Text; last : Text };
 
   type List<T> = ?(T, List<T>);
@@ -1736,7 +1737,7 @@ For example, the following type definitions are all productive and legal:
 
 But in contrast, the following type definitions are all non-productive, since each definition will enter a loop after one or more expansions of its body:
 
-``` motoko no-repl
+```motoko no-repl
   type C = C;
 
   type D<T, U> = D<U, T>;
@@ -1754,7 +1755,7 @@ A set of mutually recursive type or class declarations will be rejected if the s
 
 Expansiveness is a syntactic criterion. To determine whether a set of singly or mutually recursive type definitions is expansive, for example:
 
-``` motoko no-repl
+```motoko no-repl
   type C<...,Xi,...> = T;
   ...
   type D<...,Yj,...> = U;
@@ -1770,13 +1771,13 @@ The graph is expansive if, and only if, it contains a cycle with at least one ex
 
 For example, the type definition that recursively instantiates `List` at the same parameter `T`, is non-expansive and accepted:
 
-``` motoko no-repl
+```motoko no-repl
   type List<T> = ?(T, List<T>);
 ```
 
 A similar looking definition that recursively instantiates `Seq` with a larger type, `[T]`, containing `T`, is expansive and rejected:
 
-``` motoko no-repl
+```motoko no-repl
   type Seq<T> = ?(T, Seq<[T]>);
 ```
 
@@ -2046,7 +2047,7 @@ Judicious use of the pipe operator allows one to express a more complicated nest
 
 For example:
 
-``` motoko no-repl
+```motoko no-repl
 Iter.range(0, 10) |>
   Iter.toList _ |>
     List.filter<Nat>(_, func n { n % 3 == 0 }) |>
@@ -2055,7 +2056,7 @@ Iter.range(0, 10) |>
 
 This may be a more readable rendition of:
 
-``` motoko no-repl
+```motoko no-repl
 { multiples =
    List.filter<Nat>(
      Iter.toList(Iter.range(0, 10)),
@@ -2383,7 +2384,7 @@ the expanded function call expression `<parenthetical>? <exp1> <T0,…​,Tn>? <
     *  Ds is the disambiguated set of candidates, filtered by generality.
     * `<mid>.<idi>` is the name of the unique disambiguation, if one exists (that is, when Ds is a singleton set).
 
-    **Implicit derivation**: When no direct candidate is found (neither from local values, module fields, nor library fields of unimported modules when `--implicit-package` is set), the compiler additionally searches for *derivable* candidates: first among local values, then among module fields, then among library fields.
+    **Implicit derivation**: When no direct candidate is found (neither from local values, module fields, nor library fields of unimported modules when `--implicit-package` is set), the compiler additionally searches for *derivable* candidates, starting with local values, then among module fields, then among library fields.
     A derivable candidate is a function (possibly polymorphic) that has implicit parameters of its own, and whose type, after removing its implicit parameters and instantiating its type parameters, matches the required hole type.
     If the derivable candidate's own implicit parameters can be recursively resolved (up to a configurable depth limit), the compiler synthesizes a wrapper function that calls the candidate with the resolved inner implicits.
     This allows, for example, an implicit `compare : ([Nat], [Nat]) -> Order` to be derived from `Array.compare<Nat>` when `Nat.compare` is in scope. The derivation depth is bounded by the `--implicit-derivation-depth` flag.

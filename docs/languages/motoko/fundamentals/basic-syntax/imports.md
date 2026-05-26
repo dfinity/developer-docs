@@ -1,8 +1,8 @@
 ---
-sidebar_position: 2
-description: "Motoko language documentation"
 title: "Imports"
-hide_table_of_contents: true
+description: "In Motoko, related code modules are organized into packages."
+sidebar:
+  order: 2
 ---
 
 In Motoko, related code modules are organized into packages. Modules can be imported either from named packages or from the local file system using relative paths. The compiler locates packages on the file system based on a command line argument specifying their location.
@@ -48,4 +48,4 @@ import { compare } "mo:core/Nat";
 import { type Result; mapOk } "mo:core/Result";
 ```
 
-Learn more about [modules and imports](/languages/motoko/fundamentals/basic-syntax/imports).
+Learn more about [modules and imports](./imports.md).

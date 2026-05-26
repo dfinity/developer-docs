@@ -1,7 +1,8 @@
 ---
-sidebar_position: 9
-description: "Motoko language documentation"
 title: "Error handling"
+description: "Using Option or Result is the preferred way of signaling errors in Motoko."
+sidebar:
+  order: 9
 ---
 
 Using `Option` or `Result` is the preferred way of signaling errors in Motoko. They work in both synchronous and asynchronous contexts and make your APIs safer to use by encouraging clients to consider the error cases as well as the success cases. Exceptions should only be used to signal unexpected error states.
@@ -33,7 +34,7 @@ For this reason, option types should only be used for errors when there's just o
 
 While options are a built-in type, the `Result` is defined as a variant type like so:
 
-``` motoko no-repl
+```motoko no-repl
 type Result<Ok, Err> = { #ok : Ok; #err : Err }
 ```
 
@@ -70,7 +71,7 @@ With a `Result` type, you can use pattern matching to handle both success and er
 
 Sometimes you need to convert between `Option` and `Result` types. For example, a HashMap lookup returns `null` on failure (an `Option`), but if the caller has more context, they can turn that failure into a meaningful `Result` with an error message. On the other hand, sometimes you don’t need the extra detail from a `Result` and just want to convert any error (`#err`) into `null`.
 
-The [core](https://github.com/dfinity/motoko-core) package provides `fromOption` and `toOption` functions in the `Result` module that make converting between these two types easy.
+The [core](https://github.com/caffeinelabs/motoko-core) package provides `fromOption` and `toOption` functions in the `Result` module that make converting between these two types easy.
 
 ## Error reporting with `Error` (asynchronous errors)
 
@@ -94,7 +95,7 @@ Function callsite:
 
 ## Traps
 
-Traps immediately stop execution and roll back [state](/languages/motoko/fundamentals/actors/state). They are used for fatal errors that cannot be recovered.
+Traps immediately stop execution and roll back [state](./actors/state.md). They are used for fatal errors that cannot be recovered.
 
 ```motoko no-repl
 import Runtime "mo:core/Runtime";

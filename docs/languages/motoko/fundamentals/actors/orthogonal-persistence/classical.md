@@ -1,7 +1,8 @@
 ---
-sidebar_position: 3
-description: "Motoko language documentation"
 title: "Classical orthogonal persistence"
+description: "Classical orthogonal persistence is the legacy implementation of Motoko's orthogonal persistence."
+sidebar:
+  order: 3
 ---
 
 Classical orthogonal persistence is the legacy implementation of Motoko's orthogonal persistence. Classical persistence is deprecated in favor of enhanced orthogonal persistence.
@@ -20,7 +21,7 @@ Therefore, it is absolutely necessary to thoroughly test how much data an upgrad
 Moreover, it is ideal to have a backup plan to rescue data even if upgrades fail, e.g. by controller-privileged data query calls. Another option is to [snapshot](/guides/canister-management/snapshots) the canister before attempting the upgrade.
 :::
 
-These issues are solved by [enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced).
+These issues are solved by [enhanced orthogonal persistence](./enhanced.md).
 
 
 :::note

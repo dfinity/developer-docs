@@ -1,7 +1,8 @@
 ---
-sidebar_position: 5
-description: "Motoko language documentation"
 title: "Type declarations"
+description: "Type declarations are used for defining custom types that improve readability, reusability, and structure of the code."
+sidebar:
+  order: 5
 ---
 
 Type declarations are used for defining custom types that improve readability, reusability, and structure of the code. They can represent records, variants, objects, or parameterized (generic) types. Motoko enforces productivity and non-expansiveness in type declarations to ensure well-formed, valid types.
@@ -34,7 +35,7 @@ type Person = { username : Username; age : Age};
 
 Given a similar type `User`:
 
-``` motoko no-repl
+```motoko no-repl
 type User = {  age : Nat; username : Text };
 ```
 
@@ -42,7 +43,7 @@ Structural typing means that the types `User` and `Person` are interchangeable b
 
 ## Record types
 
-In Motoko, a type can define a structured [record](/languages/motoko/fundamentals/types/records) with labeled fields. Each field has a specific type, and you can access them using dot notation. Records are useful for organizing related data clearly and safely.
+In Motoko, a type can define a structured [record](../types/records.md) with labeled fields. Each field has a specific type, and you can access them using dot notation. Records are useful for organizing related data clearly and safely.
 
 ```motoko no-repl
 // A reusable record
@@ -145,8 +146,8 @@ type Seq<T> = ?(T, Seq<[T]>);
 
 ## Resources
 
-- [`Record`](/languages/motoko/fundamentals/types/records)
-- [`Variant`](/languages/motoko/fundamentals/types/variants)
+- [`Record`](../types/records.md)
+- [`Variant`](../types/variants.md)
 
 <!-- TODO(future) explain variance of type definition parameters, perhaps using InvBox<T> (r/w) CoBox<T> (ro) and ContraBox<T> (wo) as examples -->
 

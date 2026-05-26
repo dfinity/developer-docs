@@ -1,12 +1,13 @@
 ---
-sidebar_position: 8
-description: "Motoko language documentation"
 title: "Enhanced multi-migration"
+description: "Enhanced multi-migration lets you manage canister state changes over time through a series of migration modules, each stored in its own file."
+sidebar:
+  order: 8
 ---
 
 Enhanced multi-migration lets you manage canister state changes over time through a series of migration modules, each stored in its own file. Instead of writing a single inline migration function, one builds up a chain of small, self-contained migrations that the compiler and runtime apply in order.
 
-This approach is especially useful for long-lived canisters whose data shape evolves across many deployments. Each migration captures one logical change: adding a field, renaming a field, changing a type: and the compiler verifies that the entire chain is consistent.
+This approach is especially useful for long-lived canisters whose data shape evolves across many deployments. Each migration captures one logical change (adding a field, renaming a field, or changing a type), and the compiler verifies that the entire chain is consistent.
 
 ## Overview
 
@@ -17,10 +18,10 @@ With enhanced multi-migration you:
 3. Each migration module exports a `public func migration({...}) : {...}` that transforms a subset of stable fields.
 4. Pass `--enhanced-migration ./migrations` to `moc` when compiling.
 
-The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed: already-applied migrations are skipped automatically.
+The compiler reads all migration modules in lexicographic order, checks that they compose correctly, and compiles them into the actor. At runtime, only migrations that have not yet been applied are executed; already-applied migrations are skipped automatically.
 
 :::note
-Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](/languages/motoko/fundamentals/actors/compatibility#explicit-migration-using-a-migration-function).
+Enhanced multi-migration requires enhanced orthogonal persistence. It cannot be combined with the inline `(with migration = ...)` syntax used for [single migration functions](./compatibility.md#explicit-migration-using-a-migration-function).
 :::
 
 ## Getting started
@@ -52,7 +53,7 @@ module {
 }
 ```
 
-The input record describes which stable fields this migration reads from the current state. The output record describes which fields this migration produces. The input field types must be compatible with the state at that point in the chain, and the output field types must ultimately be compatible with the new actor's declared stable fields. A migration only needs to mention the fields it cares about: all other stable fields are carried through unchanged.
+The input record describes which stable fields this migration reads from the current state. The output record describes which fields this migration produces. The input field types must be compatible with the state at that point in the chain, and the output field types must ultimately be compatible with the new actor's declared stable fields. A migration only needs to mention the fields it cares about; all other stable fields are carried through unchanged.
 
 ### The actor
 
@@ -71,7 +72,7 @@ actor {
 }
 ```
 
-The initial value of each uninitialized variable is determined entirely by the migration chain. When the canister is first deployed, every migration runs in order and the final state provides the values. On subsequent upgrades, only newly added migrations execute, but the result is the same: the migration chain: not the actor source: is the single source of truth for stable variable values.
+The initial value of each uninitialized variable is determined entirely by the migration chain. When the canister is first deployed, every migration runs in order and the final state provides the values. On subsequent upgrades, only newly added migrations execute, but the result is the same: the migration chain (not the actor source) is the single source of truth for stable variable values.
 
 The compiler rejects any stable variable that carries an initializer when `--enhanced-migration` is enabled. This prevents ambiguity about whether the value comes from the migration chain or from the inline expression.
 
@@ -256,7 +257,7 @@ Migrations can perform arbitrary computation. For example, splitting a full name
 
 ```motoko no-repl
 // migrations/20250601_000000_SplitName.mo
-import Text "mo:base/Text";
+import Text "mo:core/Text";
 
 module {
   public func migration(old : { name : Text }) : { firstName : Text; lastName : Text } {
@@ -412,6 +413,6 @@ moc --enhanced-orthogonal-persistence \
 
 ## See also
 
-- [Data persistence](/languages/motoko/fundamentals/actors/data-persistence)
-- [Verifying upgrade compatibility](/languages/motoko/fundamentals/actors/compatibility)
-- [Enhanced orthogonal persistence](/languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced)
+- [Data persistence](./data-persistence.md)
+- [Verifying upgrade compatibility](./compatibility.md)
+- [Enhanced orthogonal persistence](./orthogonal-persistence/enhanced.md)

@@ -1,7 +1,8 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Variable declarations"
+description: "In Motoko, variables are declared using:"
+sidebar:
+  order: 1
 ---
 
 In Motoko, variables are declared using:
@@ -25,7 +26,7 @@ The left hand side of a `let` can be also be a more general pattern, naming the 
 
 For example, the declaration:
 
-``` motoko
+```motoko no-repl
 let (fst, snd) = (1, 2); 
 ```
 
@@ -56,7 +57,7 @@ Motoko provides special assignment operators that combine assignment with a bina
 
 For example, numbers permit a combination of assignment and addition:
 
-``` motoko
+```motoko no-repl
 var count = 2;
 count += 40;
 ```
@@ -65,7 +66,7 @@ After the second line, the variable `count` holds `42`.
 
 Motoko includes other compound assignments as well, such as `#=`:
 
-``` motoko
+```motoko no-repl
 var text = "Motoko";
 text #= " Ghost"
 ```

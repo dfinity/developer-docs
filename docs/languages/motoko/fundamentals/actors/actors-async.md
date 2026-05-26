@@ -1,10 +1,11 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Actors & async data"
+description: "The actor programming model was designed to solve concurrency issues by encapsulating state and computation within independent units called actors."
+sidebar:
+  order: 1
 ---
 
-The actor programming model was designed to solve concurrency issues by encapsulating [state](/languages/motoko/fundamentals/actors/state) and computation within independent units called **actors**.
+The actor programming model was designed to solve concurrency issues by encapsulating [state](./state.md) and computation within independent units called **actors**.
 
 The actor model is built on four key principles:
 
@@ -105,7 +106,7 @@ To access the result of an `async` value, the receiver of the future uses an `aw
 
 For example, to use the result of `Counter.read()` above, we can first bind the future to an identifier `a`, and then `await a` to retrieve the underlying [`Nat`](https://mops.one/core/docs/Nat), `n`:
 
-``` motoko no-repl
+```motoko no-repl
 let a : async Nat = Counter.read();
 let n : Nat = await a;
 ```
@@ -116,7 +117,7 @@ The second line `await`s this future and extracts the result, a natural number. 
 
 Typically, one rolls the two steps into one and just awaits an asynchronous call directly:
 
-``` motoko no-repl
+```motoko no-repl
 let n : Nat = await Counter.read();
 ```
 
@@ -130,7 +131,7 @@ An `await` will always suspend execution and commit state, even if its future is
 
 When several futures are issued in parallel and racing to complete, it can be more efficient to opt out of the unconditional behavior of `await` and immediately continue with a result when it is available:
 
-``` motoko no-repl
+```motoko no-repl
 let a : async Nat = CounterA.read();
 let b : async Nat = CounterB.read();
 let sum : Nat = (await a) + (await? b);
@@ -177,7 +178,7 @@ A function that does not use `await` runs atomically, meaning nothing else can c
 
 For example, the implementation of `bump()` above is guaranteed to increment and read the value of `count`, in one atomic step. The following alternative implementation does not have the same semantics and allows another client of the actor to interfere with its operation.
 
-``` motoko no-repl
+```motoko no-repl
   public shared func bump() : async Nat {
     await inc();
     await read();
@@ -216,7 +217,7 @@ In other languages without these features, developers often need to use advanced
 
 To demonstrate how asynchronous actors work, consider the following example.
 
-Customers place orders at a pizza restaurant, but the chef can only make one pizza at a time. Orders are taken **[asynchronously](/languages/motoko/fundamentals/actors/actors-async#async--await)**, meaning customers do not have to wait for previous orders to be completed before placing their own. However, each pizza is prepared sequentially. This is representative of an asynchronous actor.
+Customers place orders at a pizza restaurant, but the chef can only make one pizza at a time. Orders are taken **[asynchronously](./actors-async.md#async--await)**, meaning customers do not have to wait for previous orders to be completed before placing their own. However, each pizza is prepared sequentially. This is representative of an asynchronous actor.
 <!-- TODO(FUTURE): It would be cleaner to use a Deque or Queue pushing new order to the end and popping the next order to make from the front. -->
 ```motoko no-repl
 import Array "mo:core/Array";
@@ -287,7 +288,7 @@ Use `async*` and `await*` carefully. In Motoko, a regular `await` is a commit po
 
 ### Example
 
-``` motoko no-repl
+```motoko no-repl
 persistent actor class (Logger : actor { log : Text -> async () }) {
 
   var logging = true;
@@ -376,6 +377,3 @@ When `catch` is used, the `finally` clause is optional. The `catch` block only c
 1. Local traps.
 2. Pre-await traps in async functions.
 3. Traps after `await`.
-
-
-<img src="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoiZGZpbml0eVwvYWNjb3VudHNcLzAxXC80MDAwMzA0XC9wcm9qZWN0c1wvNFwvYXNzZXRzXC8zOFwvMTc2XC9jZGYwZTJlOTEyNDFlYzAzZTQ1YTVhZTc4OGQ0ZDk0MS0xNjA1MjIyMzU4LnBuZyJ9:dfinity:9Q2_9PEsbPqdJNAQ08DAwqOenwIo7A8_tCN4PSSWkAM?width=2400" alt="Logo" width="150" height="150" />

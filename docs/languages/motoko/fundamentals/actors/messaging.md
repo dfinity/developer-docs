@@ -1,14 +1,15 @@
 ---
-sidebar_position: 4
-description: "Motoko language documentation"
 title: "Messaging"
+description: "ICP enforces rules on when and how canisters communicate."
+sidebar:
+  order: 5
 ---
 
 ICP enforces rules on when and how [canisters](/concepts/canisters) communicate. Motoko includes static (compile-time) messaging restrictions to help prevent certain execution errors.
 
 For example, a canister cannot send messages during installation, which helps avoid errors during deployment. Query functions cannot send messages either, because they run locally and do not trigger updates. Additionally, shared functions cannot be called in a synchronous context since shared calls require asynchronous execution.
 
-Only async contexts support [error handling](/languages/motoko/fundamentals/error-handling) with `try/catch` because messaging errors only occur asynchronously.
+Only async contexts support [error handling](../error-handling.md) with `try/catch` because messaging errors only occur asynchronously.
 
 In Motoko, an expression is considered to be in an async context if it appears inside an `async` function. Query functions are read-only, so they do not create an async context and therefore cannot use `await` or send messages.
 
