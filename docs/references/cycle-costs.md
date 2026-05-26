@@ -110,7 +110,7 @@ If the canister may be blackholed or called by other canisters, send more cycles
 
 If the canister may be blackholed or called by other canisters, send more cycles than the listed cost: unused cycles are refunded.
 
-## Chain integrations
+## External integrations
 
 These features involve outbound calls to external networks. Every node on the relevant subnet participates in each call, which is the primary driver of the additional cost. The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
 

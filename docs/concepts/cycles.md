@@ -13,7 +13,7 @@ Cycles cover four resource categories:
 - **Storage**: Wasm heap memory and stable memory, charged per byte per second
 - **Messaging**: ingress messages from users, inter-canister calls, responses
 - **Threshold cryptography**: threshold ECDSA/Schnorr signing and VetKeys key derivation
-- **Chain integrations**: HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin
+- **External integrations**: HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin
 
 Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
@@ -71,7 +71,7 @@ Each resource category is metered and charged differently:
 
 **Threshold cryptography** (threshold ECDSA/Schnorr signing, VetKeys key derivation) charges the calling canister an additional amount on top of standard messaging costs. The extra cost reflects the computationally intensive threshold cryptographic operations and cross-subnet coordination required to produce the result. For exact amounts, see [Threshold cryptography costs](../references/cycle-costs.md#threshold-cryptography).
 
-**Chain integrations** (HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin) charge an additional amount because every node on the relevant subnet must participate in each outbound call to an external network. For exact amounts, see [Chain integration costs](../references/cycle-costs.md#chain-integrations).
+**External integrations** (HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin) charge an additional amount because every node on the relevant subnet must participate in each outbound call to an external network. For exact amounts, see [External integration costs](../references/cycle-costs.md#external-integrations).
 
 ## Cycles ledger
 
