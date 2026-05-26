@@ -17,7 +17,7 @@ This design has several consequences for developers:
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified data](certified-data.md) for the conceptual explanation and [Certified variables](../guides/backends/certified-variables.md) for the implementation guide.
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
-- **Onchain encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making onchain encryption practical. See [VetKeys](vetkeys.md).
+- **Onchain encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making encryption by network canisters practical. See [VetKeys](vetkeys.md).
 
 ## Core protocols
 
@@ -117,7 +117,7 @@ For more on how upgrades work at the protocol level, see [Chain evolution](evolu
 - [Chain Fusion](chain-fusion/index.md): how canisters use chain-key signatures to interact with other chains
 - [Certified data](certified-data.md): how the subnet's threshold BLS key enables certified query responses
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
-- [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
+- [VetKeys](vetkeys.md): a related cryptographic primitive for network-enforced encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API
 
 <!-- Upstream: informed by dfinity/portal (docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx); informed by Learn Hub articles "Chain-Key Cryptography", "Subnet Keys and Subnet Signatures", "Chain-Key Signatures" (migrated, source retired) -->

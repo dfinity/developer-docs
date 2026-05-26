@@ -9,7 +9,7 @@ Application canisters are well-known canisters at the application layer of the I
 
 ## Asset canister
 
-The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly onchain. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
+The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
 
 Asset canisters are deployed per-project. There is no global asset canister ID: each project creates its own.
 
@@ -213,7 +213,7 @@ For SNS launch configuration and governance setup, see [Launching an SNS](../gui
 
 ## LLM canister
 
-The LLM canister provides onchain AI inference using large language models, enabling canisters to generate text, run chat completions, and build AI agents without external API keys.
+The LLM canister provides AI inference running on the network, using large language models, enabling canisters to generate text, run chat completions, and build AI agents without external API keys.
 
 | Field | Value |
 |---|---|

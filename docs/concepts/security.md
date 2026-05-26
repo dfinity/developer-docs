@@ -41,7 +41,7 @@ As an app developer, you should understand who trusts whom in the IC stack:
 - **Query call integrity.** A single replica responds to query calls. Without certified data, the response is not verified by consensus.
 - **Canister code correctness.** The protocol executes whatever code you deploy. If your code has bugs, the protocol faithfully executes the buggy code.
 - **Access control.** There is no built-in permission system. Every update method is callable by anyone on the internet unless your code explicitly checks the caller.
-- **Memory confidentiality on application subnets.** Node operators on standard application subnets can read canister memory. The network is gradually rolling out SEV-SNP (hardware-level memory encryption) to mitigate this, but until full deployment, do not store secrets (private keys, API tokens, passwords) in canister state. For onchain secret management, see [VetKeys](vetkeys.md).
+- **Memory confidentiality on application subnets.** Node operators on standard application subnets can read canister memory. The network is gradually rolling out SEV-SNP (hardware-level memory encryption) to mitigate this, but until full deployment, do not store secrets (private keys, API tokens, passwords) in canister state. For secret management on the network, see [VetKeys](vetkeys.md).
 
 ### Boundary nodes
 

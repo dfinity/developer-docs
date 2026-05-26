@@ -11,7 +11,7 @@ For background on how SNS DAOs work, see [SNS governance concepts](../../concept
 
 ## How proposals work
 
-An SNS proposal is a call to a method on a specific canister, executed fully onchain if the DAO adopts the proposal. Any eligible neuron (one meeting the minimum stake and dissolve delay requirements set in the nervous system parameters) can submit a proposal. The submitter pays a rejection fee if the proposal is rejected.
+An SNS proposal is a call to a method on a specific canister, executed by the network if the SNS adopts the proposal. Any eligible neuron (one meeting the minimum stake and dissolve delay requirements set in the nervous system parameters) can submit a proposal. The submitter pays a rejection fee if the proposal is rejected.
 
 Proposals are adopted or rejected based on these rules:
 - A proposal is **adopted immediately** if more than half of all available voting power votes yes. The result cannot be reversed, so waiting is pointless.

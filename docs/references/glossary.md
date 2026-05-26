@@ -663,7 +663,7 @@ the induction pool.
 
 #### vetKeys
 
-**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables onchain encryption, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
+**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables encryption enforced by the network, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
 
 #### voting
 

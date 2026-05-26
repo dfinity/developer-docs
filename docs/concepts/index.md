@@ -39,7 +39,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 
 - **[Chain-key cryptography](chain-key-cryptography.md)**: Threshold signatures that enable cross-chain integration, fast finality, and chain evolution.
 - **[Certified data](certified-data.md)**: How canisters certify query responses using the subnet's threshold BLS key.
-- **[VetKeys](vetkeys.md)**: Verifiable encrypted threshold key derivation for onchain encryption and secret management.
+- **[VetKeys](vetkeys.md)**: Verifiable encrypted threshold key derivation for network-enforced encryption and secret management.
 
 ## Chain Fusion
 

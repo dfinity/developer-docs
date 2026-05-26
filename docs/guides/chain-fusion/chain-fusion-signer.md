@@ -67,7 +67,7 @@ Address derivation involves no secret key material, so it can be done offline us
 npx @dfinity/ic-pub-key signer eth address -u <YOUR_PRINCIPAL>
 ```
 
-This produces the same address as the onchain call but costs no cycles.
+This produces the same address as the canister call but costs no cycles.
 
 ## Sign an Ethereum transaction
 

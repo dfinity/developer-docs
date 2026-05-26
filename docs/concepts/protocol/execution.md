@@ -44,7 +44,7 @@ Memory pages representing canister state are persisted to SSD automatically by t
 
 ## Random number generation
 
-Many applications require a secure source of randomness. Generating random numbers naively in a replicated setting destroys determinism, since each node would produce different values. ICP solves this with the **random tape**: a decentralized pseudorandom number generator built using chain-key cryptography.
+Many applications require a secure source of randomness. Generating random numbers naively in a replicated setting destroys determinism, since each node would produce different values. ICP solves this with the **random tape**: a distributed pseudorandom number generator built using chain-key cryptography.
 
 Each round, the subnet produces a fresh threshold BLS signature. This signature is unpredictable and uniformly distributed by its nature. It is used as a seed for a cryptographic pseudorandom generator, giving canisters access to a secure, efficient, and verifiable source of randomness.
 

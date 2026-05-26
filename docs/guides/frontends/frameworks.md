@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-ICP hosts frontend applications as asset [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed onchain and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
+ICP hosts frontend applications as asset [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed to the network and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
 
 This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy to an asset canister.
 

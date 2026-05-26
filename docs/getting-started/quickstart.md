@@ -22,7 +22,7 @@ npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
 This installs:
 
 - **icp-cli**: builds and deploys [canisters](../concepts/canisters.md) on the Internet Computer
-- **ic-wasm**: optimizes WebAssembly modules for onchain deployment
+- **ic-wasm**: optimizes WebAssembly modules for deployment to the network
 
 For Motoko projects, also install the Motoko package manager:
 
