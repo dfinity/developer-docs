@@ -28,6 +28,8 @@ For step-by-step instructions, see [Acquiring cycles](../guides/canister-managem
 
 Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
 
+The [CMC](../references/system-canisters.md#cycles-minting-canister-cmc) samples the current ICP/XDR rate from the [exchange rate canister](../references/protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes. For how to look up the current XDR/USD rate programmatically or from a canister, see [Getting the current XDR/USD rate](../references/cycle-costs.md#getting-the-current-xdrusd-rate).
+
 ## Pricing
 
 ### Compute

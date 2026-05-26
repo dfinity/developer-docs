@@ -80,7 +80,7 @@ The NNS UI canister hosts the NNS app frontend at [nns.ic0.app](https://nns.ic0.
 
 **Subnet:** NNS (`tdb26-…-eqe`)
 
-The cycles minting canister converts ICP tokens into cycles by burning ICP and minting cycles at the current ICP/XDR exchange rate. The exchange rate is fetched from the [exchange rate canister](protocol-canisters.md) so that cycles maintain a roughly stable cost in real-world currency.
+The cycles minting canister converts ICP tokens into cycles by burning ICP and minting cycles at the current ICP/XDR exchange rate. The CMC calls the [exchange rate canister (XRC)](protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes for the current ICP/XDR rate so that cycles maintain a roughly stable cost in real-world currency. The fixed conversion is: **1 trillion cycles = 1 XDR** (this ratio is a protocol constant set by NNS governance).
 
 ### How to mint cycles via the CMC
 
@@ -95,13 +95,35 @@ The subaccount is constructed from the recipient principal as a 32-byte array:
 
 **Step 2: Call `notify_mint_cycles` on the CMC with the block index returned by the transfer.**
 
-```
+```candid
 notify_mint_cycles: (record { block_index: nat64 }) -> (Result)
 ```
 
 The recipient principal's cycles balance increases by the minted amount. To check the balance, query the [cycles ledger](#cycles-ledger).
 
 For full details on managing cycles in canisters, see [Cycles management](../guides/canister-management/cycles-management.md).
+
+### Querying the current ICP/XDR rate
+
+The CMC exposes `get_icp_xdr_conversion_rate`, which returns the current ICP/XDR exchange rate as used internally for minting:
+
+```candid
+get_icp_xdr_conversion_rate : () -> (record { data: record { xdr_permyriad_per_icp: nat64 } })
+```
+
+`xdr_permyriad_per_icp` is the amount of XDR per ICP expressed in units of 1/10000. For example, `19482` means 1 ICP = 1.9482 XDR. This is an ICP/XDR rate; the CMC does not track XDR/USD.
+
+The CMC also exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` with the following relevant fields:
+
+| Metric | Description |
+|--------|-------------|
+| `cmc_icp_xdr_conversion_rate` | Current ICP/XDR rate (floating point) |
+| `cmc_avg_icp_xdr_conversion_rate` | 30-day moving average ICP/XDR (used for node provider reward payouts) |
+| `cmc_cycles_per_xdr` | Always 1_000_000_000_000 (confirms 1T cycles = 1 XDR) |
+
+Responses from this endpoint are not certified.
+
+To derive the current XDR/USD rate from these values, see [Getting the current XDR/USD rate](cycle-costs.md#getting-the-current-xdrusd-rate) in the Cycle costs reference.
 
 ## Genesis token canister
 

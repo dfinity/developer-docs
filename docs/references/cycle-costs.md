@@ -11,9 +11,37 @@ You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io
 
 ## XDR exchange rate
 
-All USD values on this page use **1 XDR = $1.366430 USD** (May 22, 2026). The XDR rate changes daily: visit the [IMF's SDR valuation page](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) for the current rate.
+The cycle price is fixed by protocol: **1 trillion cycles = 1 XDR**. This ratio is set by NNS governance and does not change with ICP token price movements.
 
-For stable budgeting, use cycle counts rather than USD approximations. The XDR value of cycles is fixed by protocol (1 T cycles = 1 XDR); only the USD conversion fluctuates.
+All USD values on this page use **1 XDR = $1.366430** (May 22, 2026). Use cycle counts for precise budgeting; only the USD conversion fluctuates.
+
+### How the CMC tracks the rate
+
+The [Cycles Minting Canister (CMC)](../references/system-canisters.md#cycles-minting-canister-cmc) (`rkp4c-7iaaa-aaaaa-aaaca-cai`) calls the [exchange rate canister (XRC)](../references/protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes for the current ICP/XDR rate. The CMC exposes `get_icp_xdr_conversion_rate`, which returns `xdr_permyriad_per_icp`: the number of XDR per ICP, expressed in units of 1/10000 (for example, `19482` means 1 ICP = 1.9482 XDR). This is an ICP/XDR rate; the CMC does not track XDR/USD.
+
+### Getting the current XDR/USD rate
+
+**Manual lookup:** The [IMF's SDR valuation page](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx) is the authoritative source. The page returns HTTP 403 to automated HTTP clients and cannot be fetched programmatically.
+
+**ICP Dashboard API (unsigned, easy for scripts):** Fetch the ICP/USD price and the ICP/XDR rate, then derive XDR/USD:
+
+```bash
+# ICP/USD (returns [[timestamp, "price_as_string"]])
+GET https://ic-api.internetcomputer.org/api/v3/icp-usd-rate
+
+# ICP/XDR in permyriad (returns [[timestamp, xdr_permyriad_per_icp]])
+GET https://ic-api.internetcomputer.org/api/v3/icp-xdr-conversion-rates?limit=1
+
+xdr_usd = icp_usd / (xdr_permyriad_per_icp / 10_000)
+```
+
+Example: ICP/USD = $2.67, ICP/XDR = 19482 / 10000 = 1.9482 → XDR/USD = 2.67 / 1.9482 ≈ $1.37.
+
+The ICP Dashboard API is not certified: responses are unsigned and not verifiable on-chain.
+
+**CMC metrics endpoint (Prometheus, unsigned):** The CMC exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` that includes `cmc_icp_xdr_conversion_rate` (current ICP/XDR) and `cmc_avg_icp_xdr_conversion_rate` (30-day moving average used for node provider rewards). Neither is certified. Apply the same formula to derive XDR/USD.
+
+**On-chain (certified, from a canister):** Call the XRC for `ICP/USD` as a crypto/fiat pair (1B cycles, refunded if unused), and call the CMC `get_icp_xdr_conversion_rate` for ICP/XDR. Derive XDR/USD = ICP_USD / (xdr_permyriad_per_icp / 10_000). See [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md) for XRC integration code.
 
 ## Cycles units
 
