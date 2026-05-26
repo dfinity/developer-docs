@@ -27,5 +27,5 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 ## Advanced features
 
 - **[Digital Assets](digital-assets/ledgers.md)**: Create and integrate with ledgers and wallets using digital asset standards.
-- **[Chain Fusion](chain-fusion/bitcoin.md)**: Connect canisters to Bitcoin, Ethereum, and Solana, sign cross-chain transactions, and fetch exchange rates.
+- **[Chain Fusion](chain-fusion/bitcoin.md)**: Connect canisters to Bitcoin, Ethereum, and Solana, sign crosschain transactions, and fetch exchange rates.
 - **[Governance](governance/launching.md)**: Transfer control of your app to your community and govern it through proposals.

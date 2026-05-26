@@ -75,7 +75,7 @@ Here is how Ethereum concepts map to ICP:
 
 The biggest shift: on Ethereum, smart contracts are minimal programs that rely on offchain infrastructure. On ICP, a canister can be an entire application (frontend, backend, database, and scheduled jobs) end-to-end on the network.
 
-## Chain fusion (cross-chain)
+## Chain fusion (crosschain)
 
 **You want to:** Integrate with Bitcoin, Ethereum, or other blockchains.
 
@@ -106,7 +106,7 @@ ICP has a standard token framework (ICRC) and chain-key tokens that represent as
 
 **You want to:** Hand control of your application to a community through an SNS DAO.
 
-The Service Nervous System (SNS) lets you tokenize your application and create a community-governed application that manages upgrades, treasury, and parameters through proposals and voting.
+The Service Nervous System (SNS) lets you issue a governance token and transfer control of your application to a community that manages upgrades, treasury, and parameters through proposals and voting.
 
 **Start with:** [Launching an SNS](../guides/governance/launching.md): understand the process and requirements for decentralizing your application.
 

@@ -482,7 +482,7 @@ Although there exist various hierarchical key derivation schemes (e.g., [BIP32](
 For these reasons, a new derivation scheme is specified here.
 This scheme does not make use of _clamping_ (see [RFC8032, Section 5.1.5, Item 2](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.5)), because it is unnecessary in the given setting, and satisfies the following requirements:
 
-- Off-chain availability: New public keys can be computed off-chain from a master public key without requiring interaction with the IC.
+- Offchain availability: New public keys can be computed offchain from a master public key without requiring interaction with the IC.
 - Hierarchical derivation: Derived keys are organized in a tree such that from any public key it is possible to derive new child keys. The first level is used to derive unique canister-specific keys from the master key.
 - Simplicity: The scheme is simple to implement using existing libraries.
 
