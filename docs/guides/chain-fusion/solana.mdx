@@ -327,7 +327,7 @@ Every SOL RPC call requires cycles to cover HTTPS outcall costs. The `sign_with_
 | SOL RPC `request` (small response, 1–2 providers) | ~1–5B cycles |
 | `sign_with_schnorr` (Ed25519, Rust cdk auto-attached) | ~26.15B cycles |
 
-Send 10B cycles per RPC call as a starting budget: unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs.
+Send 10B cycles per RPC call as a starting budget: unused cycles are refunded. Set `max_response_bytes` to the minimum needed; smaller values reduce costs. For the full pricing formula, see [SOL RPC canister costs](../../references/cycle-costs.md#sol-rpc-canister).
 
 ## ckSOL
 
