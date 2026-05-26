@@ -71,7 +71,7 @@ The only supported curve is `bls12_381_g2`. Two key names are available:
 | `test_key_1` | Local + mainnet | Development and testing | 10,000,000,000 |
 | `key_1` | Mainnet only | Production | 26,153,846,153 |
 
-`vetkd_public_key` carries no cycle cost. `vetkd_derive_key` consumes cycles at the rates above. If a canister may be blackholed or called by other canisters, send more cycles than the advertised cost: unused cycles are refunded, and this ensures calls succeed if the subnet grows in size.
+`vetkd_public_key` carries no cycle cost. `vetkd_derive_key` consumes cycles at the rates above. If a canister may be blackholed or called by other canisters, send more cycles than the advertised cost: unused cycles are refunded, and this ensures calls succeed if the subnet grows in size. See [Cycle costs](../references/cycle-costs.md#vetkd) for USD equivalents and full details.
 
 ## Use cases
 

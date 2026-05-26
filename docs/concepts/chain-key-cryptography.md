@@ -98,7 +98,7 @@ The following master keys are deployed at the time of writing. The Network Nervo
 
 Test keys are available for development and run on smaller subnets with lower signing costs. They should not be used for anything of value. Production keys run on high-replication subnets (34+ nodes) for stronger security guarantees. Each key is also reshared to a backup subnet for availability: if the signing subnet fails, the backup can take over without generating a new key.
 
-For signing costs, see [Cycle costs](../references/cycle-costs.md).
+For signing costs, see [Cycle costs](../references/cycle-costs.md#threshold-ecdsa-and-schnorr-signing).
 
 ## Supported chains
 
