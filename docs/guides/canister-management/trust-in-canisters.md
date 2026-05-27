@@ -41,7 +41,7 @@ See [Canister lifecycle](./lifecycle.md#canister-history) for how to query canis
 
 ## Will the canister behavior stay that way?
 
-Even if a canister runs correct code today, its controllers can upgrade it to different code at any time. The second question is about governance: who controls the canister, and how broadly distributed is that control?
+Even if a canister runs correct code today, its controllers can upgrade it to different code at any time. The second question is about governance: who controls the canister, and how decentralized is that control?
 
 ### Verify the controller list
 
@@ -64,9 +64,9 @@ If the controller list contains a single developer identity, that developer has 
 | [SNS (Service Nervous System)](../../concepts/sns-framework.md) | High | Governance is enforced by the network; changes require a community vote with token-weighted approval |
 | Black-holed | Highest | No controller can change the code; the canister is permanently immutable |
 
-In all cases, the trust requirements flow to the controller. If an SNS governs the canister, review the SNS configuration and token distribution to assess how broadly distributed the governance actually is. An SNS with a heavily concentrated token supply provides weaker guarantees than a broadly distributed one.
+In all cases, the trust requirements flow to the controller. If an SNS governs the canister, review the SNS configuration and token distribution to assess how decentralized the governance actually is. An SNS with a heavily concentrated token supply provides weaker guarantees than a broadly distributed one.
 
-Note that even with distributed governance, assets held by a canister are under the control of whoever controls the canister. Before interacting with a canister that holds your assets, understand what governance controls apply and who participates in it.
+Note that even with decentralized governance, assets held by a canister are under the control of whoever controls the canister. Before interacting with a canister that holds your assets, understand what governance controls apply and who participates in it.
 
 ### Black-holed canisters
 

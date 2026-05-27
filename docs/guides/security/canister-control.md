@@ -21,10 +21,10 @@ For performance or privacy reasons, some components of an app may be hosted on e
 
 ### Recommendations
 
-In the following list, we first provide recommendations for centralized canister control and then move to recommendations for increasingly distributed control. From a security perspective, more distributed control is favorable. The following list could also be used as a basis for assessing an app's level of distributed control. This is just a set of recommendations and may be incomplete.
+In the following list, we first provide recommendations for centralized canister control and then move to recommendations for increasingly decentralized settings. From a security perspective, more decentralization is favorable. The following list could also be used as a basis for assessing an app's level of decentralization. This is just a set of recommendations and may be incomplete.
 
-1. **The app uses central, external components:** The application makes use of centralized components such as those running in the cloud. The owners of these cloud services have full control over the application and assets managed by it. Your application should likely be further distributed by avoiding central components. But while you have them, [securely manage your keys in the cloud](https://cloudsecurityalliance.org/research/topics/cloud-key-management/).
-2. **The app is controlled by the developer team:** Your project is not under distributed control, for example, because it is in an early development stage or does not (yet) hold significant funds. In that case, it is recommended to manage access to your canisters securely and ideally not let individuals control the application. To achieve that, consider the following:
+1. **The app uses central, external components:** The application makes use of centralized components such as those running in the cloud. The owners of these cloud services have full control over the application and assets managed by it. Your application should likely be further decentralized by avoiding central components. But while you have them, [securely manage your keys in the cloud](https://cloudsecurityalliance.org/research/topics/cloud-key-management/).
+2. **The app is controlled by the developer team:** Your project is not under decentralized control, for example, because it is in an early development stage or does not (yet) hold significant funds. In that case, it is recommended to manage access to your canisters securely and ideally not let individuals control the application. To achieve that, consider the following:
     - Require approval by several individuals or parties to perform any canister controller operations.
     - Require approval by several individuals or parties for any security-sensitive changes at the application level that are restricted to privileged principals, such as admin operations including permissions management, minting new tokens, removing NFTs for digital rights violations, etc.
     - A helpful tool to achieve either of the above two points is the [orbit station canister](https://github.com/dfinity/orbit) which allows you to configure intricate policies for canister control. [Orbit](https://orbit.global/) also serves as an enterprise wallet where token funds are governed using policies. Ideally, individuals also manage their key material using hardware security modules, such as [YubiHSM](https://www.yubico.com/ch/store/yubihsm-2-series/) and physically protect these through methods such as using safes at different geographical locations. Some of HSMs support threshold signature schemes, which can help to further secure the setup.
@@ -52,7 +52,7 @@ If your app depends on a third-party canister (e.g., by making inter-canister ca
 
 ### Recommendation
 
-If you interact with a canister that you require to have distributed governance, make sure it is controlled by the NNS, a service nervous system (SNS) or a governance framework, and review under what conditions and by whom the canister can be changed.
+If you interact with a canister that you require to be decentralized, make sure it is controlled by the NNS, a service nervous system (SNS) or a governance framework, and review under what conditions and by whom the canister can be changed.
 
 ## Don't load JavaScript or other assets from untrusted domains
 
