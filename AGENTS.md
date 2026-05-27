@@ -1,10 +1,7 @@
 # ICP Developer Docs
 
-ICP developer documentation built with Astro + Starlight. Goal: get developers building on the IC as fast as possible. `CLAUDE.md` symlinks here.
-
 ```bash
-./scripts/setup.sh   # initialize submodules and npm deps
-npm run build        # must pass before any push
+./scripts/setup.sh   # run this first — initializes submodules (.sources/) and npm deps
 ```
 
 Tasks come on-demand — no GitHub issue required unless proposing a structural change.
@@ -149,7 +146,7 @@ EOF
 
 - Load relevant skills before writing (see "Skills" below)
 - Use `icp` CLI commands — never `dfx`
-- Use `mo:core` for Motoko imports — never `mo:base`. See `.sources/motoko/doc/md/12-base-core-migration.md` for the full mapping.
+- Use `mo:core` for Motoko imports — never `mo:base`. See `.sources/motoko/doc/md/base-core-migration.md` for the full mapping.
 - Default to `.md`; use `.mdx` only for interactive components. Tab order: Motoko → Rust → others.
 - Complete frontmatter on every page (title + description required)
 - Document structural decisions in the PR description
@@ -199,15 +196,14 @@ docs/
 ├── guides/
 │   ├── backends/
 │   ├── canister-calls/
-│   ├── frontends/
-│   ├── authentication/
-│   ├── testing/
 │   ├── canister-management/
+│   ├── authentication/
+│   ├── frontends/
+│   ├── testing/
 │   ├── security/
 │   ├── chain-fusion/
-│   ├── defi/
-│   ├── governance/
-│   └── tools/
+│   ├── digital-assets/
+│   └── governance/
 ├── concepts/               # Explanations
 ├── languages/              # Motoko (synced), Rust (hand-written)
 └── references/             # Specifications and reference
@@ -240,7 +236,7 @@ Consult the relevant submodule when writing or reviewing:
 | PAPI (payment API) | `.sources/papi/` |
 | `@dfinity/ic-pub-key` CLI | `.sources/ic-pub-key/` |
 | Internet Identity spec | `.sources/internetidentity/` |
-| Technical documentation skill | `.sources/dotskills/` (AGPL-3.0 — kept as submodule to avoid license mixing) |
+| Technical documentation skill | `.sources/dotskills/` |
 
 For current pinned versions, see `.sources/VERSIONS`.
 
@@ -318,10 +314,5 @@ sidebar:
 
 ## Commands
 
-- `npm run dev` — local dev server
 - `npm run build` — production build (must pass before any push)
-- `npm run preview` — preview production build
-
-## Agent-friendly documentation
-
-The `agentDocs()` integration (`plugins/astro-agent-docs.mjs`) generates `/llms.txt` and `.md` endpoints at build time. Update the `SECTIONS` array in that file when adding or renaming sidebar sections in `astro.config.mjs`.
+- `npm run dev` — local dev server
