@@ -11,7 +11,7 @@ The following files are maintained directly in this repository. Update them manu
 | `public/references/_attachments/requests.cddl` | Request CDDL schema | IC HTTPS interface spec changes |
 | `public/references/_attachments/http-gateway.did` | HTTP Gateway Candid interface | HTTP Gateway spec changes |
 | `docs/references/ic-interface-spec/` | IC Interface Spec (7 focused pages) | IC spec version bumps — apply changes to the matching file (see mapping below) |
-| `docs/references/http-gateway-spec.md` | HTTP Gateway Protocol Spec | HTTP Gateway spec version bumps |
+| `docs/references/http-gateway-protocol-spec.md` | HTTP Gateway Protocol Spec | HTTP Gateway spec version bumps |
 
 ## IC Interface Spec — section-to-file mapping
 
@@ -25,10 +25,3 @@ The following files are maintained directly in this repository. Update them manu
 | `abstract-behavior.md` | Abstract behavior |
 | `changelog.md` | IC spec changelog |
 
-## Link adaptation for `http-gateway-spec.md`
-
-If an update introduces absolute `/references/ic-interface-spec#<anchor>` links, convert them to relative paths using the anchor-to-file mapping at the bottom of `docs/references/http-gateway-spec.md`. To find which file owns a given anchor:
-
-```bash
-grep -r "{#<anchor>}" docs/references/ic-interface-spec/
-```

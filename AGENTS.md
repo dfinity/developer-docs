@@ -13,7 +13,7 @@ Tasks come on-demand — no GitHub issue required unless proposing a structural 
 
 ## Writing or updating content
 
-Load the relevant skills first (see "Skills" below). Then:
+Load `technical-documentation`, `icp-brand-voice`, and the relevant icskill before writing (see "Skills" for the topic-to-skill mapping). Then:
 
 - Read relevant source material from `.sources/` to verify CLI commands, API signatures, and technical claims (see "Source material" below for what to consult per topic).
 - **CLI commands:** verify every flag against `.sources/icp-cli/docs/reference/cli.md` — never guess syntax.
@@ -170,7 +170,7 @@ EOF
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
 - Link to `internetcomputer.org/docs/` (retired) or `learn.internetcomputer.org` (content is now in this repo under `docs/concepts/`)
 - Link to internal pages that don't exist — run `ls <target>` before linking. Links to `.mdx` files use `.md` extension.
-- Link without a section anchor when the context refers to a specific subsection — verify anchors with `grep "^## \|^### " <target>`. Slugs: lowercase, spaces → `-`, special chars stripped.
+- Link to an internal page without checking for a relevant section anchor — read the target page to find the most specific section that fits, then derive the anchor slug from its heading (lowercase, spaces → `-`, special chars stripped).
 - Link to `https://cli.internetcomputer.org/` bare root — use the versioned path. Current slug: `0.2`; verify with `cat .sources/icp-cli/docs-site/versions.json`.
 - Link externally when an internal page exists — check `docs/` first
 - Write em-dashes (`—`) or use `--` as prose punctuation — use colon, semicolon, or parentheses instead. (`--` is fine inside code blocks as a CLI flag or comment.)
