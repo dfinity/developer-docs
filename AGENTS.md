@@ -186,7 +186,6 @@ EOF
 - `.sources/` — Pinned source submodules (read-only)
 - `.agents/skills/` — Agent skill files. Run `git submodule update --init --depth 1` if broken.
 - `.agents/submodule-bumping.md` — Procedures for bumping source submodules (maintainer use)
-- `.agents/spec-maintenance.md` — Procedures for maintaining directly-owned spec files (maintainer use)
 
 ## Project structure
 
