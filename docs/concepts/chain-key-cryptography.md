@@ -17,7 +17,7 @@ This design has several consequences for developers:
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified data](certified-data.md) for the conceptual explanation and [Certified variables](../guides/backends/certified-variables.md) for the implementation guide.
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
-- **Onchain encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making encryption by network canisters practical. See [VetKeys](vetkeys.md).
+- **Encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making encryption by network canisters practical. See [VetKeys](vetkeys.md).
 
 ## Core protocols
 
