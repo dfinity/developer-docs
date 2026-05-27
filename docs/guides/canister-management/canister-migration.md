@@ -31,7 +31,7 @@ Your options depend on whether the canister ID can change:
 
 - **Threshold signatures (tECDSA / tSchnorr)**: The IC derives signing keys by cryptographically binding them to the calling canister's principal. Any Bitcoin or Ethereum addresses derived from those keys are permanently tied to the original canister ID. Changing the ID means losing access to those signing keys and any assets they control.
 - **vetKeys**: vetKey derivation includes the canister's principal. A new ID produces entirely different decryption keys, making previously encrypted data permanently inaccessible.
-- **External references**: Other canisters, frontends, or offchain systems that reference the canister by ID will break. This includes Internet Identity: users who authenticated via a canister-ID-based domain (for example, `<canister-id>.icp0.io`) will lose access to their sessions.
+- **External references**: Other canisters, frontends, or external third-party systems that reference the canister by ID will break. This includes Internet Identity: users who authenticated via a canister-ID-based domain (for example, `<canister-id>.icp0.io`) will lose access to their sessions.
 
 :::danger
 If your canister uses threshold signatures (tECDSA / tSchnorr) or vetKeys, snapshot transfer splits state from keys: the target canister gets a new ID and therefore different signing and decryption keys. Any Bitcoin or Ethereum addresses and any encrypted data tied to the original canister ID become inaccessible from the new canister.
@@ -109,7 +109,7 @@ Update your project to point `my-canister` to the new ID. icp-cli stores caniste
 }
 ```
 
-Update any other canisters, frontends, or offchain systems that reference the old canister ID.
+Update any other canisters, frontends, or external systems that reference the old canister ID.
 
 ## Migrating with the canister ID
 

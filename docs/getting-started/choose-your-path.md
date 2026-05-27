@@ -106,7 +106,7 @@ ICP has a standard token framework (ICRC) and chain-key tokens that represent as
 
 **You want to:** Hand control of your application to a community through an SNS DAO.
 
-The Service Nervous System (SNS) lets you issue a governance token and transfer control of your application to a community that manages upgrades, treasury, and parameters through proposals and voting.
+The Service Nervous System (SNS) lets you issue a governance asset and transfer control of your application to a community that manages upgrades, treasury, and parameters through proposals and voting.
 
 **Start with:** [Launching an SNS](../guides/governance/launching.md): understand the process and requirements for decentralizing your application.
 
