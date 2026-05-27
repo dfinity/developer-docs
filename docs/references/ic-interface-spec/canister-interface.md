@@ -179,7 +179,9 @@ The threshold `t` can be defined in the field `wasm_memory_threshold` in the [ca
 :::note
 
 While the above function is scheduled immediately once the condition above is triggered, it may not necessarily be executed immediately if the canister does not have enough cycles.
-If the canister gets frozen immediately after the function is scheduled for execution, the function will run once the canister's unfrozen _if_ the canister's remaining wasm memory size in bytes remains strictly less than the threshold `t`.
+If the canister gets frozen immediately after the function is scheduled for execution, the function will run once the canister is unfrozen _if_ the canister's remaining wasm memory size in bytes remains strictly less than the threshold `t`.
+In particular, inter-canister response callback messages might still be executed after the condition is triggered and before the function `canister_on_low_wasm_memory` is executed.
+
 :::
 
 #### Callbacks

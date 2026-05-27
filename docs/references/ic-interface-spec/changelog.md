@@ -8,6 +8,10 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.62.0 (2025-05-26) {$0_62_0}
+* Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
+  and before the function `canister_on_low_wasm_memory` is executed.
+
 ### 0.61.0 (2025-05-18) {$0_61_0}
 * New management canister endpoint `canister_metrics`.
 
