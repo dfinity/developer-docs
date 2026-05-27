@@ -317,7 +317,7 @@ ollama pull llama3.1:8b
 
 icp-cli does not yet have an equivalent of dfx's `"type": "custom"` / `"remote"` canister configuration for pointing a local replica at the Ollama-backed LLM Wasm. To test the LLM canister locally, use the example project from [dfinity/examples](https://github.com/dfinity/examples/tree/master/rust/llm_chatbot) which includes the `dfx.json` configuration needed for this setup.
 
-For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.md).
+For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 ---
 
@@ -336,7 +336,7 @@ For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.
 
 - [Asset canister guide](../guides/frontends/asset-canister.md): deploying and configuring the asset canister for your project
 - [Launching an SNS](../guides/governance/launching.md): how to decentralize an app with SNS
-- [Onchain AI](../guides/backends/onchain-ai.md): building AI-powered canisters with the LLM canister
+- [AI inference](../guides/backends/ai-inference.md): building AI-powered canisters with the LLM canister
 - [System canisters](system-canisters.md): NNS, Internet Identity, ICP ledger, and other network-level canisters
 - [Protocol canisters](protocol-canisters.md): Bitcoin, ckBTC, EVM RPC, and other protocol-layer canisters
 
