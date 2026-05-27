@@ -25,5 +25,5 @@ You can use literals directly in expressions.
 
 ## Resources
 
-- [Literals](../../reference/language-manual.md#literals)
+- [Literals](../../language-manual.md#literals)
 
