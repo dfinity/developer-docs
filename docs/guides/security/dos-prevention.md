@@ -47,7 +47,7 @@ An attacker will target expensive calls to drain the cycles balance or available
 
 ### Recommendation
 
-* **Use captchas**: Expensive operations should require a captcha to be solved. Try to use a library to implement a captcha instead of a cloud service, as such a service runs on a centralized third-party server.
+* **Use captchas**: Expensive operations should require a captcha to be solved. Try to use a library to implement a captcha instead of a cloud service, as such a service would require HTTPS outcalls and isn't decentralized.
 * **Use PoW (proof-of-work)**: Require a proof-of-work challenge to be solved by the client for any expensive operation. The parameters need to be carefully chosen to require sufficient computation per call to the expensive operation without creating too much impact for legitimate clients. Don't forget to consider clients on slow and older mobile devices while protecting against attackers on modern multi-GPU systems. Certain algorithms can limit the performance increase of GPUs to improve this uneven battlefield.
 * **Charge for expensive calls**: You can require that certain expensive calls from other canisters include cycles to compensate for the resources consumed. In addition, one can charge for ingress messages. However, that is not currently supported by the protocol itself, and a custom solution, such as pre-paying a certain amount, would need to be designed.
 * **Differentiate between update and query calls**: Expensive computations should generally be avoided for update calls unless absolutely necessary. While query calls are not authenticated, they are faster and less resource-intensive. To check whether a method was called as a query or update call, you can use `ic0.in_replicated_execution()`.
