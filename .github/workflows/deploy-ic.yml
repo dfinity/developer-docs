@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - 'AGENTS.md'
       - 'CLAUDE.md'
-      - '.docs-plan/**'
       - '.claude/**'
       - '.beads/**'
   workflow_dispatch:

@@ -33,7 +33,7 @@ Three outcomes:
 
 ## Doing the work
 
-**Content pages:** Follow `.docs-plan/content-authoring.md` before writing. Every content page must:
+**Content pages:** Follow the "Content authoring workflow" section below before writing. Every content page must:
 - Include an `<!-- Upstream: -->` comment at the bottom listing every `.sources/` repo used
 - Load the relevant icskill before writing (see "Skills" section below)
 - Load `technical-documentation` skill before writing
@@ -54,7 +54,7 @@ A `<!-- feedback-addressed -->` top-level comment only covers feedback up to tha
 
 **Automated reviewer feedback (Copilot, bots):** Verify each claim against `.sources/` before acting. Copilot is often right on factual errors (wrong API names, incorrect behavior); often wrong on style preferences and project-convention conflicts.
 
-**PR reviews:** Only when explicitly asked. Load `technical-documentation` skill and the relevant icskill first. See `.docs-plan/review-guidelines.md` for the full checklist.
+**PR reviews:** Only when explicitly asked. Load `technical-documentation` skill and the relevant icskill first. See the "Review guidelines" section below.
 
 ## Submitting
 
@@ -161,7 +161,6 @@ git checkout main
 - `docs/` — All documentation (`.md` only). `src/content/docs/` symlinks here for Astro.
 - `docs/languages/motoko/` — Auto-synced from `caffeinelabs/motoko` (do not edit directly). Bumps are fully automated: a weekly workflow (`.github/workflows/sync-motoko.yml`) detects new releases, runs `npm run sync:motoko`, and opens a PR with the synced content already committed. No manual sync step needed — just review and merge the PR.
 - `docs/guides/tools/migrating-from-dfx.md` — Synced from `dfinity/icp-cli` (do not edit directly)
-- `.docs-plan/` — Planning artifacts, decisions, authoring workflow, review guidelines
 - `.sources/` — **Pinned submodules of upstream source repos** (see "Source material repos" below)
 - `.agents/skills/` — Agent skills (symlinks into `.sources/`). Run `git submodule update --init --depth 1` if broken.
 - `.claude/skills/` — Symlinks to `.agents/skills/` for Claude Code
@@ -350,16 +349,127 @@ The following files are no longer synced from an external submodule — they are
 grep -r "{#<anchor>}" docs/references/ic-interface-spec/
 ```
 
-## Planning artifacts (`.docs-plan/`)
-
-| File | What it answers |
-|------|-----------------|
-| `content-authoring.md` | "How do I write a page?" — full authoring workflow |
-| `review-guidelines.md` | "How do I review a PR?" — full review checklist |
-
 ## Content authoring workflow
 
-Read `.docs-plan/content-authoring.md` before writing any page. It covers: reading stubs and source material, writing content, code snippet verification, sync recommendations, linking rules, and external docs.
+When writing a new docs page:
+
+1. Read the GitHub Issue — it contains the content brief and scope.
+2. Read relevant source material from `.sources/` for the topic (see "Source material repos" above). Use it to verify CLI commands, API signatures, and technical claims.
+3. Load the relevant icskill from `.sources/icskills/` for accurate canister IDs and code patterns.
+4. Write the content:
+   - Use icp-cli commands (never dfx)
+   - **Verify all CLI commands and flags** against `.sources/icp-cli/docs/reference/cli.md` — never guess command syntax
+   - **Never invent command output** — copy from actual output in `.sources/` (READMEs, test fixtures, example logs) or write `<!-- TODO: verify output -->` instead of guessing. Do not fabricate canister IDs, cycle counts, error messages, or version strings.
+   - **Flag uncertainty** — if you're not confident a technical claim is correct, add `<!-- Needs human verification: [reason] -->` next to the uncertain content. It is always better to flag than to silently guess.
+   - **Verify all internal links** — every `[text](path.md)` must point to a file that exists. Run `ls <target-path>` before submitting. If the target doesn't exist, link to the nearest existing page and note the gap in the PR description.
+   - **Verify all external URLs** — use the linking rules table below for known resources. For any URL not in the table (crate docs, npm packages, GitHub repos), verify it is correct. Do not guess or generalize from similar URLs (e.g., `docs.rs/ic-cdk` is NOT the same as `docs.rs/ic-stable-structures`).
+   - **Self-consistency check** — re-read your frontmatter description and body opening paragraph. They must not contradict each other.
+   - Use `.md` by default. Use `.mdx` only when the page needs interactive components like `<Tabs syncKey="lang">`. In `.mdx` files, use `{/* */}` for comments instead of `<!-- -->`.
+   - **Stub → `.mdx` rename:** If your page needs tabs (e.g., Motoko/Rust examples in the same section), rename the stub from `.md` to `.mdx`, delete the old `.md` file, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after the frontmatter, and convert any `<!-- -->` comments to `{/* */}`. Internal links pointing to `<page>.md` do not need updating — Astro resolves both extensions.
+   - Ensure complete frontmatter (see the "Frontmatter schema" section below)
+   - **Code examples:** Check `dfinity/examples` (`.sources/examples`) for existing examples with `#region` markers first. If markers exist, use the `<CodeExample>` component (requires `.mdx`). If not, write inline if <30 lines, or link to the GitHub file if longer. Code examples are maintained in `dfinity/examples` — when that repo is updated, the docs are updated alongside it.
+5. **Sync recommendation:** After reading source material, decide whether this page should be:
+   - **Hand-written** — original content, no upstream equivalent
+   - **Synced** — upstream repo has authoritative content that should be auto-synced (like Motoko docs)
+   - **Upstream-informed** — hand-written but closely tracks an upstream source that should be monitored for changes
+   Record your recommendation as a comment at the bottom of the page. Use `<!-- -->` in `.md` files and `{/* */}` in `.mdx` files:
+   ```markdown
+   <!-- Upstream: hand-written -->
+   <!-- Upstream: sync from dfinity/icp-cli docs/guides/canister-migration.md -->
+   <!-- Upstream: informed by dfinity/portal docs/building-apps/canister-management/settings.mdx -->
+   ```
+   **This must appear in two places:** (1) as a comment in the page file, and (2) as a "Sync recommendation" section in the PR body (see the "Submitting" section above). Both are required.
+6. Submit: push branch, create PR (see the "Submitting" section above)
+
+## Content rules
+
+- **Spelling:** "onchain" and "offchain" (no hyphens). Use "icp-cli" in prose; use `icp` only in code blocks for the literal command.
+- **Always use `.md` extension in internal links**, even when linking to a `.mdx` file (e.g., `[Canister lifecycle](lifecycle.md)`). Use relative paths. Never absolute paths like `/getting-started/quickstart/` — they break on GitHub.
+- Images go in `src/assets/images/` organized by section. Carry over portal images case-by-case; keep the hand-drawn visual style.
+- **No headings inside `<TabItem>` blocks** — they always appear in the TOC regardless of which tab is active. Use **bold text** instead of `###` for sub-labels inside tabs.
+- **Motoko standard library:** Always use `core` (`mops.one/core`), never `base`. Link to the synced base→core migration guide for developers still on `base`.
+- **Diataxis content types** — match content to its section:
+  - `concepts/` — Explanations only. Describe *what* and *why*. No CLI commands, no step-by-step procedures.
+  - `getting-started/` — Tutorials. Step-by-step with CLI commands. Linear, opinionated, complete.
+  - `guides/` — How-to guides. Task-oriented with CLI commands where relevant.
+  - `references/` — Specifications and lookups. Precise, complete, no tutorials.
+- **End-of-page navigation:** End every page with a `## Next steps` section. Always use "Next steps" — never "What's next" or other variants.
+
+## Linking rules (do not duplicate — link instead)
+
+| Resource | URL | Notes |
+|----------|-----|-------|
+| CLI commands | https://cli.internetcomputer.org/ | |
+| Motoko core library | https://mops.one/core/docs | supersedes `base`; migration guide synced from Motoko repo |
+| Rust CDK (`ic-cdk`) | https://docs.rs/ic-cdk/latest/ic_cdk/ | |
+| Rust stable structures | https://docs.rs/ic-stable-structures/latest/ic_stable_structures/ | |
+| Rust Candid | https://docs.rs/candid/latest/candid/ | |
+| JS SDK | https://js.icp.build | |
+| Agent skill files | https://skills.internetcomputer.org | |
+
+> **Rust crate URLs:** Each crate has its own URL — do not substitute. For crates not in this table, use `https://docs.rs/<crate-name>/latest/<crate_name>/` (hyphens → underscores in the path).
+
+## Review guidelines
+
+**Only review PRs when explicitly asked by a human.** Agents must never offer, suggest, or perform PR reviews on their own initiative.
+
+When asked to review a PR, load the `technical-documentation` skill and the relevant icskill for the page topic first.
+
+### Initial review (first time reviewing a page)
+
+*Mechanical checks:*
+1. **Internal links** — `ls` every `[text](path.md)` target. If the `.md` file doesn't exist, also check for `.mdx` — Astro resolves `.md` links to `.mdx` files. Flag as broken only if neither exists.
+2. **External URLs** — verify against the linking rules table above. Flag any guessed or wrong URLs (especially `docs.rs` crate links).
+3. **CLI commands** — verify all `icp` commands and flags against `.sources/icp-cli/docs/reference/cli.md`.
+4. **Frontmatter** — complete and consistent with the body (no contradictions in descriptions, time estimates, scope).
+5. **Content rules compliance** — no `dfx` references, no `.mdx`/JSX, relative links with `.md` extension, `core` not `base` for Motoko, Diataxis content type respected.
+
+*Content quality checks:*
+6. **Reader test** — read the page title, then the first two paragraphs. Does the opening deliver on the title's promise? Does it assume the reader came from a specific page or completed prior steps? (Pages must stand on their own — link to prerequisites, don't assume them.) Flag pages that open with background or history instead of what the reader came for.
+7. **Funnel check** — does the page follow: orient (what is this, who is it for) → explain/instruct → what's next? Flag pages that bury the lede, put prerequisites after the main content, or end without a clear next step.
+8. **Scanability** — can a developer skimming headings and bold text get the gist without reading every paragraph? Flag walls of text and important information buried mid-paragraph.
+9. **Accuracy** — cross-check technical claims (memory limits, latency numbers, API behavior) against `.sources/` material. Flag anything that looks wrong or outdated.
+10. **Developer empathy** — does the page anticipate what a developer would actually struggle with? For concept pages: does it answer "why should I care?" For guides: does it handle the error cases a developer will actually hit?
+
+*Post using this format:*
+
+```markdown
+## Review: <page title>
+
+### Must fix
+- **<issue>**: <description and suggested fix>
+
+### Suggestions
+- **<issue>**: <description>
+
+### Verified
+- <what checked out> (e.g., "All CLI commands verified against .sources/icp-cli/docs/reference/cli.md")
+```
+
+Omit any section that has no items. Every initial review must include the "Verified" section to show what was actually checked.
+
+### Follow-up review (after feedback was addressed)
+
+Only run this when reviewing a PR that already had an initial review. Do NOT re-run the full checklist.
+
+1. Read the previous review comment(s) to understand what was requested.
+2. Verify each requested change was made correctly.
+3. Check that fixes didn't introduce new issues (e.g., dangling links from removed sections, broken frontmatter from removed fields).
+4. Skip re-verifying items already signed off in the initial review, unless the fix directly touches them.
+
+*Post using this format:*
+
+```markdown
+## Follow-up review: <page title>
+
+### Fixed
+- <what was fixed and confirmed correct>
+
+### Still needs work
+- <what wasn't addressed or was addressed incorrectly>
+```
+
+Omit "Still needs work" if everything looks good.
 
 ## Skills (required)
 

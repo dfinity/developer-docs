@@ -12,7 +12,7 @@ npm run build    # Production build
 
 ## Content format
 
-Documentation is Markdown (`.md`) by default. Pages that need interactive components — such as `<Tabs syncKey="lang">` for multi-language sections — use `.mdx`. See `.docs-plan/decisions.md` for the full policy.
+Documentation is Markdown (`.md`) by default. Pages that need interactive components — such as `<Tabs syncKey="lang">` for multi-language sections — use `.mdx`.
 
 Files live in `docs/` (project root) and follow the site map defined in `astro.config.mjs`. Astro reads them via a symlink at `src/content/docs/`.
 
@@ -168,4 +168,4 @@ Key commands:
 - `bd update <id> --status draft --notes "PR #X"` — mark task as draft after PR creation
 - `bd list --limit 0` — see all tasks (default caps at 50)
 
-See `.docs-plan/README.md` for analysis artifacts and `.docs-plan/migration-plan.md` for execution details.
+See [AGENTS.md](AGENTS.md) for authoring workflow and content rules.

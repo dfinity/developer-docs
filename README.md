@@ -40,7 +40,6 @@ docs/                   # All documentation (.md only)
 .sources/               # Pinned upstream source repos (read-only)
 ├── VERSIONS            # Current pinned versions for versioned submodules
 └── ...                 # icp-cli, motoko, cdk-rs, icskills, examples, ...
-.docs-plan/             # Planning artifacts and authoring workflow
 AGENTS.md               # Contributor and agent instructions
 ```
 
