@@ -22,7 +22,7 @@ Load `technical-documentation`, `icp-brand-voice`, and the relevant icskill befo
 - **Flag uncertainty:** add `<!-- Needs human verification: [reason] -->` next to any claim you can't verify from `.sources/`. Never silently guess.
 - **Do not invent command output** — copy from `.sources/` READMEs or test fixtures, or write `<!-- TODO: verify output -->`.
 - **`.md` → `.mdx` conversion:** if a page needs multi-language tabs, rename `.md` → `.mdx`, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after the frontmatter, and convert `<!-- -->` comments to `{/* */}`. Astro resolves `.md` links to `.mdx` files — no link updates needed.
-- For pages that closely track an upstream source, add at the bottom: `<!-- Upstream: informed by <repo> <path> -->`. Skip for original content.
+- For pages that closely track a specific upstream file, add at the bottom: `<!-- Upstream: informed by <repo> <path> -->`. Skip for pages that draw from multiple sources or are fully original.
 - Follow the "Content rules" section below.
 
 ## Adding or updating code snippets
@@ -221,7 +221,7 @@ Consult the relevant submodule when writing or reviewing:
 
 | Topic | Submodule |
 |-------|-----------|
-| CLI commands and flags | `.sources/icp-cli/` — verify against `docs/reference/cli.md` |
+| CLI commands and flags | `.sources/icp-cli/` — verify against `.sources/icp-cli/docs/reference/cli.md` |
 | Motoko APIs (`mo:core`) | `.sources/motoko-core/` |
 | Motoko compiler / syntax | `.sources/motoko/` |
 | Rust CDK (`ic-cdk`, `ic-cdk-timers`) | `.sources/cdk-rs/` |

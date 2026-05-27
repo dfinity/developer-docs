@@ -21,14 +21,6 @@ function isStub(content) {
   return content.includes('TODO: Write content');
 }
 
-function checkUpstream(file, content) {
-  if (isSynced(file) || isStub(content) || path.basename(file) === 'index.md') return [];
-  if (!/<!--\s*Upstream:\s*(hand-written|sync from|informed by)/.test(content)) {
-    return ['missing <!-- Upstream: hand-written|sync from|informed by --> comment'];
-  }
-  return [];
-}
-
 function checkFrontmatter(file, content) {
   if (isSynced(file)) return [];
   try {
@@ -107,7 +99,6 @@ function checkInternalLinks(file, content) {
 function validate(file) {
   const content = fs.readFileSync(file, 'utf8');
   return [
-    ...checkUpstream(file, content),
     ...checkFrontmatter(file, content),
     ...checkForbiddenPatterns(file, content),
     ...checkEmdash(file, content),
