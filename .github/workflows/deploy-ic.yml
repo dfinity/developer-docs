@@ -37,7 +37,7 @@ jobs:
       - run: npm run build
 
       - name: Install icp-cli
-        run: npm i -g @icp-sdk/icp-cli@0.2.6 @icp-sdk/ic-wasm
+        run: npm i -g @icp-sdk/icp-cli@0.2.7 @icp-sdk/ic-wasm
 
       - name: Import deploy identity
         run: |

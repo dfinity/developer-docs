@@ -41,7 +41,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install icp-cli
-        run: npm i -g @icp-sdk/icp-cli@0.2.6 @icp-sdk/ic-wasm
+        run: npm i -g @icp-sdk/icp-cli@0.2.7 @icp-sdk/ic-wasm
 
       - run: npm ci
 
