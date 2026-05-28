@@ -1,10 +1,25 @@
+networks:
+  - name: local
+    mode: managed
+    gateway:
+      port: 0
+
 canisters:
   - name: frontend
-    recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
-      configuration:
-        dir: dist
-        version: asset-canister-404-support
-        build:
-          - npm install
-          - npm run build
+    build:
+      steps:
+        - type: pre-built
+          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr63-d5262f2/canister.wasm
+          sha256: aaacb5c927deb57ebd1ec1108b22693b7622b2317ebf6f859f07b7b689aecf5b
+
+    sync:
+      steps:
+        - type: script
+          commands:
+            - npm install
+            - npm run build
+        - type: plugin
+          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr63-d5262f2/plugin.wasm
+          sha256: 3cdd6d5abf04f3b2bca7c9b4d6370ba9297573259a3239831964a9a667e0481e
+          dirs:
+            - dist
