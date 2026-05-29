@@ -9,7 +9,7 @@ canisters:
     build:
       steps:
         - type: pre-built
-          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr65-1a208a3/canister.wasm
+          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr69-7571cba/canister.wasm
           sha256: aaacb5c927deb57ebd1ec1108b22693b7622b2317ebf6f859f07b7b689aecf5b
 
     sync:
@@ -19,9 +19,7 @@ canisters:
             - npm install
             - npm run build
         - type: plugin
-          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr65-1a208a3/plugin.wasm
-          sha256: ed15b6ba780e6691c17432afdee537228eb2110f342914cb12e36b9ecfacd1d7
+          url: https://github.com/dfinity/certified-assets/releases/download/snapshot-pr69-7571cba/plugin.wasm
+          sha256: ee9a000ea6f3023f2996b4e9f7d2514298fe2c8fbd9e52e1c6fdf29536fa3628
           dirs:
             - dist
-          files:
-            - assets.toml

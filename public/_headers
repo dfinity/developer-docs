@@ -32,3 +32,7 @@
 # Install scripts — fetched fresh on every `curl | sh`, so no long-lived cache.
 /*.sh
   Cache-Control: public, max-age=0, must-revalidate
+
+# Candid interface files (e.g., ic.did) — plain text
+/*.did
+  Content-Type: text/plain; charset=utf-8
