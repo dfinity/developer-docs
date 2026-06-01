@@ -126,7 +126,7 @@
 /building-apps/network-features/signatures/independently-verifying-ic-signatures  /guides/security/identity-and-access-management/  301
 /building-apps/network-features/vetkeys/*                                   /concepts/vetkeys/               301
 /building-apps/network-features/encryption/*                                /concepts/vetkeys/               301
-/building-apps/network-features/*                                           /guides/backends/https-outcalls/  301
+/building-apps/network-features/*                                           /concepts/#canisters--capabilities  301
 
 # =============================================================================
 # Section 12 — building-apps/developer-tools
