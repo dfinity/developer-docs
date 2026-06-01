@@ -13,7 +13,7 @@ Canisters on ICP can interact with Ethereum and any EVM-compatible chain (Polygo
 
 **Submitting Ethereum transactions.** The signed transaction is submitted via the EVM RPC canister's `eth_sendRawTransaction` endpoint, which relays it to multiple JSON-RPC providers for broadcast.
 
-This flow (query, sign, submit) lets canisters call any Ethereum smart contract, hold ETH or ERC-20 assets, and participate in DeFi protocols entirely from onchain ICP code.
+This flow (query, sign, submit) lets canisters call any Ethereum smart contract, hold ETH or ERC-20 assets, and participate in DeFi protocols entirely from ICP canister code.
 
 ## EVM RPC canister
 

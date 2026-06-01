@@ -11,7 +11,7 @@ Understanding both systems is important for developers. NNS proposals can affect
 
 ## The Network Nervous System
 
-The NNS is an onchain governance system that controls the Internet Computer at the protocol level. It is implemented as a set of system canisters running on a dedicated NNS subnet.
+The NNS is a governance system enforced by the network that controls the Internet Computer at the protocol level. It is implemented as a set of system canisters running on a dedicated NNS subnet.
 
 Decisions made through the NNS include:
 

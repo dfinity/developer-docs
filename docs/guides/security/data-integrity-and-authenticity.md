@@ -9,14 +9,14 @@ sidebar:
 
 ### Security concern
 
-ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` methods as query methods for the rest of this section.
+ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` methods as query methods for the rest of this section. For more information, view the [detailed overview between update and query calls](../canister-calls/inter-canister-calls.md#query-vs-update-calls).
 
 Update calls are slow and expensive but provide integrity guarantees as their responses include a threshold signature signed by the subnet.
 
 On the other hand, query calls are fast since a single replica formulates the response, but **there is no integrity guarantee, since the response can be manipulated by a single replica or boundary node.** For example, if the NNS app fetches proposal information from the governance canister via query calls and the responding node is malicious, it can mask an ill-intentioned proposal that causes irrevocable damage as innocuous by modifying the proposal payload in the response and mislead voters into voting yes. Another consequence of query calls is that users can't rely on [canister_inspect_message](../../references/ic-interface-spec/canister-interface.md#system-api-inspect-message) as a guard. **This makes query calls, in their raw form, unfit to serve data for security-critical applications.**
 
 ### Using certified variables for secure queries
-In certain use cases, there is a third option whereby query results can return data that has been certified by the subnet in an earlier update call. This is the concept of certified data, and it requires changes to the update call to create the certification, the query call to return the certificate, and the frontend to verify the certificate. Using certified data provides query-like response times with update-like certified responses.
+In certain use cases, there is a third option whereby query results can return data that has been certified by the subnet in an earlier update call. This is the concept of certified data, and it requires changes to the update call to create the certification, the query call to return the certificate, and the frontend to verify the certificate. Using certified data provides query-like response times with update-like certified responses. This forms the core of [certified variables](../backends/certified-variables.md).
 
 Some examples of certified variables are asset certification in [Internet Identity](https://github.com/dfinity/internet-identity/blob/b29a6f68bbe5a49d048e12bc7a3263a9f43d080b/src/internet_identity/src/main.rs#L775-L808), [NNS app](https://github.com/dfinity/nns-dapp/blob/372c3562127d70c2fde059bc9c268e8ae858583e/rs/src/assets.rs#L121-L145), or the [canister signature implementation in Internet Identity](https://github.com/dfinity/ic-canister-sig-creation).
 

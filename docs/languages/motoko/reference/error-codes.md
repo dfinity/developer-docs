@@ -1,7 +1,8 @@
 ---
-sidebar_position: 1
-description: "Motoko language documentation"
 title: "Error code reference"
+description: "Reference for Motoko compiler error codes with examples and explanations."
+sidebar:
+  order: 2
 ---
 
 <!-- needs updating or better: autogeneration -->
@@ -17,7 +18,7 @@ title: "Error code reference"
 | M0030 | Type field does not exist in type. | ```type Person = { name : Text }; func getName(p : Person) : Nat { p.age }``` | The field `age` doesn't exist in the `Person` type. |
 | M0031 | Shared function has non-shared parameter type. | ```public shared func process(obj : { var count : Nat }) { ... }``` | Shared functions cannot have mutable types as parameters. |
 | M0032 | Shared function has non-shared return type. | ```public shared func getData() : { var data : [Nat] } { ... }``` | Shared functions cannot return mutable types. |
-| M0033 | Async has non-shared content type. | ```async { var counter = 0 }``` | Async blocks cannot contain mutable [state](/languages/motoko/fundamentals/state). |
+| M0033 | Async has non-shared content type. | ```async { var counter = 0 }``` | Async blocks cannot contain mutable [state](../fundamentals/actors/state.md). |
 | M0036 | Invalid return type for shared query function. | ```public shared query func getUsers() : async [User] { ... }``` | Query functions cannot return async types. |
 | M0038 | Misplaced await. | ```func compute() { let x = await promise; }``` | `await` can only be used in an async function or block. |
 | M0045 | Wrong number of type arguments. | ```func process<T>(x : Array<T, Nat>) { ... }``` | `Array` type expects one type parameter, not two. |
@@ -33,7 +34,7 @@ title: "Error code reference"
 | M0082 | Expected iterable type. | ```for (item in 42) { ... }``` | The value `42` is not an iterable type for a for-loop. |
 | M0088 | Expected async type. | ```let result = await 42;``` | Cannot `await` on a non-async value. |
 | M0089 | Redundant ignore. | ```ignore (5);``` | The `ignore` is unnecessary for a value that doesn't need to be ignored. |
-| M0090 | Actor reference must have an [actor](/languages/motoko/fundamentals/actors-async) type .| ```let a = actor { ... }; a.someMethod();``` | The variable `a` must have an explicit [actor](/languages/motoko/fundamentals/actors-async) type to call its methods. |
+| M0090 | Actor reference must have an [actor](../fundamentals/actors/actors-async.md) type .| ```let a = actor { ... }; a.someMethod();``` | The variable `a` must have an explicit [actor](../fundamentals/actors/actors-async.md) type to call its methods. |
 | M0096 | Expression can't produce expected type. | ```func getValue() : Bool { return "true"; }``` | String cannot be returned where a [`Bool`](https://mops.one/core/docs/Bool) is expected. |
 | M0097 | Expected function type. | ```let x = 5; x();``` | Cannot call a non-function value. |
 | M0098 | Cannot instantiate function type. | ```type Func = (Nat) -> Nat; let f = Func();``` | Function types cannot be instantiated directly. |
@@ -44,8 +45,8 @@ title: "Error code reference"
 | M0139 | Inner actor classes are not supported. | ```class Outer() { actor class Inner() { ... } }``` | Actor classes cannot be nested inside other classes. |
 | M0141 | Forbidden declaration in program. | ```import Prim "mo:prim";``` | Certain imports/declarations are not allowed in normal user code. |
 | M0145 | Pattern does not cover value. | ```switch (option) { case (null) { ... } };``` (missing `?some` case) | Switch statement doesn't handle all possible values. |
-| M0149 | An immutable [record](/languages/motoko/fundamentals/records) field (declared without `var`) was supplied where a mutable [record](/languages/motoko/fundamentals/records) field (specified with `var`), was expected. | ```type Mutable = { var x : Nat }; func set(r : Mutable) { ... }; set({ x = 10 });``` | Immutable [record](/languages/motoko/fundamentals/records) provided where mutable was expected. |
-| M0150 | A mutable [record](/languages/motoko/fundamentals/records) field (declared with `var`) was supplied where an immutable [record](/languages/motoko/fundamentals/records) field (specified without `var`) was expected. | ```type Immutable = { x : Nat }; let record : Immutable = { var x = 10 };``` | Mutable field provided where immutable was expected. |
+| M0149 | An immutable [record](../fundamentals/types/records.md) field (declared without `var`) was supplied where a mutable [record](../fundamentals/types/records.md) field (specified with `var`), was expected. | ```type Mutable = { var x : Nat }; func set(r : Mutable) { ... }; set({ x = 10 });``` | Immutable [record](../fundamentals/types/records.md) provided where mutable was expected. |
+| M0150 | A mutable [record](../fundamentals/types/records.md) field (declared with `var`) was supplied where an immutable [record](../fundamentals/types/records.md) field (specified without `var`) was expected. | ```type Immutable = { x : Nat }; let record : Immutable = { var x = 10 };``` | Mutable field provided where immutable was expected. |
 | M0151 | A object literal is missing some fields. | ```type Person = { name : Text; age : Nat }; let p : Person = { name = "John" };``` | The `age` field is missing from the object literal. |
 | M0153 | An imported Candid file (.did) mentions types that cannot be represented in Motoko. | ```import Types from "types.did";``` (where `types.did` contains incompatible types) | The imported Candid file contains types that don't map to Motoko types. |
 | M0154 | Deprecation annotation. | ```@deprecated("Use newFunction instead") func oldFunction() { ... }``` | Using a deprecated function or feature that has been marked with `@deprecated`. |

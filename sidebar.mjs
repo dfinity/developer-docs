@@ -7,7 +7,11 @@
  *
  * Format follows the Starlight sidebar schema:
  *   https://starlight.astro.build/reference/configuration/#sidebar
+ *
+ * The Motoko section is maintained in sidebar-motoko.mjs. Update that file
+ * when Motoko pages are added, removed, or reordered.
  */
+import { motokoSidebar } from "./sidebar-motoko.mjs";
 
 export const sidebar = [
   {
@@ -109,7 +113,6 @@ export const sidebar = [
         items: [
           { slug: "concepts/canisters" },
           { slug: "concepts/principals" },
-          { slug: "concepts/app-architecture" },
           { slug: "concepts/cycles" },
           { slug: "concepts/orthogonal-persistence" },
           { slug: "concepts/timers" },
@@ -159,31 +162,7 @@ export const sidebar = [
     label: "Languages",
     items: [
       { slug: "languages", label: "Overview" },
-      {
-        label: "Motoko",
-        collapsed: true,
-        items: [
-          { slug: "languages/motoko", label: "Overview" },
-          {
-            label: "Fundamentals",
-            autogenerate: {
-              directory: "languages/motoko/fundamentals",
-            },
-          },
-          {
-            label: "ICP features",
-            autogenerate: {
-              directory: "languages/motoko/icp-features",
-            },
-          },
-          {
-            label: "Reference",
-            autogenerate: {
-              directory: "languages/motoko/reference",
-            },
-          },
-        ],
-      },
+      motokoSidebar,
       {
         label: "Rust",
         collapsed: true,
@@ -191,7 +170,7 @@ export const sidebar = [
       },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer tools" },
+  { slug: "developer-tools", label: "Developer tools" },
   {
     label: "References",
     collapsed: true,
@@ -202,7 +181,8 @@ export const sidebar = [
         collapsed: true,
         items: [
           { slug: "references/management-canister" },
-          { slug: "references/cycles-costs" },
+          { slug: "references/cycle-costs" },
+          { slug: "references/resource-limits" },
           { slug: "references/subnet-types" },
           { slug: "references/execution-errors" },
         ],
@@ -243,8 +223,10 @@ export const sidebar = [
         collapsed: true,
         autogenerate: { directory: "references/ic-interface-spec" },
       },
+      { slug: "references/message-execution-properties" },
       { slug: "references/http-gateway-protocol-spec" },
       { slug: "references/internet-identity-spec" },
+      { slug: "references/verifiable-credentials-spec" },
       { slug: "references/glossary" },
     ],
   },

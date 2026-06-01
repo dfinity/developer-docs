@@ -1,8 +1,15 @@
 # Pinned submodule versions (release-pinned repos only)
 # -------------------------------------------------------
 # Repos that track main/master are NOT listed here — they have no fixed release
-# version. Those repos are: portal, examples, icskills, dotskills,
+# version. Those repos are: examples, icskills, dotskills,
 # icp-cli-recipes, icp-cli-templates, icp-js-sdk-docs.
+#
+# internetidentity — uses date-based release tags (release-YYYY-MM-DD).
+#   Only ii-spec.mdx, vc-spec.md, and internet_identity.did are synced.
+#   Pin to the latest release tag, not the tip of main — spec changes are
+#   only live once the canister is deployed at that release.
+#   The automated workflow (.github/workflows/sync-ii-spec.yml) finds the
+#   latest release-YYYY-MM-DD tag and only opens a PR if those files changed.
 #
 # FORMAT: <submodule>   <version label>   <7-char hash>
 #
@@ -50,8 +57,9 @@ chain-fusion-signer   v0.3.0                                                    
 papi                  v0.1.1                                                    168bc9d
 ic-pub-key            v1.0.1                                                    f89fa55
 icp-cli               v0.2.3                                                    caeac37
-motoko                v1.7.0                                                     1e65e26
+motoko                v1.8.2                                                     b77651f
 motoko-core           v2.4.0                                                    cd37dbf
 cdk-rs                ic-cdk v0.20.1 / ic-cdk-timers v1.0.0 / ic-cdk-executor v2.0.0  317f55c
 candid                2025-12-18  # candid v0.10.20, didc v0.5.4                2e4a2cf
 response-verification v3.1.0                                                    18c5a37
+internetidentity      release-2026-05-08                                         f6cf858

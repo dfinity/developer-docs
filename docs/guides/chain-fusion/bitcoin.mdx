@@ -1010,7 +1010,7 @@ fn select_one_utxo<'a>(
 
 ### Cycle costs
 
-All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
+All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`. The table below shows minimum cycles to attach; for base costs and USD values see [Cycle costs](../../references/cycle-costs.md#bitcoin-integration-api).
 
 | API call | Testnet / Regtest | Mainnet |
 |---|---|---|

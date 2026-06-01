@@ -306,6 +306,22 @@ Only the controllers of the canister or the canister itself or subnet admins can
 
 All sizes are expressed in bytes.
 
+### IC method `canister_metrics` {#ic-canister_metrics}
+
+This method can be called by canisters as well as by external users via ingress messages.
+This method can also be called by external users via non-replicated (query) calls, but it cannot be called from composite query calls.
+
+This method returns a set of canister related metrics for the requested canister, like cycles consumed by different use cases. These metrics should be counters (i.e. monotonically increasing values) that report the accumulated respective amount since the canister was created for new canisters or since the metrics introduction for existing canisters.
+
+Only controllers of the canister or subnet admins can call this method.
+
+:::warning
+
+The response of a query comes from a single replica, and is therefore not appropriate for security-sensitive applications.
+Replica-signed queries may improve security because the recipient can verify the response comes from the correct subnet.
+
+:::
+
 ### IC method `canister_info` {#ic-canister_info}
 
 This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
@@ -466,7 +482,7 @@ Although there exist various hierarchical key derivation schemes (e.g., [BIP32](
 For these reasons, a new derivation scheme is specified here.
 This scheme does not make use of _clamping_ (see [RFC8032, Section 5.1.5, Item 2](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.5)), because it is unnecessary in the given setting, and satisfies the following requirements:
 
-- Off-chain availability: New public keys can be computed off-chain from a master public key without requiring interaction with the IC.
+- Availability: New public keys can be computed client-side from a master public key without requiring interaction with the IC.
 - Hierarchical derivation: Derived keys are organized in a tree such that from any public key it is possible to derive new child keys. The first level is used to derive unique canister-specific keys from the master key.
 - Simplicity: The scheme is simple to implement using existing libraries.
 

@@ -8,6 +8,13 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.62.0 (2025-05-26) {$0_62_0}
+* Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
+  and before the function `canister_on_low_wasm_memory` is executed.
+
+### 0.61.0 (2025-05-18) {$0_61_0}
+* New management canister endpoint `canister_metrics`.
+
 ### 0.60.0 (2025-05-04) {$0_60_0}
 * Canister signatures from canisters on subnets of type `cloud_engine` are not valid.
 * New HTTP endpoints for update calls (to create a canister by subnet admins) and
@@ -491,7 +498,7 @@ sidebar:
 <!--
 Link replacements from portal source (portal used absolute paths):
   - internetcomputer.org [/docs]/home → / (site root)
-  - internetcomputer.org/.../resource-limits → ../cycles-costs.md (×3 in canister-interface.md: max response size, max inter-canister call payload, Wasm stable memory limit)
+  - internetcomputer.org/.../resource-limits → ../resource-limits.md (×3 in canister-interface.md: max response size, max inter-canister call payload, Wasm stable memory limit)
   - internetcomputer.org/.../bitcoin-how-it-works → ../../guides/chain-fusion/bitcoin.md (in management-canister.md, one level deeper than the original single file)
 -->
 

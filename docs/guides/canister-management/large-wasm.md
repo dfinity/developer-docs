@@ -2,7 +2,7 @@
 title: "Large Wasm modules"
 description: "Deploy canisters that exceed the 2 MiB Wasm limit using chunk store and compression"
 sidebar:
-  order: 9
+  order: 8
 ---
 
 ICP enforces a 2 MiB message size limit that applies to Wasm modules uploaded via `install_code`. Canisters with complex business logic, embedded ML models, or large dependency trees often exceed this threshold. There are two complementary approaches: reduce the module size with compression and dead-code stripping, or bypass the limit entirely by uploading the module in chunks.

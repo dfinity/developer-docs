@@ -77,7 +77,7 @@ Individual applications can also be governed by a **Service Nervous System (SNS)
 ## Next steps
 
 - [Canisters](canisters.md): what runs on the network
-- [App architecture](app-architecture.md): how applications use subnets and canisters
+- [App architecture](../getting-started/app-architecture.md): how applications use subnets and canisters
 - [Subnet types](../references/subnet-types.md): comparing subnet sizes and properties
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/network-overview.mdx -->

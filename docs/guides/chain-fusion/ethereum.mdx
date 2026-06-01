@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them onchain: all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
+ICP canisters can read data from Ethereum and other EVM-compatible chains, sign transactions with threshold ECDSA, and submit them to the network: all without bridges, oracles, or external signers. This guide covers the EVM RPC canister, which handles JSON-RPC calls to Ethereum nodes on your behalf.
 
 For a conceptual overview of how ICP connects to other blockchains, see [Chain Fusion](../../concepts/chain-fusion/index.md).
 
@@ -572,15 +572,7 @@ let (result,): (Result<String, RpcError>,) =
 
 ## Cycle costs
 
-Every EVM RPC call requires cycles. The cost depends on the request size, response size, subnet size, and number of providers queried.
-
-**Formula:**
-
-```text
-(5_912_000 + 60_000 * nodes + 2400 * request_bytes + 800 * max_response_bytes) * nodes * rpc_count
-```
-
-Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers queried.
+Every EVM RPC call requires cycles. The cost depends on the request size, response size, subnet size, and number of providers queried. For the full pricing formula, see [EVM RPC canister costs](../../references/cycle-costs.md#evm-rpc-canister).
 
 **Practical guidance:**
 
@@ -589,9 +581,7 @@ Where `nodes` = 34 (fiduciary subnet) and `rpc_count` = number of providers quer
 - Use `requestCost` to get an exact estimate before making a raw JSON-RPC call.
 - The Candid-RPC methods (like `eth_getBlockByNumber`) automatically retry with larger response sizes if needed, consuming more cycles from your budget.
 
-### Collateral cycles
-
-Callers must include at least 0.00028 TC of additional "collateral cycles" to account for possible future API price increases. These are currently fully refunded, but this may change.
+An additional `10_000_000 * nodes * rpc_services` collateral cycles must be attached per call; these are consumed by the EVM RPC canister as a reserve for future pricing changes and are not returned. Any cycles above the total minimum are returned, so it is safe to send more than needed.
 
 ## Development setup
 

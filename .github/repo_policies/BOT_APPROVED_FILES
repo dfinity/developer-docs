@@ -5,6 +5,12 @@
 .sources/VERSIONS
 docs/languages/motoko/*
 
+# sync-ii-spec: bumps the Internet Identity submodule and syncs the II spec
+.sources/internetidentity
+docs/references/internet-identity-spec.md
+docs/references/verifiable-credentials-spec.md
+public/references/internet-identity.did
+
 # update-syntax-grammars: updates TextMate grammars from vscode-motoko releases
 syntaxes/motoko.tmLanguage.json
 syntaxes/candid.tmLanguage.json

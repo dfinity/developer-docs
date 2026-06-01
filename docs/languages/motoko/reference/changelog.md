@@ -1,26 +1,34 @@
 ---
-sidebar_position: 3
-description: "Motoko language documentation"
-title: "Motoko changelog"
+title: "Changelog"
+description: "Motoko compiler changelog."
+sidebar:
+  order: 6
+  label: "Motoko changelog"
 ---
 
-This section reproduces the changelog of Motoko up until this release.
-
-More recent `moc` releases may be available on the [release page](https://github.com/dfinity/motoko/releases/).
-
-:::tip
-You can determine the version of your `moc` installation using
-```bash
-moc --version
-```
-
-If using `moc` via `dfx`, you can determine the version of moc bundled with `dfx` using:
-```bash
-$(dfx cache show)/moc --version
-```
-:::
-
 # Motoko compiler changelog
+
+## 1.8.2 (2026-05-21)
+
+* motoko (`moc`)
+
+  * bugfix: M0236 dot-notation suggestion no longer fires when the receiver argument is not already a postfix expression (e.g. `Nat.toText((x * a + b) % c)`). The compiler used to print the suggestion as `(<expr>).toText(...)` but emit no machine-applicable edits, leaving `mops check --fix` with nothing to do; suggesting `(complex).f()` over `Module.f(complex)` is also a debatable style change. Trivial-receiver cases (variables, literals, calls) are unaffected (#6144).
+
+## 1.8.1 (2026-05-20)
+
+* motoko (`moc`)
+
+  * bugfix: Split stable-signature compatibility error M0169: the "previous version does not contain the stable variable required by the migration function" case now reports as new code **M0263**, leaving M0169 strictly for the "stable variable would be implicitly discarded" (data-loss) case. The two scenarios have different fixes and now have distinct codes (#6134).
+
+## 1.8.0 (2026-05-15)
+
+* motoko (`moc`)
+
+  * feat: Implicit argument derivation: the compiler can derive implicit arguments from functions that themselves have implicit parameters (e.g., `compare` for `[Nat]` from `Array.compare<Nat>` + `Nat.compare`). Works transitively and is depth-limited via `--implicit-derivation-depth` (#5966).
+
+  * feat: `and`-patterns: `p1 and p2` matches when both legs match, binding from both (#6049).
+
+  * bugfix: M0236 dot-notation auto-fix on unparenthesized single-argument calls (e.g. `List.reverse b`) no longer rewrites them into a bare function reference (`b.reverse`), which silently turned a call into a no-op; the suggestion now produces `b.reverse()` (#6096).
 
 ## 1.7.0 (2026-04-29)
 
@@ -96,7 +104,7 @@ $(dfx cache show)/moc --version
 * motoko (`moc`)
 
   * feat: Preserve named types in variable pattern bindings, so error messages show e.g. `Map.Map<Text, Text>` instead of expanding the full structural type (#5940).
-  * bugfix: implement `Float32` `ModOp` (`%`) — Wasm has no `f32.rem` instruction; the fix promotes operands to `f64`, applies `fmod`, then demotes the result back to `f32` (#5950).
+  * bugfix: implement `Float32` `ModOp` (`%`): Wasm has no `f32.rem` instruction; the fix promotes operands to `f64`, applies `fmod`, then demotes the result back to `f32` (#5950).
 
 ## 1.4.0 (2026-03-27)
 
@@ -856,7 +864,7 @@ $(dfx cache show)/moc --version
     inspected on the IC replica dashboard as they are internal to the Motoko runtime system. 
     This query is only authorized to the canister controllers and self-calls of the canister.
 
-    ``` Motoko
+    ```motoko
     __motoko_runtime_information : () -> {
         compilerVersion : Text;
         rtsVersion : Text;
@@ -898,7 +906,7 @@ $(dfx cache show)/moc --version
     ensures that no cleanup is required.
 
     The relevant security best practices are accessible at
-    https://internetcomputer.org/docs/current/developer-docs/security/security-best-practices/inter-canister-calls#recommendation
+    /guides/security/inter-canister-calls#recommendation
 
     BREAKING CHANGE (Minor): `finally` is now a reserved keyword,
     programs using this identifier will break.
@@ -1134,7 +1142,7 @@ $(dfx cache show)/moc --version
 
   * Allow identifiers in `or`-patterns (#3807).
     Bindings in alternatives must mention the same identifiers and have compatible types:
-    ``` Motoko
+    ```motoko
     let verbose = switch result {
       case (#ok) "All is good!";
       case (#warning why or #error why) "There is some problem: " # why;
@@ -1358,14 +1366,14 @@ $(dfx cache show)/moc --version
     This is a frequently asked-for feature that allows to change the control-flow
     of programs when pattern-match failure occurs, thus providing a means against
     the famous "pyramid of doom" issue. A common example is look-ups:
-    ``` Motoko
+    ```motoko
     shared func getUser(user : Text) : async Id {
       let ?id = Map.get(users, user) else { throw Error.reject("no such user") };
       id
     }
     ```
     Similarly, an expression like
-    ``` Motoko
+    ```motoko
     (label v : Bool { let <pat> = <exp> else break v false; true })
     ```
     evaluates to a `Bool`, signifying whether `<pat>` matches `<exp>`.
@@ -1543,7 +1551,7 @@ $(dfx cache show)/moc --version
 * motoko (`moc`)
 
   * Add new primitives for a default timer mechanism (#3542). These are
-    ``` Motoko
+    ```motoko
     setTimer : (delayNanos : Nat64, recurring : Bool, job : () -> async ()) -> (id : Nat)
     cancelTimer : (id : Nat) -> ()
     ```
@@ -2494,5 +2502,3 @@ $(dfx cache show)/moc --version
 ## 0.1 (2020-07-20)
 
 * Beginning of the changelog. Released with dfx-0.6.0.
-
-

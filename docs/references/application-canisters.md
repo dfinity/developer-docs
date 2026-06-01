@@ -9,7 +9,7 @@ Application canisters are well-known canisters at the application layer of the I
 
 ## Asset canister
 
-The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly onchain. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
+The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
 
 Asset canisters are deployed per-project. There is no global asset canister ID: each project creates its own.
 
@@ -213,7 +213,7 @@ For SNS launch configuration and governance setup, see [Launching an SNS](../gui
 
 ## LLM canister
 
-The LLM canister provides onchain AI inference using large language models, enabling canisters to generate text, run chat completions, and build AI agents without external API keys.
+The LLM canister provides AI inference running on the network, using large language models, enabling canisters to generate text, run chat completions, and build AI agents without external API keys.
 
 | Field | Value |
 |---|---|
@@ -317,7 +317,7 @@ ollama pull llama3.1:8b
 
 icp-cli does not yet have an equivalent of dfx's `"type": "custom"` / `"remote"` canister configuration for pointing a local replica at the Ollama-backed LLM Wasm. To test the LLM canister locally, use the example project from [dfinity/examples](https://github.com/dfinity/examples/tree/master/rust/llm_chatbot) which includes the `dfx.json` configuration needed for this setup.
 
-For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.md).
+For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 ---
 
@@ -336,7 +336,7 @@ For a complete onchain AI guide, see [Onchain AI](../guides/backends/onchain-ai.
 
 - [Asset canister guide](../guides/frontends/asset-canister.md): deploying and configuring the asset canister for your project
 - [Launching an SNS](../guides/governance/launching.md): how to decentralize an app with SNS
-- [Onchain AI](../guides/backends/onchain-ai.md): building AI-powered canisters with the LLM canister
+- [AI inference](../guides/backends/ai-inference.md): building AI-powered canisters with the LLM canister
 - [System canisters](system-canisters.md): NNS, Internet Identity, ICP ledger, and other network-level canisters
 - [Protocol canisters](protocol-canisters.md): Bitcoin, ckBTC, EVM RPC, and other protocol-layer canisters
 

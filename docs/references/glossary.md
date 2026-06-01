@@ -2,7 +2,7 @@
 title: "Glossary"
 description: "Definitions of ICP-specific terms: canister, cycle, principal, subnet, and more"
 sidebar:
-  order: 15
+  order: 17
 ---
 
 # Glossary
@@ -483,7 +483,7 @@ This power is granted in advance through an NNS [proposal](#proposal) stored in 
 The proposal defines maximum node operator capacity, and is scoped to a specific [node provider](#node-provider), in a specific [data center](#data-center) with a specific IPv6 prefix.
 Actual addition/removal of an unassigned node requires no further approvals, and is executed through a message to the [registry canister](#registry) signed by the corresponding node operator.
 
-Node operators and [node providers](#node-provider) **are not** the same entities, however they are related, as configuring [node operator keys and records](https://wiki.internetcomputer.org/wiki/Node_Provider_Onboarding#10._Create_a_node_operator_record) is part of the node provider onboarding process. 
+Node operators and [node providers](#node-provider) **are not** the same entities, however they are related, as configuring [node operator keys and records](https://internetcomputer.org/wiki/node-provider-onboarding/#step-10--create-the-node-operator-record) is part of the node provider onboarding process. 
 
 #### node provider
 
@@ -663,7 +663,7 @@ the induction pool.
 
 #### vetKeys
 
-**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables onchain encryption, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
+**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables encryption enforced by the network, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
 
 #### voting
 

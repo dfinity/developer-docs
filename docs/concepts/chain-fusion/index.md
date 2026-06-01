@@ -5,7 +5,7 @@ sidebar:
   order: 10
 ---
 
-Chain Fusion is ICP's approach to crosschain interoperability. Instead of relying on bridges or oracles, canisters interact with other networks directly: they can read state, hold assets, and sign and submit transactions on Bitcoin, Ethereum, Solana, and dozens of other chains. All of this runs onchain with the same trust assumptions as the Internet Computer itself.
+Chain Fusion is ICP's approach to crosschain interoperability. Instead of relying on bridges or oracles, canisters interact with other networks directly: they can read state, hold assets, and sign and submit transactions on Bitcoin, Ethereum, Solana, and dozens of other chains. All of this runs on the Internet Computer with the same trust assumptions.
 
 The foundation is [chain-key cryptography](../chain-key-cryptography.md). Each canister can derive keys for external signature schemes (ECDSA and Schnorr) and request threshold signatures from the protocol. This means a canister can control a Bitcoin address, an Ethereum account, or a Solana wallet: without any single node ever holding the private key.
 
@@ -68,7 +68,7 @@ Direct integration provides the strongest trust guarantees. The only assumption 
 
 ## Chain-key tokens
 
-Chain-key tokens are ICP-native assets backed 1:1 by assets native to another chain (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is held in a canister-controlled address on the source chain. Minting and burning happen entirely onchain. No bridge, no custodian.
+Chain-key tokens are ICP-native assets backed 1:1 by assets native to another chain (for example, ckBTC for Bitcoin and ckETH for Ethereum). Each is held in a canister-controlled address on the source chain. Minting and burning happen entirely on the network. No bridge, no custodian.
 
 These tokens implement the [ICRC-2](../../guides/digital-assets/ledgers.md#approve-and-transfer-from-icrc-2) standard, so they can be transferred and traded within the ICP ecosystem with the same speed and cost as any other ICP asset. When a user wants to redeem the underlying asset, the minter canister signs and submits a withdrawal transaction on the source chain.
 
@@ -123,7 +123,7 @@ Chain Fusion enables application patterns that are difficult or impossible with 
 - [Ethereum integration](ethereum.md): Ethereum, EVM chains, and the EVM RPC canister
 - [Solana integration](solana.md): the SOL RPC canister
 - [Chain-key tokens](chain-key-tokens.md): architecture of trustless crosschain assets
-- [Exchange rate canister](exchange-rate-canister.md): onchain oracle for asset prices
+- [Exchange rate canister](exchange-rate-canister.md): system service to fetch asset prices from external exchanges
 - [Bitcoin guide](../../guides/chain-fusion/bitcoin.md): build with BTC on ICP
 - [Ethereum guide](../../guides/chain-fusion/ethereum.md): interact with Ethereum and EVM chains
 - [Chain-key cryptography](../chain-key-cryptography.md): the threshold signing protocols behind Chain Fusion

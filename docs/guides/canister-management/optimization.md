@@ -2,7 +2,7 @@
 title: "Canister optimization"
 description: "Reduce Wasm binary size and improve canister performance with ic-wasm, SIMD, performance counters, and memory tuning"
 sidebar:
-  order: 4
+  order: 6
 ---
 
 Canister Wasm binaries compiled from Rust or Motoko are often larger than necessary and may execute more instructions than needed. Smaller binaries install faster, consume fewer [cycles](../../concepts/cycles.md) on deployment, and leave more room within the per-canister Wasm memory limit. Better runtime efficiency directly reduces the cycles charged per call.
@@ -231,7 +231,7 @@ Most production canisters benefit from combining several techniques:
 ## Next steps
 
 - [Large Wasm](large-wasm.md): when binary size exceeds the upload limit
-- [Cycles costs](../../references/cycles-costs.md): how Wasm size and instruction count map to cycle charges
+- [Cycles costs](../../references/cycle-costs.md): how Wasm size and instruction count map to cycle charges
 - [Canister lifecycle](lifecycle.md): how optimized builds integrate with the icp-cli deploy workflow
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/advanced/optimize/rust.mdx; docs/building-apps/advanced/optimize/motoko.mdx -->

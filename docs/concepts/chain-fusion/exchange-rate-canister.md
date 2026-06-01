@@ -7,7 +7,7 @@ The exchange rate canister (XRC) is a system canister that provides exchange rat
 
 The canister ID is `uf6dk-hyaaa-aaaaq-qaaaq-cai`.
 
-The NNS cycle minting canister uses the XRC to convert ICP to cycles at the XDR-pegged rate. Application canisters can also call the XRC directly to build financial features such as decentralized exchanges, payment systems, and portfolio tools.
+The [Cycles Minting Canister (CMC)](../../references/system-canisters.md#cycles-minting-canister-cmc) is the XRC's primary consumer: it calls the XRC every 5 minutes for the current ICP/XDR rate to use when converting ICP tokens to cycles. Application canisters can also call the XRC directly to build financial features such as exchanges, payment systems, and portfolio tools.
 
 ## Supported rate types
 

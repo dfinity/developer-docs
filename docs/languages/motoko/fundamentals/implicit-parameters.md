@@ -1,12 +1,14 @@
 ---
 title: "Implicit parameters"
-description: "Motoko language documentation"
+description: "Using implicit parameters to pass values to functions without explicit arguments in Motoko."
+sidebar:
+  order: 11
 ---
 
 ## Overview
 
 Implicit parameters allow you to omit frequently-used function arguments at call sites when the compiler can infer them from context. This feature is particularly useful when working with ordered collections like `Map` and `Set` from the `core` library, which require comparison functions but where the comparison logic is usually obvious from the key type.
-Other exampes are `equal` and `toText` functions.
+Other examples are `equal` and `toText` functions.
 
 ## Basic usage
 
@@ -14,7 +16,7 @@ Other exampes are `equal` and `toText` functions.
 
 When declaring a function, any function parameter can be declared implicit using the `implicit` type constructor:
 
-For example, the core Map library, declares a function:
+For example, the core `Map` library declares a function:
 
 ```motoko no-repl
 public func add<K, V>(self: Map<K, V>, compare : (implicit : (K, K) -> Order), key : K, value : V) {
@@ -22,12 +24,12 @@ public func add<K, V>(self: Map<K, V>, compare : (implicit : (K, K) -> Order), k
 }
 ```
 
-The `implicit` marker on the type of parameter `compare` indicates the call-site can omit it the `compare` argument, provided it can be inferred the call site.
+The `implicit` marker on the type of parameter `compare` indicates the call-site can omit the `compare` argument, provided it can be inferred at the call site.
 
-A function can declare more than on implicit parameter, even of the same name.
+A function can declare more than one implicit parameter, even of the same name.
 
 
-```motoko
+```motoko no-repl
 func show<T, U>(
     self: (T, U),
     toTextT : (implicit : (toText : T -> Text)),
@@ -44,7 +46,7 @@ The inner name (under `implicit`) overrides the local name of the parameter in t
 
 When calling a function with implicit parameters, you can omit the implicit arguments if the compiler can infer them:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -58,7 +60,7 @@ Map.add(map, 5, "five");
 ```
 The compiler automatically finds an appropriate comparison function based on the type of the key argument.
 
-The availabe candidates are:
+The available candidates are:
 * Any value named `compare` whose type matches the parameter type.
 
 If there is no such value,
@@ -69,13 +71,13 @@ An ambiguous call can always be disambiguated by supplying the explicit argument
 
 ### Contextual dot notation
 
-Implicit parameters dovetail nicely with the [contextual dot notation](contextual-dot).
+Implicit parameters dovetail nicely with [contextual dot notation](contextual-dot.md).
 The dot notation and implicit arguments can be used in conjunction to shorten code.
 
 For example, since the first parameter of `Map.add` is called `self`, we can both use `map` as the receiver of `add` "method" calls
 and omit the tedious `compare` argument:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -84,7 +86,7 @@ let map = Map.empty<Nat, Text>();
 // Using contextual dot notation, without implicits - must provide compare function explicitly
 map.add(Nat.compare, 5, "five");
 
-// Using contextual dot nation together with implicits - compare function inferred from key type
+// Using contextual dot notation together with implicits - compare function inferred from key type
 map.add(5, "five");
 ```
 
@@ -95,7 +97,7 @@ The primary use case for implicit arguments is simplifying code that uses maps a
 
 ### Map Example
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -120,7 +122,7 @@ let item2 = inventory.get(102);
 ### Set example
 
 The core `Set` type also takes advantage of implicit `compare` parameters.
-```motoko
+```motoko no-repl
 import Set "mo:core/Set";
 import Text "mo:core/Text";
 
@@ -141,7 +143,7 @@ let hasTag2 = tags.contains("urgent");
 
 Implicit arguments make imperative collection operations much cleaner:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 
@@ -150,7 +152,7 @@ let scores = Map.empty<Text, Nat>();
 // Add player scores
 scores.add("Alice", 100);
 scores.add("Bob", 85);
-scores.add( "Charlie", 92);
+scores.add("Charlie", 92);
 
 // Update a score
 scores.add("Bob", 95);
@@ -161,7 +163,7 @@ if (scores.containsKey("Alice")) {
 };
 
 // Get size
-let playerCount = scores.size()
+let playerCount = scores.size();
 ```
 
 ## How inference works
@@ -170,12 +172,56 @@ The compiler infers an implicit argument by:
 
 1. Examining the types of the explicit arguments provided.
 2. Looking for all candidate values for the implicit argument in the current scope that match the required type and name.
-3. From these, selecting the best unique candidate based on type specifity.
+3. From these, selecting the best unique candidate based on type specificity.
 
 If there is no unique best candidate the compiler rejects the call as ambiguous.
 
-If a callee takes several implicits parameter, either all implicit arguments must be omitted, or all explicit and implicit arguments must be provided at the call site,
+If a callee takes several implicit parameters, either all implicit arguments must be omitted, or all explicit and implicit arguments must be provided at the call site,
 in their declared order.
+
+### Resolution order
+
+The compiler searches for implicit arguments in the following order, stopping at the first tier that produces a unique match:
+
+1. **Direct**: values whose type directly matches:
+   1. Local values in the current scope.
+   2. Module fields of modules in scope (e.g., `Nat.compare`).
+   3. Fields of unimported modules (requires `--implicit-package`).
+2. **Derived**: functions with implicit parameters that, after stripping their own implicits and instantiating type parameters, match the required type (see [Implicit derivation](#implicit-derivation) below):
+   1. Local values in the current scope.
+   2. Module fields (e.g., `Array.compare<T>`).
+   3. Fields of unimported modules (requires `--implicit-package`).
+Within each tier, if multiple candidates match, the compiler picks the most specific one (by subtyping). If no unique best candidate exists, the call is rejected as ambiguous.
+
+This ordering guarantees that direct matches are always preferred over derived ones, and local definitions take precedence over imported or unimported module definitions.
+
+### Implicit derivation
+
+When no direct match exists, the compiler can **derive** an implicit argument from a function that itself has implicit parameters. This eliminates the need for boilerplate wrapper functions. The candidate function can be polymorphic (the compiler infers the type instantiation) or monomorphic.
+
+For example, suppose `Array.compare` is declared as:
+
+```motoko no-repl
+public func compare<T>(a : [T], b : [T], compare : (implicit : (T, T) -> Order)) : Order
+```
+
+and a function requires an implicit `compare : ([Nat], [Nat]) -> Order`. Without derivation, you would need to write a wrapper:
+
+```motoko no-repl
+module MyArray {
+  public func compare(a : [Nat], b : [Nat]) : Order {
+    Array.compare(a, b) // resolves inner `compare` to Nat.compare
+  };
+};
+```
+
+With derivation, the compiler handles this automatically. It recognizes that `Array.compare<Nat>`, after removing its implicit `compare` parameter and instantiating `T := Nat`, has the right type. It then recursively resolves the inner implicit (`Nat.compare`) and synthesizes the wrapper for you.
+
+This works transitively: a `compare` for `[[Nat]]` is derived via `Array.compare<[Nat]>`, which needs `[Nat]` compare, which is derived via `Array.compare<Nat>`, which needs `Nat.compare`, all resolved automatically.
+
+The resolution depth is bounded to guarantee termination. If you encounter a depth limit, you can increase it with `--implicit-derivation-depth` or provide the argument explicitly.
+
+When derivation is attempted but fails (for example, because an inner implicit can't be resolved), the compiler reports which inner implicits were missing and, when applicable, a hint about which module to import.
 
 ### Supported types
 
@@ -195,7 +241,7 @@ Other implicit parameters declared by the core library are `equals : (implicit :
 
 You can always provide implicit arguments explicitly when needed:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import {type Order} "mo:core/Order";
@@ -220,7 +266,7 @@ This is useful when:
 
 To use implicit arguments with your own custom types, define a comparison function:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import {type Order} "mo:core/Order";
@@ -262,7 +308,7 @@ let email = directory.get({ name = "Alice"; age = 30 });
 
 Existing code with explicit comparison functions will continue to work. You can adopt implicit arguments gradually:
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 
@@ -278,8 +324,10 @@ There is no need to update existing code unless you want to take advantage of th
 
 ## Performance considerations
 
-Implicit arguments have no runtime overhead. The comparison function is resolved at compile time, so there is no performance difference between using implicit and explicit arguments. The resulting code is identical.
+Implicit arguments are resolved at compile time.
+- For direct matches, the resulting code is identical to explicitly passing the argument.
+- For derived implicits, the compiler synthesizes a wrapper function at each call site. This creates a small overhead per call site, which could be mitigated by caching in the future. For now, if this becomes a performance issue, consider defining the function explicitly so all call sites share a single definition.
 
 ## See also
 
-- [Language reference](https://docs.motoko.org#function-calls)
+- [Language reference](../language-manual#function-calls)

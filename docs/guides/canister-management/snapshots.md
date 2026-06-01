@@ -147,7 +147,7 @@ icp canister start my-canister -e ic
 
 ## Example: transferring state between canisters
 
-Download a snapshot from a source canister and upload it to a target canister. This download-then-upload workflow is the foundation of canister migration between subnets: direct restore (`load_canister_snapshot`) only works within the same subnet, so cross-subnet transfer requires downloading the snapshot locally first and uploading it to the target.
+Download a snapshot from a source canister and upload it to a target canister. This download-then-upload workflow is the foundation of canister migration between subnets: a snapshot must exist on the target canister before it can be restored, so transferring state to a different canister requires downloading the snapshot locally first and uploading it to the target.
 
 All snapshot commands accept either canister names (with `-e`) or canister IDs (with `-n`). Use `-n ic` when the target canister is not part of your project.
 
@@ -179,6 +179,7 @@ icp canister status my-canister -e ic
 ## Next steps
 
 - [Canister lifecycle](lifecycle.md): Understand how snapshots fit into the upgrade workflow
+- [Canister migration](canister-migration.md): Complete guide for moving a canister to a different subnet using the snapshot transfer workflow
 - [Canister upgrades security](../security/canister-upgrades.md): Security considerations when using snapshot-based rollbacks
 - [icp-cli canister snapshot reference](https://cli.internetcomputer.org/0.2/guides/canister-snapshots): Full command reference for all snapshot subcommands
 

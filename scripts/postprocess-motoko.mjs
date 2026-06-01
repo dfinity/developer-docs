@@ -1,233 +1,141 @@
 #!/usr/bin/env node
 /**
- * Post-process synced Motoko docs:
- * 1. Remove duplicate H1 headings (Starlight renders title from frontmatter)
- * 2. Rewrite relative links to match the flattened directory structure
- * 3. Redirect core library links to mops.one
- * 4. Remove _category_.yml and sub-section index.md files
- * 5. Expand Docusaurus file-embed blocks (```lang file=<path>[#L<n>-L<m>])
- * 6. Convert Docusaurus remote-reference blocks (```md reference) to links
- * 7. Normalize Starlight aside syntax
+ * Post-process synced Motoko docs.
  *
- * Docusaurus patterns handled vs. left as-is:
- *   file=<path>        EXPANDED — inline file content (step 5). Supports extra attrs
- *                      (no-repl, title=) and #L<n>-L<m> line ranges.
- *   title="<name>"     LEFT — Starlight renders code block titles natively.
- *   name=<label>       LEFT — Docusaurus named-block marker; Starlight ignores the
- *                      attribute but renders the code content correctly.
- *   _include=<label>   LEFT — Docusaurus cross-block include; Starlight ignores the
- *                      attribute. Each _include= block carries its own standalone
- *                      content so output is readable, just without the prepended
- *                      definition from the name= block.
+ * Most cleanup that this script previously did is now handled upstream in
+ * caffeinelabs/motoko doc/md/ (PR #6132): numeric prefix removal, frontmatter
+ * migration, aside syntax normalization, H1 removal, _category_.yml deletion,
+ * <motokoExamples> placeholder insertion, mo:base→mo:core rewrites.
+ *
+ * What remains:
+ * 1. Rewrite docs.internetcomputer.org links to internal paths.
+ * 2. Replace em-dashes (banned per ICP style guide).
+ *    Still needed for Changelog entries.
+ * 3. Redirect remaining core/base library relative links to mops.one (safety net).
  */
 
-import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { resolve as resolvePath } from 'node:path';
-
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const MOTOKO_DIR = join(ROOT, 'docs', 'languages', 'motoko');
-const MOTOKO_SOURCE_MD = join(ROOT, '.sources', 'motoko', 'doc', 'md');
 
-// Build slug index: basename (without .md) -> absolute URL path
-const slugIndex = new Map();
+let unresolvedExternalCount = 0;
 
-function indexDir(dir, urlPrefix) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      indexDir(join(dir, entry.name), `${urlPrefix}/${entry.name}`);
-    } else if (entry.name.endsWith('.md') && entry.name !== 'index.md') {
-      const slug = entry.name.replace(/\.md$/, '');
-      slugIndex.set(slug, `${urlPrefix}/${slug}`);
-    }
-  }
-}
+function rewriteExternalLink(url) {
+  const normalized = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const withoutAnchor = normalized.replace(/#.*$/, '');
+  const anchor = normalized.includes('#') ? '#' + normalized.split('#').slice(1).join('#') : '';
 
-indexDir(MOTOKO_DIR, '/languages/motoko');
-
-let unresolvedCount = 0;
-
-function rewriteLink(matchedPath, anchor, sourceFile) {
-  const cleanPath = matchedPath.replace(/\.md$/, '').replace(/\/index$/, '');
-
-  // Core library links -> mops.one
-  const coreMatch = cleanPath.match(/(?:(?:\.\.\/)*|\.\/?)core(?:\/(\w+))?/);
-  if (coreMatch) {
-    const mod = coreMatch[1];
-    return mod
-      ? `https://mops.one/core/docs/${mod}${anchor}`
-      : `https://mops.one/core${anchor}`;
+  // docs.internetcomputer.org is the developer-docs site itself — convert to a
+  // root-relative internal path by stripping the domain. This covers all links
+  // that upstream PR #6132 §5 rewrote from the retired internetcomputer.org/docs/
+  // portal format to the current docs.internetcomputer.org/... format.
+  if (withoutAnchor.startsWith('docs.internetcomputer.org/')) {
+    return '/' + withoutAnchor.slice('docs.internetcomputer.org/'.length) + anchor;
   }
 
-  // Non-synced Motoko docs (language manual, style guide, tooling) -> external docs
-  if (
-    cleanPath.includes('language-manual') ||
-    cleanPath.includes('style') ||
-    cleanPath.includes('motoko-tooling')
-  ) {
-    return `https://docs.motoko.org${anchor}`;
-  }
-
-  const parts = cleanPath.split('/');
-  const fileSlug = parts[parts.length - 1];
-
-  // Section index links (e.g. ./index.md) — redirect to the section page
-  if (fileSlug === 'index' || fileSlug === '' || fileSlug === '.') {
-    const sourceDir = sourceFile.split('/').slice(-2, -1)[0];
-    return `/languages/motoko/${sourceDir}/${anchor}`;
-  }
-
-  // Direct match
-  if (slugIndex.has(fileSlug)) return `${slugIndex.get(fileSlug)}${anchor}`;
-
-  // Strip numeric prefix (e.g. "10-comments" -> "comments")
-  const stripped = fileSlug.replace(/^\d+-/, '');
-  if (slugIndex.has(stripped)) return `${slugIndex.get(stripped)}${anchor}`;
-
-  // Nested file: try parent-dir + filename (e.g. orthogonal-persistence/enhanced -> orthogonal-persistence-enhanced)
-  if (parts.length >= 2) {
-    const parent = parts[parts.length - 2].replace(/^\d+-/, '');
-    const combined = `${parent}-${stripped}`;
-    if (slugIndex.has(combined)) return `${slugIndex.get(combined)}${anchor}`;
-  }
-
-  // Same-directory sibling: infer prefix from the source file's own slug
-  // e.g. orthogonal-persistence-classical.md linking to ./enhanced.md -> orthogonal-persistence-enhanced
-  const sourceSlug = sourceFile.split('/').pop().replace(/\.md$/, '');
-  const sourceParts = sourceSlug.split('-');
-  for (let i = sourceParts.length - 1; i >= 1; i--) {
-    const prefix = sourceParts.slice(0, i).join('-');
-    const candidate = `${prefix}-${stripped}`;
-    if (slugIndex.has(candidate)) return `${slugIndex.get(candidate)}${anchor}`;
-  }
-
-  unresolvedCount++;
-  console.warn(`  UNRESOLVED: ${matchedPath} in ${sourceFile}`);
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Process a single file
+// ---------------------------------------------------------------------------
 function processFile(filePath) {
   let content = readFileSync(filePath, 'utf-8');
   const relPath = filePath.replace(ROOT + '/', '');
   let changed = false;
 
-  // Expand Docusaurus file-embed blocks: ```lang [attrs...] file=<path>[#L<start>-L<end>]
-  // The path is relative to the source file's original location in the submodule.
-  // After flattening, that depth information is lost, so we probe at increasing
-  // subdirectory depths (0, 1, 2) until the file resolves.
-  // Handles extra meta attributes (e.g. "no-repl") between the language and file=.
-  // Handles line ranges: file=path.mo#L10-L20 extracts lines 10–20 (1-indexed, inclusive).
-  const fileEmbedRe = /^```[ \t]*(\w+)[^\n]*?\bfile=([^\s\n#]+)(?:#L(\d+)-L(\d+))?[^\n]*\n```/gm;
-  content = content.replace(fileEmbedRe, (match, lang, filePath, lineStart, lineEnd) => {
-    const sectionMatch = relPath.match(/docs\/languages\/motoko\/([^/]+)\//);
-    const section = sectionMatch ? sectionMatch[1] : 'reference';
-    const fp = filePath.trim();
-    let abs = null;
-    for (let depth = 0; depth <= 2; depth++) {
-      // Simulate being `depth` levels deeper by adding placeholder subdirs
-      const candidate = resolvePath(join(MOTOKO_SOURCE_MD, section, 'x/'.repeat(depth)), fp);
-      if (existsSync(candidate)) { abs = candidate; break; }
-    }
-    if (abs) {
-      let fileContent = readFileSync(abs, 'utf-8');
-      if (lineStart && lineEnd) {
-        const lines = fileContent.split('\n');
-        const start = parseInt(lineStart, 10);
-        const end = parseInt(lineEnd, 10);
-        fileContent = lines.slice(start - 1, end).join('\n');
-      }
-      const trimmed = fileContent.trim();
-      if (!trimmed) {
-        console.warn(`  FILE-EMBED EMPTY: ${fp}#L${lineStart}-L${lineEnd} in ${relPath} — line range resolved to empty content (upstream off-by-one?)`);
-      }
+  // Mark subdirectory index.md stubs as sidebar.hidden so Starlight autogenerate
+  // doesn't surface them as duplicate entries alongside the explicit sidebar groups.
+  // These stubs have no body (only frontmatter); the root index.md has content and
+  // is excluded by the path check below.
+  const isSubdirIndex =
+    filePath !== join(MOTOKO_DIR, 'index.md') &&
+    filePath.endsWith('/index.md');
+  if (isSubdirIndex && !content.includes('hidden:')) {
+    content = content.replace(/^(sidebar:\s*\n(?:[ \t]+.*\n)*)/m, (match) => {
       changed = true;
-      return `\`\`\`${lang}\n${trimmed}\n\`\`\``;
-    }
-    console.warn(`  FILE-EMBED UNRESOLVED: ${fp}${lineStart ? `#L${lineStart}-L${lineEnd}` : ''} in ${relPath}`);
-    return match;
-  });
-
-  // Expand Docusaurus remote-reference blocks by reading from the local submodule.
-  // Maps https://github.com/<org>/<repo>/blob/<ref>/<path> -> .sources/<repo>/<path>
-  const remoteRefRe = /^```(\w+) reference\n(https?:\/\/[^\n]+)\n```/gm;
-  content = content.replace(remoteRefRe, (match, lang, url) => {
-    const ghMatch = url.match(/github\.com\/[^/]+\/([^/]+)\/blob\/[^/]+\/(.+)/);
-    if (ghMatch) {
-      const localPath = join(ROOT, '.sources', ghMatch[1], ghMatch[2]);
-      if (existsSync(localPath)) {
-        changed = true;
-        const fileContent = readFileSync(localPath, 'utf-8').trim();
-        return lang === 'md' ? fileContent : `\`\`\`${lang}\n${fileContent}\n\`\`\``;
-      }
-    }
-    console.warn(`  REMOTE-REF UNRESOLVED: ${url} in ${relPath}`);
-    return match;
-  });
-
-  // Normalize Starlight aside syntax
-  // 1. Map unsupported types: info -> note, warn -> caution
-  // 2. Space-separated title (same line only) -> bracket title: :::note Title -> :::note[Title]
-  //    Use [^\S\n]+ to match only horizontal whitespace, not newlines, so the first body
-  //    line is not accidentally promoted to a title.
-  const normalized = content
-    .replace(/^:::info\b/gm, ':::note')
-    .replace(/^:::warn\b/gm, ':::caution')
-    .replace(/^(:::(?:note|tip|caution|danger|warning))[^\S\n]+([^\n\[]+)/gm, '$1[$2]');
-  if (normalized !== content) { content = normalized; changed = true; }
-
-  // Remove duplicate H1 when frontmatter already has a title
-  const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-  if (fmMatch && /^title:/m.test(fmMatch[1])) {
-    const afterFm = content.slice(fmMatch[0].length);
-    const h1Match = afterFm.match(/^\s*\n?# .+\n/);
-    if (h1Match) {
-      content = fmMatch[0] + afterFm.slice(h1Match[0].length);
-      changed = true;
-    }
+      return match.trimEnd() + '\n  hidden: true\n';
+    });
   }
 
-  // Rewrite relative links (./ and ../ paths)
-  const linkRe = /\]\((\.[^)#]*?)(#[^)]+)?\)/g;
-  content = content.replace(linkRe, (match, path, anchor) => {
+  // Redirect remaining core/base relative links to mops.one (safety net — should
+  // be a no-op for content fixed in PR #6132, but catches any stragglers).
+  const relLinkRe = /\]\((\.[^)#]*?\.md)(#[^)]+)?\)/g;
+  content = content.replace(relLinkRe, (match, path, anchor) => {
     anchor = anchor || '';
-    const newUrl = rewriteLink(path, anchor, relPath);
-    if (newUrl) {
+    const clean = path.replace(/\.md$/, '').replace(/\/index$/, '');
+    const coreMatch = clean.match(/(?:(?:\.\.\/)*|\.\/?)core(?:\/(\w+))?/);
+    if (coreMatch) {
       changed = true;
-      return `](${newUrl})`;
+      return `](${coreMatch[1] ? `https://mops.one/core/docs/${coreMatch[1]}` : 'https://mops.one/core'}${anchor})`;
+    }
+    const baseMatch = clean.match(/(?:(?:\.\.\/)*|\.\/?)base\/(\w+)/);
+    if (baseMatch) {
+      changed = true;
+      return `](https://mops.one/core/docs/${baseMatch[1]}${anchor})`;
     }
     return match;
   });
+
+  // Rewrite external links to internal paths.
+  const extDomain = 'docs\\.internetcomputer\\.org\\/';
+  const extLinkRe = new RegExp(
+    `\\((https?:\\/\\/${extDomain}[^)\\s]*)\\)|(?<!\\()(https?:\\/\\/${extDomain}[^\\s)]*)`,
+    'g',
+  );
+  content = content.replace(extLinkRe, (match, inParen, bare) => {
+    const url = inParen || bare;
+    const internal = rewriteExternalLink(url);
+    if (internal) {
+      changed = true;
+      return inParen ? `(${internal})` : internal;
+    }
+    unresolvedExternalCount++;
+    console.warn(`  UNRESOLVED-EXTERNAL: ${url} in ${relPath}`);
+    return match;
+  });
+
+  // Replace em-dashes in prose (banned per ICP style guide). Skip code blocks.
+  const parts = content.split(/(^```[\s\S]*?^```)/m);
+  const fixed = parts
+    .map((part, i) => (i % 2 === 0 ? part.replace(/ — /g, ': ') : part))
+    .join('');
+  if (fixed !== content) { content = fixed; changed = true; }
 
   if (changed) writeFileSync(filePath, content);
   return changed;
 }
 
-// Remove _category_.yml files and sub-section index.md files
-function removeNavFiles(dir) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      removeNavFiles(full);
-    } else if (entry.name === '_category_.yml' || entry.name === '_category_.json') {
-      unlinkSync(full);
-      console.log(`  Removed ${full.replace(ROOT + '/', '')}`);
-    }
+// ---------------------------------------------------------------------------
+// Inline Changelog.md at sync time — before walkAndProcess so that
+// em-dash replacement and link rewrites apply to the inlined content too.
+//
+// The upstream changelog.md stub uses ```md file=<motokoRoot>/Changelog.md```
+// (a build-time file include). That mechanism relies on .sources/motoko being
+// present during `npm run build`, which is true locally but not when `icp
+// deploy` runs the build inside its own recipe (the submodule is not in scope
+// at that point). To avoid a silent empty page, we expand the include here at
+// sync time so the file is fully self-contained in docs/.
+// ---------------------------------------------------------------------------
+const CHANGELOG_STUB = join(MOTOKO_DIR, 'reference', 'changelog.md');
+const UPSTREAM_CHANGELOG = join(ROOT, '.sources', 'motoko', 'Changelog.md');
+
+if (existsSync(CHANGELOG_STUB) && existsSync(UPSTREAM_CHANGELOG)) {
+  const stub = readFileSync(CHANGELOG_STUB, 'utf-8');
+  if (stub.includes('file=<motokoRoot>/Changelog.md')) {
+    const changelogContent = readFileSync(UPSTREAM_CHANGELOG, 'utf-8');
+    const inlined = stub.replace(/```md file=<motokoRoot>\/Changelog\.md\n```/, changelogContent.trimEnd());
+    writeFileSync(CHANGELOG_STUB, inlined);
+    console.log('  Inlined Changelog.md into reference/changelog.md');
   }
 }
 
-for (const section of ['fundamentals', 'icp-features', 'reference']) {
-  const idx = join(MOTOKO_DIR, section, 'index.md');
-  if (existsSync(idx)) {
-    unlinkSync(idx);
-    console.log(`  Removed ${section}/index.md`);
-  }
-}
-
-removeNavFiles(MOTOKO_DIR);
-
-// Process all .md files
+// ---------------------------------------------------------------------------
+// Walk and process all .md files (including index.md stubs)
+// ---------------------------------------------------------------------------
 let filesChanged = 0;
 
 function walkAndProcess(dir) {
@@ -235,7 +143,7 @@ function walkAndProcess(dir) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       walkAndProcess(full);
-    } else if (entry.name.endsWith('.md') && entry.name !== 'index.md') {
+    } else if (entry.name.endsWith('.md')) {
       if (processFile(full)) filesChanged++;
     }
   }
@@ -243,8 +151,70 @@ function walkAndProcess(dir) {
 
 walkAndProcess(MOTOKO_DIR);
 
-console.log(`\nPost-processing complete: ${filesChanged} files updated.`);
+console.log(`Post-processing complete: ${filesChanged} files updated.`);
 
-if (unresolvedCount > 0) {
-  console.error(`\nWARNING: ${unresolvedCount} unresolved link(s) — review output above.`);
+if (unresolvedExternalCount > 0) {
+  console.error(`\nWARNING: ${unresolvedExternalCount} UNRESOLVED-EXTERNAL link(s) — add a rewrite handler to rewriteExternalLink in postprocess-motoko.mjs.`);
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
+// Generate sidebar-motoko.mjs from upstream doc/md/sidebar.mjs
+//
+// When the upstream submodule includes doc/md/sidebar.mjs (caffeinelabs/motoko
+// PR docs/sidebar-extraction), this generates sidebar-motoko.mjs automatically
+// so it never needs hand-editing. Slugs get the "languages/motoko/" prefix;
+// autogenerate.directory values are prefixed the same way. The root slug
+// "index" maps to "languages/motoko" (the section overview page).
+//
+// If sidebar.mjs is absent (submodule pinned to an older release), this step
+// is skipped and the committed sidebar-motoko.mjs is used as-is.
+// ---------------------------------------------------------------------------
+const UPSTREAM_SIDEBAR = join(ROOT, '.sources/motoko/doc/site/sidebar.mjs');
+const PREFIX = 'languages/motoko';
+
+function transformEntry(entry) {
+  if ('slug' in entry) {
+    const slug = entry.slug === 'index' ? PREFIX : `${PREFIX}/${entry.slug}`;
+    return { ...entry, slug };
+  }
+  if ('autogenerate' in entry) {
+    return {
+      ...entry,
+      autogenerate: { ...entry.autogenerate, directory: `${PREFIX}/${entry.autogenerate.directory}` },
+    };
+  }
+  if ('items' in entry) {
+    return { ...entry, items: entry.items.map(transformEntry) };
+  }
+  return entry;
+}
+
+function jsify(val, depth = 0) {
+  const pad = '  '.repeat(depth);
+  const inner = '  '.repeat(depth + 1);
+  if (typeof val === 'string') return `"${val}"`;
+  if (typeof val === 'boolean' || typeof val === 'number') return String(val);
+  if (Array.isArray(val)) {
+    if (val.length === 0) return '[]';
+    return `[\n${val.map(v => `${inner}${jsify(v, depth + 1)}`).join(',\n')},\n${pad}]`;
+  }
+  if (val !== null && typeof val === 'object') {
+    const entries = Object.entries(val).map(([k, v]) => `${inner}${k}: ${jsify(v, depth + 1)}`);
+    return `{\n${entries.join(',\n')},\n${pad}}`;
+  }
+  return String(val);
+}
+
+if (existsSync(UPSTREAM_SIDEBAR)) {
+  const { sidebar } = await import(UPSTREAM_SIDEBAR);
+  const motokoSidebar = { label: 'Motoko', collapsed: true, items: sidebar.map(transformEntry) };
+  const output =
+    `// Auto-generated by scripts/postprocess-motoko.mjs — do not edit directly.\n` +
+    `// To change navigation, edit doc/md/sidebar.mjs in caffeinelabs/motoko.\n` +
+    `export const motokoSidebar = ${jsify(motokoSidebar)};\n`;
+  writeFileSync(join(ROOT, 'sidebar-motoko.mjs'), output);
+  console.log('Generated sidebar-motoko.mjs from upstream doc/md/sidebar.mjs');
+} else {
+  console.log('sidebar.mjs not found in submodule — keeping existing sidebar-motoko.mjs');
 }

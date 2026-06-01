@@ -1,28 +1,27 @@
 /**
- * Rehype plugin that rewrites relative .md links for Astro's directory-based output.
+ * Rehype plugin that rewrites relative .md links to absolute paths for Astro's directory-based output.
  *
  * Authors write GitHub-friendly relative links with .md extensions:
  *   [Quickstart](quickstart.md)
  *   [Concepts](../concepts/canisters.md#lifecycle)
  *
- * Astro outputs each page as a directory (project-structure.md → project-structure/index.html),
- * so the browser resolves relative links one level deeper than the author expects.
- * This plugin strips .md extensions and prepends an extra ../ to compensate.
+ * Astro outputs each page as a directory (resource-limits.md → resource-limits/index.html).
+ * Relative hrefs in the output HTML are resolved by the browser relative to the current URL.
+ * This means links break when the page is accessed without a trailing slash (e.g. /resource-limits
+ * instead of /resource-limits/) because `../foo/` resolves to different paths in each case.
  *
- * Exception: index.md files are output as <dir>/index.html (not <dir>/<dir>/index.html),
- * so the browser's base URL is already at the correct directory level — no extra ../
- * is needed for those pages.
+ * This plugin avoids the ambiguity by emitting absolute paths. It locates the current file
+ * within the docs tree, resolves the relative .md link against that position, and writes a
+ * root-relative href that works regardless of whether the browser URL has a trailing slash.
  *
- * Result (regular pages):
- *   quickstart.md                              → ../quickstart/
- *   ../concepts/canisters.md#lifecycle         → ../../concepts/canisters/#lifecycle
- *   ./sibling.md                               → ../sibling/
+ * Result:
+ *   quickstart.md                              → /getting-started/quickstart/
+ *   ../concepts/canisters.md#lifecycle         → /concepts/canisters/#lifecycle
+ *   ./sibling.md                               → /references/sibling/
+ *   backends/data-persistence.md               → /guides/backends/data-persistence/
  *
- * Result (index pages):
- *   backends/data-persistence.md               → backends/data-persistence/
- *   ../concepts/canisters.md                   → ../concepts/canisters/
- *
- * Only relative links are affected — external URLs, anchors, and absolute paths are untouched.
+ * Only relative links with a .md extension are affected — external URLs, anchor-only links,
+ * and already-absolute paths are untouched.
  *
  * Important: Astro caches rendered content in node_modules/.astro/data-store.json.
  * After changing this plugin, delete that file to force re-rendering.
@@ -31,15 +30,20 @@
  * Astro's markdown.remarkPlugins, but rehypePlugins are correctly merged. See:
  * https://github.com/dfinity/icp-cli/issues/423
  */
+import { posix as posixPath } from "path";
 import { visit } from "unist-util-visit";
 
 export default function rehypeRewriteLinks() {
   return (tree, file) => {
-    // Detect whether this file is an index page (e.g. guides/index.md).
-    // Index pages are output as <dir>/index.html, so the browser's base URL
-    // is already at the directory level — no extra ../ compensation needed.
-    const filePath = file?.path || file?.history?.[0] || "";
-    const isIndexPage = /(?:^|[\\/])index\.(?:md|mdx)$/.test(filePath);
+    const filePath = (file?.path || file?.history?.[0] || "").replace(/\\/g, "/");
+
+    // Extract the docs-relative directory of the current file.
+    // Handles both the real path (.../docs/references/resource-limits.md)
+    // and the symlinked path (.../src/content/docs/references/resource-limits.md).
+    const docsRelMatch = filePath.match(/(?:\/src\/content\/docs|\/docs)\/(.*)/);
+    const docsRelPath = docsRelMatch ? docsRelMatch[1] : "";
+    // e.g. "references/resource-limits.md" → "references/"
+    const fileDir = docsRelPath.replace(/[^/]+$/, "");
 
     visit(tree, "element", (node) => {
       if (node.tagName !== "a") return;
@@ -68,30 +72,28 @@ export default function rehypeRewriteLinks() {
       url = url.replace(/(^|\/)index(#|$|\?)/, "$1$2");
 
       // Split off anchor/query suffix
-      const splitMatch = url.match(/^([^#?]*)((?:#|\\?).*)?$/);
-      let path = splitMatch[1] || "";
+      const splitMatch = url.match(/^([^#?]*)((?:#|\?).*)?$/);
+      let linkPath = splitMatch[1] || "";
       const suffix = splitMatch[2] || "";
 
       // Add trailing slash if the path doesn't already end with one
-      if (path && !path.endsWith("/")) {
-        path += "/";
+      if (linkPath && !linkPath.endsWith("/")) {
+        linkPath += "/";
       }
 
-      // Strip leading ./ if present (normalize before prepending ../)
-      if (path.startsWith("./")) {
-        path = path.slice(2);
+      // Strip leading ./ if present
+      if (linkPath.startsWith("./")) {
+        linkPath = linkPath.slice(2);
       }
 
-      // Prepend ../ to compensate for Astro's directory-based output.
-      // Regular pages (e.g. project-structure.md → project-structure/index.html)
-      // need the extra ../ because the browser base is one level deeper than
-      // the author expects. Index pages don't need this — they're already at
-      // the correct directory level.
-      if (!isIndexPage) {
-        path = "../" + path;
-      }
+      // Resolve the relative link against the current file's absolute docs path.
+      // posixPath.resolve strips trailing slashes, so re-add one afterward.
+      // This produces a root-relative href that works regardless of whether the
+      // browser URL has a trailing slash.
+      const resolved = posixPath.resolve("/" + fileDir, linkPath || ".");
+      const absoluteHref = resolved === "/" ? "/" : resolved + "/";
 
-      node.properties.href = path + suffix;
+      node.properties.href = absoluteHref + suffix;
     });
   };
 }

@@ -2,7 +2,7 @@
 title: "Choose your path"
 description: "Choose your development path based on what you want to build"
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Choose your next step based on what you want to build. Each path links to the first guide you should read, with a suggested progression from there.
@@ -37,7 +37,7 @@ This is where most developers start after the quickstart. The backend guides cov
 
 - [HTTPS outcalls](../guides/backends/https-outcalls.md): call external APIs from your canister
 - [Timers](../guides/backends/timers.md): schedule recurring tasks
-- [Randomness](../guides/backends/randomness.md): generate unpredictable values onchain
+- [Randomness](../guides/backends/randomness.md): generate unpredictable values on the network
 - [Calling other canisters](../guides/canister-calls/inter-canister-calls.md): compose functionality across canisters
 
 ## Fullstack applications
@@ -73,9 +73,9 @@ Here is how Ethereum concepts map to ICP:
 | Bridges / oracles | [Chain-key signing](../concepts/chain-fusion/index.md), [HTTPS outcalls](../guides/backends/https-outcalls.md) | Canisters sign transactions on other chains natively; HTTPS outcalls fetch external data without oracles |
 | Immutable by default | Upgradeable by default | Canisters can be upgraded while preserving state |
 
-The biggest shift: on Ethereum, smart contracts are minimal programs that rely on offchain infrastructure. On ICP, a canister can be an entire application (frontend, backend, database, and scheduled jobs) all onchain.
+The biggest shift: on Ethereum, smart contracts are minimal programs that rely on offchain infrastructure. On ICP, a canister can be an entire application (frontend, backend, database, and scheduled jobs) end-to-end on the network.
 
-## Chain fusion (cross-chain)
+## Chain fusion (crosschain)
 
 **You want to:** Integrate with Bitcoin, Ethereum, or other blockchains.
 
@@ -106,7 +106,7 @@ ICP has a standard token framework (ICRC) and chain-key tokens that represent as
 
 **You want to:** Hand control of your application to a community through an SNS DAO.
 
-The Service Nervous System (SNS) lets you tokenize your application and create a decentralized autonomous organization that governs upgrades, treasury, and parameters through proposals and voting.
+The Service Nervous System (SNS) lets you issue a governance asset and transfer control of your application to a community that manages upgrades, treasury, and parameters through proposals and voting.
 
 **Start with:** [Launching an SNS](../guides/governance/launching.md): understand the process and requirements for decentralizing your application.
 

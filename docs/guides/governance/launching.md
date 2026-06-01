@@ -48,7 +48,7 @@ The NNS community votes on your proposal. You are pitching your project to thous
 - Funding target and how raised ICP will be spent
 - Product roadmap
 - Security review status and open-source build instructions
-- Dependencies that cannot be managed by the DAO (off-chain services, third-party providers)
+- Dependencies that cannot be managed by the SNS (external services, third-party providers)
 
 Start a discussion thread in the [SNS Launch Proposals](https://forum.dfinity.org/c/community/sns-launch-proposals) forum category at least two weeks before submitting your NNS proposal. Share the draft `sns_init.yaml` file, the whitepaper, and the build/deploy instructions. Community trust built during this period directly affects proposal adoption.
 
