@@ -451,9 +451,9 @@
 /current/developer-docs/glossary                            /references/glossary.                    301
 /current/developer-docs/use-cases/                          /getting-started/choose-your-path/       301
 /current/developer-docs/starter-kits                        /getting-started/quickstart/             301
-/current/developer-docs/ai/*                                /404.html  410
-/current/developer-docs/hackathon/*                         /getting-started/quickstart/  301
-/current/developer-docs/hackathon-prep-course/*             /getting-started/quickstart/  301
+/current/developer-docs/ai/*                                /guides/backends/ai-inference/           301
+/current/developer-docs/hackathon/*                         /getting-started/quickstart/             301
+/current/developer-docs/hackathon-prep-course/*             /getting-started/quickstart/             301
 /current/developer-docs/*                                   /getting-started/quickstart/             301
 
 # =============================================================================
