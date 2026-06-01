@@ -175,9 +175,9 @@
 # =============================================================================
 
 # Motoko base/core library — moved to mops.one
-/motoko/base/*                   https://mops.one/core/docs/  301
-/motoko/main/base/*              https://mops.one/core/docs/  301
-/current/motoko/main/base/*      https://mops.one/core/docs/  301
+/motoko/base/*                   https://mops.one/base/docs/  301
+/motoko/main/base/*              https://mops.one/base/docs/  301
+/current/motoko/main/base/*      https://mops.one/base/docs/  301
 /motoko/core/*                   https://mops.one/core/docs/  301
 
 # Motoko top-level aliases
@@ -437,6 +437,7 @@
 /current/developer-docs/developer-tools/cli-tools/quill-cli-reference/*  https://github.com/dfinity/quill/tree/master/docs/cli-reference  301
 /current/developer-docs/developer-tools/cli-tools/*                      /developer-tools/#command-line-tools  301
 /current/developer-docs/developer-tools/off-chain/canpack                /developer-tools/  301
+/current/developer-docs/developer-tools/off-chain/agents/javascript-agent /developer-tools/#javascript--typescript  301
 /current/developer-docs/developer-tools/ide/*                            /developer-tools/  301
 /current/developer-docs/developer-tools/*                                /developer-tools/  301
 
