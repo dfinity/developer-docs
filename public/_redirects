@@ -124,10 +124,6 @@
 /building-apps/network-features/https-outcalls                              /guides/backends/https-outcalls/  301
 /building-apps/network-features/periodic-tasks-timers                       /guides/backends/timers.          301
 /building-apps/network-features/signatures/independently-verifying-ic-signatures  /guides/security/identity-and-access-management/  301
-/building-apps/network-features/vetkeys/introduction                        /concepts/vetkeys/               301
-/building-apps/network-features/vetkeys/demos/*                             /concepts/vetkeys/               301
-/building-apps/network-features/vetkeys/identity-based-encryption           /404.html  410
-/building-apps/network-features/vetkeys/bls-signatures                      /404.html  410
 /building-apps/network-features/vetkeys/*                                   /concepts/vetkeys/               301
 /building-apps/network-features/encryption/*                                /concepts/vetkeys/               301
 /building-apps/network-features/*                                           /guides/backends/https-outcalls/  301
