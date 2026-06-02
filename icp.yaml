@@ -2,6 +2,7 @@ canisters:
   - name: frontend
     recipe:
       type: "@dfinity/asset-canister@v2.1.0"
+      # type: "https://raw.githubusercontent.com/dfinity/icp-cli-recipes/refs/heads/lwshang/asset_plugin/recipes/asset-canister/recipe.hbs"
       configuration:
         dir: dist
         version: asset-canister-404-support
