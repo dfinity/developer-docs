@@ -39,12 +39,12 @@ A neuron is a governance participant created by locking ICP in the NNS governanc
 
 **Key neuron attributes:**
 
-- **Stake**: The amount of ICP locked. The minimum to create a neuron is 1 ICP. To submit or vote on proposals, a neuron needs at least 6 months of dissolve delay.
-- **Dissolve delay**: A waiting period (up to 8 years) that must expire before locked ICP can be retrieved. Longer dissolve delay grants more voting power.
+- **Stake**: The amount of ICP locked. The minimum to create a neuron is 1 ICP. To submit or vote on proposals, a neuron needs at least 2 weeks of dissolve delay.
+- **Dissolve delay**: A waiting period (up to 2 years) that must expire before locked ICP can be retrieved. Longer dissolve delay grants more voting power.
 - **Age**: How long the neuron has been non-dissolving. Older neurons earn an age bonus on voting power.
 - **State**: A neuron is either locked (non-dissolving), dissolving, or dissolved (ready to disburse).
 
-**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 2x at 8 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network.
+**Voting power formula:** A neuron's voting power scales with its stake, dissolve delay bonus (up to 3x at 2 years), and age bonus (up to 1.25x at 4 years). This design incentivizes long-term alignment with the network.
 
 **Liquid democracy (following):** Neurons can delegate their votes to other neurons on specific proposal topics. A neuron that doesn't vote directly inherits the vote of its followed neurons. This allows passive participation while still counting toward quorum.
 
@@ -76,7 +76,7 @@ See [NNS proposal types](../references/nns-proposal-types.md) for the full list 
 
 Neurons that vote (directly or through following) earn voting rewards. The protocol distributes a fixed annual reward pool as newly minted ICP. This pool is divided among neurons proportionally to their voting power weighted by how often they voted.
 
-Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with a modulation of ±5% applied to the mint amount) or merge maturity back into their stake to compound future rewards.
+Rewards accumulate as **maturity** rather than ICP directly. Neurons can convert maturity to ICP (with a modulation of +2%/-10% applied to the mint amount) or merge maturity back into their stake to compound future rewards.
 
 The reward rate declines over time as the protocol matures, converging toward a lower floor rate over roughly a decade. See [Network economics](network-economics.md) for details on the reward rate schedule and supply dynamics.
 
@@ -184,24 +184,9 @@ Maturity accumulated from voting rewards is not transferable and is not immediat
 - **Stake maturity:** Add maturity to the neuron's staked balance, increasing its voting power immediately. Staked maturity is locked alongside the ICP stake and converts back to unstaked maturity when the neuron dissolves.
 - **Auto-stake maturity:** Automatically stake all new maturity as it accrues, compounding voting power without manual intervention.
 
-## Voting rewards formula
+## Voting rewards distribution 
 
-The NNS distributes rewards daily from a reward pool. The annualized pool size as a percentage of total ICP supply follows this schedule:
-
-- For years 0–8 after genesis: `R(t) = 5% + 5% × [(G + 8y − t) / 8y]²`
-- After year 8: `R(t) = 5%`
-
-where G is the genesis timestamp and t is the current time. This quadratic decline starts at approximately 10% in year 1 and converges to 5%. The daily pool is `total_supply × R(t) / 365.25`.
-
-Each neuron receives a share of the pool proportional to its voting power multiplied by the fraction of eligible proposals it voted on (weighted by the reward weight of each proposal topic). If no proposals settle on a given day, rewards roll over to the next distribution.
-
-## The Neurons' Fund
-
-The Neurons' Fund (NF) is a mechanism that allows NNS neurons to allocate maturity toward the decentralization swaps of new SNS instances. Participation is opt-in: a neuron holder can join or leave the NF at any time.
-
-When an SNS swap runs, NF contributions scale with direct participation through a matching function. NF neurons receive SNS neurons in return, with the same hotkeys copied so that holders can vote in the new SNS governance without exposing their cold-storage keys.
-
-**Note:** The Neurons' Fund was temporarily disabled by [NNS proposal 135970](https://dashboard.internetcomputer.org/proposal/135970). The design described above reflects the intended behavior when it is re-enabled; details may change.
+The NNS distributes rewards daily from a reward pool. Each neuron receives a share of the pool proportional to its voting power multiplied by the fraction of eligible proposals it voted on (weighted by the reward weight of each proposal topic). If no proposals settle on a given day, rewards roll over to the next distribution.
 
 ## Next steps
 
