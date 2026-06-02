@@ -71,9 +71,9 @@ function getIdentityProviderUrl() {
 
   if (isLocal) {
     // icp-cli sets up a local alias: http://id.ai.localhost:8000
-    return "http://id.ai.localhost:8000";
+    return "http://id.ai.localhost:8000/authorize";
   }
-  return "https://id.ai";
+  return "https://id.ai/authorize";
 }
 ```
 
