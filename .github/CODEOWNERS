@@ -18,3 +18,6 @@ docs/guides/security/ @dfinity/product-security @dfinity/dx
 docs/concepts/security.md @dfinity/product-security @dfinity/dx
 docs/references/message-execution-properties.md @dfinity/product-security @dfinity/dx
 docs/guides/canister-calls/idempotency.md @dfinity/product-security @dfinity/dx
+
+# Internet Identity
+docs/guides/authentication/ @dfinity/identity @dfinity/dx
