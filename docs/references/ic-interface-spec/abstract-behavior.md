@@ -4128,6 +4128,7 @@ S with
     global_timer[CanisterId] = 0
     compute_allocation[Canister_id] = 0
     memory_allocation[Canister_id] = 0
+    log_memory_limit[Canister_id] = 0
 
     messages = S.messages ·
       [ ResponseMessage {
