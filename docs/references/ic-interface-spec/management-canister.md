@@ -99,6 +99,13 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: `controllers`.
 
+-   `log_memory_limit` (`nat`)
+
+    Must be at most `2097152` (`2 MiB`) and indicates the maximum amount of memory used for canister logs.
+    Oldest canister logs are purged if the total memory used for canister logs exceeds this value.
+
+    Default value: `4096`.
+
 -   `snapshot_visibility` (`snapshot_visibility`)
 
     Controls who can access the canister's snapshots through the following endpoints of the management canister:
@@ -303,6 +310,8 @@ Only the controllers of the canister or the canister itself or subnet admins can
     * `wasm_chunk_store_size`: Represents the memory used by the Wasm chunk store of the canister.
 
     * `snapshots_size`: Represents the memory consumed by all snapshots that belong to this canister.
+
+    * `log_memory_store_size`: Represents the memory used by canister logs of the canister.
 
 All sizes are expressed in bytes.
 
@@ -921,12 +930,12 @@ A snapshot may be deleted only by the controllers of the canister that the snaps
 
 ### IC method `fetch_canister_logs` {#ic-fetch_canister_logs}
 
-This method can only be called by external users via non-replicated (query) calls, i.e., it cannot be called by canisters, cannot be called via replicated calls, and cannot be called from composite query calls.
+This method can only be called by external users via non-replicated (query) calls or by canisters (via replicated calls), i.e., it cannot be called by external users via replicated (update) calls and it cannot be called from composite query calls.
 
 Given a canister ID as input, this method returns a vector of logs of that canister including its trap messages.
 The canister logs are *not* collected in canister methods running in non-replicated mode (NRQ, TQ, CQ, CRy, CRt, CC, and F modes, as defined in [Overview of imports](./canister-interface.md#system-api-imports)) and the canister logs are *purged* when the canister is reinstalled or uninstalled.
-The total size of all returned logs does not exceed 4KiB.
-If new logs are added resulting in exceeding the maximum total log size of 4KiB, the oldest logs will be removed.
+The total size of all returned logs does not exceed the value `log_memory_limit` in canister settings.
+Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
 Logs persist across canister upgrades and they are deleted if the canister is reinstalled or uninstalled.
 
 The log visibility is defined in the `log_visibility` field of `canister_settings` and can be one of the following variants:
@@ -940,6 +949,12 @@ A single log is a record with the following fields:
 - `idx` (`nat64`): the unique sequence number of the log for this particular canister;
 - `timestamp_nanos` (`nat64`): the timestamp as nanoseconds since 1970-01-01 at which the log was recorded;
 - `content` (`blob`): the actual content of the log;
+
+To filter canister logs, an optional filter can be provided and have one of the following variants:
+- `by_idx` (`record { start : nat64; end : nat64 }`): only logs are returned whose `idx` is within the provided range (`start` is inclusive, but `end` is exclusive);
+- `by_timestamp_nanos` (`record { start : nat64; end : nat64 }`): only logs are returned whose `timestamp_nanos` is within the provided range (`start` is inclusive, but `end` is exclusive).
+
+Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls).
 
 :::warning
 

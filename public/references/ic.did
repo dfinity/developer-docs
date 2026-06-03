@@ -26,6 +26,7 @@ type canister_settings = record {
     freezing_threshold : opt nat;
     reserved_cycles_limit : opt nat;
     log_visibility : opt log_visibility;
+    log_memory_limit : opt nat;
     snapshot_visibility : opt snapshot_visibility;
     wasm_memory_limit : opt nat;
     wasm_memory_threshold : opt nat;
@@ -39,6 +40,7 @@ type definite_canister_settings = record {
     freezing_threshold : nat;
     reserved_cycles_limit : nat;
     log_visibility : log_visibility;
+    log_memory_limit : nat;
     snapshot_visibility : snapshot_visibility;
     wasm_memory_limit : nat;
     wasm_memory_threshold : nat;
@@ -300,6 +302,7 @@ type canister_status_result = record {
         canister_history_size : nat;
         wasm_chunk_store_size : nat;
         snapshots_size : nat;
+        log_memory_store_size : nat;
     };
     cycles : nat;
     reserved_cycles : nat;
@@ -499,6 +502,10 @@ type delete_canister_snapshot_args = record {
 
 type fetch_canister_logs_args = record {
     canister_id : canister_id;
+    filter : opt variant {
+        by_idx : record { start : nat64; end : nat64 };
+        by_timestamp_nanos : record { start : nat64; end : nat64 };
+    }
 };
 
 type canister_log_record = record {
