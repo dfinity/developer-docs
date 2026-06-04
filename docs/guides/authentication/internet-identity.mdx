@@ -151,9 +151,9 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
 
 ### Requesting identity attributes
 
-When a backend canister needs more than just the user's principal (for example, a verified email address), Internet Identity can return signed attributes alongside the delegation. Your backend issues a nonce scoped to a specific action; the frontend requests the attributes during sign-in; the backend verifies the bundle when the user calls the protected method.
+When a backend canister needs more than just the user's principal (for example, a verified email address), Internet Identity can return signed attributes alongside the delegation. The flow is a two-method handshake on the backend: `_internet_identity_sign_in_start` mints a nonce, and `_internet_identity_sign_in_finish` verifies the bundle. In Motoko the [`mo:identity-attributes`](https://mops.one/identity-attributes) library provides both methods; in Rust you implement them by hand (see [Read identity attributes](#read-identity-attributes)). The frontend below is identical against either backend.
 
-**Why a backend-issued nonce?** Tying attributes to a canister-issued nonce prevents replay: an intercepted bundle cannot be reused for a different action, on a different user, or after that action expires. The nonce must originate from the canister, not the frontend.
+**Why a backend-issued nonce?** The canister issues a single-use nonce and consumes it on sign-in, so an intercepted bundle cannot be redeemed again. The nonce must originate from the canister, not the frontend.
 
 ```typescript
 import { AuthClient } from "@icp-sdk/auth/client";
@@ -161,49 +161,56 @@ import { AttributesIdentity } from "@icp-sdk/core/identity";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
 import { Principal } from "@icp-sdk/core/principal";
 
-async function registerWithEmail() {
-  // 1. Backend issues a nonce scoped to this registration
-  const anonymousAgent = await HttpAgent.create();
-  const backend = Actor.createActor(backendIdl, {
-    agent: anonymousAgent,
-    canisterId,
-  });
-  const nonce = await backend.registerBegin();
+const II_PRINCIPAL = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 
-  // 2. Run sign-in and the attribute request in parallel.
-  //    The user sees a single Internet Identity interaction.
+// `idl` and `canisterId` identify your backend, which exposes
+// _internet_identity_sign_in_start / _internet_identity_sign_in_finish.
+async function signInWithAttributes(authClient, canisterId, idl) {
+  // Anonymous handle, used only to mint the nonce.
+  const anonymousAgent = await HttpAgent.create();
+  const anonymousActor = Actor.createActor(idl, { agent: anonymousAgent, canisterId });
+
+  // Mint the nonce, sign in, and request attributes in parallel. Passing the
+  // nonce as a promise lets requestAttributes start before it resolves, so the
+  // user still sees a single Internet Identity interaction.
+  const noncePromise = anonymousActor._internet_identity_sign_in_start();
   const signInPromise = authClient.signIn();
   const attributesPromise = authClient.requestAttributes({
-    keys: ["email"],
-    nonce,
+    keys: ["name", "verified_email"], // the library reads verified_email for its email field
+    nonce: noncePromise,
   });
 
   const identity = await signInPromise;
-  const { data, signature } = await attributesPromise;
+  const attributes = await attributesPromise;
 
-  // 3. Wrap the identity so the signed attributes travel with each call
-  const identityWithAttributes = new AttributesIdentity({
-    inner: identity,
-    attributes: { data, signature },
-    // The Internet Identity backend canister ID is the attribute signer
-    signer: { canisterId: Principal.fromText("rdmx6-jaaaa-aaaaa-aaadq-cai") },
+  // Wrap the identity so the signed bundle travels as sender_info on each call.
+  const verifiedAgent = await HttpAgent.create({
+    identity: new AttributesIdentity({
+      inner: identity,
+      attributes,
+      // The Internet Identity backend canister is the trusted attribute signer.
+      signer: { canisterId: Principal.fromText(II_PRINCIPAL) },
+    }),
   });
+  const verifiedActor = Actor.createActor(idl, { agent: verifiedAgent, canisterId });
 
-  // 4. Call the protected method. The backend verifies the nonce, origin,
-  //    and timestamp, then reads the email.
-  const agent = await HttpAgent.create({ identity: identityWithAttributes });
-  const app = Actor.createActor(appIdl, { agent, canisterId });
-  await app.registerFinish();
+  // The backend verifies signer, origin, nonce, and freshness, then runs its
+  // verification logic. Returns { ok } on success, { err } otherwise.
+  const result = await verifiedActor._internet_identity_sign_in_finish();
+  if ("err" in result) {
+    throw new Error(`Attribute verification failed: ${JSON.stringify(result.err)}`);
+  }
+  return identity;
 }
 ```
 
 Each signed attribute bundle carries three implicit fields the backend should verify:
 
-- `implicit:nonce`: matches the canister-issued nonce, preventing replay across actions and users.
+- `implicit:nonce`: matches a single-use nonce the canister issued and consumes on sign-in, so a captured bundle cannot be replayed.
 - `implicit:origin`: the requesting frontend origin, so a malicious dapp cannot forward attributes to a different backend.
 - `implicit:issued_at_timestamp_ns`: issuance time, letting the canister reject stale bundles even when the nonce is still valid.
 
-Attributes can also be requested after sign-in, for example to link an email to an existing account. The pattern is the same: the backend issues a nonce for that action, the frontend calls `requestAttributes`, and the backend verifies the result.
+Attributes can also be requested again later, for example to link an email to an existing account, by exposing another start/finish method pair: mint a fresh nonce, call `requestAttributes`, and verify the bundle the same way.
 
 #### OpenID-scoped attributes
 
@@ -217,13 +224,12 @@ const authClient = new AuthClient({
   openIdProvider: "google",
 });
 
-const nonce = await backend.registerBegin();
-const signInPromise = authClient.signIn();
-// Requests name, email, and verified_email from the Google account
-// linked to the user's Internet Identity.
+// In signInWithAttributes, request the Google-scoped keys instead. They arrive
+// in the bundle as e.g. "openid:https://accounts.google.com:verified_email",
+// and the mo:identity-attributes library maps them onto the same name/email fields.
 const attributesPromise = authClient.requestAttributes({
-  keys: scopedKeys({ openIdProvider: "google" }),
-  nonce,
+  keys: scopedKeys({ openIdProvider: "google", keys: ["name", "verified_email"] }),
+  nonce: noncePromise,
 });
 ```
 
@@ -315,93 +321,102 @@ async fn protected_async_action() -> String {
 
 ### Read identity attributes
 
-When the frontend wraps an identity with `AttributesIdentity`, every call carries a verified attribute bundle. The IC checks that the bundle is signed; it does not check *who* signed it, and any canister could have signed an arbitrary one. Trust the bundle only when the signer is the Internet Identity backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`).
+The backend exposes two methods the frontend calls: `_internet_identity_sign_in_start` (mints a nonce) and `_internet_identity_sign_in_finish` (verifies the wrapped bundle and runs your logic). The checks are the same in both languages: the bundle must be signed by a trusted signer, its `implicit:origin` must be one you allow, its `implicit:issued_at_timestamp_ns` must be fresh, and its `implicit:nonce` must be one you issued and have not consumed. Motoko gets these checks from a library; Rust does them by hand.
 
-How that check is wired depends on the language:
+**Always verify the signer.** The IC checks that the bundle is signed; it does not check *who* signed it, and any canister could have signed an arbitrary one. The trusted signer for Internet Identity is `rdmx6-jaaaa-aaaaa-aaadq-cai`.
 
-- **Motoko (mo:core >= 2.5.0)**: `CallerAttributes.getAttributes<system>()` from `mo:core/CallerAttributes` returns the bundle as `?Blob` and traps when the signer is not listed in the canister's `trusted_attribute_signers` environment variable. Configure the env var in your `icp.yaml` (see below) and the trusted-signer check happens automatically.
-- **Rust (ic-cdk >= 0.20.1)**: `ic_cdk::api::msg_caller_info_data() -> Vec<u8>` returns the raw bundle and `ic_cdk::api::msg_caller_info_signer() -> Option<Principal>` returns the signer. There is no CDK wrapper for the trusted-signer check yet, so check the signer explicitly before reading the data.
+The bundle is Candid-encoded as an [ICRC-3 Value](../../references/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
 
-For Motoko, declare the trusted signer in your `icp.yaml`. The value is a comma-separated list of principal texts, so list both your local and mainnet II principals if your tests run against a locally deployed II:
+- `implicit:nonce`: must equal a nonce your canister issued and not yet consumed.
+- `implicit:origin`: must equal a trusted frontend origin.
+- `implicit:issued_at_timestamp_ns`: reject if too old (a few minutes is typical).
+- Plain attribute keys (for example, `"verified_email"`) for default-scope attributes; OpenID-scoped keys (for example, `"openid:https://accounts.google.com:verified_email"`) when the frontend used `scopedKeys`.
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+The [`mo:identity-attributes`](https://mops.one/identity-attributes) mixin injects both methods and runs your `onVerified` callback only on a bundle that passes every check. Add it to `mops.toml`:
+
+```toml
+[dependencies]
+identity-attributes = "0.4.1"
+core                = "2.5.0"
+
+[toolchain]
+moc = "1.6.0"
+```
+
+`onVerified` receives the resolved `{ name : ?Text; email : ?Text; sso : ?Text }`. The `email` field comes from the `verified_email` key (or its scoped form), which is why the frontend requests `verified_email`. The `sso` field is the matched trusted domain when name and email came from `sso:` keys, otherwise `null`.
+
+```motoko
+import IdentityAttributes "mo:identity-attributes";
+import Map "mo:core/Map";
+import Principal "mo:core/Principal";
+
+persistent actor {
+  type Profile = { name : ?Text; email : ?Text; sso : ?Text };
+
+  let profiles = Map.empty<Principal, Profile>();
+
+  // Injects _internet_identity_sign_in_start / _internet_identity_sign_in_finish.
+  // onVerified runs only on a bundle that passed the signer, origin, nonce, and
+  // freshness checks.
+  include IdentityAttributes({
+    onVerified = func(caller, attrs) {
+      profiles.add(caller, attrs);
+    };
+  });
+
+  public query func getProfile(caller : Principal) : async ?Profile {
+    profiles.get(caller)
+  };
+};
+```
+
+Configure the env vars in your `icp.yaml` so `icp deploy` sets them on the canister. The values are comma-separated, so list both your local and mainnet II principals if your tests run against a locally deployed II:
 
 ```yaml
 canisters:
   - name: backend
     settings:
       environment_variables:
-        trusted_attribute_signers: "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        trusted_attribute_signers: "rdmx6-jaaaa-aaaaa-aaadq-cai"  # required
+        frontend_origins: "https://your-app.icp0.io"              # required, comma-separated
+        trusted_sso_domains: "your-org.com"                       # optional; omit to reject all sso:* keys
 ```
 
-If the env var is unset, `getAttributes` traps. That is the correct behavior: an unconfigured canister should not trust any attribute bundles.
-
-The bundle is Candid-encoded as an [ICRC-3 Value](../../references/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
-
-- `implicit:nonce`: must equal a nonce your canister issued for this user and action.
-- `implicit:origin`: must equal a trusted frontend origin.
-- `implicit:issued_at_timestamp_ns`: reject if too old (a few minutes is typical).
-- Plain attribute keys (e.g., `"email"`) for default-scope attributes; OpenID-scoped keys (e.g., `"openid:https://accounts.google.com:email"`) when the frontend used `scopedKeys`.
-
-<Tabs syncKey="lang">
-<TabItem label="Motoko">
-
-```motoko
-import CallerAttributes "mo:core/CallerAttributes";
-import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
-
-persistent actor {
-  type Icrc3Value = {
-    #Nat : Nat;
-    #Int : Int;
-    #Blob : Blob;
-    #Text : Text;
-    #Array : [Icrc3Value];
-    #Map : [(Text, Icrc3Value)];
-  };
-
-  func lookupText(entries : [(Text, Icrc3Value)], key : Text) : ?Text {
-    for ((k, v) in entries.vals()) {
-      if (k == key) {
-        switch v { case (#Text t) { return ?t }; case _ {} };
-      };
-    };
-    null;
-  };
-
-  // Returns the verified attribute map. Traps when the signer is not
-  // listed in the canister's trusted_attribute_signers env var.
-  func iiAttributes() : [(Text, Icrc3Value)] {
-    let ?data = CallerAttributes.getAttributes<system>() else Runtime.trap("no trusted attributes");
-    let ?value : ?Icrc3Value = from_candid (data) else Runtime.trap("invalid attribute bundle");
-    let #Map(entries) = value else Runtime.trap("expected attribute map");
-    entries
-  };
-
-  public shared ({ caller }) func registerFinish() : async Text {
-    if (Principal.isAnonymous(caller)) Runtime.trap("Anonymous caller not allowed");
-    let entries = iiAttributes();
-
-    let ?origin = lookupText(entries, "implicit:origin") else Runtime.trap("missing origin");
-    if (origin != "https://your-app.icp0.io") Runtime.trap("Wrong origin");
-
-    // Compare implicit:nonce to the nonce you minted in registerBegin (omitted for brevity)
-    // and check implicit:issued_at_timestamp_ns is within your freshness window.
-
-    let ?email = lookupText(entries, "email") else Runtime.trap("missing email");
-    "Registered " # Principal.toText(caller) # " with email " # email
-  };
-};
-```
+If `trusted_attribute_signers` is unset the bundle is rejected as untrusted; if `frontend_origins` is unset the finish method returns `#err(#FrontendOriginsNotConfigured)`. Both are correct: an unconfigured canister must not trust attribute bundles.
 
 </TabItem>
 <TabItem label="Rust">
 
+There is no CDK wrapper yet, so implement the two methods by hand. `_internet_identity_sign_in_start` mints a nonce and stores it; `_internet_identity_sign_in_finish` checks the signer with `msg_caller_info_signer()`, decodes the ICRC-3 `Value::Map` from `msg_caller_info_data()`, then verifies origin, freshness, and the nonce before reading attributes. This mirrors what the Motoko library does internally.
+
 ```rust
 use candid::{decode_one, CandidType, Deserialize, Principal};
-use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer};
+use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer, time};
 use ic_cdk::update;
+use std::cell::RefCell;
+use std::collections::HashSet;
 
 const II_PRINCIPAL: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+const TRUSTED_ORIGIN: &str = "https://your-app.icp0.io";
+const FRESHNESS_NS: u64 = 300_000_000_000; // 5 minutes
+
+thread_local! {
+    // Nonces issued by sign_in_start and consumed by sign_in_finish.
+    static PENDING_NONCES: RefCell<HashSet<Vec<u8>>> = RefCell::new(HashSet::new());
+}
+
+// Mirrors the mo:identity-attributes Result so the frontend "err" check works
+// against either backend.
+#[derive(CandidType)]
+enum SignInResult {
+    #[serde(rename = "ok")]
+    Ok,
+    #[serde(rename = "err")]
+    Err(String),
+}
 
 #[derive(CandidType, Deserialize)]
 enum Icrc3Value {
@@ -420,45 +435,93 @@ fn lookup_text<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a
     })
 }
 
-// Returns the verified attribute entries, trapping if the signer is not II.
-fn ii_attributes() -> Vec<(String, Icrc3Value)> {
+fn lookup_blob<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a [u8]> {
+    entries.iter().find_map(|(k, v)| match v {
+        Icrc3Value::Blob(b) if k == key => Some(b.as_slice()),
+        _ => None,
+    })
+}
+
+fn lookup_nat<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a candid::Nat> {
+    entries.iter().find_map(|(k, v)| match v {
+        Icrc3Value::Nat(n) if k == key => Some(n),
+        _ => None,
+    })
+}
+
+// Mint a fresh nonce. The frontend calls this anonymously before sign-in.
+#[update]
+async fn _internet_identity_sign_in_start() -> Vec<u8> {
+    let nonce = ic_cdk::management_canister::raw_rand()
+        .await
+        .expect("raw_rand failed");
+    PENDING_NONCES.with_borrow_mut(|n| n.insert(nonce.clone()));
+    nonce
+}
+
+// Runs every check the mo:identity-attributes mixin runs internally.
+fn verified_attributes() -> Result<Vec<(String, Icrc3Value)>, String> {
+    // 1. Trusted signer: the IC checks the signature, not who signed it.
     let trusted = Principal::from_text(II_PRINCIPAL).unwrap();
     if msg_caller_info_signer() != Some(trusted) {
-        ic_cdk::trap("Untrusted attribute signer");
+        return Err("Untrusted attribute signer".to_string());
     }
-    let bundle = msg_caller_info_data();
-    let value: Icrc3Value = decode_one(&bundle).unwrap_or_else(|_| ic_cdk::trap("invalid attribute bundle"));
-    match value {
-        Icrc3Value::Map(entries) => entries,
-        _ => ic_cdk::trap("expected attribute map"),
+
+    // 2. Decode the bundle as an ICRC-3 Value::Map.
+    let value: Icrc3Value =
+        decode_one(&msg_caller_info_data()).map_err(|_| "Malformed attribute bundle".to_string())?;
+    let Icrc3Value::Map(entries) = value else {
+        return Err("Expected attribute map".to_string());
+    };
+
+    // 3. Origin must be one we allow.
+    let origin = lookup_text(&entries, "implicit:origin").ok_or("Missing origin")?;
+    if origin != TRUSTED_ORIGIN {
+        return Err(format!("Untrusted frontend origin: {origin}"));
     }
+
+    // 4. Bundle must be fresh.
+    let issued_at: u64 = lookup_nat(&entries, "implicit:issued_at_timestamp_ns")
+        .ok_or("Missing timestamp")?
+        .0
+        .clone()
+        .try_into()
+        .map_err(|_| "Timestamp out of range".to_string())?;
+    if time() > issued_at + FRESHNESS_NS {
+        return Err("Bundle too old".to_string());
+    }
+
+    // 5. Nonce must be one we issued and have not consumed yet.
+    let nonce = lookup_blob(&entries, "implicit:nonce").ok_or("Missing nonce")?;
+    if !PENDING_NONCES.with_borrow_mut(|n| n.remove(nonce)) {
+        return Err("Unknown or already-consumed nonce".to_string());
+    }
+
+    Ok(entries)
 }
 
 #[update]
-fn register_finish() -> String {
+fn _internet_identity_sign_in_finish() -> SignInResult {
+    let entries = match verified_attributes() {
+        Ok(entries) => entries,
+        Err(e) => return SignInResult::Err(e),
+    };
+
+    // Your app logic. verified_email gates access.
+    let Some(email) = lookup_text(&entries, "verified_email") else {
+        return SignInResult::Err("Missing verified_email".to_string());
+    };
     let caller = msg_caller();
-    if caller == Principal::anonymous() { ic_cdk::trap("Anonymous caller not allowed"); }
-    let entries = ii_attributes();
+    let name = lookup_text(&entries, "name");
+    // For example, persist a profile keyed by `caller` here.
+    let _ = (caller, email, name);
 
-    let origin = lookup_text(&entries, "implicit:origin")
-        .unwrap_or_else(|| ic_cdk::trap("missing origin"));
-    if origin != "https://your-app.icp0.io" { ic_cdk::trap("Wrong origin"); }
-
-    // Compare implicit:nonce to the nonce you minted in register_begin (omitted for brevity)
-    // and check implicit:issued_at_timestamp_ns is within your freshness window.
-
-    let email = lookup_text(&entries, "email")
-        .unwrap_or_else(|| ic_cdk::trap("missing email"));
-    format!("Registered {} with email {}", caller, email)
+    SignInResult::Ok
 }
 ```
 
 </TabItem>
 </Tabs>
-
-:::tip[Storing the nonce]
-Mint the nonce in your `registerBegin` (or equivalent) method and persist it in stable memory keyed by the user's principal and the action name. Mark it consumed in `registerFinish` so a bundle cannot be replayed. Use a short freshness window so abandoned attempts age out.
-:::
 
 ## Local development
 
@@ -549,8 +612,8 @@ For full details, see the [Internet Identity specification](../../references/int
 - **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
 - **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
 - **Creating multiple `AuthClient` instances**: create one on page load and reuse it. Multiple instances cause race conditions with session storage.
-- **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` matches an action it actually started.
-- **Reading attribute data without verifying the signer**: the IC checks the signature, not the identity of the signer, so any canister can produce a valid bundle. The trusted signer for II is `rdmx6-jaaaa-aaaaa-aaadq-cai`. In Motoko, use `CallerAttributes.getAttributes<system>()` from `mo:core/CallerAttributes` and configure the `trusted_attribute_signers` env var in `icp.yaml`: the wrapper traps when an untrusted signer is detected. In Rust, there is no CDK wrapper yet, so always check `msg_caller_info_signer()` against the trusted issuer before reading `msg_caller_info_data()`.
+- **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` is one it actually issued.
+- **Reading attribute data without verifying the signer**: the IC checks the signature, not the identity of the signer, so any canister can produce a valid bundle. The trusted signer for II is `rdmx6-jaaaa-aaaaa-aaadq-cai`. In Motoko, use the [`mo:identity-attributes`](https://mops.one/identity-attributes) mixin and configure `trusted_attribute_signers` and `frontend_origins` in `icp.yaml`: it verifies the signer (and the origin, nonce, and freshness) for you. In Rust, there is no CDK wrapper yet, so always check `msg_caller_info_signer()` against the trusted issuer before reading `msg_caller_info_data()`.
 
 ## Next steps
 
@@ -562,4 +625,4 @@ For full details, see the [Internet Identity specification](../../references/int
 
 {/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
-{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/ — AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md — AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); caffeinelabs/motoko-core (src/CallerAttributes.mo getAttributes wrapper); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo); dfinity/icp-cli (docs/reference/canister-settings.md#environment_variables) */}
+{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/ — AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md — AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); dfinity/motoko-identity-attributes (README.md, src/lib.mo, src/Internal/Verify.mo @ v0.4.1 — the mixin and its verification order); caffeinelabs/motoko-core (src/CallerAttributes.mo getAttributes wrapper, src/Map.mo); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo); dfinity/icp-cli (docs/reference/canister-settings.md#environment_variables) */}
