@@ -233,7 +233,7 @@ OISY Wallet uses the Chain Fusion Signer as its production signing backend and s
 
 ## API fees
 
-Fees are charged per call in cycles. Verify against the [source](https://github.com/dfinity/chain-fusion-signer/blob/main/src/signer/api/src/methods.rs) for the latest values (table reflects v0.3.0):
+Fees are charged per call in cycles. Verify against the [source](https://github.com/dfinity/chain-fusion-signer/blob/main/src/signer/api/src/methods.rs) for the latest values (table reflects v0.4.0):
 
 | Method | Fee (cycles) |
 |--------|-------------|
@@ -243,7 +243,10 @@ Fees are charged per call in cycles. Verify against the [source](https://github.
 | `btc_caller_balance` | 113,000,000 |
 | `eth_personal_sign`, `eth_sign_prehash`, `eth_sign_transaction` | 37,000,000,000 |
 | `generic_sign_with_ecdsa`, `schnorr_sign` | 37,000,000,000 |
-| `btc_caller_send`, `btc_caller_sign` | 132,000,000,000 |
+| `btc_caller_sign` | 74,000,000,000 + (inputs × 37,000,000,000) |
+| `btc_caller_send` | 95,000,000,000 + (inputs × 37,000,000,000) |
+
+**Bitcoin sign and send fees scale with the number of UTXOs spent.** Each input requires one threshold ECDSA signature call. Pre-approve the exact amount using the formula `base + (n_inputs × 37,000,000,000)`. For example, a 2-input `btc_caller_sign` costs 148,000,000,000 cycles.
 
 Fees are set at approximately 140% of the typical call cost to cover failed-call overhead.
 
