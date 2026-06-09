@@ -307,7 +307,7 @@ icp deploy -e staging
 icp deploy -e production
 ```
 
-Each environment maintains separate canister IDs. Mainnet IDs are stored in `.icp/data/mappings/<environment>.ids.json` and should be committed to version control. See [Managing environments](https://cli.internetcomputer.org/0.2/guides/managing-environments) for full configuration options.
+Each environment maintains separate canister IDs. Mainnet IDs are stored in `.icp/data/mappings/<environment>.ids.json` and should be committed to version control. See [Managing environments](https://cli.internetcomputer.org/0.3/guides/managing-environments) for full configuration options.
 
 ## Production deployment checklist
 
@@ -375,6 +375,6 @@ icp canister top-up backend --amount 1T -n ic
 - [Cycles ledger reference](../../references/system-canisters.md#cycles-ledger): Canister IDs and interface specification
 - [Calls with attached cycles](../canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an inter-canister call and accept them in the callee
 - [Reproducible builds](reproducible-builds.md): Verify your WASM is trustworthy before deploying
-- [icp-cli docs](https://cli.internetcomputer.org/0.2/reference/cli#icp-cycles): Full command reference for `icp cycles` and `icp canister top-up`
+- [icp-cli docs](https://cli.internetcomputer.org/0.3/reference/cli#icp-cycles): Full command reference for `icp cycles` and `icp canister top-up`
 
 {/* Upstream: informed by dfinity/portal (docs/building-apps/canister-management/topping-up.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; dfinity/icp-cli) docs/guides/deploying-to-mainnet.md, docs/guides/tokens-and-cycles.md, docs/guides/managing-environments.md; dfinity/icskills: skills/cycles-management/SKILL.md */}

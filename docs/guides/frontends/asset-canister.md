@@ -44,7 +44,7 @@ Define an asset canister using the `@dfinity/asset-canister` recipe in your `icp
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.2.1"
       configuration:
         dir: dist
         build:
@@ -54,7 +54,7 @@ canisters:
 
 The key fields are:
 
-- **`recipe.type`:** specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.1.0`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
+- **`recipe.type`:** specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.2.1`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
 - **`dir`:** the directory containing your build output. This is `dist` for Vite-based projects, `out` for Next.js static exports, or `build` for Create React App. The contents of this directory (not the directory itself) are uploaded to the canister.
 - **`build`:** shell commands that icp-cli runs before uploading. If omitted, icp-cli uploads whatever is already in `dir` without building.
 
@@ -64,7 +64,7 @@ For a fullstack project with a backend canister, list both in the same `icp.yaml
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.2.1"
       configuration:
         dir: dist
         build:
