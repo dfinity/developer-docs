@@ -56,7 +56,7 @@
 chain-fusion-signer   v0.4.0                                                    a18c52a
 papi                  v0.1.1                                                    168bc9d
 ic-pub-key            v1.0.1                                                    f89fa55
-icp-cli               v0.2.3                                                    caeac37
+icp-cli               v0.3.1                                                    c4c4618
 motoko                v1.9.0                                                     e7c78d7
 motoko-core           v2.4.0                                                    cd37dbf
 cdk-rs                ic-cdk v0.20.1 / ic-cdk-timers v1.0.0 / ic-cdk-executor v2.0.0  317f55c

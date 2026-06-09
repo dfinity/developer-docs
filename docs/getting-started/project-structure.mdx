@@ -72,7 +72,7 @@ Beyond canisters, `icp.yaml` can also define **networks** (where to deploy) and 
 | `local` | `local` (managed, localhost:8000) | Local development |
 | `ic` | `ic` (connected, https://icp-api.io) | Mainnet production |
 
-You only need to add custom networks or environments when you have staging environments, testnets, or other deployment targets. See the [icp-cli configuration reference](https://cli.internetcomputer.org/0.2/reference/configuration#networks) for the full schema.
+You only need to add custom networks or environments when you have staging environments, testnets, or other deployment targets. See the [icp-cli configuration reference](https://cli.internetcomputer.org/0.3/reference/configuration#networks) for the full schema.
 
 ## Canister configuration (canister.yaml)
 
@@ -99,7 +99,7 @@ The Rust backend uses the `@dfinity/rust` recipe:
 ```yaml
 name: backend
 recipe:
-  type: "@dfinity/rust@v3.1.0"
+  type: "@dfinity/rust@v3.2.0"
   configuration:
     package: backend
     shrink: true
@@ -115,7 +115,7 @@ The frontend uses the `@dfinity/asset-canister` recipe, which builds the fronten
 ```yaml
 name: frontend
 recipe:
-  type: "@dfinity/asset-canister@v2.1.0"
+  type: "@dfinity/asset-canister@v2.2.1"
   configuration:
     build:
       - npm install
@@ -147,7 +147,7 @@ icp project show
 
 This outputs the effective configuration, including all expanded recipe steps and implicit defaults.
 
-Recipes are Handlebars templates hosted at [dfinity/icp-cli-recipes](https://github.com/dfinity/icp-cli-recipes). You can also create local or remote recipes for custom build patterns. See the [icp-cli recipes documentation](https://cli.internetcomputer.org/0.2/guides/creating-recipes) for details.
+Recipes are Handlebars templates hosted at [dfinity/icp-cli-recipes](https://github.com/dfinity/icp-cli-recipes). You can also create local or remote recipes for custom build patterns. See the [icp-cli recipes documentation](https://cli.internetcomputer.org/0.3/guides/creating-recipes) for details.
 
 ## The .icp/ directory
 
@@ -246,6 +246,6 @@ For a deep dive on binding generation, see [Binding generation](../guides/canist
 - [Binding generation](../guides/canister-calls/candid.md#binding-generation): deep dive on generating type-safe client code
 - [Asset canister](../guides/frontends/asset-canister.md): how the frontend recipe and asset upload work
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): build, deploy, upgrade, and manage canisters
-- [icp-cli reference](https://cli.internetcomputer.org/0.2/reference/cli): full CLI and configuration documentation
+- [icp-cli reference](https://cli.internetcomputer.org/0.3/reference/cli): full CLI and configuration documentation
 
 {/* Upstream: informed by dfinity/icp-cli docs/concepts/project-model.md, docs/concepts/recipes.md, docs/concepts/binding-generation.md, docs/concepts/canister-discovery.md */}
