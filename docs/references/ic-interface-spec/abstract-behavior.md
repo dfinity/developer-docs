@@ -348,7 +348,8 @@ SignedDelegation = {
   delegation : {
     pubkey : PublicKey;
     targets : [CanisterId] | Unrestricted;
-    expiration : Timestamp
+    expiration : Timestamp;
+    permissions : Text | Unrestricted
   };
   signature : Signature
 }
@@ -692,7 +693,7 @@ that represents Candid encoding; this is implicitly taking the method types, as 
 
 #### Envelope Authentication
 
-The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals).
+The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals). Every delegation whose `permissions` field is set must hold a supported value (`"queries"` or `"all"`); otherwise, the predicate fails for requests of any kind. Moreover, the predicate fails for update calls (requests of type `Request`) if any delegation in the chain restricts the sender to query calls and `read_state` requests (`permissions` field set to `"queries"`).
 ```
 verify_envelope({ content = C }, U, T)
   = { p : p is CanisterID } if U = anonymous_id
@@ -700,6 +701,7 @@ verify_envelope({ content = C }, U, T)
 verify_envelope({ content = C, sender_pubkey = PK, sender_sig = Sig, sender_delegation = DS}, U, T)
   = TS if U = mk_self_authenticating_id PK
   ∧ (PK', TS) = verify_delegations(DS, PK, T, { p : p is CanisterId })
+  ∧ (C is Request ⇒ ∀ D ∈ DS. D.delegation.permissions ≠ "queries")
   ∧ verify_signature PK' Sig ("\x0Aic-request" · hash_of_map(C))
   ∧ (if PK = canister_signature_pk Signing_canister_id _:
        C.sender_info = null
@@ -711,6 +713,7 @@ verify_delegations([D] · DS, PK, T, TS)
   = verify_delegations(DS, D.pubkey, T, TS ∩ delegation_targets(D))
   if verify_signature PK D.signature ("\x1Aic-request-auth-delegation" · hash_of_map(D.delegation))
    ∧ D.delegation.expiration ≥ T
+   ∧ D.delegation.permissions ∈ { Unrestricted, "all", "queries" }
 delegation_targets(D)
   = if D.targets = Unrestricted
     then { p : p is CanisterId }
