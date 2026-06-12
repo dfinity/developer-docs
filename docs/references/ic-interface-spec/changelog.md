@@ -8,8 +8,8 @@ sidebar:
 
 ## Changelog {#changelog}
 
-<!-- Needs human verification: version number and date of the 0.63.0 entry to be confirmed when the permissions feature is released -->
-### 0.63.0 (2026-06-12) {$0_63_0}
+<!-- Needs human verification: assign the final version number and replace "unreleased" with the release date when the permissions feature ships -->
+### 0.63.0 (unreleased) {$0_63_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests
   the delegation applies for: the value `"queries"` restricts the delegation to query calls
   and `read_state` requests, so update calls carrying such a delegation in their chain of
