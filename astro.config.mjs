@@ -56,6 +56,15 @@ export default defineConfig({
           tag: "meta",
           attrs: { name: "robots", content: "index, follow, max-image-preview:large" },
         },
+        // Brand v2.22 head template: parchment chrome in light, deep bark in dark.
+        {
+          tag: "meta",
+          attrs: { name: "theme-color", content: "#faf9f5", media: "(prefers-color-scheme: light)" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "theme-color", content: "#14110d", media: "(prefers-color-scheme: dark)" },
+        },
         {
           tag: "meta",
           attrs: { name: "author", content: PUBLISHER },
@@ -116,7 +125,6 @@ export default defineConfig({
         "@fontsource/inter/400.css",
         "@fontsource/inter/500.css",
         "@fontsource/inter/600.css",
-        "@fontsource/inter/700.css",
         "@fontsource/newsreader/400.css",
         "@fontsource/newsreader/400-italic.css",
         "@fontsource/newsreader/500.css",

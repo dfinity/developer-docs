@@ -26,7 +26,8 @@
 	const loadTheme = (): Theme => {
 		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
 		if (stored === 'dark' || stored === 'light') return stored;
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		// Brand v2.22: light is the default; never auto-switch from prefers-color-scheme.
+		return 'light';
 	};
 
 	function storeTheme(theme: Theme): void {
