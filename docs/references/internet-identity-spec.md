@@ -718,16 +718,15 @@ On the flip side, implementing `canister_inspect_message` adds code, and thus a 
 Therefore, the Internet Identity Canister intentionally does not implement `canister_inspect_message`.
 
 <!--
-Link replacements from source (source used absolute/relative paths pointing outside this site):
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec#id-classes → ./ic-interface-spec/index.md#id-classes
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#canister-signatures → ./ic-interface-spec/index.md#canister-signatures (×2)
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#signatures → ./ic-interface-spec/index.md#signatures
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec#authentication → ./ic-interface-spec/https-interface.md#authentication
-  - internetcomputer.org [/docs]/current/references/ic-interface-spec/#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message
-  - internetcomputer.org [/docs]/current/references/http-gateway-protocol-spec → ./http-gateway-protocol-spec.md
-  - internetcomputer.org [/docs]/current/developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
-  - vc-spec.md (relative, same dir in source repo) → ./verifiable-credentials-spec.md
+Link replacements from source (absolute public-docs links rewritten to internal paths):
+  - developer-docs/web-apps/custom-domains/using-custom-domains → ../guides/frontends/custom-domains.md
+  - references/http-gateway-protocol-spec → ./http-gateway-protocol-spec.md
+  - references/ic-interface-spec#authentication → ./ic-interface-spec/https-interface.md#authentication
+  - references/ic-interface-spec#canister-signatures → ./ic-interface-spec/index.md#canister-signatures
+  - references/ic-interface-spec#id-classes → ./ic-interface-spec/index.md#id-classes
+  - references/ic-interface-spec#system-api-inspect-message → ./ic-interface-spec/canister-interface.md#system-api-inspect-message
 Other changes from source:
+  - `](vc-spec.md)` (relative, same dir in source repo) → `](./verifiable-credentials-spec.md)`
   - `# The Internet Identity Specification` H1 removed (Starlight renders frontmatter title as H1)
   - `<CodeBlock language="candid">{IICandidInterface}</CodeBlock>` replaced with download link to /references/internet-identity.did
   - Mermaid sequenceDiagram blocks converted to PlantUML (site uses remarkPlantUML, not Mermaid)
