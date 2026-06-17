@@ -71,7 +71,7 @@ hosted on this subnet. These blockchains interact using [chain-key cryptography]
 **Boundary nodes** are gateways to the Internet Computer. These nodes
 allow users to access the [canisters](#canister) running on ICP.
 The boundary nodes have several purposes: they aid in discover-ability (the
-`icp0.io` domain name points to a set of boundary nodes), they are
+`icp.net` domain name points to a set of boundary nodes), they are
 geo-aware and can route incoming requests to the nearest subnet
 [node](#node) that hosts the [canister](#canister)
 involved, they can help load balance query

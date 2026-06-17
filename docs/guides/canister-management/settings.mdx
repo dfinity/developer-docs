@@ -44,12 +44,12 @@ icp canister settings update backend --add-controller PRINCIPAL
 # Remove a controller
 icp canister settings update backend --remove-controller PRINCIPAL
 
-# Replace the entire controller list
-icp canister settings update backend --set-controller PRINCIPAL_1 --set-controller PRINCIPAL_2
+# Replace the entire controller list: clear it, then add the principals you want
+icp canister settings update backend --remove-all-controllers --add-controller PRINCIPAL_1 --add-controller PRINCIPAL_2
 ```
 
 :::caution
-Removing yourself from the controller list or using `--set-controller` without including yourself will cause you to permanently lose control of the canister.
+Removing yourself from the controller list, or using `--remove-all-controllers` without adding yourself back with `--add-controller` in the same command, will cause you to permanently lose control of the canister.
 :::
 
 ### Compute allocation

@@ -39,7 +39,7 @@ The HTTP Gateway Protocol (defined in the [HTTP Gateway Protocol Specification](
 
 When a browser opens a URL hosted by a canister, the following happens:
 
-1. The browser makes a normal HTTPS request to the domain (for example, `https://<canister-id>.icp0.io`). It has no awareness that the site runs on ICP.
+1. The browser makes a normal HTTPS request to the domain (for example, `https://<canister-id>.icp.net`). It has no awareness that the site runs on ICP.
 2. The HTTP gateway receives the request and translates it into a query call to the canister's `http_request` method, placing the path, headers, and body into the call payload.
 3. An API boundary node receives the IC API call and forwards it to a replica on the subnet that hosts the target canister.
 4. The canister executes the `http_request` query, constructs an HTTP response (status, headers, body), and returns it.

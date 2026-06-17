@@ -113,7 +113,7 @@ get_icp_xdr_conversion_rate : () -> (record { data: record { xdr_permyriad_per_i
 
 `xdr_permyriad_per_icp` is the amount of XDR per ICP expressed in units of 1/10000. For example, `19482` means 1 ICP = 1.9482 XDR. This is an ICP/XDR rate; the CMC does not track XDR/USD.
 
-The CMC also exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` with the following relevant fields:
+The CMC also exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp.net/metrics` with the following relevant fields:
 
 | Metric | Description |
 |--------|-------------|

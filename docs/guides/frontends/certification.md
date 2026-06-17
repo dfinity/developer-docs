@@ -46,8 +46,8 @@ The asset canister supports two serving modes:
 
 | Domain | Certification | Notes |
 |--------|--------------|-------|
-| `<canister-id>.icp0.io` | Verified | Boundary node checks every response |
-| `<canister-id>.raw.icp0.io` | None | Responses not verified: use only when necessary |
+| `<canister-id>.icp.net` | Verified | Boundary node checks every response |
+| `<canister-id>.raw.icp.net` | None | Responses not verified: use only when necessary |
 
 Raw access is enabled by default. Disable it in `.ic-assets.json5` for any assets that must not be served unverified:
 
@@ -60,7 +60,7 @@ Raw access is enabled by default. Disable it in `.ic-assets.json5` for any asset
 ]
 ```
 
-With `allow_raw_access` set to `false`, requests to the `raw.icp0.io` domain are redirected to the certified domain automatically.
+With `allow_raw_access` set to `false`, requests to the `raw.icp.net` domain are redirected to the certified domain automatically.
 
 ## What the asset canister handles automatically
 
@@ -301,7 +301,7 @@ For the full working example including a backend canister, see the [certified-co
 
 ## Common mistakes
 
-**Not disabling raw access for sensitive assets.** By default `allow_raw_access` is `true`, meaning assets are also available on `raw.icp0.io` where no verification occurs. Set `"allow_raw_access": false` in `.ic-assets.json5` for any assets that must not be served unverified.
+**Not disabling raw access for sensitive assets.** By default `allow_raw_access` is `true`, meaning assets are also available on `raw.icp.net` where no verification occurs. Set `"allow_raw_access": false` in `.ic-assets.json5` for any assets that must not be served unverified.
 
 **Not certifying Content-Type and security headers.** Headers not listed in `.ic-assets.json5` are not included in the certification. A malicious replica could inject arbitrary values for uncertified headers. Always certify `Content-Type` and any security headers your application relies on.
 

@@ -26,13 +26,12 @@ This guide covers the main tools and techniques available:
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.2.0"
+      type: "@dfinity/rust@v3.3.0"
       configuration:
-        package: backend
         shrink: true
 ```
 
-**Using the official Motoko recipe:**
+**Using the official Motoko recipe:** enable `shrink` in the recipe configuration. The source file is declared separately in `mops.toml`:
 
 ```yaml
 canisters:
@@ -40,7 +39,6 @@ canisters:
     recipe:
       type: "@dfinity/motoko@<version>"
       configuration:
-        main: src/main.mo
         shrink: true
 ```
 
@@ -73,16 +71,13 @@ For binary size over speed, use `opt-level = "z"` (optimize for size, disabling 
 
 The Motoko compiler uses the **incremental GC** by default starting with Motoko 0.15 and enhanced orthogonal persistence. You cannot choose a different GC when enhanced orthogonal persistence is active. The GC is fixed.
 
-For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler arguments through the Motoko recipe:
+For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler arguments through `mops.toml`. The `@dfinity/motoko` recipe (v5 and later) builds with `mops build`, so compiler flags live under the canister's entry in `mops.toml` rather than in the recipe configuration:
 
-```yaml
-canisters:
-  - name: backend
-    recipe:
-      type: "@dfinity/motoko@<version>"
-      configuration:
-        main: src/main.mo
-        args: --incremental-gc
+```toml
+# mops.toml
+[canisters.backend]
+main = "src/main.mo"
+args = ["--incremental-gc"]
 ```
 
 > **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed. The incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.

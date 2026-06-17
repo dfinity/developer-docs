@@ -21,7 +21,7 @@ When a user authenticates through Internet Identity, the following happens:
 4. Your frontend receives this delegation and uses it to sign canister calls.
 5. The backend canister sees the user's **principal** (derived from the delegation chain) as `msg.caller`.
 
-**Principal-per-app isolation:** II derives a different principal for each frontend origin. A user logging into `https://app-a.icp0.io` gets a different principal than when logging into `https://app-b.icp0.io`, even with the same passkey. This prevents apps from correlating users across services.
+**Principal-per-app isolation:** II derives a different principal for each frontend origin. A user logging into `https://app-a.icp.net` gets a different principal than when logging into `https://app-b.icp.net`, even with the same passkey. This prevents apps from correlating users across services.
 
 **Delegations expire.** The frontend sets a `maxTimeToLive` when requesting the delegation (default recommendation: 8 hours). After expiry, the user must re-authenticate. The maximum allowed delegation lifetime is 30 days (2,592,000,000,000,000 nanoseconds).
 
@@ -381,7 +381,7 @@ canisters:
     settings:
       environment_variables:
         trusted_attribute_signers: "rdmx6-jaaaa-aaaaa-aaadq-cai"  # required
-        frontend_origins: "https://your-app.icp0.io"              # required, comma-separated
+        frontend_origins: "https://your-app.icp.net"              # required, comma-separated
         trusted_sso_domains: "your-org.com"                       # optional; omit to reject all sso:* keys
 ```
 
@@ -400,7 +400,7 @@ use std::cell::RefCell;
 use std::collections::HashSet;
 
 const II_PRINCIPAL: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
-const TRUSTED_ORIGIN: &str = "https://your-app.icp0.io";
+const TRUSTED_ORIGIN: &str = "https://your-app.icp.net";
 const FRESHNESS_NS: u64 = 300_000_000_000; // 5 minutes
 
 thread_local! {
@@ -553,7 +553,7 @@ icp deploy -e ic
 
 ## Alternative origins
 
-By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp0.io` to a custom domain), users would get different principals on each domain.
+By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp.net` to a custom domain), users would get different principals on each domain.
 
 :::note
 II now automatically handles the `icp0.io` vs `ic0.app` domain difference: you do **not** need to use `derivationOrigin` or `ii-alternative-origins` for that case. Use alternative origins only when you have two genuinely distinct custom domains that should share the same user principal.
@@ -595,7 +595,7 @@ To keep principals consistent across your own custom domains, configure **altern
    ```javascript
    const authClient = new AuthClient({
      identityProvider: "https://id.ai",
-     derivationOrigin: "https://xxxxx.icp0.io", // primary origin A
+     derivationOrigin: "https://xxxxx.icp.net", // primary origin A
    });
    ```
 
