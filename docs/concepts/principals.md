@@ -13,7 +13,7 @@ ICP defines five principal classes, though one (derived IDs) has never been impl
 
 **2. Canister IDs:** Each canister on ICP has a unique principal derived when the canister is created. Canister principals look like `ryjl3-tyaaa-aaaaa-aaaba-cai`. When a canister makes a call to another canister, the callee sees the calling canister's canister ID as the caller principal.
 
-**3. Self-authenticating IDs:** User identities are derived from public keys using a domain-separated hash. Anyone holding the corresponding private key can authenticate and call canisters under that principal. Self-authenticating principals look like `o2ivq-5dsbb-hhfso-w2o5v-7qiaq-g4fbm-6qhhb-xbj6w-szpxa-lflfa-mae` for Ed25519 keys or similar for ECDSA keys. The [Internet Identity](https://identity.ic0.app/) service manages key-backed identities for end users.
+**3. Self-authenticating IDs:** User identities are derived from public keys using a domain-separated hash. Anyone holding the corresponding private key can authenticate and call canisters under that principal. Self-authenticating principals look like `o2ivq-5dsbb-hhfso-w2o5v-7qiaq-g4fbm-6qhhb-xbj6w-szpxa-lflfa-mae` for Ed25519 keys or similar for ECDSA keys. The [Internet Identity](https://id.ai/) service manages key-backed identities for end users.
 
 **4. Anonymous principal (`2vxsx-fae`):** Messages that are not signed use the anonymous principal as their caller identity. Any canister can check whether a caller is anonymous and decide how to handle unsigned requests (for example, allowing public reads but rejecting state changes from anonymous callers).
 
