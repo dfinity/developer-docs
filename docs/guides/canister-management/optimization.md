@@ -71,20 +71,20 @@ For binary size over speed, use `opt-level = "z"` (optimize for size, disabling 
 
 The Motoko compiler uses the **incremental GC** by default starting with Motoko 0.15 and enhanced orthogonal persistence. You cannot choose a different GC when enhanced orthogonal persistence is active. The GC is fixed.
 
-For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler arguments through `mops.toml`. The `@dfinity/motoko` recipe (v5 and later) builds with `mops build`, so compiler flags live under the canister's entry in `mops.toml` rather than in the recipe configuration:
+For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler flags through the canister's `args` entry in `mops.toml`. The `@dfinity/motoko` recipe (v5 and later) builds with `mops build`, so these flags belong in `mops.toml` rather than the recipe configuration. When `--legacy-persistence` is specified, you can use `--copying-gc`, `--compacting-gc`, or `--generational-gc`:
 
 ```toml
 # mops.toml
 [canisters.backend]
 main = "src/main.mo"
-args = ["--incremental-gc"]
+args = ["--legacy-persistence", "--compacting-gc"]
 ```
 
-> **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed. The incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.
+The compacting GC supports larger heap sizes than the default 2-space copying collector, while the generational GC performs well when most heap data has a short lifetime.
+
+> **New projects:** If you are using enhanced orthogonal persistence (the current default), no GC configuration is needed. The incremental GC is already selected automatically.
 
 The incremental GC is designed to scale for large heap sizes and is more efficient on average than the older copying or compacting collectors. It is the recommended choice for most workloads.
-
-For legacy-persistence projects: if `--legacy-persistence` is specified, you can use `--copying-gc`, `--compacting-gc`, or `--generational-gc`. The compacting GC supports larger heap sizes than the default 2-space copying collector, while the generational GC performs well when most heap data has a short lifetime.
 
 ## WebAssembly SIMD (Rust only)
 

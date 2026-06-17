@@ -33,7 +33,7 @@ Around 20 API boundary nodes are currently deployed worldwide. An up-to-date lis
 
 HTTP gateways translate standard HTTP requests into IC API calls and forward them to API boundary nodes. Because of this translation layer, browsers and other HTTP clients can access canisters directly without installing any special software. For example, a website fully hosted on ICP is accessible in any browser through a normal HTTPS URL.
 
-The HTTP Gateway Protocol (defined in the [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md)) specifies exactly how this translation works. HTTP gateways are not part of ICP itself and can be operated by anyone. This open model encourages a diverse set of gateways, enhancing redundancy and availability.
+The HTTP Gateway Protocol (defined in the [HTTP Gateway Protocol Specification](../references/http-gateway-protocol-spec.md)) specifies exactly how this translation works. HTTP gateways are not part of ICP itself and can be operated by anyone. This open model encourages a diverse set of gateways, enhancing redundancy and availability.
 
 ## HTTP Gateway Protocol
 
@@ -66,7 +66,7 @@ For practical guidance on certifying canister responses, see [Certified variable
 
 ## Further reading
 
-- [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md): detailed protocol definition
+- [HTTP Gateway Protocol Specification](../references/http-gateway-protocol-spec.md): detailed protocol definition
 - [ic-http-gateway library](https://github.com/dfinity/ic-http-gateway-protocol/tree/main/packages/ic-http-gateway-protocol): the main implementation of the HTTP Gateway Protocol
 - [response-verification](https://github.com/dfinity/response-verification): libraries for certifying canister responses to work with the HTTP gateway protocol
 - [Certified variables guide](../guides/backends/certified-variables.md): how to certify canister responses

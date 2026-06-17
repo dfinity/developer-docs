@@ -72,7 +72,7 @@ The lifeline canister is responsible for upgrading the NNS root canister itself.
 
 **Canister ID:** [`qoctq-giaaa-aaaaa-aaaea-cai`](https://dashboard.internetcomputer.org/canister/qoctq-giaaa-aaaaa-aaaea-cai)
 
-The NNS UI canister hosts the NNS app frontend at [nns.ic0.app](https://nns.ic0.app). It provides a browser-based interface for staking neurons, voting on proposals, managing ICP tokens, and participating in SNS launches.
+The NNS UI canister hosts the NNS app frontend at [nns.icp.net](https://nns.icp.net). It provides a browser-based interface for staking neurons, voting on proposals, managing ICP tokens, and participating in SNS launches.
 
 ## Cycles minting canister (CMC)
 
