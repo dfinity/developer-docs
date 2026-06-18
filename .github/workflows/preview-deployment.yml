@@ -64,7 +64,7 @@ jobs:
           echo "PREVIEW_CANISTER_ID=$canister_id" >> $GITHUB_ENV
 
           # Deploy (icp.yaml recipe handles the build)
-          icp deploy frontend -e ic --mode reinstall
+          icp deploy --debug frontend -e ic --mode reinstall
 
         env:
           POOL_CONTROLLER_IDENTITY: ${{ secrets.POOL_CONTROLLER_IDENTITY }}
