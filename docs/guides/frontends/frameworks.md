@@ -360,7 +360,7 @@ After deployment, the asset canister URL depends on your canister ID:
 | Environment | URL |
 |-------------|-----|
 | Local | `http://<canister-id>.localhost:8000` |
-| Mainnet | `https://<canister-id>.ic0.app` |
+| Mainnet | `https://<canister-id>.icp.net` |
 
 Get your canister ID with:
 

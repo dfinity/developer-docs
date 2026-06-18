@@ -33,13 +33,13 @@ Around 20 API boundary nodes are currently deployed worldwide. An up-to-date lis
 
 HTTP gateways translate standard HTTP requests into IC API calls and forward them to API boundary nodes. Because of this translation layer, browsers and other HTTP clients can access canisters directly without installing any special software. For example, a website fully hosted on ICP is accessible in any browser through a normal HTTPS URL.
 
-The HTTP Gateway Protocol (defined in the [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md)) specifies exactly how this translation works. HTTP gateways are not part of ICP itself and can be operated by anyone. This open model encourages a diverse set of gateways, enhancing redundancy and availability.
+The HTTP Gateway Protocol (defined in the [HTTP Gateway Protocol Specification](../references/http-gateway-protocol-spec.md)) specifies exactly how this translation works. HTTP gateways are not part of ICP itself and can be operated by anyone. This open model encourages a diverse set of gateways, enhancing redundancy and availability.
 
 ## HTTP Gateway Protocol
 
 When a browser opens a URL hosted by a canister, the following happens:
 
-1. The browser makes a normal HTTPS request to the domain (for example, `https://<canister-id>.icp0.io`). It has no awareness that the site runs on ICP.
+1. The browser makes a normal HTTPS request to the domain (for example, `https://<canister-id>.icp.net`). It has no awareness that the site runs on ICP.
 2. The HTTP gateway receives the request and translates it into a query call to the canister's `http_request` method, placing the path, headers, and body into the call payload.
 3. An API boundary node receives the IC API call and forwards it to a replica on the subnet that hosts the target canister.
 4. The canister executes the `http_request` query, constructs an HTTP response (status, headers, body), and returns it.
@@ -66,7 +66,7 @@ For practical guidance on certifying canister responses, see [Certified variable
 
 ## Further reading
 
-- [HTTP Gateway Protocol Specification](../references/http-gateway-spec.md): detailed protocol definition
+- [HTTP Gateway Protocol Specification](../references/http-gateway-protocol-spec.md): detailed protocol definition
 - [ic-http-gateway library](https://github.com/dfinity/ic-http-gateway-protocol/tree/main/packages/ic-http-gateway-protocol): the main implementation of the HTTP Gateway Protocol
 - [response-verification](https://github.com/dfinity/response-verification): libraries for certifying canister responses to work with the HTTP gateway protocol
 - [Certified variables guide](../guides/backends/certified-variables.md): how to certify canister responses
