@@ -1,16 +1,15 @@
 ---
 ---
 
-{/* Inlined to avoid FOUC. Defaults to system prefers-color-scheme; overridden by stored user preference. */}
+{/* Inlined to avoid FOUC. Light is the default; dark applies only via an explicit stored user preference, never auto from prefers-color-scheme (brand v2.22). */}
 <script is:inline>
 	window.StarlightThemeProvider = (() => {
 		const storedTheme =
 			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
-		const prefersTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-		const theme = storedTheme || prefersTheme;
-		document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+		const theme = storedTheme === 'dark' ? 'dark' : 'light';
+		document.documentElement.dataset.theme = theme;
 		return {
-			updatePickers(theme = storedTheme || 'auto') {
+			updatePickers(theme = storedTheme || 'light') {
 				document.querySelectorAll('starlight-theme-select').forEach((picker) => {
 					const select = picker.querySelector('select');
 					if (select) select.value = theme;

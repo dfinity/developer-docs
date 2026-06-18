@@ -1,7 +1,7 @@
 /*
  * ICP Developer Docs — Custom Theme
  *
- * Brand: ICP / DFINITY v2.2 (2026-05-08)
+ * Brand: ICP / DFINITY v2.22 (2026-06-15)
  * Light editorial parchment is the default theme.
  * Dark mode is opt-in via data-theme="dark" on <html> — never auto from prefers-color-scheme.
  * Three-face type system: Newsreader (editorial), Inter (UI chrome), JetBrains Mono (technical).
@@ -119,9 +119,9 @@
 :root[data-theme='dark'] {
   /* Backgrounds */
   --icp-bg:             #14110d;
-  --icp-bg-sunk:        #1b1812;
+  --icp-bg-sunk:        #1f1b14;   /* sunk bark */
   --icp-bg-elev:        #1b1812;
-  --icp-bg-cta-inverse: #ffffff;
+  --icp-bg-cta-inverse: #1a1a1a;   /* CTA bar stays near-black in both themes */
   --icp-bg-card:        #1b1812;
 
   --icp-grid-line: rgba(240, 235, 224, 0.05);
@@ -132,7 +132,7 @@
   --icp-fg-secondary: #a29a8d;
   --icp-fg-muted:     #7a7367;
   --icp-fg-disabled:  #4a453d;
-  --icp-fg-inverse:   #1a1a1a;
+  --icp-fg-inverse:   #ffffff;   /* text on the near-black CTA bar */
 
   --icp-muted: var(--icp-fg-muted);
 
@@ -197,6 +197,12 @@ h1, h2, h3, h4, h5, h6 {
 .sl-markdown-content h3,
 .sl-markdown-content h4 {
   letter-spacing: -0.01em;
+}
+
+/* Inter tops out at 600 in the three-face system (no 700). Map bold/strong to
+   the heaviest loaded weight so emphasized prose renders a real face, not synthetic bold. */
+strong, b {
+  font-weight: 600;
 }
 
 /* JetBrains Mono for code and technical readouts */
