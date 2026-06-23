@@ -349,7 +349,7 @@ SignedDelegation = {
     pubkey : PublicKey;
     targets : [CanisterId] | Unrestricted;
     expiration : Timestamp;
-    permissions : Text | Unrestricted
+    permissions : "queries" | "all" | Unrestricted
   };
   signature : Signature
 }
@@ -693,7 +693,7 @@ that represents Candid encoding; this is implicitly taking the method types, as 
 
 #### Envelope Authentication
 
-The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals). Every delegation whose `permissions` field is set must hold a supported value (`"queries"` or `"all"`); otherwise, the predicate fails for requests of any kind. Moreover, the predicate fails for update calls (requests of type `Request`) if any delegation in the chain restricts the sender to query calls and `read_state` requests (`permissions` field set to `"queries"`).
+The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals). The predicate fails for update calls (requests of type `Request`) if any delegation in the chain restricts the sender to query calls and `read_state` requests (`permissions` field set to `"queries"`).
 ```
 verify_envelope({ content = C }, U, T)
   = { p : p is CanisterID } if U = anonymous_id
@@ -713,7 +713,6 @@ verify_delegations([D] · DS, PK, T, TS)
   = verify_delegations(DS, D.pubkey, T, TS ∩ delegation_targets(D))
   if verify_signature PK D.signature ("\x1Aic-request-auth-delegation" · hash_of_map(D.delegation))
    ∧ D.delegation.expiration ≥ T
-   ∧ D.delegation.permissions ∈ { Unrestricted, "all", "queries" }
 delegation_targets(D)
   = if D.targets = Unrestricted
     then { p : p is CanisterId }
