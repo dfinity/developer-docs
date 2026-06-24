@@ -77,6 +77,12 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: 5_000_000_000_000 (5 trillion cycles).
 
+-   `minimum_incoming_canister_call_cycles` (`nat`)
+
+    Must be a number between 0 and 2<sup>128</sup>-1, inclusively, and indicates the minimum number of cycles that must be attached to an incoming inter-canister call. If a different canister makes a call with fewer attached cycles than this threshold, the call is rejected with `CANISTER_ERROR` and all attached cycles are refunded to the caller. Ingress messages and self-calls (where the caller and the callee are the same canister) are not subject to this limit.
+
+    Default value: 0 (no minimum enforced).
+
 -   `wasm_memory_limit` (`nat`)
 
     Must be a number between 0 and 2<sup>48</sup>-1 (i.e., 256TB), inclusively, and indicates the upper limit on the WASM heap memory consumption of the canister in bytes.
@@ -251,6 +257,8 @@ Indicates various information about the canister. It contains:
     -   The freezing threshold of the canister in seconds.
 
     -   The reserved cycles limit of the canister, i.e., the maximum number of cycles that can be in the canister's reserved balance after increasing the canister's memory allocation and/or actual memory usage.
+
+    -   The minimum number of cycles required for incoming inter-canister calls from a different canister (self-calls and ingress messages are not subject to this limit).
 
     -   The visibility of the canister's logs.
 
