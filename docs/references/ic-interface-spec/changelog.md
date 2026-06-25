@@ -8,6 +8,9 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.63.0 (2026-06-24) {$0_63_0}
+* New canister setting `minimum_incoming_canister_call_cycles`: if set, inter-canister calls from a different canister that attach fewer cycles than this threshold are rejected with `CANISTER_ERROR` and all attached cycles are refunded. Ingress messages and self-calls are not affected.
+
 ### 0.62.0 (2025-05-26) {$0_62_0}
 * Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
   and before the function `canister_on_low_wasm_memory` is executed.

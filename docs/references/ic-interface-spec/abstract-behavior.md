@@ -508,6 +508,7 @@ S = {
   balances: CanisterId ↦ Nat;
   reserved_balances: CanisterId ↦ Nat;
   reserved_balance_limits: CanisterId ↦ Nat;
+  minimum_incoming_canister_call_cycles: CanisterId ↦ Nat;
   wasm_memory_limit: CanisterId ↦ Nat;
   wasm_memory_threshold: CanisterId ↦ Nat;
   environment_variables: CanisterId ↦ (Text ↦ Text)
@@ -617,6 +618,7 @@ The initial state of the IC is
   balances = ();
   reserved_balances = ();
   reserved_balance_limits = ();
+  minimum_incoming_canister_call_cycles = ();
   wasm_memory_limit = ();
   wasm_memory_threshold = ();
   environment_variables = ();
@@ -1007,6 +1009,35 @@ messages = Older_messages · Younger_messages  ·
   ResponseMessage {
       origin = CM.origin;
       response = Reject (SYS_TRANSIENT, <implementation-specific>);
+      refunded_cycles = CM.transferred_cycles;
+  }
+
+```
+
+#### Calls with insufficient cycles are rejected
+
+An inter-canister call from a different canister with fewer cycles attached than the callee's minimum is automatically rejected.
+
+Conditions  
+
+```html
+
+S.messages = Older_messages · CallMessage CM · Younger_messages
+(CM.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ CM.queue)
+S.canisters[CM.callee] ≠ EmptyCanister
+CM.origin = FromCanister _
+CM.caller ≠ CM.callee
+CM.transferred_cycles < S.minimum_incoming_canister_call_cycles[CM.callee]
+```
+
+State after:
+
+```html
+
+messages = Older_messages · Younger_messages  ·
+  ResponseMessage {
+      origin = CM.origin;
+      response = Reject (CANISTER_ERROR, <implementation-specific>);
       refunded_cycles = CM.transferred_cycles;
   }
 
@@ -1664,6 +1695,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = 5_000_000_000_000
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = 0
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -1728,6 +1763,7 @@ S' = S with
     balances[Canister_id] = New_balance
     reserved_balances[Canister_id] = New_reserved_balance
     reserved_balance_limits[Canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[Canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[Canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[Canister_id] = New_wasm_memory_threshold
     environment_variables[Canister_id] = New_environment_variables
@@ -1810,6 +1846,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = S.reserved_balance_limits[A.canister_id]
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[A.canister_id]
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -1866,6 +1906,7 @@ S' = S with
     balances[A.canister_id] = New_balance
     reserved_balances[A.canister_id] = New_reserved_balance
     reserved_balance_limits[A.canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[A.canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[A.canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[A.canister_id] = New_wasm_memory_threshold
     environment_variables[A.canister_id] = New_environment_variables
@@ -1900,6 +1941,7 @@ canister_status(S, Canister_id) =
         memory_allocation = S.memory_allocation[Canister_id];
         freezing_threshold = S.freezing_threshold[Canister_id];
         reserved_cycles_limit = S.reserved_balance_limit[Canister_id];
+        minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[Canister_id];
         wasm_memory_limit = S.wasm_memory_limit[Canister_id];
         wasm_memory_threshold = S.wasm_memory_threshold[Canister_id];
         environment_variables = S.environment_variables[Canister_id];
@@ -2891,6 +2933,7 @@ S with
     balances[A.canister_id] = (deleted)
     reserved_balances[A.canister_id] = (deleted)
     reserved_balance_limits[A.canister_id] = (deleted)
+    minimum_incoming_canister_call_cycles[A.canister_id] = (deleted)
     wasm_memory_limit[A.canister_id] = (deleted)
     wasm_memory_threshold[A.canister_id] = (deleted)
     on_low_wasm_memory_hook_status[A.canister_id] = (deleted)
@@ -3085,6 +3128,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = 5_000_000_000_000
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = 0
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -3152,6 +3199,7 @@ S' = S with
     balances[Canister_id] = New_balance
     reserved_balances[Canister_id] = New_reserved_balance
     reserved_balance_limits[Canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[Canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[Canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[Canister_id] = New_wasm_memory_threshold
     environment_variables[Canister_id] = New_environment_variables
@@ -4124,6 +4172,8 @@ S with
   reserved_balances[Canister_id] = (deleted)
   reserved_balance_limits[New_canister_id] = S.reserved_balance_limits[Canister_id]
   reserved_balance_limits[Canister_id] = (deleted)
+  minimum_incoming_canister_call_cycles[New_canister_id] = S.minimum_incoming_canister_call_cycles[Canister_id]
+  minimum_incoming_canister_call_cycles[Canister_id] = (deleted)
   wasm_memory_limit[New_canister_id] = S.wasm_memory_limit[Canister_id]
   wasm_memory_limit[Canister_id] = (deleted)
   wasm_memory_threshold[New_canister_id] = S.wasm_memory_threshold[Canister_id]
