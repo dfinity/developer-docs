@@ -79,7 +79,7 @@ The optional `settings` parameter can be used to set the following settings:
 
 -   `wasm_memory_limit` (`nat`)
 
-    Must be a number between 0 and 2<sup>48</sup>-1 (i.e., 256TB), inclusively, and indicates the upper limit on the WASM heap memory consumption of the canister in bytes.
+    Must be a number between 0 and 2<sup>48</sup>, inclusively, and indicates the upper limit on the WASM heap memory consumption of the canister in bytes.
 
     An operation (update method, canister init, canister post_upgrade) that causes the WASM heap memory consumption to exceed this limit will trap.
     The WASM heap memory limit is ignored for query methods, response callback handlers, global timers, heartbeats, and canister pre_upgrade.
@@ -115,7 +115,7 @@ The optional `settings` parameter can be used to set the following settings:
 
 -   `wasm_memory_threshold` (`nat`)
 
-    Must be a number between 0 and 2<sup>64</sup>-1, inclusively, and indicates the threshold on the remaining wasm memory size of the canister in bytes:
+    Must be a number between 0 and 2<sup>48</sup>, inclusively, and indicates the threshold on the remaining wasm memory size of the canister in bytes:
     if the remaining wasm memory size of the canister is below the threshold, execution of the ["on low wasm memory" hook](./canister-interface.md#on-low-wasm-memory) is scheduled.
 
     Default value: 0 (i.e., the "on low wasm memory" hook is never scheduled).
