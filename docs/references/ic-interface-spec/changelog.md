@@ -8,6 +8,9 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.63.0 (2026-06-26) {$0_63_0}
+* `wasm_memory_threshold` in canister settings is now bounded by 2<sup>48</sup>, analogously to `wasm_memory_limit`.
+
 ### 0.62.0 (2025-05-26) {$0_62_0}
 * Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
   and before the function `canister_on_low_wasm_memory` is executed.
