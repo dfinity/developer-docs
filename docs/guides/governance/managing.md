@@ -122,7 +122,7 @@ type NervousSystemParameters = record {
 ```
 
 :::caution[Changing the SNS token transfer fee]
-Do not use `ManageNervousSystemParameters.transaction_fee_e8s` to change the SNS token transfer fee. This field updates only Governance's stored parameter; it does not update the SNS ledger canister, so the actual fee charged on transfers is unchanged.
+Do not use `ManageNervousSystemParameters.transaction_fee_e8s` to change the SNS token transfer fee. This field updates only Governance's stored parameter, not the SNS ledger canister. Worse, because Governance uses this stored value as the fee for its own neuron-operation transfers (disbursing, splitting, staking maturity, and so on), setting it to a value that differs from the ledger's actual fee will cause those transfers to be rejected by the ledger (`BadFee`), breaking neuron operations.
 
 To change the actual ledger transfer fee, submit a [`ManageLedgerParameters`](#manageledgerparameters) proposal with `transfer_fee` set. On successful execution, the ledger fee is updated and Governance's `transaction_fee_e8s` is synced to the same value automatically.
 :::
