@@ -8,6 +8,9 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.63.0 (2026-06-29) {$0_63_0}
+* Support for the HTTP method `PATCH` in canister `http_request` in non-replicated mode.
+
 ### 0.62.0 (2025-05-26) {$0_62_0}
 * Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
   and before the function `canister_on_low_wasm_memory` is executed.
