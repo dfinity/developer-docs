@@ -121,6 +121,12 @@ type NervousSystemParameters = record {
 };
 ```
 
+:::caution[Changing the SNS token transfer fee]
+Do not use `ManageNervousSystemParameters.transaction_fee_e8s` to change the SNS token transfer fee. This field updates only Governance's stored parameter; it does not update the SNS ledger canister, so the actual fee charged on transfers is unchanged.
+
+To change the actual ledger transfer fee, submit a [`ManageLedgerParameters`](#manageledgerparameters) proposal with `transfer_fee` set. On successful execution, the ledger fee is updated and Governance's `transaction_fee_e8s` is synced to the same value automatically.
+:::
+
 For a description of each parameter and its effect, see the [SNS settings reference](../../references/sns-settings.md).
 
 ### ManageSnsMetadata
@@ -154,6 +160,8 @@ quill send message.json
 ### ManageLedgerParameters
 
 Updates ledger parameters: transfer fee, token name, token symbol, or token logo. Fields set to `null` remain unchanged.
+
+Use `transfer_fee` here to change the SNS token transfer fee; this is the only proposal that updates the actual fee charged by the ledger. On successful execution, it also syncs Governance's `NervousSystemParameters.transaction_fee_e8s` to the same value, so a separate `ManageNervousSystemParameters` proposal is not needed.
 
 ```bash
 quill sns \

@@ -43,7 +43,7 @@ For background, see [SNS framework](../concepts/sns-framework.md).
 
 | Parameter | Type | Description |
 |---|---|---|
-| `transaction_fee_e8s` | `nat64` | Per-transfer fee on the SNS ledger, in e8s. Does not apply to minting or burning. |
+| `transaction_fee_e8s` | `nat64` | Governance's stored copy of the per-transfer ledger fee, in e8s. Does not apply to minting or burning. Do not set this field via `ManageNervousSystemParameters` to change the fee: it updates only Governance's copy, not the ledger. Change the fee with a `ManageLedgerParameters` proposal instead, which updates the ledger and syncs this field automatically (see [Managing an SNS](../guides/governance/managing.md#manageledgerparameters)). |
 
 ## Voting reward settings
 
