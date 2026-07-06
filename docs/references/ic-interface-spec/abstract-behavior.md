@@ -1026,7 +1026,6 @@ Conditions
 
 S.messages = Older_messages · CallMessage CM · Younger_messages
 (CM.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ CM.queue)
-S.canisters[CM.callee] ≠ EmptyCanister
 CM.origin = FromCanister _
 CM.caller ≠ CM.callee
 CM.transferred_cycles < S.minimum_incoming_canister_call_cycles[CM.callee]
