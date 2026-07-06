@@ -15,6 +15,7 @@ sidebar:
   delegations are not accepted; the value `"all"` permits all kinds of requests, same as
   omitting the field. Requests of any kind carrying a delegation with any other value of
   the `permissions` field are not accepted.
+* `wasm_memory_threshold` in canister settings is now bounded by 2<sup>48</sup>, analogously to `wasm_memory_limit`.
 
 ### 0.63.0 (2026-06-29) {$0_63_0}
 * Support for the HTTP method `PATCH` in canister `http_request` in non-replicated mode.
