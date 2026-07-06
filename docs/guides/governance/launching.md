@@ -219,7 +219,7 @@ dfx sns propose --network ic --neuron $NEURON_ID sns_init.yaml
 
 There can only be one SNS creation proposal active in the NNS at a time. If another project's proposal is currently being voted on, you must wait for it to resolve before submitting yours.
 
-After submitting, monitor your proposal's status on the [NNS app](https://nns.ic0.app) or by querying NNS governance directly.
+After submitting, monitor your proposal's status on the [NNS app](https://nns.icp.net) or by querying NNS governance directly.
 
 ### Stages 4–11: Automatic
 

@@ -593,15 +593,21 @@ Add the EVM RPC canister to your `icp.yaml` as a pre-built canister for local de
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/motoko@v4.1.0"
-      configuration:
-        main: src/backend/main.mo
+      type: "@dfinity/motoko@v5.0.0"
   - name: evm_rpc
     build:
       steps:
         - type: pre-built
           url: https://github.com/dfinity/evm-rpc-canister/releases/download/v2.2.0/evm_rpc.wasm.gz
     init_args: "(record {})"
+```
+
+The `@dfinity/motoko` recipe (v5 and later) builds with `mops build`, so the backend's source file is declared in `mops.toml` rather than the recipe configuration:
+
+```toml
+# mops.toml
+[canisters]
+backend = "src/backend/main.mo"
 ```
 
 {/* Needs human verification: The pre-built URL version (v2.2.0) should be verified against the latest EVM RPC canister release. */}

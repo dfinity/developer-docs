@@ -340,7 +340,7 @@ icp canister status -e ic
 
 **Automated monitoring services**: Third-party services can monitor balances and alert or auto-top-up:
 - [CycleOps](https://cycleops.dev): Network-based monitoring with automated top-ups and email notifications
-- [Canistergeek](https://cusyh-iyaaa-aaaah-qcpba-cai.raw.icp0.io/): Cycles, memory, and log monitoring in one place
+- [Canistergeek](https://cusyh-iyaaa-aaaah-qcpba-cai.raw.icp.net/): Cycles, memory, and log monitoring in one place
 
 **Automated top-up libraries:**
 - Rust: [canfund](https://github.com/dfinity/canfund): DFINITY-maintained library for automated canister funding
@@ -364,7 +364,7 @@ icp canister top-up backend --amount 1T -n ic
 
 **Confusing local and mainnet cycles**: Local deployments use fabricated cycles and never freeze. Test with realistic amounts on a staging environment before going to production.
 
-**Using `ExperimentalCycles` in Motoko**: In `mo:core`, the module is `Cycles`, not `ExperimentalCycles`. `import ExperimentalCycles "mo:base/ExperimentalCycles"` will fail with `mo:core`. Use `import Cycles "mo:core/Cycles"`.
+**Using `ExperimentalCycles` in Motoko**: In `mo:core`, the module is `Cycles`, not `ExperimentalCycles`. The legacy `ExperimentalCycles` import from the old base library does not exist in `mo:core`; use `import Cycles "mo:core/Cycles"` instead.
 
 ## Next steps
 

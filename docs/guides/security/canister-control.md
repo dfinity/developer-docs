@@ -13,7 +13,7 @@ If single entities or small groups control canisters, they can apply changes or 
 
 Furthermore, the controller of canisters serving web content (such as e.g., the asset canister) could maliciously modify the web application to e.g., steal user funds or perform security-sensitive actions on the user's behalf. For example, if [Internet Identity](../authentication/internet-identity.md) is used, the user principal's private key for the given origin is stored in the browser storage, and a malicious app can therefore fully control the private key, the user's session, and any assets controlled by that key.
 
-Dapps are commonly reachable over their own custom domain name instead of ic0.app. These domains are registered with a DNS registrar by one of the developers. The developer can choose to have this domain point at a completely different web application, even one not hosted on ICP. Users will trust this domain and the app it serves. This could allow such a developer to steal funds, leak data, etc.
+Dapps are commonly reachable over their own custom domain name instead of icp.net. These domains are registered with a DNS registrar by one of the developers. The developer can choose to have this domain point at a completely different web application, even one not hosted on ICP. Users will trust this domain and the app it serves. This could allow such a developer to steal funds, leak data, etc.
 
 An app might have privileged features that are only accessible to principals that are on an allow list. For example, minting new tokens, debugging functions, managing permissions, removing NFTs for digital rights violations, etc. This means that whoever controls that principal (such as the app developers) may have central control over these privileged features.
 
@@ -58,7 +58,7 @@ If you interact with a canister that you require to be decentralized, make sure 
 
 ### Security concern
 
-Loading untrusted JavaScript from domains other than `<canister-id>.icp0.io` means you completely trust that domain. Also, assets loaded from these domains (incl. `<canister-id>.raw.icp0.io`) will not use asset certification.
+Loading untrusted JavaScript from domains other than `<canister-id>.icp.net` means you completely trust that domain. Also, assets loaded from these domains (incl. `<canister-id>.raw.icp.net`) will not use asset certification.
 
 If they deliver malicious JavaScript, they can take over the web app or account. This could, for example, happen by reading the private key managed by the ICP JavaScript agent from the browser's local storage.
 

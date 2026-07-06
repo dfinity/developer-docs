@@ -105,7 +105,7 @@ Create `.ic-assets.json5` in your `dir` directory (or `public/`/`static/` so you
 ```
 
 - `security_policy: "standard"`: applies the default Content Security Policy and security headers
-- `allow_raw_access: false`: disables serving assets on the uncertified `raw.ic0.app` domain
+- `allow_raw_access: false`: disables serving assets on the uncertified `raw.icp.net` domain
 - `enable_aliasing: true`: enables SPA fallback, serving `index.html` for unmatched paths
 
 ### Programmatic uploads

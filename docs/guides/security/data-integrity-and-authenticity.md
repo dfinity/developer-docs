@@ -608,17 +608,17 @@ function bigEndian(n) {
 }
 ```
 
-## Use HTTP asset certification and avoid serving your app through `raw.icp0.io`
+## Use HTTP asset certification and avoid serving your app through `raw.icp.net`
 
 ### Security concern
 
-Apps on ICP can use [asset certification](../frontends/certification.md) to make sure the HTTP assets delivered to the browser are authentic (i.e., threshold-signed by the subnet). If an app does not do asset certification, it can only be served insecurely through `raw.icp0.io`, where no asset certification is checked. This is insecure since a single malicious node or boundary node can freely modify the assets delivered to the browser.
+Apps on ICP can use [asset certification](../frontends/certification.md) to make sure the HTTP assets delivered to the browser are authentic (i.e., threshold-signed by the subnet). If an app does not do asset certification, it can only be served insecurely through `raw.icp.net`, where no asset certification is checked. This is insecure since a single malicious node or boundary node can freely modify the assets delivered to the browser.
 
-If an app is served through `raw.icp0.io` in addition to `icp0.io`, an adversary may trick users (phishing) into using the insecure `raw.icp0.io`.
+If an app is served through `raw.icp.net` in addition to `icp.net`, an adversary may trick users (phishing) into using the insecure `raw.icp.net`.
 
 ### Recommendation
 
-- Only serve assets through `<canister-id>.icp0.io`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp0.io`.
+- Only serve assets through `<canister-id>.icp.net`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp.net`.
 
 - Serve assets using the asset canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
 

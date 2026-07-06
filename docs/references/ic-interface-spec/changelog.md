@@ -8,14 +8,16 @@ sidebar:
 
 ## Changelog {#changelog}
 
-<!-- Needs human verification: assign the final version number and replace "unreleased" with the release date when the permissions feature ships -->
-### 0.63.0 (unreleased) {$0_63_0}
+### 0.64.0 (2026-07-06) {$0_64_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests
   the delegation applies for: the value `"queries"` restricts the delegation to query calls
   and `read_state` requests, so update calls carrying such a delegation in their chain of
   delegations are not accepted; the value `"all"` permits all kinds of requests, same as
   omitting the field. Requests of any kind carrying a delegation with any other value of
   the `permissions` field are not accepted.
+
+### 0.63.0 (2026-06-29) {$0_63_0}
+* Support for the HTTP method `PATCH` in canister `http_request` in non-replicated mode.
 
 ### 0.62.0 (2025-05-26) {$0_62_0}
 * Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered

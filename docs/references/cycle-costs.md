@@ -7,7 +7,7 @@ sidebar:
 
 Canisters pay for the resources they consume and operations they perform using [**cycles**](../concepts/cycles.md). The price of cycles is pegged to [XDR](glossary.md#xdr) (Special Drawing Rights): **1 trillion cycles = 1 XDR**. USD values throughout this page use **1 XDR = $1.366430**; see [XDR exchange rate](#xdr-exchange-rate) at the end of this page for the current rate and how to look it up programmatically.
 
-You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp0.io/) to estimate the cost for your app.
+You can use the [pricing calculator](https://3d5wy-5aaaa-aaaag-qkhsq-cai.icp.net/) to estimate the cost for your app.
 
 ## Cycle units
 
@@ -244,7 +244,7 @@ Example: ICP/USD = $2.67, ICP/XDR = 19482 / 10000 = 1.9482 → XDR/USD = 2.67 / 
 
 The ICP Dashboard API is not certified: responses are unsigned and not verifiable by the network.
 
-**CMC metrics endpoint (Prometheus, unsigned):** The CMC exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp0.io/metrics` that includes `cmc_icp_xdr_conversion_rate` (current ICP/XDR) and `cmc_avg_icp_xdr_conversion_rate` (30-day moving average used for node provider rewards). Neither is certified. Apply the same formula to derive XDR/USD.
+**CMC metrics endpoint (Prometheus, unsigned):** The CMC exposes a Prometheus metrics endpoint at `https://rkp4c-7iaaa-aaaaa-aaaca-cai.raw.icp.net/metrics` that includes `cmc_icp_xdr_conversion_rate` (current ICP/XDR) and `cmc_avg_icp_xdr_conversion_rate` (30-day moving average used for node provider rewards). Neither is certified. Apply the same formula to derive XDR/USD.
 
 **From canister code (certified):** Call the XRC for `ICP/USD` as a crypto/fiat pair (1B cycles, refunded if unused), and call the CMC `get_icp_xdr_conversion_rate` for ICP/XDR. Derive XDR/USD = ICP_USD / (xdr_permyriad_per_icp / 10_000). See [Fetch exchange rates](../guides/chain-fusion/exchange-rates.md) for XRC integration code.
 

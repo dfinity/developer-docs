@@ -87,7 +87,7 @@ For patterns around bounded and unbounded inter-canister calls, see [Inter-canis
 
 A frontend deployed to the mainnet returns a blank screen and the browser console shows "Failed to load resource" errors.
 
-**Check for client-side firewall or proxy interference.** Some corporate firewalls and browser extensions block requests to `*.icp0.io` or `*.ic0.app` domains. If the frontend loads on a different network, a firewall or proxy is the likely cause.
+**Check for client-side firewall or proxy interference.** Some corporate firewalls and browser extensions block requests to `*.icp.net` domains. If the frontend loads on a different network, a firewall or proxy is the likely cause.
 
 **Verify the asset canister is deployed correctly.** Run `icp canister status <canister-name> -e ic` and confirm the module hash is populated. If the hash is `None`, the canister exists but has no code installed.
 
