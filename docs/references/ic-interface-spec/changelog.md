@@ -15,6 +15,7 @@ sidebar:
   delegations are not accepted; the value `"all"` permits all kinds of requests, same as
   omitting the field. Requests of any kind carrying a delegation with any other value of
   the `permissions` field are not accepted.
+* `wasm_memory_threshold` in canister settings is now bounded by 2<sup>48</sup>, analogously to `wasm_memory_limit`.
 * New canister setting `minimum_incoming_canister_call_cycles`: if set, inter-canister calls
   from a different canister that attach fewer cycles than this threshold are rejected with `CANISTER_ERROR`
   and all attached cycles are refunded. Ingress messages and self-calls are not affected.
