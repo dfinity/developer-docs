@@ -52,7 +52,7 @@ EOF
 
 All CLI docs links use a versioned slug (e.g. `https://cli.internetcomputer.org/0.2/...`). When bumped to a new minor version:
 
-1. Read the new slug: `cat .sources/icp-cli/docs-site/versions.json` — use the `"version"` marked `"latest": true`.
+1. Determine the new slug: it is the `major.minor` of the release tag you pinned (e.g. `v1.1.0` → `1.1`). Do **not** read it from `.sources/icp-cli/docs-site/versions.json` — at a release tag that file still lists the *previous* slug, since the docs-site version bump lands as a follow-up commit after the tag. Confirm the new slug is live by opening the docs-site root (`https://cli.internetcomputer.org/`), which redirects to the latest version.
 2. Verify all linked paths still exist in the new submodule before replacing:
    ```bash
    grep -roh "cli\.internetcomputer\.org/[0-9][.0-9]*/[^\"' )#]*" docs/ --include="*.md" --include="*.mdx" \
@@ -62,10 +62,12 @@ All CLI docs links use a versioned slug (e.g. `https://cli.internetcomputer.org/
        done
    ```
    Resolve any MISSING paths manually before proceeding.
-3. Replace the slug across all files:
+3. Replace the slug across all files (per-file loop — portable across GNU and BSD/macOS `sed`, whose `-i` syntax differs):
    ```bash
-   old=0.2; new=0.3
-   find docs/ \( -name "*.md" -o -name "*.mdx" \) | xargs sed -i "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g"
+   old=1.0; new=1.1
+   grep -rl "cli.internetcomputer.org/${old}/" docs/ --include="*.md" --include="*.mdx" | while IFS= read -r f; do
+     sed -i.bak "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g" "$f" && rm -f "$f.bak"
+   done
    ```
 4. Run `npm run build` to confirm no broken links.
 

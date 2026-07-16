@@ -264,7 +264,7 @@ This is useful during development when you want a clean slate. The canister ID i
 
 Deleting permanently removes a canister from the network. The canister ID cannot be reused.
 
-> Note: Canisters are like real estate on the IC. Creating them costs cycles. Instead of deleting a canister, consider reusing it in a different project. Check the [cli reference](https://cli.internetcomputer.org/1.0/concepts/project-model/#canister-ids) for more information.
+> **Note:** Canisters are like real estate on the IC. Creating them costs cycles. Instead of deleting a canister, consider reusing it in a different project. Check the [cli reference](https://cli.internetcomputer.org/1.1/concepts/project-model/#canister-ids) for more information.
 
 1. Stop the canister first:
 
@@ -278,7 +278,7 @@ icp canister stop my-canister -e ic
 icp canister delete my-canister -e ic
 ```
 
-> **Warning** The remaining cycles in the canister are lost, see [github issue](https://github.com/dfinity/icp-cli/issues/431).
+> **Note:** As of icp-cli v1.1.0, the canister's remaining cycles are returned to the caller (the identity that made the delete request) via the cycles ledger. Pass `--no-recover-cycles` to skip recovery and burn the cycles instead. On earlier versions, the remaining cycles are lost.
 
 ## Migrate a canister between subnets
 

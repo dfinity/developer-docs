@@ -171,7 +171,7 @@ EOF
 - Link to `internetcomputer.org/docs/` (retired) or `learn.internetcomputer.org` (content is now in this repo under `docs/concepts/`)
 - Link to internal pages that don't exist — run `ls <target>` before linking. Links to `.mdx` files use `.md` extension.
 - Link to an internal page without checking for a relevant section anchor — read the target page to find the most specific section that fits, then derive the anchor slug from its heading (lowercase, spaces → `-`, special chars stripped).
-- Link to `https://cli.internetcomputer.org/` bare root — use the versioned path. Current slug: `0.2`; verify with `cat .sources/icp-cli/docs-site/versions.json`.
+- Link to `https://cli.internetcomputer.org/` bare root — use the versioned path. Current slug: `1.1` (the `major.minor` of the pinned icp-cli release). Do not trust `.sources/icp-cli/docs-site/versions.json` here: at a release tag it still lists the *previous* slug, because the docs-site version bump lands as a follow-up commit after the tag. Confirm the live slug at the docs-site root (it redirects to the latest version).
 - Link externally when an internal page exists — check `docs/` first
 - Write em-dashes (`—`) or use `--` as prose punctuation — use colon, semicolon, or parentheses instead. (`--` is fine inside code blocks as a CLI flag or comment.)
 - Rename Candid field names, management canister API identifiers, or example repo names — these are protocol-level identifiers
