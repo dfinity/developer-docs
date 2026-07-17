@@ -11,7 +11,7 @@ This guide shows you how to configure your framework's build pipeline, wire up t
 
 ## Prerequisites
 
-- [icp-cli](https://cli.internetcomputer.org/0.3/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
+- [icp-cli](https://cli.internetcomputer.org/1.1/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
 - A backend canister deployed (or a static-only site with no backend)
 - Familiarity with [asset canisters](asset-canister.md)
 
