@@ -23,10 +23,11 @@
 
 	const storageKey = 'starlight-theme';
 
+	// Light is the deliberate default; dark applies only on an explicit stored choice.
+	// Never fall back to prefers-color-scheme (ICP brand guide: light default, dark opt-in only).
 	const loadTheme = (): Theme => {
 		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
-		if (stored === 'dark' || stored === 'light') return stored;
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		return stored === 'dark' ? 'dark' : 'light';
 	};
 
 	function storeTheme(theme: Theme): void {
@@ -38,6 +39,8 @@
 	function applyTheme(theme: Theme): void {
 		document.documentElement.dataset.theme = theme;
 		storeTheme(theme);
+		const themeColor = document.querySelector('meta[name="theme-color"]');
+		if (themeColor) themeColor.setAttribute('content', theme === 'dark' ? '#14110d' : '#faf9f5');
 		document.querySelectorAll('starlight-theme-select button').forEach((btn) => {
 			btn.setAttribute(
 				'aria-label',
