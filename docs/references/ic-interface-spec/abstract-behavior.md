@@ -3823,12 +3823,21 @@ Given a state `S`, `Canister_id`, `filter`, and `Sender`, we define
 ```html
 
 canister_logs(S, Canister_id, filter) =
-  if filter = by_idx Range:
-    { Log | Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.idx ∧ Log.idx < Range.end }
-  else if filter = by_timestamp_nanos Range:
-    { Log | Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.timestamp_nanos ∧ Log.timestamp_nanos < Range.end }
-  else:
-    S.canister_logs[Canister_id]
+  let Selected_logs = the sublist of S.canister_logs[Canister_id] (preserving order) such that
+    if filter = by_idx Range:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.idx ∧ Log.idx < Range.end
+    else if filter = by_timestamp_nanos Range:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.timestamp_nanos ∧ Log.timestamp_nanos < Range.end
+    else:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id]
+  in
+    if filter = null:
+      the longest suffix Younger_logs of Selected_logs
+        such that canister_log_memory_usage(Younger_logs) ≤ max_response_size
+    else:
+      the longest prefix Older_logs of Selected_logs
+        such that canister_log_memory_usage(Older_logs) ≤ max_response_size
+max_response_size = <implementation-specific>
 fetch_canister_logs_cost(S, Canister_id) = <implementation-specific>
 is_sender_authorized(S, Canister_id, Sender) =
   (S[Canister_id].canister_log_visibility = Public)
@@ -3838,6 +3847,11 @@ is_sender_authorized(S, Canister_id, Sender) =
   (S[Canister_id].canister_log_visibility = AllowedViewers Principals and (Sender in S[Canister_id].controllers or Sender in Principals))
 
 ```
+
+When the selected logs do not all fit within a single response, they are trimmed to fit and the direction of trimming depends on whether a filter is provided.
+An unfiltered read trims the oldest log records (keeps the longest suffix), so the response ends with the newest log record.
+A filtered read trims the newest log records (keeps the longest prefix), so the response starts with the oldest log record satisfying the filter.
+Thus an unfiltered read surfaces the most recent activity, while a filtered read can page forward through logs starting from the beginning of the requested range.
 
 Conditions
 
@@ -4437,60 +4451,6 @@ State after
 
 S with
     canister_logs[CanisterId] = Newer_logs
-
-```
-
-#### IC Management Canister: Canister logs (query call) {#ic-mgmt-canister-fetch-canister-logs}
-
-This section specifies management canister query calls.
-They are calls to `/api/v3/canister/<ECID>/query`
-with CBOR content `Q` such that `Q.canister_id = ic_principal`.
-
-The management canister offers the method `fetch_canister_logs`
-that can be called as a query call and
-returns logs of a requested canister.
-
-Submitted request to `/api/v3/canister/<ECID>/query`
-
-```html
-
-E : Envelope
-
-```
-
-Conditions
-
-```html
-
-E.content = CanisterQuery Q
-Q.canister_id = ic_principal
-Q.method_name = 'fetch_canister_logs'
-|Q.nonce| <= 32
-is_effective_canister_id(E.content, ECID)
-S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
-Q.arg = candid(A)
-A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-(S[A.canister_id].canister_log_visibility = Public)
-  or
-  (S[A.canister_id].canister_log_visibility = Controllers and Q.sender in S[A.canister_id].controllers)
-  or
-  (S[A.canister_id].canister_log_visibility = AllowedViewers Principals and (Q.sender in S[A.canister_id].controllers or Q.sender in Principals))
-
-```
-
-Query response `R`:
-
-```html
-
-{status: "replied"; reply: {arg: candid(S.canister_logs[A.canister_id])}, signatures: Sigs}
-
-```
-
-where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
-
-```html
-
-verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
 
 ```
 

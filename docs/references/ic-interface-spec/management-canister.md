@@ -954,6 +954,10 @@ To filter canister logs, an optional filter can be provided and have one of the 
 - `by_idx` (`record { start : nat64; end : nat64 }`): only logs are returned whose `idx` is within the provided range (`start` is inclusive, but `end` is exclusive);
 - `by_timestamp_nanos` (`record { start : nat64; end : nat64 }`): only logs are returned whose `timestamp_nanos` is within the provided range (`start` is inclusive, but `end` is exclusive).
 
+When the logs selected for the response do not all fit within a single response, they are trimmed to fit, and the direction of trimming differs between filtered and unfiltered reads:
+- An **unfiltered** read trims the **oldest** log records, so the response ends with the newest log record. This surfaces the most recent activity.
+- A **filtered** read trims the **newest** log records, so the response starts with the oldest log record satisfying the filter. This lets a filtered read page forward through logs starting from the beginning of the requested range.
+
 Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls).
 
 :::warning
