@@ -462,6 +462,10 @@ CanisterSnapshotVisibility
   = Controllers
   | Public
   | AllowedViewers [Principal]
+CanisterStatusVisibility
+  = Controllers
+  | Public
+  | AllowedViewers [Principal]
 CanisterLog = {
   idx : Nat;
   timestamp_nanos : Nat;
@@ -518,6 +522,7 @@ S = {
   canister_history: CanisterId ↦ CanisterHistory;
   canister_log_visibility: CanisterId ↦ CanisterLogVisibility;
   canister_snapshot_visibility: CanisterId ↦ CanisterSnapshotVisibility;
+  canister_status_visibility: CanisterId ↦ CanisterStatusVisibility;
   canister_logs: CanisterId ↦ [CanisterLog];
   query_stats: CanisterId ↦ [QueryStats];
   system_time : Timestamp
@@ -628,6 +633,7 @@ The initial state of the IC is
   canister_history = ();
   canister_log_visibility = ();
   canister_snapshot_visibility = ();
+  canister_status_visibility = ();
   canister_logs = ();
   query_stats = ();
   system_time = T;
@@ -801,7 +807,19 @@ liquid_balance(S, E.content.canister_id) ≥ 0
   E.content.arg = candid({canister_id = CanisterId, …})
   E.content.sender ∈ S.controllers[CanisterId] ∪ S.subnet_admins[S.canister_subnet[CanisterId]]
   E.content.method_name ∈
-    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_status", "canister_metrics" }
+    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_metrics" }
+) ∨ (
+  E.content.canister_id = ic_principal
+  E.content.arg = candid({canister_id = CanisterId, …})
+  (E.content.sender ∈ S.subnet_admins[S.canister_subnet[CanisterId]])
+    or
+    (S.canister_status_visibility[CanisterId] = Public)
+    or
+    (S.canister_status_visibility[CanisterId] = Controllers and E.content.sender ∈ S.controllers[CanisterId])
+    or
+    (S.canister_status_visibility[CanisterId] = AllowedViewers Principals and (E.content.sender ∈ S.controllers[CanisterId] or E.content.sender ∈ Principals))
+  E.content.method_name ∈
+    { "canister_status" }
 ) ∨ (
   E.content.canister_id = ic_principal
   E.content.sender ∈ S.subnet_admins[S.canister_subnet[ECID]]
@@ -1745,6 +1763,11 @@ if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
   New_canister_snapshot_visibility = Controllers
+
+if A.settings.status_visibility is not null:
+  New_canister_status_visibility = A.settings.status_visibility
+else:
+  New_canister_status_visibility = Controllers
 ```
 
 State after  
@@ -1774,6 +1797,7 @@ S' = S with
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
+    canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
@@ -1916,6 +1940,8 @@ S' = S with
       canister_log_visibility[A.canister_id] = A.settings.log_visibility
     if A.settings.snapshot_visibility is not null:
       canister_snapshot_visibility[A.canister_id] = A.settings.snapshot_visibility
+    if A.settings.status_visibility is not null:
+      canister_status_visibility[A.canister_id] = A.settings.status_visibility
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin
@@ -1927,7 +1953,8 @@ S' = S with
 
 #### IC Management Canister: Canister status
 
-The controllers of a canister can obtain detailed information about the canister.
+Detailed information about a canister can be obtained by the callers permitted by the canister's `canister_status_visibility` setting.
+The canister itself and subnet admins can always obtain this information, regardless of the setting.
 
 Given a state `S` and `Canister_id`, we define
 
@@ -1991,7 +2018,13 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'canister_status'
 M.arg = candid(A)
-M.caller ∈ S.controllers[A.canister_id] ∪ {A.canister_id} ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+(M.caller ∈ {A.canister_id} ∪ S.subnet_admins[S.canister_subnet[A.canister_id]])
+  or
+  (S.canister_status_visibility[A.canister_id] = Public)
+  or
+  (S.canister_status_visibility[A.canister_id] = Controllers and M.caller ∈ S.controllers[A.canister_id])
+  or
+  (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (M.caller ∈ S.controllers[A.canister_id] or M.caller ∈ Principals))
 
 ```
 
@@ -2033,7 +2066,13 @@ is_effective_canister_id(E.content, ECID)
 S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
 Q.arg = candid(A)
 A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-Q.sender ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+(Q.sender ∈ S.subnet_admins[S.canister_subnet[A.canister_id]])
+  or
+  (S.canister_status_visibility[A.canister_id] = Public)
+  or
+  (S.canister_status_visibility[A.canister_id] = Controllers and Q.sender ∈ S.controllers[A.canister_id])
+  or
+  (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (Q.sender ∈ S.controllers[A.canister_id] or Q.sender ∈ Principals))
 
 ```
 
@@ -2942,6 +2981,7 @@ S with
     canister_history[A.canister_id] = (deleted)
     canister_log_visibility[A.canister_id] = (deleted)
    canister_snapshot_visibility[A.canister_id] = (deleted)
+    canister_status_visibility[A.canister_id] = (deleted)
     canister_logs[A.canister_id] = (deleted)
     query_stats[A.canister_id] = (deleted)
     chunk_store[A.canister_id] = (deleted)
@@ -3182,6 +3222,11 @@ if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
   New_canister_snapshot_visibility = Controllers
+
+if A.settings.status_visibility is not null:
+  New_canister_status_visibility = A.settings.status_visibility
+else:
+  New_canister_status_visibility = Controllers
 ```
 
 State after  
@@ -3209,6 +3254,7 @@ S' = S with
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
+    canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
     query_stats[CanisterId] = []
     messages = Older_messages · Younger_messages ·
@@ -4191,6 +4237,8 @@ S with
   canister_log_visibility[Canister_id] = (deleted)
   canister_snapshot_visibility[New_canister_id] = S.canister_snapshot_visibility[Canister_id]
   canister_snapshot_visibility[Canister_id] = (deleted)
+  canister_status_visibility[New_canister_id] = S.canister_status_visibility[Canister_id]
+  canister_status_visibility[Canister_id] = (deleted)
   canister_logs[New_canister_id] = S.canister_logs[Canister_id]
   canister_logs[Canister_id] = (deleted)
   query_stats[New_canister_id] = S.query_stats[Canister_id]
