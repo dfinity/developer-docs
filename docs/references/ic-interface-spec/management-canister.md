@@ -934,7 +934,7 @@ This method can only be called by external users via non-replicated (query) call
 
 Given a canister ID as input, this method returns a vector of logs of that canister including its trap messages.
 The canister logs are *not* collected in canister methods running in non-replicated mode (NRQ, TQ, CQ, CRy, CRt, CC, and F modes, as defined in [Overview of imports](./canister-interface.md#system-api-imports)) and the canister logs are *purged* when the canister is reinstalled or uninstalled.
-The total size of all returned logs does not exceed the value `log_memory_limit` in canister settings.
+The total size of all returned logs does not exceed an implementation-defined constant chosen so as not to exceed the maximum response size.
 Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
 Logs persist across canister upgrades and they are deleted if the canister is reinstalled or uninstalled.
 
