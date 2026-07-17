@@ -3838,7 +3838,6 @@ canister_logs(S, Canister_id, filter) =
       the longest prefix Older_logs of Selected_logs
         such that canister_log_memory_usage(Older_logs) ≤ max_response_size
 max_response_size = <implementation-specific>
-fetch_canister_logs_cost(S, Canister_id) = <implementation-specific>
 is_sender_authorized(S, Canister_id, Sender) =
   (S[Canister_id].canister_log_visibility = Public)
   or
@@ -3862,7 +3861,6 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'fetch_canister_logs'
 M.arg = candid(A)
-fetch_canister_logs_cost(S, A.canister_id) <= M.transferred_cycles
 is_sender_authorized(S, A.canister_id, M.caller)
 
 ```
@@ -3876,7 +3874,7 @@ S with
       ResponseMessage {
         origin = M.origin
         response = candid(canister_logs(S, A.canister_id, A.filter))
-        refunded_cycles = M.transferred_cycles - fetch_canister_logs_cost(S, A.canister_id)
+        refunded_cycles = M.transferred_cycles
       }
 
 ```
