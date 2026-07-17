@@ -958,8 +958,6 @@ When the logs selected for the response do not all fit within a single response,
 - An **unfiltered** read trims the **oldest** log records, so the response ends with the newest log record. This surfaces the most recent activity.
 - A **filtered** read trims the **newest** log records, so the response starts with the oldest log record satisfying the filter. This lets a filtered read page forward through logs starting from the beginning of the requested range.
 
-Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls).
-
 :::warning
 
 The response of a query comes from a single replica, and is therefore not appropriate for security-sensitive applications.
