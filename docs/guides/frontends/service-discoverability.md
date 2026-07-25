@@ -195,7 +195,9 @@ curl -s https://APP/.well-known/ic-architecture | jq '.canisters[].id'
 
 # 3. If you pin a CUSTOM derivation origin, it is published in its own file as the
 #    canonical https://host. An absent file means the default (https://APP).
-curl -s https://APP/.well-known/ii-derivation-origin || echo "default (https://APP)"
+#    Use -f so a 404 is treated as an error and the fallback fires (curl -s alone
+#    exits 0 on 404, so the "default" branch would never run).
+curl -sf https://APP/.well-known/ii-derivation-origin || echo "default (https://APP)"
 ```
 
 End to end: an agent given only `https://APP` resolves the backend ID first (labeled with its role), reads `getApiDoc` to learn behavior, queries data apps via OQL, and, to act as the user, derives the user's principal against the app's declared derivation origin. All of that happens without a human supplying an ID or guessing which origin the user's principal comes from.
