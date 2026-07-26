@@ -145,7 +145,9 @@ This dedicated file, not the composition manifest, is the authoritative forward 
 
 If you use the default (the app's own origin), omit the file. Its absence means "derive for the app origin itself." Serve it with no file extension and exempt `/.well-known/*` from the SPA catch-all, exactly as for the manifest. Generate it at deploy time when the origin is a per-network canister URL.
 
-**What a well-behaved agent does with it.** It fetches `/.well-known/ii-derivation-origin` (falling back to the app origin itself when the file is absent), signs the delegation for that canonical origin, and echoes back both the origin it derived for and the app URL it was asked about with every identity result. An origin mismatch is then visible at a glance instead of hiding behind a plausible-looking principal.
+**Who reads this file, and when.** The agent (or the connector acting for it) reads it: the same consumer that reads the other `/.well-known` files in this guide, not the Internet Identity frontend. It fetches `/.well-known/ii-derivation-origin` directly, out of band, the way `curl` would, before it constructs the delegation. This is not a browser request made during an interactive login, so it does not depend on CORS or any special response headers: like every discovery file here, the file is public and served as plain text. If the file is absent, the agent falls back to the app origin itself.
+
+**What the agent does with it.** It signs the delegation for that canonical origin, then returns both the origin it derived for and the app URL it was asked about alongside the resulting principal. Surfacing both, rather than the principal alone, is what makes an origin mismatch visible at a glance instead of hiding behind a plausible-looking principal. (This is a report in the agent's own result, not a console log the app can see.)
 
 ## Precedence and who produces what
 
