@@ -66,21 +66,10 @@ This is the way an app declares its composition. It expresses the full set (not 
 **Serving rules:**
 
 - Serve it at exactly `/.well-known/ic-architecture`, at the origin, with no file extension. The IC's `.well-known` discovery files omit extensions by convention (compare `ic-domains` and `ii-alternative-origins`), even when, as here, the content is JSON.
-- Serve real JSON with `Content-Type: application/json`. The most common failure is a single-page-app catch-all returning `index.html` for unknown paths. Exempt `/.well-known/*` from the SPA rewrite in your asset canister configuration.
+- Serve real JSON with `Content-Type: application/json`. The most common failure is a single-page-app catch-all returning `index.html` for unknown paths. Exempt `/.well-known/*` from the SPA rewrite wherever your frontend is served.
 - Generate it at deploy time. Canister IDs differ per network (local, staging, mainnet), so the file must be produced by the deploy pipeline (which already knows the IDs) rather than committed with hard-coded values.
 
-To serve `/.well-known/*` from an asset canister, add a rule to `.ic-assets.json5` so the hidden directory is included, exactly as for the `ic-domains` file:
-
-```json5
-[
-  {
-    "match": ".well-known",
-    "ignore": false
-  }
-]
-```
-
-See [Asset canister](asset-canister.md#ic-assetsjson5) for SPA aliasing configuration, and [Custom domains](custom-domains.md#step-2-create-the-ic-domains-file) for the same `.well-known` pattern applied to domain ownership.
+The exact configuration depends on how you host the frontend; the requirement is only that `/.well-known/*` is served as a static file, not rewritten to `index.html`. If you serve assets from an asset canister, see [Asset canister](asset-canister.md#ic-assetsjson5) for including the hidden `.well-known` directory and configuring SPA aliasing, and [Custom domains](custom-domains.md#step-2-create-the-ic-domains-file) for the same `.well-known` pattern applied to domain ownership.
 
 :::note
 This is a proposed convention. There is no standard way today for an app to enumerate the multiple canisters it comprises: existing signals identify only a single "main" canister. The goal is exactly one documented way to declare composition.
