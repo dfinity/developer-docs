@@ -13,11 +13,11 @@ Paste this into your AI coding agent:
 Fetch https://skills.internetcomputer.org/llms.txt and follow its instructions when building on ICP
 ```
 
-Your agent fetches the skills index, reads each skill's description, and loads the relevant skill files on demand. No installation is required to get started; installing skills into a project is covered below.
+Your agent fetches the skills index, reads each skill's description, and loads the relevant skill files on demand, so it produces correct ICP code right away with nothing to install. When you use that prompt, the agent then offers to set up how your project keeps using skills going forward (fetch on demand, pin, or auto-update) and runs whatever the chosen option needs. Those options are described below, and you can also apply them yourself.
 
 ### Install skills into your project
 
-Fetching on demand (above) needs no setup. To make skills part of a project instead, choose one of two installs:
+Fetching on demand (above) needs no install and is the default. To make skills a committed part of a project instead, the agent offers to pin them or enable auto-updates when you follow the prompt above, and runs the setup for you. You can also do it manually:
 
 **Pin them (any agent).** Version-lock skills into your repo with the `skills` CLI:
 
