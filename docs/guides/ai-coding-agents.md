@@ -13,7 +13,7 @@ Paste this into your AI coding agent:
 Fetch https://skills.internetcomputer.org/llms.txt and follow its instructions when building on ICP
 ```
 
-Your agent fetches the skills index, reads each skill's description, and loads the relevant skill files on demand — no installation required to get started. Installing skills into a project is covered below.
+Your agent fetches the skills index, reads each skill's description, and loads the relevant skill files on demand. No installation is required to get started; installing skills into a project is covered below.
 
 ### Install skills into your project
 
