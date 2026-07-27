@@ -3,7 +3,7 @@ title: "AI coding agents"
 description: "ICP skills are agent-readable instruction files that teach AI coding agents how to build correctly on the Internet Computer."
 ---
 
-AI coding agents frequently hallucinate canister IDs, use deprecated APIs, and miss ICP-specific constraints. ICP skills solve this: structured markdown files containing accurate canister IDs, tested code patterns, and documented pitfalls: so your agent writes correct ICP code on the first attempt.
+AI coding agents frequently hallucinate canister IDs, use deprecated APIs, and miss ICP-specific constraints. ICP skills solve this: structured markdown files containing accurate canister IDs, tested code patterns, and documented pitfalls, so your agent writes correct ICP code on the first attempt.
 
 ## Getting started
 
@@ -55,14 +55,17 @@ ICP skills follow the [Agent Skills open standard](https://agentskills.io/specif
 
 ## How discovery works
 
-When an agent follows the `skills.internetcomputer.org/llms.txt` instructions:
+However skills are set up, the pattern is the same: the agent matches your task to a skill by its description, follows that skill, and prefers its guidance over general knowledge when both cover the same topic. What differs is where the skill content comes from.
 
-1. It fetches the skills index at `https://skills.internetcomputer.org/.well-known/skills/index.json`
-2. It reads each skill's name and description to understand what it covers
-3. When a task matches a skill's description, it fetches the skill content from that skill's URL
-4. It prefers skill guidance over general knowledge when both cover the same topic
+**On-demand (the default).** Following the `llms.txt` prompt, the agent:
 
-Fetched this way, skills are always the latest version. A pinned install uses the version locked in `skills-lock.json` instead; autosync refreshes to the latest on every session.
+1. fetches the skills index at `https://skills.internetcomputer.org/.well-known/skills/index.json`
+2. reads each skill's name and description to understand what it covers
+3. fetches the matching skill's `SKILL.md` from its URL when a task fits
+
+Fetched this way, skills are always the latest version.
+
+**Pinned or autosync.** The skills already live in the agent's skills directory (installed by `npx skills` or the autosync hook), so the agent discovers and loads them natively without fetching each time. Pinned uses the versions locked in `skills-lock.json`; autosync refreshes to the latest each session.
 
 ## Skills vs docs
 
