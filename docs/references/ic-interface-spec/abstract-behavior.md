@@ -3385,6 +3385,7 @@ S' = S with
     reserved_balances[A.canister_id] = New_reserved_balance
 
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -4068,6 +4069,7 @@ State after
 
 S with
     canisters[CanisterId] = EmptyCanister
+    last_install_timestamp[Canister_id] = (deleted)
     snapshots[CanisterId] = null
     certified_data[CanisterId] = ""
     canister_history[CanisterId] = {
@@ -4160,6 +4162,10 @@ State after
 S with
   canisters[New_canister_id] = S.canisters[Canister_id]
   canisters[Canister_id] = (deleted)
+  canister_creation_timestamp[New_canister_id] = S.canister_creation_timestamp[Canister_id]
+  canister_creation_timestamp[Canister_id] = (deleted)
+  last_install_timestamp[New_canister_id] = S.last_install_timestamp[Canister_id]
+  last_install_timestamp[Canister_id] = (deleted)
   snapshots[New_canister_id] = {}
   snapshots[Canister_id] = (deleted)
   controllers[New_canister_id] = S.controllers[Canister_id]
