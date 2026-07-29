@@ -2647,6 +2647,7 @@ State after
 
 S with
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -2937,6 +2938,8 @@ S with
     canister_version[A.canister_id] = (deleted)
     canister_subnet[A.canister_id] = (deleted)
     time[A.canister_id] = (deleted)
+    canister_creation_timestamp[A.canister_id] = (deleted)
+    last_install_timestamp[A.canister_id] = (deleted)
     global_timer[A.canister_id] = (deleted)
     balances[A.canister_id] = (deleted)
     reserved_balances[A.canister_id] = (deleted)
@@ -2944,6 +2947,7 @@ S with
     minimum_incoming_canister_call_cycles[A.canister_id] = (deleted)
     wasm_memory_limit[A.canister_id] = (deleted)
     wasm_memory_threshold[A.canister_id] = (deleted)
+    environment_variables[A.canister_id] = (deleted)
     on_low_wasm_memory_hook_status[A.canister_id] = (deleted)
     certified_data[A.canister_id] = (deleted)
     canister_history[A.canister_id] = (deleted)
