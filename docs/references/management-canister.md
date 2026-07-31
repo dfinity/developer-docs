@@ -559,6 +559,24 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
   - `num_blocks_proposed_total` (`nat64`)
   - `num_block_failures_total` (`nat64`)
 
+### `subnet_metrics`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns subnet-wide metrics for the subnet hosting the calling canister. Every field except `block_height` reports the same quantity that the certified state tree exposes at `/subnet/<subnet_id>/metrics`; this method makes those quantities available to canisters, which cannot read the state tree.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`): must be the subnet hosting the caller
+- **Returns:**
+  - `block_height` (`nat`): height of the block whose batch contains the call
+  - `num_canisters` (`nat`): canisters currently on the subnet
+  - `canister_state_bytes` (`nat`): current total size of canister state in bytes
+  - `consumed_cycles_total` (`nat`): total cycles removed from circulation on the subnet
+  - `update_transactions_total` (`nat`): total transactions processed on the subnet
+
+`consumed_cycles_total` and `update_transactions_total` are counters; `num_canisters` and `canister_state_bytes` are current values.
+
 ### `subnet_info`
 
 Returns metadata about a subnet.
