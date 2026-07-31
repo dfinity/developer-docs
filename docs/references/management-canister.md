@@ -563,13 +563,13 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
 
 > This API is **experimental** and may change in a non-backward-compatible way.
 
-Returns subnet-wide metrics for the subnet hosting the calling canister. Every field except `block_height` reports the same quantity that the certified state tree exposes at `/subnet/<subnet_id>/metrics`; this method makes those quantities available to canisters, which cannot read the state tree.
+Returns subnet-wide metrics for a given subnet, which does not have to be the subnet hosting the caller. Every field except `certified_height` reports the same quantity that the certified state tree exposes at `/subnet/<subnet_id>/metrics`; this method makes those quantities available to canisters, which cannot read the state tree.
 
 - **Caller:** Canisters only
 - **Parameters:**
-  - `subnet_id` (`principal`): must be the subnet hosting the caller
+  - `subnet_id` (`principal`): any subnet
 - **Returns:**
-  - `block_height` (`nat`): height of the block whose batch contains the call
+  - `certified_height` (`nat`): height of the subnet's latest certified state. Lags the subnet's latest state, since certification lags execution.
   - `num_canisters` (`nat`): canisters currently on the subnet
   - `canister_state_bytes` (`nat`): current total size of canister state in bytes
   - `consumed_cycles_total` (`nat`): total cycles removed from circulation on the subnet

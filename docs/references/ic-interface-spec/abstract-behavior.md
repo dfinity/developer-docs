@@ -3064,7 +3064,7 @@ The subnet metrics management canister API is considered EXPERIMENTAL. Canister 
 
 :::
 
-The management canister returns subnet-wide metrics for the subnet hosting the calling canister. The definition of the metrics values
+The management canister returns subnet-wide metrics given a subnet ID. The definition of the metrics values
 is not captured in this formal semantics.
 
 Conditions
@@ -3076,7 +3076,6 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'subnet_metrics'
 M.arg = candid(A)
-A.subnet_id = S.canister_subnet[M.caller]
 R = <implementation-specific>
 
 ```

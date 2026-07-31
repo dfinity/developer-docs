@@ -759,23 +759,28 @@ The subnet metrics management canister API is considered EXPERIMENTAL. Canister 
 
 :::
 
-Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance. The subnet ID must be the subnet that hosts the calling canister; calls specifying any other subnet ID are rejected with reject code `CANISTER_REJECT`.
+Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance. The subnet ID does not have to be the subnet that hosts the calling canister.
 
-<!-- Needs human verification: whether an implementation can serve metrics for a subnet other than the one hosting the caller, or whether the restriction stated above is required. -->
+All fields except `certified_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
 
-All fields except `block_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
+In the following, *the subnet* refers to the subnet identified by the `subnet_id` argument. The fields returned are:
 
-The fields returned are:
+- `certified_height` (`nat`): the height of the latest state of the subnet for which the subnet has produced a certificate (see [Certification](./certification.md#certification)). Heights are consecutive numbers identifying the successive states of a subnet. This specification does not otherwise model state heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
 
-- `block_height` (`nat`): the height of the block whose batch contains this call. The value is deterministic, i.e., it is a property of the block rather than of the node executing the call. It is monotonically non-decreasing for a given subnet, but it may jump if the subnet is recovered and it is not guaranteed to count from the subnet's first block.
+    The value is monotonically non-decreasing for a given subnet, but it may jump if the subnet is recovered, and it is not guaranteed to count from the subnet's first state. Note that the latest certified height is lower than the height of the subnet's latest state, because certification lags execution.
 
-- `num_canisters` (`nat`): the number of canisters currently on this subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
+    All nodes of the subnet executing the call must return the same value, i.e., the value must not be derived from a single node's local view.
 
-- `canister_state_bytes` (`nat`): the total size in bytes of the state currently taken by canisters on this subnet. This is a current value, not a counter.
+    <!-- Needs human verification: the deterministic source of this value (e.g. a height agreed by consensus rather than a node-local variable), for both the local-subnet and the cross-subnet case. -->
 
-- `consumed_cycles_total` (`nat`): the total number of cycles removed from circulation on this subnet by all current and deleted canisters. Note that this aggregate is not the same quantity as the `burned_cycles` field of [`canister_metrics`](#ic-canister_metrics), which only reports cycles a canister burned explicitly via `ic0.cycles_burn`.
 
-- `update_transactions_total` (`nat`): the total number of transactions processed on this subnet.
+- `num_canisters` (`nat`): the number of canisters currently on the subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
+
+- `canister_state_bytes` (`nat`): the total size in bytes of the state currently taken by canisters on the subnet. This is a current value, not a counter.
+
+- `consumed_cycles_total` (`nat`): the total number of cycles removed from circulation on the subnet by all current and deleted canisters. Note that this aggregate is not the same quantity as the `burned_cycles` field of [`canister_metrics`](#ic-canister_metrics), which only reports cycles a canister burned explicitly via `ic0.cycles_burn`.
+
+- `update_transactions_total` (`nat`): the total number of transactions processed on the subnet.
 
 <!-- Needs human verification: whether num_canisters and canister_state_bytes are current values (as described above) or accumulated counters. The state tree description of canister_state_bytes at index.md says "since this subnet was created", which reads as a counter. -->
 
