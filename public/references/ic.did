@@ -441,9 +441,9 @@ type subnet_metrics_args = record {
 };
 
 type subnet_metrics_result = record {
-    // Height of the latest state of the subnet for which the subnet has
-    // produced a certificate.
-    certified_height : nat;
+    // Current block height of the subnet, i.e. the height of the block in
+    // whose execution this call is processed.
+    block_height : nat;
     // Current number of canisters on the subnet.
     num_canisters : nat;
     // Current total size in bytes of the state taken by canisters on the subnet.

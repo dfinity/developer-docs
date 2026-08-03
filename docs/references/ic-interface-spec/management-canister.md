@@ -761,18 +761,15 @@ The subnet metrics management canister API is considered EXPERIMENTAL. Canister 
 
 Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance.
 
-All fields except `certified_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
+All fields except `block_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
 
 In the following, *the subnet* refers to the subnet identified by the `subnet_id` argument. The fields returned are:
 
-- `certified_height` (`nat`): the height of the latest state of the subnet for which the subnet has produced a certificate (see [Certification](./certification.md#certification)). Heights are consecutive numbers identifying the successive states of a subnet. This specification does not otherwise model state heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
+- `block_height` (`nat`): the current block height of the subnet, i.e., the height of the block in whose execution this call is processed.
 
-    The value is monotonically non-decreasing for a given subnet, but it may jump if the subnet is recovered, and it is not guaranteed to count from the subnet's first state. Note that the latest certified height is lower than the height of the subnet's latest state, because certification lags execution.
+    Heights are consecutive numbers identifying the successive blocks of a subnet. This specification does not otherwise model block heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
 
-    All nodes of the subnet executing the call must return the same value, i.e., the value must not be derived from a single node's local view.
-
-    <!-- Needs human verification: the deterministic source of this value (e.g. a height agreed by consensus rather than a node-local variable), for both the local-subnet and the cross-subnet case. -->
-
+    The value is deterministic, i.e., it is a property of the block in whose execution the call is processed rather than of the node executing it, so all nodes of the subnet return the same value. It is monotonically non-decreasing for a given subnet, but it may jump if the subnet is recovered, and it is not guaranteed to count from the subnet's first block.
 
 - `num_canisters` (`nat`): the number of canisters currently on the subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
 
