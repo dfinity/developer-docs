@@ -8,8 +8,7 @@ sidebar:
 
 ## Changelog {#changelog}
 
-<!-- Needs human verification: assign the next spec version and release date when this feature ships (dfinity/ic#10667). -->
-### Unreleased
+### 0.65.0 (2026-08-03) {$0_65_0}
 * New canister setting `status_visibility` controlling who can read a canister's status via the
   `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,
   `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
