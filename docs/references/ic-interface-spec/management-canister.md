@@ -779,8 +779,6 @@ In the following, *the subnet* refers to the subnet identified by the `subnet_id
 
 - `update_transactions_total` (`nat`): the total number of transactions processed on the subnet, i.e., the total number of messages executed in the replicated mode.
 
-<!-- Needs human verification: whether num_canisters and canister_state_bytes are current values (as described above) or accumulated counters. The state tree description of canister_state_bytes at index.md says "since this subnet was created", which reads as a counter. -->
-
 The counter fields `consumed_cycles_total` and `update_transactions_total` accumulate since the subnet was created, or since the respective metric was introduced for subnets that predate it.
 
 ### IC method `subnet_info` {#ic-subnet_info}
