@@ -102,6 +102,8 @@ icp canister logs <canister-name> -e ic --since-index 100 --until-index 200
 
 Timestamp and index filters cannot be combined with `--follow`.
 
+Filtering also changes which records are dropped when the selected logs exceed the response size. An unfiltered read trims the oldest records, so it returns the most recent logs (the output ends with the newest record). A filtered read trims the newest records instead, so it returns the oldest records that match the filter (the output starts with the oldest matching record), which lets you page forward through a range by advancing the start of the filter.
+
 To output logs as JSON for programmatic processing:
 
 ```bash
