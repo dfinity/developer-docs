@@ -759,7 +759,7 @@ The subnet metrics management canister API is considered EXPERIMENTAL. Canister 
 
 :::
 
-Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance. The subnet ID does not have to be the subnet that hosts the calling canister.
+Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance.
 
 All fields except `certified_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
 
