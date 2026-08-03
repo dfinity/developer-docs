@@ -769,7 +769,7 @@ In the following, *the subnet* refers to the subnet identified by the `subnet_id
 
     Heights are consecutive numbers identifying the successive blocks of a subnet. This specification does not otherwise model block heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
 
-    The value is deterministic, i.e., it is a property of the block in whose execution the call is processed rather than of the node executing it, so all nodes of the subnet return the same value. It is monotonically non-decreasing for a given subnet, but it may jump if the subnet is recovered, and it is not guaranteed to count from the subnet's first block.
+    The value is monotonically non-decreasing for a given subnet.
 
 - `num_canisters` (`nat`): the number of canisters currently on the subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
 
