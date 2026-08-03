@@ -28,6 +28,7 @@ Several methods accept or return a `canister_settings` record. The fields are:
 | `wasm_memory_threshold` | `nat` | `0` | Remaining Wasm memory threshold that triggers the low-memory hook |
 | `log_visibility` | `log_visibility` | `controllers` | Who can read canister logs: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `snapshot_visibility` | `snapshot_visibility` | `controllers` | Who can list and read canister snapshots: `controllers`, `public`, or `allowed_viewers(vec principal)` |
+| `status_visibility` | `status_visibility` | `controllers` | Who can read the canister status: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `environment_variables` | `opt record` | `null` | Key-value pairs accessible during canister execution |
 
 For practical guidance on configuring these, see the [canister settings guide](../guides/canister-management/settings.md).
@@ -118,7 +119,7 @@ Removes a canister's code and state, making it empty. Outstanding calls are reje
 
 Returns detailed information about a canister: status, settings, module hash, cycle balance, memory usage, and query statistics.
 
-- **Caller:** Controllers, the canister itself, or subnet admins (canisters or external users; also available as a query call)
+- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -133,6 +134,8 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `reserved_cycles` (`nat`): reserved cycle balance
   - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
   - `query_stats`: query call statistics (total calls, instructions, request/response bytes)
+
+By default, only controllers can read a canister's status. The `status_visibility` setting relaxes this: set it to `public` to let anyone read the status, or `allowed_viewers` to grant access to a specific list of up to 10 principals (in addition to the controllers). The canister itself and subnet admins can always read the status regardless of this setting.
 
 ### `canister_metrics`
 
