@@ -124,6 +124,6 @@ Every field, with the optional ones filled in:
 ## Next steps
 
 - [Internet Identity](internet-identity.md): how applications send users into this flow.
-- [Verifiable credentials](verifiable-credentials.md): issue signed attestations about users from a canister.
+- [`@icp-sdk/auth` reference](https://js.icp.build): the client library applications use to start it.
 
 <!-- Upstream: informed by internet-identity src/internet_identity/src/openid/sso.rs -->
