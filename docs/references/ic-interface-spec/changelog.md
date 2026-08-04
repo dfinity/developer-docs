@@ -8,12 +8,18 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.65.0 (2026-07-31) {$0_65_0}
+### 0.66.0 (2026-08-17) {$0_66_0}
 * New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
   given subnet: the current block height, the number of canisters, the total canister
   state size, the total cycles consumed, and the total number of processed transactions.
   All fields except the block height were previously only readable by external users via
   the certified state tree path `/subnet/<subnet_id>/metrics`. The API is EXPERIMENTAL.
+
+### 0.65.0 (2026-08-03) {$0_65_0}
+* New canister setting `status_visibility` controlling who can read a canister's status via the
+  `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,
+  `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
+  to the controllers. The canister itself and subnet admins can always read the status.
 
 ### 0.64.0 (2026-07-06) {$0_64_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests

@@ -119,6 +119,17 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: `controllers`.
 
+-   `status_visibility` (`status_visibility`)
+
+    Controls who can access the canister's status through the `canister_status` endpoint of the management canister. Can be one of:
+    - `controllers`: Only the canister's controllers can read its status
+    - `public`: Anyone can read the canister's status
+    - `allowed_viewers` (`vec principal`): Only principals in the provided list and the canister's controllers can read its status, the maximum length of the list is 10
+
+    Regardless of this setting, subnet admins and the canister itself can always read the canister's status.
+
+    Default value: `controllers`.
+
 -   `wasm_memory_threshold` (`nat`)
 
     Must be a number between 0 and 2<sup>48</sup>, inclusively, and indicates the threshold on the remaining wasm memory size of the canister in bytes:
@@ -264,6 +275,8 @@ Indicates various information about the canister. It contains:
 
     -   The visibility of the canister's snapshots.
 
+    -   The visibility of the canister's status.
+
     -   The WASM heap memory limit of the canister in bytes (the value of `0` means that there is no explicit limit).
 
     -   The "low wasm memory" threshold, which is used to determine when the [canister_on_low_wasm_memory](./canister-interface.md#on-low-wasm-memory) function is executed.
@@ -292,7 +305,13 @@ Indicates various information about the canister. It contains:
 
     * `response_payload_bytes_total`: the total number of query and composite query response payload (reply data or reject message) bytes.
 
-Only the controllers of the canister or the canister itself or subnet admins can request its status.
+Who can request a canister's status is governed by the `status_visibility` field of `canister_settings` and can be one of the following variants:
+
+- `controllers`: only the canister's controllers can request the status (default);
+- `public`: everyone can request the status;
+- `allowed_viewers` (`vec principal`): only principals in the provided list and the canister's controllers can request the status, the maximum length of the list is 10.
+
+Regardless of this setting, the canister itself and subnet admins can always request the canister's status.
 
 #### Memory Metrics {#ic-canister_status-memory_metrics}
 
