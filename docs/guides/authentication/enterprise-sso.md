@@ -53,7 +53,7 @@ That is the whole setup. On **id.ai**, staff choose **Sign in with SSO**, enter 
 
 ### How long a sign-in lasts
 
-Add `"session_max_age_seconds"` to cap how long a sign-in stays valid. Once that much time has passed since a member of staff authenticated, they authenticate against your IdP again:
+A sign-in stays valid for eight hours. Once that much time has passed since a member of staff authenticated, they authenticate against your IdP again. Set `"session_max_age_seconds"` to choose a different length:
 
 ```json
 {
@@ -63,9 +63,9 @@ Add `"session_max_age_seconds"` to cap how long a sign-in stays valid. Once that
 }
 ```
 
-Eight hours (`28800`) covers a working day, so staff re-authenticate at most daily. The ceiling is 30 days (`2592000`).
+The default of eight hours (`28800`) covers a working day, so staff re-authenticate at most daily. The ceiling is 30 days (`2592000`).
 
-Applications choose their own session length as well, and this value caps it: an application asking for 30 days on a domain that allows eight hours gets eight hours. Leave the field out and the application's own choice applies.
+Applications choose their own session length as well, and this value caps it: an application asking for 30 days on a domain that allows eight hours gets eight hours.
 
 ## 3. Gate access per app (optional)
 
@@ -150,7 +150,7 @@ Every field, with the optional ones filled in:
 | Field | Default | Purpose |
 |-------|---------|---------|
 | `name` | the domain | Label shown on the sign-in screen |
-| `session_max_age_seconds` | unset | How long a sign-in stays valid before staff authenticate again |
+| `session_max_age_seconds` | `28800` (eight hours) | How long a sign-in stays valid before staff authenticate again |
 | `app_clients` | none | Maps an application's origin, or a salted hash of it, to the client that governs it |
 | `gate_all_apps` | `false` | Refuse applications that are not listed in `app_clients` |
 | `stable_identifier_claim` | `sub` | The claim that identifies the same person across your clients |
