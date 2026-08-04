@@ -160,7 +160,7 @@ if (await isValidSsoDomain(domainInput.value, controller.signal)) {
 
 Call `controller.abort()` when the input changes. An aborted check rejects instead of returning `false`, so a superseded check is never read as an invalid domain. The check also never resolves in under 750 ms, which keeps a partially typed domain from flashing an error on every keystroke.
 
-For what an organization publishes to make this flow work, see [Single sign-on](single-sign-on.md).
+For what an organization publishes to make this flow work, see [Enterprise SSO](enterprise-sso.md).
 
 ### Create an authenticated agent
 
@@ -663,7 +663,7 @@ For full details, see the [Internet Identity specification](../../references/int
 
 ## Next steps
 
-- [Single sign-on](single-sign-on.md) for connecting an organization's own OpenID provider, from the administrator's side
+- [Enterprise SSO](enterprise-sso.md) for connecting an organization's own OpenID provider, from the administrator's side
 - [Wallet integration](../digital-assets/wallet-integration.md) for token-based authentication alternatives
 - [Frontend frameworks](../frontends/frameworks.md) for framework-specific auth setup patterns
 - [Internet Identity specification](../../references/internet-identity-spec.md) for protocol details and the full alternative origins spec

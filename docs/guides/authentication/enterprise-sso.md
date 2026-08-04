@@ -1,6 +1,6 @@
 ---
-title: "Single sign-on"
-description: "Connect your company SSO to Internet Computer applications: register an OIDC client, publish one file on your domain, and optionally gate access app by app."
+title: "Enterprise SSO"
+description: "Connect your company's OpenID Connect provider to Internet Computer applications: register an OIDC client, publish one file on your domain, and optionally gate access app by app."
 sidebar:
   order: 2
 ---
@@ -29,7 +29,7 @@ Copy down the `client_id`, for example `0oaDEFAULT`. You need it in step 2.
 
 Serve a file over HTTPS at exactly this path on your company domain:
 
-```
+```text
 https://acme.com/.well-known/ii-openid-configuration
 ```
 
