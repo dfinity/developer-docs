@@ -69,15 +69,25 @@ Repeat these three steps for each application you want to gate.
 }
 ```
 
-To refuse any application that is not listed, add `"gate_all_apps": true`.
-
-Some providers issue a different `sub` for the same person in each OIDC client. Where that is the case, sign-ins through a per-app client would look like a different person, so name a claim that stays stable across your clients with `"stable_identifier_claim"`. It defaults to `sub`, which is correct when your provider's `sub` is already the same in every client.
-
 <!-- Needs human verification: identity-provider-specific settings are not verifiable from ICP sources -->
 
 :::note[Entra ID]
-Set **Assignment required** to **Yes**. It defaults to **No**, which opens the app to your whole tenant. Entra ID also identifies users by `oid` rather than `sub`, so add `"stable_identifier_claim": "oid"` to the file.
+Set **Assignment required** to **Yes** on the per-app client. It defaults to **No**, which opens the app to your whole tenant.
 :::
+
+### Applications you have not listed
+
+By default, an application missing from `app_clients` falls back to the organization's client from step 1, so staff can sign in to it like any other. Set `"gate_all_apps": true` to refuse those sign-ins instead, and staff visiting an unlisted application are told your organization has not granted it access.
+
+Use `true` when the list is meant to be exhaustive, so a new application cannot be signed in to until you have added it deliberately.
+
+### Providers that issue a per-client subject
+
+This applies only once an application has a client of its own.
+
+Some providers, Entra ID among them, issue a different `sub` for the same person in each OIDC client. Sign-ins through the per-app client would then look like a different person from sign-ins through the organization's client. Set `"stable_identifier_claim"` to a claim that stays the same across your clients: on Entra ID that is `oid`.
+
+It defaults to `sub`, which is correct when your provider's `sub` is already the same in every client.
 
 ### Hiding an app name
 
