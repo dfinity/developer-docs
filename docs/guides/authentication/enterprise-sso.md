@@ -53,8 +53,6 @@ That is the whole setup. On **id.ai**, staff choose **Sign in with SSO**, enter 
 
 ### How long a sign-in lasts
 
-<!-- Needs human verification: session_max_age_seconds is pending implementation in Internet Identity; do not publish before it ships -->
-
 Add `"session_max_age_seconds"` to cap how long a sign-in stays valid. Once that much time has passed since a member of staff authenticated, they authenticate against your IdP again:
 
 ```json
