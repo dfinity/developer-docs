@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { unified } from "@astrojs/markdown-remark";
 import rehypeRewriteLinks from "./plugins/rehype-rewrite-links.mjs";
 import rehypeExternalLinks from "./plugins/rehype-external-links.mjs";
 import remarkIcpCliVersion from "./plugins/remark-icp-cli-version.mjs";
@@ -16,10 +17,15 @@ import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
 export default defineConfig({
   site: "https://docs.internetcomputer.org",
   markdown: {
+    // Astro 7 defaults to the Sätteri processor; `unified()` opts back into the
+    // remark/rehype pipeline these plugins need. Top-level `markdown.remarkPlugins`
+    // and `markdown.rehypePlugins` are deprecated in favour of this.
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
-    rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
-    remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML, remarkIncludeFile],
+    processor: unified({
+      rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
+      remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML, remarkIncludeFile],
+    }),
   },
   integrations: [
     starlight({
