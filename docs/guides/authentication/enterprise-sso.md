@@ -57,9 +57,11 @@ By default your staff can sign in to any Internet Computer application with the 
 
 Repeat these three steps for each application you want to gate.
 
+<!-- Needs human verification: the provider-specific settings in this section are not verifiable from ICP sources -->
+
 **a. Add a client for the app.** Register a second OIDC client, identical settings to step 1. Copy its `client_id`, for example `0oaPAYROLL`.
 
-**b. Assign who is allowed.** That client → **Assignments** → add the groups or users. This assignment is the access rule: assigned staff sign in as normal, anyone else is stopped by your IdP.
+**b. Assign who is allowed.** That client → **Assignments** → add the groups or users. This assignment is the access rule: assigned staff sign in as normal, anyone else is stopped by your IdP. On Entra ID, set **Assignment required** to **Yes** on the client as well. It defaults to **No**, which leaves the app open to your whole tenant.
 
 **c. Map the app to it.** Add one `app_clients` line to the file from step 2, keyed by the application's origin:
 
@@ -68,12 +70,6 @@ Repeat these three steps for each application you want to gate.
   "https://payroll.acme.com": "0oaPAYROLL"
 }
 ```
-
-<!-- Needs human verification: identity-provider-specific settings are not verifiable from ICP sources -->
-
-:::note[Entra ID]
-Set **Assignment required** to **Yes** on the per-app client. It defaults to **No**, which opens the app to your whole tenant.
-:::
 
 ### Applications you have not listed
 
