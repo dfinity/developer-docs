@@ -51,6 +51,24 @@ Serve it with `Access-Control-Allow-Origin: *` so applications can check the dom
 
 That is the whole setup. On **id.ai**, staff choose **Sign in with SSO**, enter **acme.com** as their company domain, then authenticate against your IdP.
 
+### How long a sign-in lasts
+
+<!-- Needs human verification: session_max_age_seconds is pending implementation in Internet Identity; do not publish before it ships -->
+
+Add `"session_max_age_seconds"` to cap how long a sign-in stays valid. Once that much time has passed since a member of staff authenticated, they authenticate against your IdP again:
+
+```json
+{
+  "client_id": "0oaDEFAULT",
+  "openid_configuration": "https://acme.okta.com/.well-known/openid-configuration",
+  "session_max_age_seconds": 28800
+}
+```
+
+Eight hours (`28800`) covers a working day, so staff re-authenticate at most daily. The ceiling is 30 days (`2592000`).
+
+Applications choose their own session length as well, and this value caps it: an application asking for 30 days on a domain that allows eight hours gets eight hours. Leave the field out and the application's own choice applies.
+
 ## 3. Gate access per app (optional)
 
 By default your staff can sign in to any Internet Computer application with the client from step 1, and your provider's assignment rules for that client apply everywhere. To govern one application on its own, give it a client of its own.
@@ -124,15 +142,23 @@ Every field, with the optional ones from step 3 filled in:
     "https://payroll.acme.com": "0oaPAYROLL",
     "https://board.acme.com": "0oaBOARD"
   },
+  "session_max_age_seconds": 28800,
+
+  "app_clients": {
+    "https://payroll.acme.com": "0oaPAYROLL",
+    "https://board.acme.com": "0oaBOARD"
+  },
   "gate_all_apps": false,
   "stable_identifier_claim": "sub"
 }
 ```
 
-The first three fields switch on SSO for the organization. The rest control access per app:
+`client_id` and `openid_configuration` are required. The rest are optional:
 
 | Field | Default | Purpose |
 |-------|---------|---------|
+| `name` | the domain | Label shown on the sign-in screen |
+| `session_max_age_seconds` | unset | How long a sign-in stays valid before staff authenticate again |
 | `app_clients` | none | Maps an application's origin, or a salted hash of it, to the client that governs it |
 | `gate_all_apps` | `false` | Refuse applications that are not listed in `app_clients` |
 | `stable_identifier_claim` | `sub` | The claim that identifies the same person across your clients |
