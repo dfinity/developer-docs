@@ -8,6 +8,19 @@ sidebar:
 
 # Motoko compiler changelog
 
+## 1.13.0 (2026-08-03)
+
+* motoko (`moc`)
+
+  * feat: import a local Candid file as a types-only Motoko module via the `idl:` URI scheme —
+    `import S "idl:foo.did"` exposes `S.Self` (the service actor type) and named
+    Candid types, PascalCased when unambiguous (e.g. `user_id` → `S.UserId`). No principal or
+    `--actor-idl` flags required (#6263).
+
+  * chore: multi-value Wasm codegen is now always on;
+    `--(no-)experimental-multi-value` are kept for CLI compatibility but have
+    no effect (#6266).
+
 ## 1.12.0 (2026-07-30)
 
 * motoko (`moc`)
