@@ -128,20 +128,14 @@ Internet Identity matches the key by hashing the origin of whichever application
 
 ## The complete file
 
-Every field, with the optional ones from step 3 filled in:
+Every field, with the optional ones filled in:
 
 ```json
 {
   "client_id": "0oaDEFAULT",
   "openid_configuration": "https://acme.okta.com/.well-known/openid-configuration",
   "name": "Acme Corp",
-
-  "app_clients": {
-    "https://payroll.acme.com": "0oaPAYROLL",
-    "https://board.acme.com": "0oaBOARD"
-  },
   "session_max_age_seconds": 28800,
-
   "app_clients": {
     "https://payroll.acme.com": "0oaPAYROLL",
     "https://board.acme.com": "0oaBOARD"
