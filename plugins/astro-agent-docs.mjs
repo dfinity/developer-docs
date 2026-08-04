@@ -38,7 +38,21 @@ function deriveSections(items, parentLabel = "", depth = 0) {
   const sections = [];
 
   for (const item of items) {
-    if (item.autogenerate) {
+    // Starlight >= 0.39 nests autogenerate configs inside `items`, moving the
+    // label onto the parent group. Unwrap a group whose only child is an
+    // unlabelled autogenerate node so the group's label is still used for the
+    // section — otherwise the label resolves to `undefined`.
+    const nestedAutogenerate =
+      item.items?.length === 1 &&
+      item.items[0].autogenerate &&
+      !item.items[0].label
+        ? item.items[0].autogenerate
+        : null;
+    if (nestedAutogenerate) {
+      const label =
+        parentLabel && depth > 1 ? `${parentLabel} — ${item.label}` : item.label;
+      sections.push({ dir: nestedAutogenerate.directory, label });
+    } else if (item.autogenerate) {
       // Leaf with a directory — direct mapping.
       // Only prefix the parent label for items nested 2+ levels deep
       // (e.g. "Motoko — Fundamentals") but not for direct children of
