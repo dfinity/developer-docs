@@ -71,6 +71,8 @@ Repeat these three steps for each application you want to gate.
 
 To refuse any application that is not listed, add `"gate_all_apps": true`.
 
+Some providers issue a different `sub` for the same person in each OIDC client. Where that is the case, sign-ins through a per-app client would look like a different person, so name a claim that stays stable across your clients with `"stable_identifier_claim"`. It defaults to `sub`, which is correct when your provider's `sub` is already the same in every client.
+
 <!-- Needs human verification: identity-provider-specific settings are not verifiable from ICP sources -->
 
 :::note[Entra ID]
@@ -104,7 +106,7 @@ Internet Identity matches the key by hashing the origin of whichever application
 
 ## The complete file
 
-Every field, with the optional ones filled in:
+Every field, with the optional ones from step 3 filled in:
 
 ```json
 {
@@ -120,6 +122,14 @@ Every field, with the optional ones filled in:
   "stable_identifier_claim": "sub"
 }
 ```
+
+The first three fields switch on SSO for the organization. The rest control access per app:
+
+| Field | Default | Purpose |
+|-------|---------|---------|
+| `app_clients` | none | Maps an application's origin, or a salted hash of it, to the client that governs it |
+| `gate_all_apps` | `false` | Refuse applications that are not listed in `app_clients` |
+| `stable_identifier_claim` | `sub` | The claim that identifies the same person across your clients |
 
 ## Next steps
 
