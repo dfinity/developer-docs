@@ -3096,6 +3096,44 @@ S with
 
 ```
 
+#### IC Management Canister: Subnet Metrics
+
+:::note
+
+The subnet metrics management canister API is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
+
+:::
+
+The management canister returns subnet-wide metrics given a subnet ID. The definition of the metrics values
+is not captured in this formal semantics.
+
+Conditions
+
+```html
+
+S.messages = Older_messages · CallMessage M · Younger_messages
+(M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
+M.callee = ic_principal
+M.method_name = 'subnet_metrics'
+M.arg = candid(A)
+R = <implementation-specific>
+
+```
+
+State after
+
+```html
+
+S with
+    messages = Older_messages · Younger_messages ·
+      ResponseMessage {
+        origin = M.origin
+        response = Reply (candid(R))
+        refunded_cycles = M.transferred_cycles
+      }
+
+```
+
 #### IC Management Canister: Subnet information
 
 The management canister returns subnet metadata given a subnet ID.
