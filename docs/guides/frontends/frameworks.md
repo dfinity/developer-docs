@@ -2,7 +2,7 @@
 title: "Frontend frameworks"
 description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using the asset canister and icp-cli"
 sidebar:
-  order: 4
+  order: 5
 ---
 
 ICP hosts frontend applications as asset [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed to the network and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
