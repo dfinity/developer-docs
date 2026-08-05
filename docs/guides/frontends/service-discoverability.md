@@ -110,15 +110,12 @@ execute : (text) -> (Result) query;  // one JSON query object -> rows
 
 `execute` takes one JSON query object (filters, aggregation, ordering, projection, paging) and returns a paged `Result`:
 
-<!-- Needs human verification: OQL Result cell value type (text vs a typed variant) -->
 ```candid
-type Result = record {
-  hasMore : bool;
-  rows    : vec vec record { name : text; value : text };  // each row is a list of named cells
-};
+type Cell   = record { name : text; value : variant { ... } };  // value tagged by its scalar type
+type Result = record { hasMore : bool; rows : vec vec Cell };    // each row is a list of named cells
 ```
 
-Agents read cells by name, never by position, and page while `hasMore` is true. Prefer server-side filtering and aggregation so only the needed data crosses into the agent's context. Any Candid interface works; OQL just makes open-ended questions more economical.
+Each cell carries its column `name` and a `value` that is a type-tagged variant (text, integer, and so on), so agents read cells by name, never by position, and page while `hasMore` is true. Prefer server-side filtering and aggregation so only the needed data crosses into the agent's context. Any Candid interface works; OQL just makes open-ended questions more economical.
 
 ## Layer 5: Acting as the user
 
