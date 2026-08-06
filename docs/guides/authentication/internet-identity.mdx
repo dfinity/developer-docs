@@ -129,6 +129,39 @@ const authClient = new AuthClient({
 
 The rest of the flow (`signIn`, `getIdentity`, `signOut`) is unchanged.
 
+### One-click SSO sign-in
+
+To send the user to their organization's own OpenID provider instead, pass `ssoDomain` with the organization's domain. Internet Identity resolves the provider from a configuration file the organization publishes on that domain, so nothing has to be registered on either side:
+
+```javascript
+const authClient = new AuthClient({
+  identityProvider: getIdentityProviderUrl(),
+  ssoDomain: "acme.com",
+});
+```
+
+`openIdProvider` and `ssoDomain` are mutually exclusive. Each picks a different provider for the same sign-in, so setting both throws.
+
+If the domain comes from the user rather than your own configuration, validate it first. `isValidSsoDomain` checks that the domain is well-formed and that it publishes an SSO configuration:
+
+```javascript
+import { isValidSsoDomain } from "@icp-sdk/auth/client";
+
+const controller = new AbortController();
+
+if (await isValidSsoDomain(domainInput.value, controller.signal)) {
+  const authClient = new AuthClient({
+    identityProvider: getIdentityProviderUrl(),
+    ssoDomain: domainInput.value,
+  });
+  await authClient.signIn();
+}
+```
+
+Call `controller.abort()` when the input changes. An aborted check rejects instead of returning `false`, so a superseded check is never read as an invalid domain. The check also never resolves in under 750 ms, which keeps a partially typed domain from flashing an error on every keystroke.
+
+For what an organization publishes to make this flow work, see [Enterprise SSO](enterprise-sso.md).
+
 ### Create an authenticated agent
 
 After sign-in, create an `HttpAgent` using the delegation identity. The agent signs all subsequent canister calls with the user's delegated key:
@@ -232,6 +265,19 @@ const attributesPromise = authClient.requestAttributes({
   nonce: noncePromise,
 });
 ```
+
+#### SSO-scoped attributes
+
+Attributes work the same way for an SSO sign-in, scoped to the organization's domain instead of a provider issuer:
+
+```typescript
+const attributesPromise = authClient.requestAttributes({
+  keys: scopedKeys({ ssoDomain: "acme.com", keys: ["name", "email"] }),
+  nonce: noncePromise,
+});
+```
+
+They arrive in the bundle as `sso:acme.com:name` and `sso:acme.com:email`. Only those two keys are available: `verified_email` is not, because Internet Identity has no basis to confirm that a user has access to an address asserted by another organization's provider.
 
 ## Backend authentication
 
@@ -617,6 +663,7 @@ For full details, see the [Internet Identity specification](../../references/int
 
 ## Next steps
 
+- [Enterprise SSO](enterprise-sso.md) for connecting an organization's own OpenID provider, from the administrator's side
 - [Wallet integration](../digital-assets/wallet-integration.md) for token-based authentication alternatives
 - [Frontend frameworks](../frontends/frameworks.md) for framework-specific auth setup patterns
 - [Internet Identity specification](../../references/internet-identity-spec.md) for protocol details and the full alternative origins spec
