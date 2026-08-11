@@ -606,7 +606,7 @@ liquid_balance(S, A) =
 
 The reasoning behind this is that resource payments first drain the reserved balance and only when the reserved balance gets to zero, they start draining the main balance.
 
-The amount of cycles that need to be reserved after operations that allocate resources is modeled with an unspecified function `cycles_to_reserve(S, CanisterId, compute_allocation, memory_allocation, snapshots, CanState)` that depends on the old IC state, the id of the canister, the new allocations of the canister, the snapshots of the canister, and the new state of the canister.
+The amount of cycles that need to be reserved after operations that allocate resources is modeled with an unspecified function `cycles_to_reserve(S, CanisterId, compute_allocation, memory_allocation, log_memory_limit, snapshots, CanState)` that depends on the old IC state, the id of the canister, the new allocations of the canister, the new log memory limit of the canister, the snapshots of the canister, and the new state of the canister.
 
 #### Initial state
 
@@ -1385,7 +1385,7 @@ if
   res.cycles_accepted ≤ Available
   (res.cycles_used + ∑ [ MAX_CYCLES_PER_RESPONSE + call.transferred_cycles | call ∈ res.new_calls ]) ≤
     (S.balances[M.receiver] + res.cycles_accepted + (if Is_response then MAX_CYCLES_PER_RESPONSE else MAX_CYCLES_PER_MESSAGE))
-  Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+  Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
   New_balance =
       (S.balances[M.receiver] + res.cycles_accepted + (if Is_response then MAX_CYCLES_PER_RESPONSE else MAX_CYCLES_PER_MESSAGE))
       - (res.cycles_used + ∑ [ MAX_CYCLES_PER_RESPONSE + call.transferred_cycles | call ∈ res.new_calls ])
@@ -1739,8 +1739,12 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = []
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
 
-Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, null, EmptyCanister.wasm_state)
+Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, null, EmptyCanister.wasm_state)
 New_balance = M.transferred_cycles - Cycles_reserved
 New_reserved_balance = Cycles_reserved
 New_reserved_balance <= New_reserved_balance_limit
@@ -1767,11 +1771,6 @@ if A.settings.log_visibility is not null:
   New_canister_log_visibility = A.settings.log_visibility
 else:
   New_canister_log_visibility = Controllers
-
-if A.settings.log_memory_limit is not null:
-  New_canister_log_memory_limit = A.settings.log_memory_limit
-else:
-  New_canister_log_memory_limit = 4096
 
 if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
@@ -1902,12 +1901,16 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = S.environment_variables[A.canister_id]
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = S.canister_log_memory_limit[A.canister_id]
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, New_compute_allocation, New_memory_allocation, S.snapshots[A.canister_id], S.canisters[A.canister_id].wasm_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, S.snapshots[A.canister_id], S.canisters[A.canister_id].wasm_state)
 New_balance = S.balances[A.canister_id] - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ New_reserved_balance_limit
-if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or Cycles_reserved > 0:
+if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or New_canister_log_memory_limit > S.canister_log_memory_limit[A.canister_id] or Cycles_reserved > 0:
   liquid_balance(S', A.canister_id) ≥ 0
 
 S.canister_history[A.canister_id] = {
@@ -1953,8 +1956,7 @@ S' = S with
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
     if A.settings.log_visibility is not null:
       canister_log_visibility[A.canister_id] = A.settings.log_visibility
-    if A.settings.log_memory_limit is not null:
-      canister_log_memory_limit[A.canister_id] = A.settings.log_memory_limit
+    canister_log_memory_limit[A.canister_id] = New_canister_log_memory_limit
     if A.settings.snapshot_visibility is not null:
       canister_snapshot_visibility[A.canister_id] = A.settings.snapshot_visibility
     if A.settings.status_visibility is not null:
@@ -2405,7 +2407,7 @@ Env = {
   canister_version = S.canister_version[A.canister_id] + 1;
 }
 Mod.init(A.canister_id, A.arg, M.caller, Env) = Return {new_state = New_state; new_certified_data = New_certified_data; new_global_timer = New_global_timer; cycles_used = Cycles_used;}
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -2570,7 +2572,7 @@ Env2 = Env with {
 
 Mod.post_upgrade(Persisted_state, A.arg, M.caller, Env2) = Return {new_state = New_state; new_certified_data = New_certified_data'; new_global_timer = New_global_timer; cycles_used = Cycles_used';}
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_used' - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3206,9 +3208,13 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = []
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
 
 
-Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, null, EmptyCanister.wasm_state)
+Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, null, EmptyCanister.wasm_state)
 if A.amount is not null:
   New_balance = A.amount - Cycles_reserved
 else:
@@ -3238,11 +3244,6 @@ if A.settings.log_visibility is not null:
   New_canister_log_visibility = A.settings.log_visibility
 else:
   New_canister_log_visibility = Controllers
-
-if A.settings.log_memory_limit is not null:
-  New_canister_log_memory_limit = A.settings.log_memory_limit
-else:
-  New_canister_log_memory_limit = 4096
 
 if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
@@ -3363,7 +3364,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3428,7 +3429,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, EmptyCanister)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, EmptyCanister)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3553,7 +3554,7 @@ if Snapshot.source = MetadataUpload and Snapshot.on_low_wasm_memory_hook_status 
 else:
   New_on_low_wasm_memory_hook_status = S.on_low_wasm_memory_hook_status[A.canister_id]
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3751,7 +3752,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3826,7 +3827,7 @@ else if A.kind = WasmChunk:
 New_snapshots = S.snapshots[A.canister_id] with
   Snapshot_id = New_snapshot
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
