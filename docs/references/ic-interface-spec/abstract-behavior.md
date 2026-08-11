@@ -1848,6 +1848,9 @@ To avoid clashes with potential user ids or is derived from users or canisters, 
 
 Only the controllers of the given canister can update the canister settings.
 
+Changing the value `log_memory_limit` resizes the store holding the canister logs, which consumes cycles.
+This cost is modeled by the (unspecified) variable `Cycles_used` that is zero unless the store is resized.
+
 Conditions  
 
 ```html
@@ -1907,10 +1910,10 @@ else:
   New_canister_log_memory_limit = S.canister_log_memory_limit[A.canister_id]
 
 Cycles_reserved = cycles_to_reserve(S, A.canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, S.snapshots[A.canister_id], S.canisters[A.canister_id].wasm_state)
-New_balance = S.balances[A.canister_id] - Cycles_reserved
+New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ New_reserved_balance_limit
-if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or New_canister_log_memory_limit > S.canister_log_memory_limit[A.canister_id] or Cycles_reserved > 0:
+if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or New_canister_log_memory_limit > S.canister_log_memory_limit[A.canister_id] or Cycles_used > 0 or Cycles_reserved > 0:
   liquid_balance(S', A.canister_id) ≥ 0
 
 S.canister_history[A.canister_id] = {
