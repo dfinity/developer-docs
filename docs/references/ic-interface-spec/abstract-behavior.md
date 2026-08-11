@@ -130,6 +130,7 @@ The [WebAssembly System API](./canister-interface.md#system-api) is relatively l
       memory_usage_canister_history : Nat;
       memory_usage_chunk_store : Nat;
       memory_usage_snapshots : Nat;
+      memory_usage_log_memory_store : Nat;
       freezing_threshold : Nat;
       subnet_id : Principal;
       subnet_size : Nat;
@@ -568,6 +569,8 @@ freezing_limit(compute_allocation, memory_allocation, freezing_threshold, memory
 ```
 
 The (unspecified) functions `memory_usage_wasm_state(wasm_state)`, `memory_usage_raw_module(raw_module)`, `memory_usage_canister_history(canister_history)`, `memory_usage_chunk_store(chunk_store)`, and `memory_usage_snapshots(snapshots)` determine the canister's memory usage in bytes consumed by its Wasm state, raw Wasm binary, canister history, chunk store, and snapshots, respectively.
+The (unspecified) function `memory_usage_log_memory_store(log_memory_limit)` determines the canister's memory usage in bytes consumed by the store holding its canister logs.
+This memory is reserved based on the value `log_memory_limit` in canister settings and thus does not depend on the canister logs actually stored (in particular, it is zero if and only if `log_memory_limit` is zero).
 
 The freezing limit of canister `A` in state `S` can be obtained as follows:
 ```
@@ -580,7 +583,8 @@ freezing_limit(S, A) =
       memory_usage_raw_module(S.canisters[A].raw_module) +
       memory_usage_canister_history(S.canister_history[A]) +
       memory_usage_chunk_store(S.chunk_store[A]) +
-      memory_usage_snapshots(S.snapshots[A]),
+      memory_usage_snapshots(S.snapshots[A]) +
+      memory_usage_log_memory_store(S.canister_log_memory_limit[A]),
     S.canister_subnet[A].subnet_size,
   )
 ```
@@ -848,6 +852,7 @@ liquid_balance(S, E.content.canister_id) ≥ 0
     memory_usage_canister_history = memory_usage_canister_history(S.canister_history[E.content.canister_id]);
     memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[E.content.canister_id]);
     memory_usage_snapshots = memory_usage_snapshots(S.snapshots[E.content.canister_id]);
+    memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[E.content.canister_id]);
     freezing_threshold = S.freezing_threshold[E.content.canister_id];
     subnet_id = S.canister_subnet[E.content.canister_id].subnet_id;
     subnet_size = S.canister_subnet[E.content.canister_id].subnet_size;
@@ -1319,6 +1324,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(S.canister_history[M.receiver]);
   memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[M.receiver]);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[M.receiver]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[M.receiver]);
   freezing_threshold = S.freezing_threshold[M.receiver];
   subnet_id = S.canister_subnet[M.receiver].subnet_id;
   subnet_size = S.canister_subnet[M.receiver].subnet_size;
@@ -1393,7 +1399,8 @@ if
       memory_usage_raw_module(S.canisters[M.receiver].raw_module) +
       memory_usage_canister_history(S.canister_history[M.receiver]) +
       memory_usage_chunk_store(S.chunk_store[M.receiver]) +
-      memory_usage_snapshots(S.snapshots[M.receiver]),
+      memory_usage_snapshots(S.snapshots[M.receiver]) +
+      memory_usage_log_memory_store(S.canister_log_memory_limit[M.receiver]),
     S.canister_subnet[M.receiver].subnet_size,
   )
   New_reserved_balance ≤ S.reserved_balance_limits[M.receiver]
@@ -1999,7 +2006,8 @@ canister_status(S, Canister_id) =
           memory_usage_raw_module(S.canisters[Canister_id].raw_module) +
           memory_usage_canister_history(S.canister_history[Canister_id]) +
           memory_usage_chunk_store(S.chunk_store[Canister_id]) +
-          memory_usage_snapshots(S.snapshots[Canister_id]),
+          memory_usage_snapshots(S.snapshots[Canister_id]) +
+          memory_usage_log_memory_store(S.canister_log_memory_limit[Canister_id]),
         S.freezing_threshold[Canister_id],
         S.canister_subnet[Canister_id].subnet_size,
       );
@@ -2388,6 +2396,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(New_canister_history);
   memory_usage_chunk_store = memory_usage_chunk_store(New_chunk_store);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[A.canister_id]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[A.canister_id]);
   freezing_threshold = S.freezing_threshold[A.canister_id];
   subnet_id = S.canister_subnet[A.canister_id].subnet_id;
   subnet_size = S.canister_subnet[A.canister_id].subnet_size;
@@ -2499,6 +2508,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(S.canister_history[A.canister_id]);
   memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[A.canister_id]);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[A.canister_id]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[A.canister_id]);
   freezing_threshold = S.freezing_threshold[A.canister_id];
   subnet_id = S.canister_subnet[A.canister_id].subnet_id;
   subnet_size = S.canister_subnet[A.canister_id].subnet_size;
@@ -4662,6 +4672,7 @@ composite_query_helper(S, Cycles, Depth, Root_canister_id, Caller, Caller_info_d
               memory_usage_canister_history = memory_usage_canister_history(S.canister_history[Canister_id]);
               memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[Canister_id]);
               memory_usage_snapshots = memory_usage_snapshots(S.snapshots[Canister_id]);
+              memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[Canister_id]);
               freezing_threshold = S.freezing_threshold[Canister_id];
               subnet_id = S.canister_subnet[Canister_id].subnet_id;
               subnet_size = S.canister_subnet[Canister_id].subnet_size;
@@ -5021,7 +5032,8 @@ liquid_balance(es) =
         es.params.sysenv.memory_usage_raw_module +
         es.params.sysenv.memory_usage_canister_history +
         es.params.sysenv.memory_usage_chunk_store +
-        es.params.sysenv.memory_usage_snapshots,
+        es.params.sysenv.memory_usage_snapshots +
+        es.params.sysenv.memory_usage_log_memory_store,
       es.params.sysenv.subnet_size,
     )
   )
