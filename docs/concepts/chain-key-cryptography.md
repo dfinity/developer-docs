@@ -17,7 +17,7 @@ This design has several consequences for developers:
 - **Certified data.** Canisters can set certified variables that the subnet signs at each block. Query responses that include these certificates are cryptographically authenticated, bridging the gap between fast queries and trusted updates. See [Certified data](certified-data.md) for the conceptual explanation and [Certified variables](../guides/backends/certified-variables.md) for the implementation guide.
 - **Verifiable randomness.** The threshold BLS scheme produces unique signatures: for a given message and key, only one valid signature exists. ICP exploits this property to generate unpredictable, unbiased random numbers that canisters can consume. See [Verifiable randomness](verifiable-randomness.md).
 - **Crosschain signing.** Canisters can request threshold ECDSA and Schnorr signatures, giving them the ability to control addresses and sign transactions on external chains. This is the foundation of [Chain Fusion](chain-fusion/index.md).
-- **Onchain encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making onchain encryption practical. See [VetKeys](vetkeys.md).
+- **Encryption.** VetKeys extend threshold cryptography to enable canisters to derive encryption keys on behalf of users, making encryption by network canisters practical. See [VetKeys](vetkeys.md).
 
 ## Core protocols
 
@@ -71,6 +71,8 @@ For ECDSA and BIP340, key derivation uses a generalized form of [BIP-32](https:/
 
 Derivation is transparent: it happens inside the protocol as part of the signing and public-key-retrieval APIs. You provide a derivation path and the protocol handles the rest.
 
+![Key derivation hierarchy: subnet master key → canister root key → child keys via BIP-32-style derivation path](/concepts/chain-key-cryptography/key_derivation.png)
+
 Because the derivation algorithm is deterministic and uses only public parameters (the master public key, the canister principal, and the derivation path), public key derivation can also be performed **offline**: no management canister call or network connection required. This is useful for building explorers, dashboards, or address-derivation tools that need a canister's public key or network address without a live ICP connection. See the [offline key derivation guide](../guides/chain-fusion/offline-key-derivation.md) for TypeScript and Rust libraries.
 
 <!-- ic-pub-key: the missing .d.ts issue (dfinity/ic-pub-key#197) is closed and fixed. Package may still move to the @icp-sdk/ namespace in a future release; update all references when that happens. -->
@@ -96,7 +98,7 @@ The following master keys are deployed at the time of writing. The Network Nervo
 
 Test keys are available for development and run on smaller subnets with lower signing costs. They should not be used for anything of value. Production keys run on high-replication subnets (34+ nodes) for stronger security guarantees. Each key is also reshared to a backup subnet for availability: if the signing subnet fails, the backup can take over without generating a new key.
 
-For signing costs, see [Cycles costs](../references/cycles-costs.md).
+For signing costs, see [Cycle costs](../references/cycle-costs.md#threshold-ecdsa-and-schnorr-signing).
 
 ## Supported chains
 
@@ -115,7 +117,7 @@ For more on how upgrades work at the protocol level, see [Chain evolution](evolu
 - [Chain Fusion](chain-fusion/index.md): how canisters use chain-key signatures to interact with other chains
 - [Certified data](certified-data.md): how the subnet's threshold BLS key enables certified query responses
 - [Ethereum integration](../guides/chain-fusion/ethereum.md): using threshold ECDSA with Ethereum and EVM chains
-- [VetKeys](vetkeys.md): a related cryptographic primitive for onchain encryption
+- [VetKeys](vetkeys.md): a related cryptographic primitive for network-enforced encryption
 - [Management canister reference](../references/management-canister.md): the threshold signing API
 
 <!-- Upstream: informed by dfinity/portal (docs/references/t-sigs-how-it-works.mdx, docs/building-apps/chain-fusion/overview.mdx, docs/building-apps/chain-fusion/supported-chains.mdx); informed by Learn Hub articles "Chain-Key Cryptography", "Subnet Keys and Subnet Signatures", "Chain-Key Signatures" (migrated, source retired) -->

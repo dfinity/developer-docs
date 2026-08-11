@@ -70,7 +70,7 @@ See the [HTTPS outcalls guide](../backends/https-outcalls.md) for more details.
 
 ### Security concern
 
-The pricing of HTTPS outcalls is determined by the size of the HTTP request and the maximal response size, among other variables. Thus, if big requests are made, this could quickly drain the canister's cycles balance. This can be risky in scenarios where HTTPS outcalls are triggered by user actions (rather than a heartbeat or timer invocation).
+The [pricing](../../references/cycle-costs.md#https-outcalls) of HTTPS outcalls is determined by the size of the HTTP request and the maximal response size, among other variables. Thus, if big requests are made, this could quickly drain the canister's cycles balance. This can be risky in scenarios where HTTPS outcalls are triggered by user actions (rather than a heartbeat or timer invocation).
 
 ### Recommendation
 
@@ -80,7 +80,7 @@ When making an HTTPS outcall, it is possible (and highly recommended) to define 
 
 Finally, be aware that users may incur cycles costs for HTTPS outcalls in case these calls can be triggered by user actions.
 
-See the [cycles costs reference](../../references/cycles-costs.md) for pricing details.
+See the [cycles costs reference](../../references/cycle-costs.md) for pricing details.
 
 ## Perform input validation in HTTPS outcalls
 

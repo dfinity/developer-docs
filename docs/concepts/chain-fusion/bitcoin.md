@@ -69,7 +69,7 @@ Both endpoints return `Passed` or `Failed`. The canister itself is controlled by
 
 ## Chain-key Bitcoin (ckBTC)
 
-ckBTC is an asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely onchain.
+ckBTC is an asset on ICP backed 1:1 by real bitcoin. 1 ckBTC can always be redeemed for 1 BTC and vice versa. Unlike wrapped assets, ckBTC relies on no third-party custodian: the bitcoin is held by a canister-controlled address on the Bitcoin network, and the minting and burning happen entirely on the network.
 
 ckBTC transactions settle in seconds with minimal fees, making it practical for high-frequency or low-value transfers that would be uneconomical on Bitcoin directly.
 

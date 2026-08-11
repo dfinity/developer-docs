@@ -1,0 +1,611 @@
+# =============================================================================
+# Section 2 — building-apps/getting-started
+# =============================================================================
+/building-apps/getting-started/quick-start/              /getting-started/quickstart/                 301
+/building-apps/getting-started/install                 /getting-started/quickstart/                 301
+/building-apps/getting-started/tokens-and-cycles       /concepts/cycles/                            301
+/building-apps/getting-started/troubleshooting         /guides/canister-management/troubleshooting/ 301
+/building-apps/getting-started/                        /getting-started/quickstart/                 301
+/building-apps/getting-started                         /getting-started/quickstart/                 301
+/building-apps/                                        /getting-started/quickstart/                 301
+/building-apps                                         /getting-started/quickstart/                 301
+
+# =============================================================================
+# Section 3 — building-apps/essentials → concepts
+# =============================================================================
+/building-apps/essentials/network-overview             /concepts/network-overview/                  301
+/building-apps/essentials/canisters                    /concepts/canisters/                         301
+/building-apps/essentials/gas-cost                     /references/cycle-costs/                     301
+/building-apps/essentials/message-execution            /concepts/canisters/#execution-model         301
+/building-apps/essentials/*                            /concepts/                                   301
+
+# =============================================================================
+# Section 4 — building-apps/developing-canisters
+# =============================================================================
+/building-apps/developing-canisters/create             /guides/canister-management/lifecycle/#create-a-canister  301
+/building-apps/developing-canisters/deploy             /guides/canister-management/lifecycle/#deploy-build-create-install   301
+/building-apps/developing-canisters/deploy-specific-subnet  /guides/canister-management/subnet-selection  301
+/building-apps/developing-canisters/custom-networks    https://cli.internetcomputer.org/0.2/guides/containerized-networks/#advanced-custom-images  301
+/building-apps/developing-canisters/what-are-canisters /concepts/canisters/                         301
+/building-apps/developing-canisters/*                  /guides/canister-management/lifecycle/       301
+
+# =============================================================================
+# Section 5 — building-apps/canister-management
+# =============================================================================
+/building-apps/canister-management/settings            /guides/canister-management/settings/                               301
+/building-apps/canister-management/upgrade             /guides/canister-management/lifecycle/#upgrade-a-canister           301
+/building-apps/canister-management/topping-up          /guides/canister-management/cycles-management/#topping-up-canisters 301
+/building-apps/canister-management/cycles-wallet       https://cli.internetcomputer.org/0.2/migration/from-dfx/#replacing-the-dfx-wallet-canister  301
+/building-apps/canister-management/resource-limits     /references/resource-limits/                 301
+/building-apps/canister-management/storage             /guides/canister-management/settings/        301
+/building-apps/canister-management/history             /guides/canister-management/lifecycle/#canister-history            301
+/building-apps/canister-management/snapshots           /guides/canister-management/snapshots/       301
+/building-apps/canister-management/large-wasm          /guides/canister-management/large-wasm/      301
+/building-apps/canister-management/reproducible-builds /guides/canister-management/reproducible-builds/  301
+/building-apps/canister-management/canister-history    /guides/canister-management/lifecycle/#canister-history            301
+/building-apps/canister-management/canister-recovery   /guides/canister-management/snapshots/       301
+/building-apps/canister-management/trapping            /guides/canister-management/lifecycle/#trapping-and-error-handling  301
+/building-apps/canister-management/*                   /guides/canister-management/lifecycle/       301
+
+# =============================================================================
+# Section 6 — building-apps/security
+# =============================================================================
+/building-apps/security/overview                              /guides/security/overview/                          301
+/building-apps/security/inter-canister-calls                  /guides/security/inter-canister-calls/              301
+/building-apps/security/principals-and-identities             /guides/security/identity-and-access-management/   301
+/building-apps/security/data-integrity-and-authenticity       /guides/security/data-integrity-and-authenticity/  301
+/building-apps/security/data-storage                          /guides/security/data-storage/                     301
+/building-apps/security/dos-prevention                        /guides/security/dos-prevention/                   301
+/building-apps/security/https-outcalls                        /guides/security/https-outcalls/                   301
+/building-apps/security/canister-upgrades                     /guides/security/canister-upgrades/                301
+/building-apps/security/canister-control                      /guides/security/canister-control/                 301
+/building-apps/security/misc                                  /guides/security/miscellaneous/                    301
+/building-apps/security/security-best-practices/*             /guides/security/overview/                         301
+/building-apps/security/*                                     /guides/security/overview/                         301
+
+# =============================================================================
+# Section 7 — building-apps/frontends
+# =============================================================================
+/building-apps/frontends/using-an-asset-canister              /guides/frontends/asset-canister/        301
+/building-apps/frontends/uploading-serving-assets             /guides/frontends/asset-canister/        301
+/building-apps/frontends/custom-domains/using-custom-domains  /guides/frontends/custom-domains/        301
+/building-apps/frontends/custom-domains/dns-setup             /guides/frontends/custom-domains/        301
+/building-apps/frontends/custom-domains/                      /guides/frontends/custom-domains/        301
+/building-apps/frontends/custom-domains                       /guides/frontends/custom-domains/        301
+/building-apps/frontends/*                                    /guides/frontends/asset-canister/        301
+
+# =============================================================================
+# Section 8 — building-apps/authentication
+# =============================================================================
+/building-apps/authentication/integrate-internet-identity     /guides/authentication/internet-identity/#frontend-integration  301
+/building-apps/authentication/internet-identity/integration   /guides/authentication/internet-identity/#frontend-integration  301
+/building-apps/authentication/overview                        /guides/authentication/internet-identity/                       301
+/building-apps/authentication/alternative-origins             /guides/authentication/internet-identity/#alternative-origins   301
+/building-apps/authentication/independently-verifying-ic-signatures  /guides/security/identity-and-access-management/  301
+/building-apps/authentication/*                               /guides/authentication/internet-identity/  301
+
+# =============================================================================
+# Section 9 — building-apps/governing-apps
+# =============================================================================
+/building-apps/governing-apps/nns/nns-integration                                         /404.html  410
+/building-apps/governing-apps/nns/governance                                              https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/nns-app-quickstart                   https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/nns-dapp-staking-a-neuron            https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/nns-dapp-send-and-receive-tokens     https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/nns-dapp-following-other-neurons     https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/nns-dapp-advanced-neuron-operations  https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/using-the-nns-dapp/*                                    https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/nns/concepts/proposals/*                                    /guides/governance/launching/                     301
+/building-apps/governing-apps/nns/*                                                       https://internetcomputer.org/network/governance/  301
+/building-apps/governing-apps/testing/testing-before-launch                               /guides/governance/testing/    301
+/building-apps/governing-apps/tokenomics/preparation                                      /guides/governance/launching/  301
+/building-apps/governing-apps/tokenomics/                                                 /guides/governance/launching/  301
+/building-apps/governing-apps/tokenomics                                                  /guides/governance/launching/  301
+/building-apps/governing-apps/launching/launch-steps-1proposal                            /guides/governance/launching/  301
+/building-apps/governing-apps/launching/*                                                 /guides/governance/launching/  301
+/building-apps/governing-apps/*                                                           /guides/governance/launching/  301
+
+# =============================================================================
+# Section 10 — building-apps/chain-fusion
+# =============================================================================
+/building-apps/chain-fusion/ethereum/evm-rpc/overview         /guides/chain-fusion/ethereum/         301
+/building-apps/chain-fusion/ethereum/evm-rpc/*                /guides/chain-fusion/ethereum/         301
+/building-apps/chain-fusion/ethereum/*                        /guides/chain-fusion/ethereum/         301
+/building-apps/chain-fusion/bitcoin/*                         /guides/chain-fusion/bitcoin/          301
+/building-apps/chain-fusion/overview                          /concepts/chain-fusion/                301
+/building-apps/chain-fusion/*                                 /guides/chain-fusion/bitcoin/          301
+
+# =============================================================================
+# Section 11 — building-apps/network-features
+# =============================================================================
+/building-apps/network-features/using-http/https-outcalls/overview          /guides/backends/https-outcalls/  301
+/building-apps/network-features/using-http/http-certification/*             /guides/frontends/certification/  301
+/building-apps/network-features/using-http/*                                /guides/backends/https-outcalls/  301
+/building-apps/network-features/https-outcalls                              /guides/backends/https-outcalls/  301
+/building-apps/network-features/periodic-tasks-timers                       /guides/backends/timers.          301
+/building-apps/network-features/signatures/independently-verifying-ic-signatures  /guides/security/identity-and-access-management/  301
+/building-apps/network-features/vetkeys/*                                   /concepts/vetkeys/               301
+/building-apps/network-features/encryption/*                                /concepts/vetkeys/               301
+/building-apps/network-features/*                                           /concepts/#canisters--capabilities  301
+
+# =============================================================================
+# Section 12 — building-apps/developer-tools
+# dfx/dfxvm → icp-cli migration guide; CLI reference → icp-cli site
+# =============================================================================
+/building-apps/developer-tools/dfx/*                https://cli.internetcomputer.org/0.2/migration/from-dfx/  301
+/building-apps/developer-tools/dfxvm/*              https://cli.internetcomputer.org/0.2/migration/from-dfx/  301
+/building-apps/developer-tools/advanced-dfx/*       https://cli.internetcomputer.org/0.2/migration/from-dfx/  301
+/building-apps/developer-tools/icp-ninja            /getting-started/quick-start/                      301
+/building-apps/developer-tools/dev-tools-overview   /developer-tools/#command-line-tools             301
+/building-apps/developer-tools/cdks/rust/*          /languages/rust/                                 301
+/building-apps/developer-tools/cdks/                /languages/                                      301
+/building-apps/developer-tools/cdks                 /languages/                                      301
+/building-apps/developer-tools/*                    /developer-tools/                                301
+
+# =============================================================================
+# Section 13 — building-apps/interact-with-canisters
+# =============================================================================
+/building-apps/interact-with-canisters/candid/candid-concepts        /guides/canister-calls/candid/        301
+/building-apps/interact-with-canisters/candid/using-candid/          /guides/canister-calls/candid/        301
+/building-apps/interact-with-canisters/candid/*                      /guides/canister-calls/candid/        301
+/building-apps/interact-with-canisters/agents/overview               /guides/canister-calls/calling-from-clients/  301
+/building-apps/interact-with-canisters/agents/javascript-agent       /guides/canister-calls/calling-from-clients/  301
+/building-apps/interact-with-canisters/agents/*                      /guides/canister-calls/calling-from-clients/  301
+/building-apps/interact-with-canisters/advanced-calls                /guides/canister-calls/inter-canister-calls/  301
+/building-apps/interact-with-canisters/using-third-party-canisters/* /guides/canister-calls/inter-canister-calls/  301
+/building-apps/interact-with-canisters/*                             /guides/canister-calls/candid/        301
+
+# =============================================================================
+# Section 14 — building-apps/advanced and best-practices
+# =============================================================================
+/building-apps/advanced/optimize/motoko              /languages/motoko/                                301
+/building-apps/advanced/optimize/rust                /languages/rust/                                  301
+/building-apps/advanced/using-third-party-canisters  /guides/canister-calls/inter-canister-calls/      301
+/building-apps/advanced/*                            /guides/canister-management/lifecycle/            301
+/building-apps/best-practices/general                /guides/security/overview/                        301
+/building-apps/best-practices/reproducible-builds    /guides/canister-management/reproducible-builds/  301
+/building-apps/best-practices/*                      /guides/security/overview/                        301
+
+# =============================================================================
+# Section 15 — Motoko
+# =============================================================================
+
+# Motoko base/core library — moved to mops.one
+/motoko/base/*                   https://mops.one/base/docs/  301
+/motoko/main/base/*              https://mops.one/base/docs/  301
+/current/motoko/main/base/*      https://mops.one/base/docs/  301
+/motoko/core/*                   https://mops.one/core/docs/  301
+
+# Motoko top-level aliases
+/motoko/home                     /languages/motoko/                               301
+/motoko/install                  /getting-started/quickstart/                     301
+/motoko/language-manual          /languages/motoko/reference/language-manual/     301
+/motoko/compiler-ref             /languages/motoko/reference/compiler-ref/        301
+/motoko/style                    /languages/motoko/reference/style-guide/         301
+/motoko/version                  /getting-started/quickstart/                     301
+
+# Motoko fundamentals sub-paths restructured in portal
+/motoko/fundamentals/actors-async    /languages/motoko/fundamentals/actors/actors-async/        301
+/motoko/fundamentals/state           /languages/motoko/fundamentals/actors/state/               301
+/motoko/fundamentals/messaging       /languages/motoko/fundamentals/actors/messaging/           301
+/motoko/fundamentals/data-persistence  /languages/motoko/fundamentals/actors/data-persistence/  301
+/motoko/fundamentals/garbage-collection  /languages/motoko/reference/compiler-ref/              301
+/motoko/fundamentals/compiler-ref    /languages/motoko/reference/compiler-ref/                  301
+/motoko/fundamentals/language-manual /languages/motoko/reference/language-manual/               301
+/motoko/fundamentals/style           /languages/motoko/reference/style-guide/                   301
+/motoko/fundamentals/async-actors    /languages/motoko/fundamentals/actors/actors-async/        301
+
+# Orthogonal persistence
+/motoko/orthogonal-persistence/modes     /languages/motoko/fundamentals/actors/orthogonal-persistence/    301
+/motoko/orthogonal-persistence/enhanced  /languages/motoko/fundamentals/actors/orthogonal-persistence/enhanced/  301
+/motoko/orthogonal-persistence/classical /languages/motoko/fundamentals/actors/orthogonal-persistence/classical/ 301
+/motoko/orthogonal-persistence/*         /languages/motoko/fundamentals/actors/orthogonal-persistence/    301
+
+# Motoko tooling
+/motoko/motoko-tooling/canpack       /developer-tools/  301
+/motoko/motoko-tooling/mo-doc        /developer-tools/  301
+/motoko/motoko-tooling/dev-containers  /developer-tools/  301
+/motoko/motoko-tooling/motoko-vs-code  /developer-tools/  301
+/motoko/motoko-tooling/*             /developer-tools/  301
+
+# Motoko package pages → mops.one
+/motoko/main/motoko-packages/*          https://mops.one/  301
+/current/motoko/main/motoko-packages/*  https://mops.one/  301
+
+# move-to-motoko
+/move-to-motoko/*                    /developer-tools/  301
+
+# Safe wildcards (slugs preserved exactly in new site)
+# TODO no support for slugs at the moment
+/motoko/fundamentals/*               /languages/motoko/fundamentals/  301
+/motoko/icp-features/*               /languages/motoko/icp-features/  301
+/motoko/reference/*                  /languages/motoko/reference/     301
+
+# /motoko/main/* — getting-started/* has no equivalent; route known sub-sections explicitly
+/motoko/main/getting-started/*       /languages/motoko/                     301
+/current/motoko/main/getting-started/*  /languages/motoko/                  301
+/motoko/main/fundamentals/*          /languages/motoko/fundamentals/        301
+/current/motoko/main/fundamentals/*  /languages/motoko/fundamentals/        301
+/motoko/main/icp-features/*          /languages/motoko/icp-features/        301
+/current/motoko/main/icp-features/*  /languages/motoko/icp-features/        301
+/motoko/main/reference/*             /languages/motoko/reference/           301
+/current/motoko/main/reference/*     /languages/motoko/reference/           301
+/motoko/main/*                       /languages/motoko/                     301
+/current/motoko/main/*               /languages/motoko/                     301
+
+/motoko/*                            /languages/motoko/                     301
+
+# Internal Motoko path renames (pages that moved within /languages/motoko/)
+/languages/motoko/fundamentals/basic-control-flow/  /languages/motoko/fundamentals/control-flow/basic-control-flow/  301
+/languages/motoko/fundamentals/basic-control-flow   /languages/motoko/fundamentals/control-flow/basic-control-flow/  301
+/languages/motoko/fundamentals/literals/            /languages/motoko/fundamentals/basic-syntax/literals/            301
+/languages/motoko/fundamentals/literals             /languages/motoko/fundamentals/basic-syntax/literals/            301
+
+# =============================================================================
+# Section 16 — DeFi → digital-assets
+# =============================================================================
+
+# Rosetta
+/defi/rosetta/icp_rosetta/construction_api/operations-flow  /guides/digital-assets/rosetta/  301
+/defi/rosetta/icp_rosetta/construction_api/*                /guides/digital-assets/rosetta/  301
+/defi/rosetta/icp_rosetta/data_api/*                        /guides/digital-assets/rosetta/  301
+/defi/rosetta/icp_rosetta/migration_guide                   /guides/digital-assets/rosetta/  301
+/defi/rosetta/icp_rosetta/*                                 /guides/digital-assets/rosetta/  301
+/defi/rosetta/icrc_rosetta/data_api/*                       /guides/digital-assets/rosetta/  301
+/defi/rosetta/icrc_rosetta/*                                /guides/digital-assets/rosetta/  301
+/defi/rosetta/*                                             /guides/digital-assets/rosetta/  301
+
+# Token ledgers and standards
+/defi/token-ledgers/setup/icp_ledger_setup    /guides/digital-assets/ledgers/  301
+/defi/token-ledgers/setup/icrc1_ledger_setup  /guides/digital-assets/ledgers/  301
+/defi/token-ledgers/*                         /guides/digital-assets/ledgers/  301
+/defi/token-standards/*                       /references/digital-asset-standards/  301
+/defi/token-indexes/*                         /guides/digital-assets/ledgers/  301
+/defi/token-integrations/                     /guides/digital-assets/ledgers/  301
+/defi/create                                  /guides/digital-assets/ledgers/  301
+/defi/chain-key-tokens/ckbtc/*                /guides/digital-assets/chain-key-tokens/  301
+/defi/chain-key-tokens/*                      /guides/digital-assets/chain-key-tokens/  301
+/defi/nft-collections                         /guides/digital-assets/ledgers/  301
+/defi/concepts                                /references/digital-asset-standards/  301
+/defi/overview                                /guides/digital-assets/ledgers/  301
+/defi/*                                       /guides/digital-assets/ledgers/  301
+/defi                                         /guides/digital-assets/ledgers/  301
+
+# =============================================================================
+# Section 17 — References
+# =============================================================================
+/references/ic-interface-spec       /references/ic-interface-spec/                 301
+/references/ic-interface            /references/ic-interface-spec/                 301
+/references/ii-spec                 /references/internet-identity-spec/            301
+/references/candid-ref              /references/candid-spec/                       301
+/references/t-sigs-how-it-works     /concepts/chain-key-cryptography/#chain-key-signatures-threshold-ecdsa-and-schnorr  301
+/references/vetkeys-overview        /concepts/vetkeys/                              301
+/references/async-code              /guides/canister-calls/inter-canister-calls/    301
+/references/dfx-json-schema         /404.html  410
+/references/glossary                /references/glossary/                           301
+/references/system-canisters/*      /references/system-canisters/                  301
+/references/system-canisters        /references/system-canisters/                  301
+/references/advanced-ingress-messages  /references/message-execution-properties/   301
+/references/vc-spec                 /references/verifiable-credentials-spec/        301
+/references/http-gateway-spec/      /references/http-gateway-protocol-spec/         301
+/references/http-gateway-spec       /references/http-gateway-protocol-spec/         301
+/references/cycles-cost-formulas    /references/cycle-costs/                        301
+/reference/management-canister/     /references/management-canister/                301
+/reference/management-canister      /references/management-canister/                301
+
+# Quill — moved to GitHub
+/references/quill-cli-reference/*   https://github.com/dfinity/quill/tree/master/docs/cli-reference  301
+
+# Samples
+/references/samples/*               https://github.com/dfinity/examples  301
+/current/samples/*                  https://github.com/dfinity/examples  301
+/current/references/samples/*       https://github.com/dfinity/examples  301
+
+# Safe wildcard for remaining references
+/current/references/ic-interface-spec  /references/ic-interface-spec/  301
+/current/references/*               /references/               301
+/references/*                       /references/               301
+
+# =============================================================================
+# Section 18 — Concepts (old portal paths)
+# =============================================================================
+/concepts/bitcoin-integration        /concepts/chain-fusion/bitcoin      301
+/concepts/chain-key-technology/*     /concepts/chain-key-cryptography    301
+/concepts/chain-key-technology       /concepts/chain-key-cryptography    301
+/concepts/canisters-code             /concepts/canisters                 301
+/concepts/what-is-ic                 /concepts/network-overview          301
+/concepts/data-centers               /concepts/node-infrastructure       301
+/concepts/nodes-subnets              /concepts/node-infrastructure       301
+/concepts/subnet-types               /references/subnet-types            301
+/concepts/governance                 /guides/governance/managing         301
+/concepts/glossary                   /references/glossary                301
+/concepts/index                      /concepts/                          301
+/concepts/*                          /concepts/                          301
+/concepts                            /concepts/                          301
+
+# =============================================================================
+# Section 19 — Candid guide (very old paths)
+# =============================================================================
+/candid-guide/candid-concepts.html   /guides/canister-calls/candid  301
+/candid-guide/candid-intro.html      /guides/canister-calls/candid  301
+/candid-guide/candid-types.html      /guides/canister-calls/candid  301
+/candid-guide/candid-intro           /guides/canister-calls/candid  301
+/candid-guide/candid-types           /guides/canister-calls/candid  301
+/candid-guide/candid-ref             /references/candid-spec        301
+/candid-guide/candid-howto           /guides/canister-calls/candid  301
+/candid-guide/candid                 /guides/canister-calls/candid  301
+/candid-guide/*                      /guides/canister-calls/candid  301
+/candid-guide                        /guides/canister-calls/candid  301
+
+# =============================================================================
+# Section 20 — Old /current/developer-docs/* source paths
+# =============================================================================
+
+# Backend languages
+/current/developer-docs/backend/motoko/*            /languages/motoko/                          301
+/current/developer-docs/backend/rust/*              /languages/rust/                            301
+/current/developer-docs/backend/solidity/*          /404.html                                   410
+/current/developer-docs/backend/typescript/*        https://demergent-labs.github.io/azle/      301
+/current/developer-docs/backend/python/*            https://demergent-labs.github.io/kybra/     301
+/current/developer-docs/backend/candid/*            /guides/canister-calls/candid/               301
+/current/developer-docs/backend/arguments           /guides/canister-calls/inter-canister-calls/ 301
+/current/developer-docs/backend/periodic-tasks      /guides/backends/timers/                     301
+/current/developer-docs/backend/resource-limits     /references/resource-limits/                 301
+/current/developer-docs/backend/reproducible-builds /guides/canister-management/reproducible-builds/  301
+/current/developer-docs/backend/troubleshooting     /guides/canister-management/troubleshooting/ 301
+/current/developer-docs/backend/subnet-types        /guides/canister-management/subnet-selection/ 301
+/current/developer-docs/backend/eu-subnets          /guides/canister-management/subnet-selection/ 301
+/current/developer-docs/backend/*                   /getting-started/quickstart/                 301
+
+# Security
+/current/developer-docs/security/security-best-practices/*  /guides/security/overview/           301
+/current/developer-docs/security/*                          /guides/security/overview/           301
+/current/references/security/*                              /guides/security/overview/           301
+
+# Integrations
+/current/developer-docs/integrations/internet-identity/*    /guides/authentication/internet-identity/#frontend-integration  301
+/current/developer-docs/integrations/nns/nns-app-quickstart https://internetcomputer.org/network/governance/  301
+/current/developer-docs/integrations/nns/*                  https://internetcomputer.org/network/governance/  301
+/current/developer-docs/integrations/http-requests          /guides/backends/https-outcalls/          301
+/current/developer-docs/integrations/sns/*                  /guides/governance/launching/             301
+/current/developer-docs/integrations/*                      /guides/canister-calls/inter-canister-calls/  301
+
+# Smart contracts
+/current/developer-docs/smart-contracts/candid/*            /guides/canister-calls/candid/            301
+/current/developer-docs/smart-contracts/maintain/*          /guides/canister-management/lifecycle/    301
+/current/developer-docs/smart-contracts/*                   /guides/canister-management/lifecycle/    301
+
+# Frontend
+/current/developer-docs/frontend/*                          /guides/frontends/asset-canister/        301
+/current/developer-docs/web-apps/application-frontends/*    /guides/frontends/asset-canister/        301
+/current/developer-docs/web-apps/user-login/internet-identity/*  /guides/authentication/internet-identity/  301
+/current/developer-docs/web-apps/*                          /guides/frontends/asset-canister/        301
+/current/developer-docs/http-compatible-canisters/*         /guides/frontends/certification/        301
+
+# Getting started / setup
+/current/developer-docs/getting-started/cycles/*            /concepts/cycles/                        301
+/current/developer-docs/getting-started/cycles-faucet       /concepts/cycles/                        301
+/current/developer-docs/getting-started/*                   /getting-started/                        301
+/current/developer-docs/setup/*                             /getting-started/quickstart/             301
+/current/developer-docs/quickstart/*                        /getting-started/quickstart/             301
+
+# Production / canister management
+/current/developer-docs/production/canister-history         /guides/canister-management/lifecycle/#canister-history        301
+/current/developer-docs/production/canister-recovery        /guides/canister-management/snapshots/   301
+/current/developer-docs/production/custom-domain/*          /guides/frontends/custom-domains/        301
+/current/developer-docs/production/deploying-and-upgrading  /guides/canister-management/lifecycle/#upgrade-a-canister  301
+/current/developer-docs/production/topping-up-canister/*    /guides/canister-management/cycles-management/#topping-up-canisters  301
+/current/developer-docs/production/resource-limits          /references/resource-limits/             301
+/current/developer-docs/production/instruction-limits       /references/resource-limits/             301
+/current/developer-docs/production/computation-and-storage-costs  /references/cycle-costs/           301
+/current/developer-docs/production/storage                  /guides/canister-management/settings/    301
+/current/developer-docs/production/social-sharing           /guides/frontends/custom-domains/        301
+/current/developer-docs/production/staging-environment      /guides/canister-management/lifecycle/   301
+/current/developer-docs/production/system-canisters         /references/system-canisters/            301
+/current/developer-docs/production/best-practices           /guides/security/overview/               301
+/current/developer-docs/production/larger-wasm              /guides/canister-management/large-wasm/  301
+/current/developer-docs/production/*                        /guides/canister-management/lifecycle/   301
+
+# DeFi
+/current/developer-docs/defi/icp-tokens/ledger-local-setup  /guides/digital-assets/ledgers/          301
+/current/developer-docs/defi/icrc-1/icrc1-ledger-setup      /guides/digital-assets/ledgers/          301
+/current/developer-docs/defi/icrc-1/using-icrc1-ledger      /guides/digital-assets/ledgers/          301
+/current/developer-docs/defi/icrc-1/*                       /references/digital-asset-standards/     301
+/current/developer-docs/defi/tokens/icrc-1/                 /references/digital-asset-standards/     301
+/current/developer-docs/defi/tokens/*                       /references/digital-asset-standards/     301
+/current/developer-docs/defi/rosetta/*                      /guides/digital-assets/rosetta/          301
+/current/developer-docs/defi/cycles/cycles-ledger           /guides/canister-management/cycles-management/#topping-up-canisters  301
+/current/developer-docs/defi/cycles/*                       /concepts/cycles/                        301
+/current/developer-docs/defi/icp-tokens/overview            /guides/digital-assets/ledgers/          301
+/current/developer-docs/defi/exchange-rate-canister/        /references/system-canisters/            301
+/current/developer-docs/defi/dex/*                          /404.html  410
+/current/developer-docs/defi/nfts/marketplaces              /404.html  410
+/current/developer-docs/defi/nfts/overview                  /404.html  410
+/current/developer-docs/defi/wallets/*                      /guides/digital-assets/wallet-integration/  301
+/current/developer-docs/defi/asset-custody/*                /404.html  410
+/current/developer-docs/defi/overview                       /guides/digital-assets/ledgers/          301
+/current/developer-docs/defi/*                              /guides/digital-assets/ledgers/          301
+
+# Developer tools
+/current/developer-docs/developer-tools/cli-tools/cli-reference/*        https://cli.internetcomputer.org/0.2/reference/cli  301
+/current/developer-docs/developer-tools/cli-tools/dfxvm/*                https://cli.internetcomputer.org/0.2/migration/from-dfx/  301
+/current/developer-docs/developer-tools/cli-tools/advanced-dfx/*         https://cli.internetcomputer.org/0.2/migration/from-dfx/  301
+/current/developer-docs/developer-tools/cli-tools/quill-cli-reference/*  https://github.com/dfinity/quill/tree/master/docs/cli-reference  301
+/current/developer-docs/developer-tools/cli-tools/*                      /developer-tools/#command-line-tools  301
+/current/developer-docs/developer-tools/off-chain/canpack                /developer-tools/  301
+/current/developer-docs/developer-tools/off-chain/agents/javascript-agent /developer-tools/#javascript--typescript  301
+/current/developer-docs/developer-tools/ide/*                            /developer-tools/  301
+/current/developer-docs/developer-tools/*                                /developer-tools/  301
+
+# Best practices / DAOs / agents / misc
+/current/developer-docs/best-practices/*                    /guides/security/overview/               301
+/current/developer-docs/daos/sns/*                          /guides/governance/launching/            301
+/current/developer-docs/daos/nns/*                         https://internetcomputer.org/network/governance  301
+/current/developer-docs/daos/nns/                          https://internetcomputer.org/network/governance  301
+/current/developer-docs/agents/*                            /guides/canister-calls/calling-from-clients/  301
+/current/developer-docs/interact-with-canisters/agents/*    /guides/canister-calls/calling-from-clients/  301
+/current/developer-docs/chain-fusion/ethereum/siwe          /guides/authentication/internet-identity/  301
+/current/developer-docs/chain-fusion/*                      /guides/chain-fusion/bitcoin/            301
+/current/developer-docs/cost-estimations-and-examples       /references/cycle-costs/                 301
+/current/developer-docs/ic-overview                         /concepts/network-overview/              301
+/current/developer-docs/glossary                            /references/glossary.                    301
+/current/developer-docs/use-cases/                          /getting-started/choose-your-path/       301
+/current/developer-docs/starter-kits                        /getting-started/quickstart/             301
+/current/developer-docs/ai/*                                /guides/backends/ai-inference/           301
+/current/developer-docs/hackathon/*                         /getting-started/quickstart/             301
+/current/developer-docs/hackathon-prep-course/*             /getting-started/quickstart/             301
+/current/developer-docs/*                                   /getting-started/quickstart/             301
+
+# =============================================================================
+# Section 21 — Old build/ and language-guide/ paths
+# =============================================================================
+/current/developer-docs/build/cdks/motoko-dfinity/*   /languages/motoko/                      301
+/current/developer-docs/build/cdks/cdk-rs-dfinity/*   /languages/rust/                        301
+/current/developer-docs/build/cdks/*                  /languages/                             301
+/current/developer-docs/build/backend/*               /languages/motoko/                      301
+/current/developer-docs/build/frontend/*              /guides/frontends/asset-canister/        301
+/current/developer-docs/build/languages/motoko/*       /languages/motoko/                      301
+/current/developer-docs/build/languages/rust/*         /languages/rust/                        301
+/current/developer-docs/build/languages/candid/*       /guides/canister-calls/candid/           301
+/current/developer-docs/build/*                       /getting-started/quickstart/             301
+/language-guide/compiler-ref.html                     /languages/motoko/reference/compiler-ref/  301
+/language-guide/language-manual.html                  /languages/motoko/reference/language-manual/  301
+/language-guide/cycles.html                           /concepts/cycles/                        301
+/language-guide/style.html                            /languages/motoko/reference/style-guide/ 301
+/language-guide/motoko.html                           /languages/motoko/                      301
+/language-guide/*                                     /languages/motoko/                      301
+/base-libraries/*                                     https://mops.one/core/docs              301
+
+# =============================================================================
+# Section 22 — Tutorials and developer liftoff
+# =============================================================================
+/current/tutorials/developer-journey/*        /getting-started/quickstart/             301
+/current/tutorials/developer-liftoff/*        /getting-started/quickstart/             301
+/tutorials/developer-journey/*               /getting-started/quickstart/             301
+/tutorials/developer-liftoff/level-3/3.3-certified-data  /guides/backends/certified-variables/  301
+/tutorials/developer-liftoff/level-0/ic-overview          /concepts/network-overview/            301
+/tutorials/developer-liftoff/level-0/tooling              /getting-started/quickstart/           301
+/tutorials/developer-liftoff/               /getting-started/quickstart/             301
+/tutorials/developer-liftoff/*              /getting-started/quickstart/             301
+/tutorials/hackathon-prep-course/*          /getting-started/quickstart/             301
+/tutorials/*                               /getting-started/quickstart/              301
+
+# =============================================================================
+# Section 23 — Tokenomics (learn hub replacements)
+# NNS dapp usage → icp.org governance; SNS/developer content → our docs
+# =============================================================================
+/current/tokenomics/identity-auth/*                /guides/authentication/internet-identity/             301
+/current/tokenomics/nns/community-fund             https://internetcomputer.org/network/governance      301
+/current/tokenomics/nns/neurons-fund               https://internetcomputer.org/network/governance      301
+/current/tokenomics/nns/nns-intro                  https://internetcomputer.org/network/governance      301
+/current/tokenomics/nns/nns-staking-voting-rewards https://internetcomputer.org/network/governance      301
+/current/tokenomics/nns/proposal-requirements      /references/nns-proposal-types/                       301
+/current/tokenomics/nns/nns-app-quickstart         https://internetcomputer.org/network/governance      301
+/current/tokenomics/sns/sns-intro-tokens           /guides/governance/launching/                         301
+/current/tokenomics/sns/tokenomics                 /guides/governance/launching/                         301
+/current/tokenomics/sns/*                          /guides/governance/launching/                         301
+/current/tokenomics/token-holders/*                https://internetcomputer.org/network/economics      301
+/current/tokenomics/index                          /guides/governance/launching/                         301
+/current/tokenomics/*                              /guides/governance/launching/                         301
+
+# =============================================================================
+# Section 24 — NNS app quickstart and token-holders (very old paths)
+# =============================================================================
+/token-holders/nns-app-quickstart.html    https://internetcomputer.org/network/governance   301
+/token-holders/self-custody-quickstart.html  https://internetcomputer.org/network/economics  301
+/token-holders/*                          https://internetcomputer.org/network/economics    301
+/integration/ledger-quick-start.html      /guides/digital-assets/ledgers/                    301
+/integration/ledger-quick-start           /guides/digital-assets/ledgers/                    301
+
+# =============================================================================
+# Section 25 — Quickstart and old developer guide
+# =============================================================================
+/quickstart/*                             /getting-started/quickstart/  301
+/current/developer-docs/quickstart/cycles-faucet  /concepts/cycles/     301
+/current/developer-docs/quickstart/windows-wsl    /getting-started/quickstart/  301
+
+/developers-guide/glossary                /references/glossary/                          301
+/developers-guide/install-upgrade-remove  /getting-started/quickstart/                   301
+/developers-guide/reinstalling-dfx        /getting-started/quickstart/                   301
+/developers-guide/troubleshooting         /guides/canister-management/troubleshooting/   301
+/developers-guide/concepts/canisters-code.html  /concepts/canisters/                     301
+/developers-guide/concepts/*              /concepts/                                    301
+/developers-guide/tutorials/default-frontend  /guides/frontends/asset-canister/          301
+/developers-guide/tutorials/*             /getting-started/quick-start/                   301
+/developers-guide/working-with-canisters/* /guides/canister-management/settings         301
+/developers-guide/cli-reference/          https://cli.internetcomputer.org/0.2/reference/cli  301
+/developers-guide/*                       /getting-started/quick-start/                  301
+
+# =============================================================================
+# Section 26 — Samples
+# =============================================================================
+/samples/*     https://github.com/dfinity/examples  301
+/samples       https://github.com/dfinity/examples  301
+
+# =============================================================================
+# Section 27 — Rust quick-reference paths
+# =============================================================================
+/rust/*        /languages/rust/  301
+/rust          /languages/rust/  301
+/rust-guide/*  /languages/rust/  301
+/agent         /guides/canister-calls/calling-from-clients  301
+
+# =============================================================================
+# Section 28 — Blog (410 Gone — content removed from both sites)
+# =============================================================================
+/blog/*  /404.html  410
+/blog    /404.html  410
+
+# =============================================================================
+# Section 29 — Security best practices (standalone old paths)
+# =============================================================================
+/security-best-practices/introduction  /guides/security/overview            301
+/security-best-practices/*             /guides/security/inter-canister-calls 301
+
+# =============================================================================
+# Section 30 — Chain fusion and build-on-btc
+# =============================================================================
+/build-on-btc/btc-api                              /guides/chain-fusion/bitcoin/  301
+/build-on-btc/*                                    /guides/chain-fusion/bitcoin/  301
+/build-on-btc                                      /guides/chain-fusion/bitcoin/  301
+/current/developer-docs/functionality/bitcoin      /guides/chain-fusion/bitcoin/  301
+/current/developer-docs/integrations/bitcoin/*     /guides/chain-fusion/bitcoin/  301
+/developer-docs/integrations/bitcoin/*             /guides/chain-fusion/bitcoin/  301
+/developer-docs/integrations/icrc-1/               /references/digital-asset-standards/  301
+/current/blog/features/vetkey-primer               /concepts/vetkeys/               301
+
+# =============================================================================
+# Section 31 — Misc old one-off paths
+# =============================================================================
+/ic-identity-guide/auth-how-to.html    /guides/authentication/internet-identity/  301
+/ic-identity-guide/*                   /guides/authentication/internet-identity/  301
+/ic-interface-spec                     /references/ic-interface-spec/             301
+/interface-spec                        /references/ic-interface-spec/             301
+/ic-overview                           /concepts/network-overview/                 301
+/download                              /getting-started/quick-start/                301
+/download.html                         /getting-started/quick-start/                301
+/introduction/welcome.html             /                                          301
+/introduction/welcome                  /                                          301
+/introduction/                         /                                          301
+/local-quickstart.html                 /getting-started/quick-start/                301
+/network-quickstart.html               /getting-started/quick-start/                301
+/rust-guide/rust-quickstart.html       /languages/rust/                           301
+/developer-docs                        /getting-started/quick-start/                301
+/developer-docs/backend/resource-limits  /references/resource-limits              301
+/motoko/reference/language-manual      /languages/motoko/reference/language-manual/  301
+/current/home                          /                                          301
+/search                                /                                          301
+/http-middleware                       /                                          301
+
+# =============================================================================
+# Section 32 — Missing paths without /current/ prefix (from 404 traffic data)
+# =============================================================================
+/developer-docs/smart-contracts/maintain/canister-management  /guides/canister-management/lifecycle/  301
+/developer-docs/smart-contracts/*                             /guides/canister-management/lifecycle/  301
+/developer-docs/developer-tools/dev-tools-overview            /developer-tools/#command-line-tools   301
+/developer-docs/developer-tools/*                             /developer-tools/                      301
+/developer-docs/build/cdks/motoko-dfinity/*                   /languages/motoko/                     301
+/developer-docs/build/*                                       /getting-started/quick-start/            301
+/eveloper-docs/*                                              /getting-started/quick-start/            301
+/developer-docs/*                                             /getting-started/quick-start/            301
+/* /404.html 404

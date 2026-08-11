@@ -348,7 +348,8 @@ SignedDelegation = {
   delegation : {
     pubkey : PublicKey;
     targets : [CanisterId] | Unrestricted;
-    expiration : Timestamp
+    expiration : Timestamp;
+    permissions : Queries | All | Unrestricted
   };
   signature : Signature
 }
@@ -461,6 +462,10 @@ CanisterSnapshotVisibility
   = Controllers
   | Public
   | AllowedViewers [Principal]
+CanisterStatusVisibility
+  = Controllers
+  | Public
+  | AllowedViewers [Principal]
 CanisterLog = {
   idx : Nat;
   timestamp_nanos : Nat;
@@ -508,6 +513,7 @@ S = {
   balances: CanisterId ↦ Nat;
   reserved_balances: CanisterId ↦ Nat;
   reserved_balance_limits: CanisterId ↦ Nat;
+  minimum_incoming_canister_call_cycles: CanisterId ↦ Nat;
   wasm_memory_limit: CanisterId ↦ Nat;
   wasm_memory_threshold: CanisterId ↦ Nat;
   environment_variables: CanisterId ↦ (Text ↦ Text)
@@ -517,6 +523,7 @@ S = {
   canister_log_visibility: CanisterId ↦ CanisterLogVisibility;
   canister_log_memory_limit: CanisterId ↦ Nat;
   canister_snapshot_visibility: CanisterId ↦ CanisterSnapshotVisibility;
+  canister_status_visibility: CanisterId ↦ CanisterStatusVisibility;
   canister_logs: CanisterId ↦ [CanisterLog];
   query_stats: CanisterId ↦ [QueryStats];
   system_time : Timestamp
@@ -618,6 +625,7 @@ The initial state of the IC is
   balances = ();
   reserved_balances = ();
   reserved_balance_limits = ();
+  minimum_incoming_canister_call_cycles = ();
   wasm_memory_limit = ();
   wasm_memory_threshold = ();
   environment_variables = ();
@@ -627,6 +635,7 @@ The initial state of the IC is
   canister_log_visibility = ();
   canister_log_memory_limit = ();
   canister_snapshot_visibility = ();
+  canister_status_visibility = ();
   canister_logs = ();
   query_stats = ();
   system_time = T;
@@ -694,7 +703,7 @@ that represents Candid encoding; this is implicitly taking the method types, as 
 
 #### Envelope Authentication
 
-The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals).
+The following predicate describes when an envelope `E` correctly signs the enclosed request with a key belonging to a user `U`, at time `T`: It returns which canister ids this envelope may be used at (as a set of principals). The predicate fails for update calls (requests of type `Request`) if any delegation in the chain restricts the sender to query calls and `read_state` requests (`permissions` field set to `Queries`, encoded as the text `"queries"`).
 ```
 verify_envelope({ content = C }, U, T)
   = { p : p is CanisterID } if U = anonymous_id
@@ -702,6 +711,7 @@ verify_envelope({ content = C }, U, T)
 verify_envelope({ content = C, sender_pubkey = PK, sender_sig = Sig, sender_delegation = DS}, U, T)
   = TS if U = mk_self_authenticating_id PK
   ∧ (PK', TS) = verify_delegations(DS, PK, T, { p : p is CanisterId })
+  ∧ (C is Request ⇒ ∀ D ∈ DS. D.delegation.permissions ≠ Queries)
   ∧ verify_signature PK' Sig ("\x0Aic-request" · hash_of_map(C))
   ∧ (if PK = canister_signature_pk Signing_canister_id _:
        C.sender_info = null
@@ -799,7 +809,19 @@ liquid_balance(S, E.content.canister_id) ≥ 0
   E.content.arg = candid({canister_id = CanisterId, …})
   E.content.sender ∈ S.controllers[CanisterId] ∪ S.subnet_admins[S.canister_subnet[CanisterId]]
   E.content.method_name ∈
-    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_status", "canister_metrics" }
+    { "start_canister", "stop_canister", "uninstall_code", "delete_canister", "canister_metrics" }
+) ∨ (
+  E.content.canister_id = ic_principal
+  E.content.arg = candid({canister_id = CanisterId, …})
+  (E.content.sender ∈ S.subnet_admins[S.canister_subnet[CanisterId]])
+    or
+    (S.canister_status_visibility[CanisterId] = Public)
+    or
+    (S.canister_status_visibility[CanisterId] = Controllers and E.content.sender ∈ S.controllers[CanisterId])
+    or
+    (S.canister_status_visibility[CanisterId] = AllowedViewers Principals and (E.content.sender ∈ S.controllers[CanisterId] or E.content.sender ∈ Principals))
+  E.content.method_name ∈
+    { "canister_status" }
 ) ∨ (
   E.content.canister_id = ic_principal
   E.content.sender ∈ S.subnet_admins[S.canister_subnet[ECID]]
@@ -1009,6 +1031,34 @@ messages = Older_messages · Younger_messages  ·
   ResponseMessage {
       origin = CM.origin;
       response = Reject (SYS_TRANSIENT, <implementation-specific>);
+      refunded_cycles = CM.transferred_cycles;
+  }
+
+```
+
+#### Calls with insufficient cycles are rejected
+
+An inter-canister call from a different canister with fewer cycles attached than the callee's minimum is automatically rejected.
+
+Conditions  
+
+```html
+
+S.messages = Older_messages · CallMessage CM · Younger_messages
+(CM.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ CM.queue)
+CM.origin = FromCanister _
+CM.caller ≠ CM.callee
+CM.transferred_cycles < S.minimum_incoming_canister_call_cycles[CM.callee]
+```
+
+State after:
+
+```html
+
+messages = Older_messages · Younger_messages  ·
+  ResponseMessage {
+      origin = CM.origin;
+      response = Reject (CANISTER_ERROR, <implementation-specific>);
       refunded_cycles = CM.transferred_cycles;
   }
 
@@ -1247,13 +1297,14 @@ Conditions
 S.messages = Older_messages · FuncMessage M · Younger_messages
 (M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
 (∀ FuncMessage M' ∈ Older_messages · Younger_messages. M'.receiver ≠ M.receiver or M.entry_point ≠ OnLowWasmMemory)
-S.on_low_wasm_memory_hook_status[M.receiver] ≠ Ready
 S.canisters[M.receiver] ≠ EmptyCanister
 Mod = S.canisters[M.receiver].module
 Ctxt = S.call_contexts[M.call_context]
 Deadline = deadline_of_context(Ctxt)
 
 Is_response = M.entry_point == Callback _ _ _
+
+S.on_low_wasm_memory_hook_status[M.receiver] ≠ Ready or Is_response
 
 Env = {
   time = S.time[M.receiver];
@@ -1665,6 +1716,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = 5_000_000_000_000
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = 0
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -1715,6 +1770,11 @@ if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
   New_canister_snapshot_visibility = Controllers
+
+if A.settings.status_visibility is not null:
+  New_canister_status_visibility = A.settings.status_visibility
+else:
+  New_canister_status_visibility = Controllers
 ```
 
 State after  
@@ -1734,6 +1794,7 @@ S' = S with
     balances[Canister_id] = New_balance
     reserved_balances[Canister_id] = New_reserved_balance
     reserved_balance_limits[Canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[Canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[Canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[Canister_id] = New_wasm_memory_threshold
     environment_variables[Canister_id] = New_environment_variables
@@ -1744,6 +1805,7 @@ S' = S with
     canister_log_visibility[Canister_id] = New_canister_log_visibility
     canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
+    canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
@@ -1817,6 +1879,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = S.reserved_balance_limits[A.canister_id]
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[A.canister_id]
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -1873,6 +1939,7 @@ S' = S with
     balances[A.canister_id] = New_balance
     reserved_balances[A.canister_id] = New_reserved_balance
     reserved_balance_limits[A.canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[A.canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[A.canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[A.canister_id] = New_wasm_memory_threshold
     environment_variables[A.canister_id] = New_environment_variables
@@ -1883,6 +1950,8 @@ S' = S with
       canister_log_memory_limit[A.canister_id] = A.settings.log_memory_limit
     if A.settings.snapshot_visibility is not null:
       canister_snapshot_visibility[A.canister_id] = A.settings.snapshot_visibility
+    if A.settings.status_visibility is not null:
+      canister_status_visibility[A.canister_id] = A.settings.status_visibility
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin
@@ -1894,7 +1963,8 @@ S' = S with
 
 #### IC Management Canister: Canister status
 
-The controllers of a canister can obtain detailed information about the canister.
+Detailed information about a canister can be obtained by the callers permitted by the canister's `canister_status_visibility` setting.
+The canister itself and subnet admins can always obtain this information, regardless of the setting.
 
 Given a state `S` and `Canister_id`, we define
 
@@ -1909,6 +1979,7 @@ canister_status(S, Canister_id) =
         memory_allocation = S.memory_allocation[Canister_id];
         freezing_threshold = S.freezing_threshold[Canister_id];
         reserved_cycles_limit = S.reserved_balance_limit[Canister_id];
+        minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[Canister_id];
         wasm_memory_limit = S.wasm_memory_limit[Canister_id];
         wasm_memory_threshold = S.wasm_memory_threshold[Canister_id];
         environment_variables = S.environment_variables[Canister_id];
@@ -1957,7 +2028,13 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'canister_status'
 M.arg = candid(A)
-M.caller ∈ S.controllers[A.canister_id] ∪ {A.canister_id} ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+(M.caller ∈ {A.canister_id} ∪ S.subnet_admins[S.canister_subnet[A.canister_id]])
+  or
+  (S.canister_status_visibility[A.canister_id] = Public)
+  or
+  (S.canister_status_visibility[A.canister_id] = Controllers and M.caller ∈ S.controllers[A.canister_id])
+  or
+  (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (M.caller ∈ S.controllers[A.canister_id] or M.caller ∈ Principals))
 
 ```
 
@@ -1999,7 +2076,13 @@ is_effective_canister_id(E.content, ECID)
 S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
 Q.arg = candid(A)
 A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-Q.sender ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+(Q.sender ∈ S.subnet_admins[S.canister_subnet[A.canister_id]])
+  or
+  (S.canister_status_visibility[A.canister_id] = Public)
+  or
+  (S.canister_status_visibility[A.canister_id] = Controllers and Q.sender ∈ S.controllers[A.canister_id])
+  or
+  (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (Q.sender ∈ S.controllers[A.canister_id] or Q.sender ∈ Principals))
 
 ```
 
@@ -2900,6 +2983,7 @@ S with
     balances[A.canister_id] = (deleted)
     reserved_balances[A.canister_id] = (deleted)
     reserved_balance_limits[A.canister_id] = (deleted)
+    minimum_incoming_canister_call_cycles[A.canister_id] = (deleted)
     wasm_memory_limit[A.canister_id] = (deleted)
     wasm_memory_threshold[A.canister_id] = (deleted)
     on_low_wasm_memory_hook_status[A.canister_id] = (deleted)
@@ -2908,6 +2992,7 @@ S with
     canister_log_visibility[A.canister_id] = (deleted)
     canister_log_memory_limit[A.canister_id] = (deleted)
     canister_snapshot_visibility[A.canister_id] = (deleted)
+    canister_status_visibility[A.canister_id] = (deleted)
     canister_logs[A.canister_id] = (deleted)
     query_stats[A.canister_id] = (deleted)
     chunk_store[A.canister_id] = (deleted)
@@ -3095,6 +3180,10 @@ if A.settings.reserved_cycles_limit is not null:
   New_reserved_balance_limit = A.settings.reserved_cycles_limit
 else:
   New_reserved_balance_limit = 5_000_000_000_000
+if A.settings.minimum_incoming_canister_call_cycles is not null:
+  New_minimum_incoming_canister_call_cycles = A.settings.minimum_incoming_canister_call_cycles
+else:
+  New_minimum_incoming_canister_call_cycles = 0
 if A.settings.wasm_memory_limit is not null:
   New_wasm_memory_limit = A.settings.wasm_memory_limit
 else:
@@ -3149,6 +3238,11 @@ if A.settings.snapshot_visibility is not null:
   New_canister_snapshot_visibility = A.settings.snapshot_visibility
 else:
   New_canister_snapshot_visibility = Controllers
+
+if A.settings.status_visibility is not null:
+  New_canister_status_visibility = A.settings.status_visibility
+else:
+  New_canister_status_visibility = Controllers
 ```
 
 State after  
@@ -3167,6 +3261,7 @@ S' = S with
     balances[Canister_id] = New_balance
     reserved_balances[Canister_id] = New_reserved_balance
     reserved_balance_limits[Canister_id] = New_reserved_balance_limit
+    minimum_incoming_canister_call_cycles[Canister_id] = New_minimum_incoming_canister_call_cycles
     wasm_memory_limit[Canister_id] = New_wasm_memory_limit
     wasm_memory_threshold[Canister_id] = New_wasm_memory_threshold
     environment_variables[Canister_id] = New_environment_variables
@@ -3176,6 +3271,7 @@ S' = S with
     canister_log_visibility[Canister_id] = New_canister_log_visibility
     canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
+    canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
     query_stats[CanisterId] = []
     messages = Older_messages · Younger_messages ·
@@ -4248,6 +4344,8 @@ S with
   reserved_balances[Canister_id] = (deleted)
   reserved_balance_limits[New_canister_id] = S.reserved_balance_limits[Canister_id]
   reserved_balance_limits[Canister_id] = (deleted)
+  minimum_incoming_canister_call_cycles[New_canister_id] = S.minimum_incoming_canister_call_cycles[Canister_id]
+  minimum_incoming_canister_call_cycles[Canister_id] = (deleted)
   wasm_memory_limit[New_canister_id] = S.wasm_memory_limit[Canister_id]
   wasm_memory_limit[Canister_id] = (deleted)
   wasm_memory_threshold[New_canister_id] = S.wasm_memory_threshold[Canister_id]
@@ -4266,6 +4364,8 @@ S with
   canister_log_memory_limit[Canister_id] = (deleted)
   canister_snapshot_visibility[New_canister_id] = S.canister_snapshot_visibility[Canister_id]
   canister_snapshot_visibility[Canister_id] = (deleted)
+  canister_status_visibility[New_canister_id] = S.canister_status_visibility[Canister_id]
+  canister_status_visibility[Canister_id] = (deleted)
   canister_logs[New_canister_id] = S.canister_logs[Canister_id]
   canister_logs[Canister_id] = (deleted)
   query_stats[New_canister_id] = S.query_stats[Canister_id]

@@ -2,7 +2,7 @@
 title: "Reproducible builds"
 description: "Verify that deployed canister Wasm matches the source code using deterministic builds"
 sidebar:
-  order: 6
+  order: 7
 ---
 
 A reproducible build produces the same WebAssembly module byte-for-byte whenever anyone compiles the same source code in the same documented environment. For canisters, this matters because ICP lets anyone query a canister's Wasm hash: but only a reproducible build makes that hash meaningful. Without it, a published hash cannot be linked to readable source code.
@@ -264,5 +264,6 @@ Maintaining a reproducible build over years requires more than getting it workin
 - [Canister lifecycle](lifecycle.md): deploy and upgrade workflow
 - [Canister settings](settings.md): configure controllers and make canisters immutable
 - [Cycles management](cycles-management.md): top up canisters before long-term deployment
+- [Trust in canisters](trust-in-canisters.md): how users can use reproducible build verification to assess whether a canister is safe to interact with
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/best-practices/reproducible-builds.mdx; dfinity/icp-cli-recipes — recipes/prebuilt/README.md, recipe.hbs; dfinity/icp-cli — docs/guides/using-recipes.md -->

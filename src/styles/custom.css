@@ -1,10 +1,11 @@
 /*
- * ICP Developer Docs — Custom Theme
+ * ICP Developer Docs: Custom Theme
  *
- * Brand: ICP / DFINITY v2.2 (2026-05-08)
+ * Brand: ICP / DFINITY brand guide v2.27 (design skill v2.7)
  * Light editorial parchment is the default theme.
- * Dark mode is opt-in via data-theme="dark" on <html> — never auto from prefers-color-scheme.
+ * Dark mode is opt-in via data-theme="dark" on <html>: never auto from prefers-color-scheme.
  * Three-face type system: Newsreader (editorial), Inter (UI chrome), JetBrains Mono (technical).
+ * Inter ships 400/500/600 only; bold prose maps to 600 (no 700+ in the system).
  * One primary accent: rust #a8482b.
  */
 
@@ -204,6 +205,14 @@ code, pre, kbd, samp,
 .sl-markdown-content code,
 .sl-markdown-content pre {
   font-family: var(--icp-mono);
+}
+
+/* Inter tops out at 600 in the three-face system (no 700 face is loaded).
+   Map bold prose to 600 so emphasized text renders a real loaded weight. */
+strong, b,
+.sl-markdown-content strong,
+.sl-markdown-content b {
+  font-weight: 600;
 }
 
 /* ── Light mode — Starlight token overrides ─────────────────── */

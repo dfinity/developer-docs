@@ -1,6 +1,8 @@
 ---
 title: "Safe Retries and Idempotency"
 description: "Design idempotent canister APIs to enable safe retries for ingress calls and bounded-wait inter-canister calls, preventing double-spend and other correctness issues."
+sidebar:
+  order: 5
 ---
 
 In the case of network issues or other unexpected behavior, ICP clients (such as agents) that issue ingress update calls may be unable to determine whether their ingress request has been processed. For example, this can happen if the client loses connection until after the request's ingress expiry ends and the request's status is removed from the system state tree.

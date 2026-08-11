@@ -17,7 +17,7 @@ The asset canister is a pre-built Rust canister maintained by DFINITY. It implem
 2. Creates the canister (if new) and installs the WASM
 3. Syncs your build output directory to the canister (uploading, updating, and deleting files as needed)
 
-Users access your frontend at `https://<canister-id>.icp0.io` (mainnet) or `http://<canister-id>.localhost:8000` (local). You can also register a [custom domain](custom-domains.md).
+Users access your frontend at `https://<canister-id>.icp.net` (mainnet) or `http://<canister-id>.localhost:8000` (local). You can also register a [custom domain](custom-domains.md).
 
 ### What the asset canister provides
 
@@ -44,7 +44,7 @@ Define an asset canister using the `@dfinity/asset-canister` recipe in your `icp
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.2.1"
       configuration:
         dir: dist
         build:
@@ -54,7 +54,7 @@ canisters:
 
 The key fields are:
 
-- **`recipe.type`:** specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.1.0`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
+- **`recipe.type`:** specifies the asset canister recipe with a pinned version. Always pin to a specific version (e.g., `@v2.2.1`). See [available versions](https://github.com/dfinity/icp-cli-recipes/releases?q=asset-canister&expanded=true).
 - **`dir`:** the directory containing your build output. This is `dist` for Vite-based projects, `out` for Next.js static exports, or `build` for Create React App. The contents of this directory (not the directory itself) are uploaded to the canister.
 - **`build`:** shell commands that icp-cli runs before uploading. If omitted, icp-cli uploads whatever is already in `dir` without building.
 
@@ -64,7 +64,7 @@ For a fullstack project with a backend canister, list both in the same `icp.yaml
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.2.1"
       configuration:
         dir: dist
         build:
@@ -72,9 +72,7 @@ canisters:
           - npm run build
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.2.0"
-      configuration:
-        package: backend
+      type: "@dfinity/rust@v3.3.0"
 ```
 
 For more on project configuration, see [Project structure](../../getting-started/project-structure.md).
@@ -115,7 +113,7 @@ Here is a recommended configuration:
 Key settings explained:
 
 - **`security_policy: "standard"`** applies a set of security headers (Content-Security-Policy, X-Frame-Options, etc.). If these headers block your application, override individual headers in the `headers` object rather than removing the security policy entirely.
-- **`allow_raw_access: false`** prevents assets from being served on the `raw.icp0.io` domain, where responses are not verified by HTTP gateways. Only enable raw access when strictly needed (e.g., for assets that must be embedded in iframes on other domains).
+- **`allow_raw_access: false`** prevents assets from being served on the `raw.icp.net` domain, where responses are not verified by HTTP gateways. Only enable raw access when strictly needed (e.g., for assets that must be embedded in iframes on other domains).
 - **`enable_aliasing: true`** tells the asset canister to serve `index.html` when a requested path has no matching file. This is required for single-page applications where the client-side router handles URL paths like `/about` or `/settings`.
 
 Rules are applied in order. Later rules override earlier ones for overlapping paths.
@@ -143,7 +141,7 @@ After deployment, open your browser to `http://<canister-id>.localhost:8000/`. T
 icp deploy -e ic frontend
 ```
 
-Your frontend is accessible at `https://<canister-id>.icp0.io` or `https://<canister-id>.ic0.app`.
+Your frontend is accessible at `https://<canister-id>.icp.net`.
 
 ### Updating the frontend
 

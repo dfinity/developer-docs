@@ -1,11 +1,13 @@
 ---
-sidebar_position: 12
-description: "Motoko language documentation"
 title: "Motoko `base` to `core` migration guide"
+description: "Comprehensive guide for migrating from the Motoko base package to the new core package."
+sidebar:
+  order: 12
+  hidden: true
 ---
 
-* [GitHub repository](https://github.com/dfinity/motoko-core)
-* [Documentation](https://mops.one/core)
+* [GitHub repository](https://github.com/caffeinelabs/motoko-core)
+* [Documentation](https://mops.one/core/docs/)
 
 The `core` package is a new and improved standard library for Motoko, focusing on:
 * AI-friendly design patterns.
@@ -28,7 +30,7 @@ If you are migrating an existing project, you can keep the `base` import and gra
 
 ### Important considerations
 
-:::warning[Version requirements]
+:::caution[Version requirements]
 The `core` package depends on new language features, so make sure to update to the latest dfx (0.28+) or Motoko compiler (0.15+) before migrating.
 :::
 
@@ -40,9 +42,9 @@ When updating to the `core` package:
 - Hash-based data structures are no longer included in the standard library. It is encouraged to use ordered maps and sets for improved security.
 - In some cases, it won't be possible to fully migrate to `core` due to removal of some features in `base`. In these cases, you can continue using both packages side-by-side or search for [Mops packages](https://mops.one/) built by the community.
 
-For details on function signatures, please refer to the official [documentation](https://mops.one/core).
+For details on function signatures, please refer to the official [documentation](https://mops.one/core/docs/).
 
-Also, feel free to ask for help by posting on the [ICP developer forum](https://forum.dfinity.org/c/developers) or opening a GitHub issue on the [`dfinity/motoko-core`](https://github.com/dfinity/motoko-core/issues) repository.
+Also, feel free to ask for help by posting on the [ICP developer forum](https://forum.dfinity.org/c/developers) or opening a GitHub issue on the [`caffeinelabs/motoko-core`](https://github.com/caffeinelabs/motoko-core/issues) repository.
 
 ## Module changes
 
@@ -158,7 +160,7 @@ The `core` package brings significant changes to data structures, making a clear
 - `sortInPlace()` - Use `VarArray.sortInPlace()` instead
 - `tabulateVar()` - Use `VarArray.tabulate()` instead
 
-### [`Blob`](https://mops.one/core/docs/Blob)
+### [`Blob`](https://mops.one/core/docs/Blo)
 
 #### Modified functions
 - `fromArrayMut()` → `fromVarArray()`
@@ -187,7 +189,7 @@ The `core` package brings significant changes to data structures, making a clear
 - `isLowercase()` → `isLower()`
 - `isUppercase()` → `isUpper()`
 
-### [`Debug`](https://mops.one/core/docs/Debug)
+### [`Debug`](https://mops.one/core/docs/Deug)
 
 #### Added functions
 - `todo()` - Replaces `Prelude.nyi()`
@@ -258,7 +260,7 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 - `rangeBy()`, `rangeByInclusive()` - Range with step
 - `toInt()` - Convert to Int
 
-### [`Int8`, `Int16`, `Int32`, `Int64`, `Nat8`, `Nat16`, `Nat32`, `Nat64`](https://mops.one/core)
+### [`Int8`, `Int16`, `Int32`, `Int64`, `Nat8`, `Nat16`, `Nat32`, `Nat64`](https://mops.one/core/docs/)
 
 #### Renamed fields
 
@@ -293,7 +295,7 @@ Helper functions have been added, such as `allValues()`, for each finite type in
 
 The `Random` module has been completely redesigned in the core package with a new API that provides better control over random number generation and supports both pseudo-random and cryptographic random number generation.
 
-```motoko
+```motoko no-repl
 import Random "mo:core/Random";
 
 persistent actor {
@@ -370,7 +372,7 @@ The new migration pattern allows you to automatically convert existing stable da
 
 The `with migration` syntax follows this structure:
 
-```motoko
+```motoko no-repl
 (
   with migration = func(
     state : {
@@ -389,7 +391,7 @@ persistent actorApp {
 
 It's also possible to use a function defined in an imported module:
 
-```motoko
+```motoko no-repl
 import { migrate } "Migration";
 
 (with migration = migrate)
@@ -404,7 +406,7 @@ This pattern ensures that existing stable data is preserved and converted to the
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import Buffer "mo:base/Buffer";
 
 persistent actor{
@@ -433,7 +435,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import List "mo:core/List";
 
 (
@@ -466,7 +468,7 @@ persistent actorApp {
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import Deque "mo:base/Deque";
 
 persistent actor{
@@ -492,7 +494,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import Deque "mo:base/Deque"; // For migration
 import Queue "mo:core/Queue";
 
@@ -537,7 +539,7 @@ import Queue "mo:core/Queue";
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
@@ -570,7 +572,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
@@ -607,7 +609,7 @@ persistent actor{
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import OrderedMap "mo:base/OrderedMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
@@ -634,7 +636,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import OrderedMap "mo:base/OrderedMap"; // For migration
 import Map "mo:core/Map";
 import Text "mo:core/Text";
@@ -675,7 +677,7 @@ persistent actor{
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import OrderedSet "mo:base/OrderedSet";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
@@ -704,7 +706,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import OrderedSet "mo:base/OrderedSet"; // For migration
 import Set "mo:core/Set";
 import Text "mo:core/Text";
@@ -747,7 +749,7 @@ persistent actorApp {
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import Trie "mo:base/Trie";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
@@ -778,7 +780,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import Trie "mo:base/Trie"; // For migration
 import Map "mo:core/Map";
 import Text "mo:core/Text";
@@ -816,7 +818,7 @@ persistent actor{
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import TrieMap "mo:base/TrieMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
@@ -849,7 +851,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
@@ -886,7 +888,7 @@ persistent actor{
 
 #### Original (`base`)
 
-```motoko
+```motoko no-repl
 import TrieSet "mo:base/TrieSet";
 import Text "mo:base/Text";
 
@@ -913,7 +915,7 @@ persistent actor{
 
 #### Updated (`core`)
 
-```motoko
+```motoko no-repl
 import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";

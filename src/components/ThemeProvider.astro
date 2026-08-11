@@ -1,14 +1,17 @@
 ---
 ---
 
-{/* Inlined to avoid FOUC. Defaults to system prefers-color-scheme; overridden by stored user preference. */}
+{/* Inlined to avoid FOUC. Light editorial parchment is the deliberate default; dark applies
+   only when the user has explicitly opted in. Never auto-switch on prefers-color-scheme
+   (ICP brand guide: light default, dark opt-in only). */}
 <script is:inline>
 	window.StarlightThemeProvider = (() => {
 		const storedTheme =
 			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
-		const prefersTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-		const theme = storedTheme || prefersTheme;
-		document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+		const theme = storedTheme === 'dark' ? 'dark' : 'light';
+		document.documentElement.dataset.theme = theme;
+		const themeColor = document.querySelector('meta[name="theme-color"]');
+		if (themeColor) themeColor.setAttribute('content', theme === 'dark' ? '#14110d' : '#faf9f5');
 		return {
 			updatePickers(theme = storedTheme || 'auto') {
 				document.querySelectorAll('starlight-theme-select').forEach((picker) => {

@@ -545,6 +545,14 @@ Signing transactions can be delegated from one key to another one. If delegation
 
     -   `targets` (`array` of `CanisterId`, optional): If this field is set, the delegation only applies for requests sent to the canisters in the list. The list must contain no more than 1000 elements; otherwise, the request will not be accepted by the IC.
 
+    -   `permissions` (`text`, optional): If this field is set, the delegation only applies for the kinds of requests permitted by its value. The following values are supported:
+
+        -   `"queries"`: the delegation only applies for query calls and `read_state` requests. Requests to `/call` endpoints (i.e., update calls, including calls to query methods submitted as update calls) are not accepted by the IC if any delegation in the chain carries this value: a subsequent delegation cannot lift the restriction imposed by a previous one.
+
+        -   `"all"`: the delegation applies for all kinds of requests; this is the same as omitting the field.
+
+        If this field is set to any other value, then the delegation is invalid and requests of any kind whose chain of delegations contains the delegation will not be accepted by the IC.
+
 -   `signature` (`blob`): Signature on the 32-byte [representation-independent hash](#hash-of-map) of the map contained in the `delegation` field as described in [Signatures](./index.md#signatures), using the 27 bytes `\x1Aic-request-auth-delegation` as the domain separator.
 
     For the first delegation in the array, this signature is created with the key corresponding to the public key from the `sender_pubkey` field, all subsequent delegations are signed with the key corresponding to the public key contained in the preceding delegation.
@@ -571,7 +579,7 @@ Field values are hashed as follows:
 
 -   Binary blobs (`canister_id`, `arg`, `nonce`, `module`) are hashed as-is.
 
--   Strings (`request_type`, `method_name`) are hashed by hashing their binary encoding in UTF-8, without a terminal `\x00`.
+-   Strings (`request_type`, `method_name`, `permissions`) are hashed by hashing their binary encoding in UTF-8, without a terminal `\x00`.
 
 -   Natural numbers (`compute_allocation`, `memory_allocation`, `ingress_expiry`) are hashed by hashing their binary encoding using the shortest form [Unsigned LEB128](https://en.wikipedia.org/wiki/LEB128#Unsigned_LEB128) encoding. For example, `0` should be encoded as a single zero byte `[0x00]` and `624485` should be encoded as byte sequence `[0xE5, 0x8E, 0x26]`.
 

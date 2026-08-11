@@ -179,7 +179,9 @@ The threshold `t` can be defined in the field `wasm_memory_threshold` in the [ca
 :::note
 
 While the above function is scheduled immediately once the condition above is triggered, it may not necessarily be executed immediately if the canister does not have enough cycles.
-If the canister gets frozen immediately after the function is scheduled for execution, the function will run once the canister's unfrozen _if_ the canister's remaining wasm memory size in bytes remains strictly less than the threshold `t`.
+If the canister gets frozen immediately after the function is scheduled for execution, the function will run once the canister is unfrozen _if_ the canister's remaining wasm memory size in bytes remains strictly less than the threshold `t`.
+In particular, inter-canister response callback messages might still be executed after the condition is triggered and before the function `canister_on_low_wasm_memory` is executed.
+
 :::
 
 #### Callbacks
@@ -438,7 +440,7 @@ Eventually, the canister will want to respond to the original call, either by re
 
 -   `ic0.msg_reply_data_append : (src : I, size : I) → ()`; `I ∈ {i32, i64}`
 
-    Appends data it to the (initially empty) data reply. Traps if the total appended data exceeds the [maximum response size](../cycles-costs.md).
+    Appends data it to the (initially empty) data reply. Traps if the total appended data exceeds the [maximum response size](../resource-limits.md#message-limits).
 
     This traps if the current call already has been or does not need to be responded to.
 
@@ -576,7 +578,7 @@ There must be at most one call to `ic0.call_on_cleanup` between `ic0.call_new` a
 
 -   `ic0.call_data_append : (src : I, size : I) -> ()`; `I ∈ {i32, i64}`
 
-    Appends the specified bytes to the argument of the call. Initially, the argument is empty. Traps if the total appended data exceeds the [maximum inter-canister call payload](../cycles-costs.md).
+    Appends the specified bytes to the argument of the call. Initially, the argument is empty. Traps if the total appended data exceeds the [maximum inter-canister call payload](../resource-limits.md#message-limits).
 
     This may be called multiple times between `ic0.call_new` and `ic0.call_perform`.
 
@@ -736,7 +738,7 @@ The 32-bit stable memory System API (`ic0.stable_size`, `ic0.stable_grow`, `ic0.
 
 Canisters have the ability to store and retrieve data from a secondary memory. The purpose of this *stable memory* is to provide space to store data beyond upgrades. The interface mirrors roughly the memory-related instructions of WebAssembly, and tries to be forward compatible with exposing this feature as an additional memory.
 
-The stable memory is initially empty and can be grown up to the [Wasm stable memory limit](../cycles-costs.md) (provided the subnet has capacity).
+The stable memory is initially empty and can be grown up to the [Wasm stable memory limit](../resource-limits.md#memory-limits) (provided the subnet has capacity).
 
 -   `ic0.stable_size : () → (page_count : i32)`
 

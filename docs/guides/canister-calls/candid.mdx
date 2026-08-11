@@ -103,16 +103,23 @@ For the complete type reference, including subtyping rules, see the [Candid spec
 
 The Motoko compiler generates Candid descriptions automatically from your actor's type signature. When you build with icp-cli, the `.did` file is placed in the build output directory. No manual authoring needed.
 
-You can also provide a hand-written `.did` file by setting the `candid` field in `icp.yaml`. This is useful when you want an explicit API contract that is versioned independently of the implementation:
+You can also provide a hand-written `.did` file by setting the `candid` field for the canister in `mops.toml` (the `@dfinity/motoko` recipe v5 and later builds with `mops build`). This is useful when you want an explicit API contract that is versioned independently of the implementation:
 
 ```yaml
+# icp.yaml
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/motoko@v4.1.0"
-      configuration:
-        main: backend/app.mo
-        candid: backend/backend.did  # Optional: overrides auto-generation
+      type: "@dfinity/motoko@v5.0.0"
+```
+
+Declare the source and Candid file under the canister's entry in `mops.toml`:
+
+```toml
+# mops.toml
+[canisters.backend]
+main = "backend/app.mo"
+candid = "backend/backend.did"  # Optional: overrides auto-generation
 ```
 
 If `candid` is omitted, the Motoko recipe auto-generates the interface from the source.
@@ -159,9 +166,8 @@ Reference the generated `.did` file in your `icp.yaml`:
 canisters:
   - name: my_canister
     recipe:
-      type: "@dfinity/rust@v3.2.0"
+      type: "@dfinity/rust@v3.3.0"
       configuration:
-        package: my_canister
         candid: src/my_canister/my_canister.did
 ```
 
@@ -439,7 +445,7 @@ For type selector configuration and advanced options, see the [`ic-cdk-bindgen` 
 | `didc decode <hex>` | Decode binary Candid back to text |
 | `didc subtype new.did old.did` | Check that `new` is a safe upgrade from `old` |
 
-**Candid UI**: a web interface for calling canister methods directly from a browser, generated automatically for every deployed canister. Useful for testing and debugging without writing frontend code. Access it at `https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp0.io/?id=<canister-id>` for mainnet canisters.
+**Candid UI**: a web interface for calling canister methods directly from a browser, generated automatically for every deployed canister. Useful for testing and debugging without writing frontend code. Access it at `https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp.net/?id=<canister-id>` for mainnet canisters.
 
 ## Next steps
 

@@ -77,9 +77,15 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: 5_000_000_000_000 (5 trillion cycles).
 
+-   `minimum_incoming_canister_call_cycles` (`nat`)
+
+    Must be a number between 0 and 2<sup>128</sup>-1, inclusively, and indicates the minimum number of cycles that must be attached to an incoming inter-canister call. If a different canister makes a call with fewer attached cycles than this threshold, the call is rejected with `CANISTER_ERROR` and all attached cycles are refunded to the caller. Ingress messages and self-calls (where the caller and the callee are the same canister) are not subject to this limit.
+
+    Default value: 0 (no minimum enforced).
+
 -   `wasm_memory_limit` (`nat`)
 
-    Must be a number between 0 and 2<sup>48</sup>-1 (i.e., 256TB), inclusively, and indicates the upper limit on the WASM heap memory consumption of the canister in bytes.
+    Must be a number between 0 and 2<sup>48</sup>, inclusively, and indicates the upper limit on the WASM heap memory consumption of the canister in bytes.
 
     An operation (update method, canister init, canister post_upgrade) that causes the WASM heap memory consumption to exceed this limit will trap.
     The WASM heap memory limit is ignored for query methods, response callback handlers, global timers, heartbeats, and canister pre_upgrade.
@@ -120,9 +126,20 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: `controllers`.
 
+-   `status_visibility` (`status_visibility`)
+
+    Controls who can access the canister's status through the `canister_status` endpoint of the management canister. Can be one of:
+    - `controllers`: Only the canister's controllers can read its status
+    - `public`: Anyone can read the canister's status
+    - `allowed_viewers` (`vec principal`): Only principals in the provided list and the canister's controllers can read its status, the maximum length of the list is 10
+
+    Regardless of this setting, subnet admins and the canister itself can always read the canister's status.
+
+    Default value: `controllers`.
+
 -   `wasm_memory_threshold` (`nat`)
 
-    Must be a number between 0 and 2<sup>64</sup>-1, inclusively, and indicates the threshold on the remaining wasm memory size of the canister in bytes:
+    Must be a number between 0 and 2<sup>48</sup>, inclusively, and indicates the threshold on the remaining wasm memory size of the canister in bytes:
     if the remaining wasm memory size of the canister is below the threshold, execution of the ["on low wasm memory" hook](./canister-interface.md#on-low-wasm-memory) is scheduled.
 
     Default value: 0 (i.e., the "on low wasm memory" hook is never scheduled).
@@ -259,9 +276,13 @@ Indicates various information about the canister. It contains:
 
     -   The reserved cycles limit of the canister, i.e., the maximum number of cycles that can be in the canister's reserved balance after increasing the canister's memory allocation and/or actual memory usage.
 
+    -   The minimum number of cycles required for incoming inter-canister calls from a different canister (self-calls and ingress messages are not subject to this limit).
+
     -   The visibility of the canister's logs.
 
     -   The visibility of the canister's snapshots.
+
+    -   The visibility of the canister's status.
 
     -   The WASM heap memory limit of the canister in bytes (the value of `0` means that there is no explicit limit).
 
@@ -291,7 +312,13 @@ Indicates various information about the canister. It contains:
 
     * `response_payload_bytes_total`: the total number of query and composite query response payload (reply data or reject message) bytes.
 
-Only the controllers of the canister or the canister itself or subnet admins can request its status.
+Who can request a canister's status is governed by the `status_visibility` field of `canister_settings` and can be one of the following variants:
+
+- `controllers`: only the canister's controllers can request the status (default);
+- `public`: everyone can request the status;
+- `allowed_viewers` (`vec principal`): only principals in the provided list and the canister's controllers can request the status, the maximum length of the list is 10.
+
+Regardless of this setting, the canister itself and subnet admins can always request the canister's status.
 
 #### Memory Metrics {#ic-canister_status-memory_metrics}
 
@@ -491,7 +518,7 @@ Although there exist various hierarchical key derivation schemes (e.g., [BIP32](
 For these reasons, a new derivation scheme is specified here.
 This scheme does not make use of _clamping_ (see [RFC8032, Section 5.1.5, Item 2](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.5)), because it is unnecessary in the given setting, and satisfies the following requirements:
 
-- Off-chain availability: New public keys can be computed off-chain from a master public key without requiring interaction with the IC.
+- Availability: New public keys can be computed client-side from a master public key without requiring interaction with the IC.
 - Hierarchical derivation: Derived keys are organized in a tree such that from any public key it is possible to derive new child keys. The first level is used to derive unique canister-specific keys from the master key.
 - Simplicity: The scheme is simple to implement using existing libraries.
 
@@ -649,7 +676,7 @@ In the replicated mode, the responses for all identical requests must match, too
 
 For this reason, the calling canister can supply a transformation function, which the IC uses to let the canister sanitize the responses from such unique values. The transformation function is executed separately on the corresponding response received for a request (both in replicated and non-replicated modes). Only the transformed response will be available to the calling canister.
 
-Currently, the `GET`, `HEAD`, and `POST` methods are supported for HTTP requests. Additionally, the `PUT` and `DELETE` methods are supported in non-replicated mode only. `PUT` and `DELETE` are restricted to non-replicated mode to avoid confusing race conditions that may occur with replicated execution.
+Currently, the `GET`, `HEAD`, and `POST` methods are supported for HTTP requests. Additionally, the `PUT`, `DELETE`, and `PATCH` methods are supported in non-replicated mode only. `PUT`, `DELETE`, and `PATCH` are restricted to non-replicated mode to avoid confusing race conditions that may occur with replicated execution.
 
 It is important to note the following for the usage of the `POST` method:
 
@@ -673,7 +700,7 @@ The following parameters should be supplied for the call:
 
 -   `max_response_bytes` - optional, specifies the maximal size of the response in bytes. If provided, the value must not exceed `2MB` (`2,000,000B`). The call will be charged based on this parameter. If not provided, the maximum of `2MB` will be used.
 
--   `method` - currently, `GET`, `HEAD`, and `POST` are supported. Additionally, `PUT` and `DELETE` are supported in non-replicated mode only.
+-   `method` - currently, `GET`, `HEAD`, and `POST` are supported. Additionally, `PUT`, `DELETE`, and `PATCH` are supported in non-replicated mode only.
 
 -   `headers` - list of HTTP request headers and their corresponding values
 

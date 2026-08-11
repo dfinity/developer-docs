@@ -40,7 +40,6 @@ docs/                   # All documentation (.md only)
 .sources/               # Pinned upstream source repos (read-only)
 ├── VERSIONS            # Current pinned versions for versioned submodules
 └── ...                 # icp-cli, motoko, cdk-rs, icskills, examples, ...
-.docs-plan/             # Planning artifacts and authoring workflow
 AGENTS.md               # Contributor and agent instructions
 ```
 
@@ -56,8 +55,6 @@ Key rules at a glance:
 
 - Use `icp` CLI commands in all examples — never `dfx`
 - Use `mo:core` for all Motoko standard library imports — never `mo:base`
-- Every content page ends with an `<!-- Upstream: -->` comment listing source repos used
-- Every PR includes a `## Sync recommendation` in the description
 
 Use **squash and merge** to keep `main` history clean.
 
@@ -98,7 +95,6 @@ These endpoints are generated at build time and updated automatically on every d
 | ICP CLI docs | https://cli.internetcomputer.org |
 | JS SDK docs | https://js.icp.build |
 | ICP Skills | https://skills.internetcomputer.org |
-| Learn Hub | https://learn.internetcomputer.org |
 | Motoko core library | https://mops.one/core/docs |
 | Rust CDK API | https://docs.rs/ic-cdk/latest/ic_cdk |
 

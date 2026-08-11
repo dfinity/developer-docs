@@ -1,11 +1,40 @@
 ---
 name: icp-brand-design
 description: "ICP / DFINITY visual design system v2: tokens, color, typography, layout, components, accessibility for DFINITY and Internet Computer surfaces. Pairs with icp-brand-voice. Use when building or reviewing visual surfaces (NNS, ICP.app, Internet Identity, dashboards, the main website, developer docs, marketing). Enforces the system that ships on internetcomputer.org: three faces (Newsreader, Inter, JetBrains Mono), single rust accent, light editorial parchment as the default theme with an opt-in dark theme for product surfaces that need it, sentence case, italic for asides only, no em-dashes (U+2014), tamperproof spelled as one word. Triggers: ICP design, DFINITY design, brand tokens, design review ICP, color palette, typography ICP, NNS redesign, light or dark mode ICP. OISY, Caffeine, and ecosystem products with their own brand are out of scope."
+metadata:
+  brand_guide_version_at_authoring: 'v2.26'
+  brand_guide_rules_url: 'https://jgwns-tqaaa-aaaao-ba5ua-cai.icp0.io/rules.json'
 ---
 
-# ICP / DFINITY Brand Design v2.2
+# ICP / DFINITY Brand Design v2.7
 
-**Current version:** v2.2 (2026-05-08). See the Changelog section at the bottom for history. Every change to this skill bumps the minor version and adds a line to the changelog.
+## Rules of record check (FIRST STEP, EVERY TASK)
+
+Before applying any rule in this skill, fetch the live brand rules and check the version.
+
+```
+GET https://jgwns-tqaaa-aaaao-ba5ua-cai.icp0.io/rules.json
+```
+
+This file is the machine-readable source of truth for the DFINITY / Internet Computer brand. Compare the `version` field in the JSON against the version this skill was authored against:
+
+- **This skill was authored against brand guide `v2.26`.**
+
+If the live `version` is the same, proceed normally using the rules in this skill.
+
+If the live `version` is newer (e.g., `v2.27` or higher), surface a one-line warning to the user before continuing:
+
+> Note: brand guide is now `vX.Y`, this skill was written against `v2.26`. Using the live rules from `/rules.json` as the source of truth where they differ.
+
+Then proceed using the live JSON as the source of truth for: positioning, banned characters, banned words, one-word spellings, font stack, accent color, italic rule, surfaces order, default theme, hyperbole ban, and emoji ban. Anything not covered in the JSON falls back to this skill.
+
+If the fetch fails (offline, canister down), proceed using this skill's rules and mention to the user that the live rules could not be reached.
+
+The human-readable brand guide lives at https://jgwns-tqaaa-aaaao-ba5ua-cai.icp0.io/.
+
+---
+
+**Current version:** v2.7 (2026-07-17). See the Changelog section at the bottom for history. Every change to this skill bumps the minor version and adds a line to the changelog. This release tracks brand guide v2.26: the favicon is added as a first-class brand surface, with a new Section 6.5 documenting the SVG, .ico, PNG sizes, Apple touch icon (light + dark), Safari pinned-tab mask, and the recommended `<head>` snippet. The favicon files ship alongside `assets/tokens.css` in the skill zip. Color tokens, type stack, layout, italic rule, accent scope, and every other rule are unchanged.
 
 ## When to Use This Skill
 
@@ -65,6 +94,8 @@ The tokens file ships the light theme at `:root` (so it loads by default with no
 The accent paints heading emphasis words, key inline terms, primary CTA fills, and focus rings. Body text, nav, and chrome stay in `--icp-fg`. Never use the accent on chart fills, banners, large blocks, or anything where it would compete with itself across the page.
 
 **Accent scope rule (strict).** The accent is for **single words or short phrases only**: one emphasis word in a heading, an inline term inside a paragraph, a CTA label, an indicator dot, a focus ring. **Never on a full sentence, a full subtitle, a full paragraph, or any block of text.** If more than a short phrase is in the accent, the design is wrong. The test, the accent should always read as a precise pointer, never as a paint job. If a designer asks "can I make the whole subtitle rust to make it stand out", the answer is no, use weight or hierarchy instead, the accent stays scoped.
+
+**Homepage hero carve-out (v2.25).** The internetcomputer.org homepage H1 line two (rotation between *Runs AIware.* and *Tamperproof, always-on.*) and the sub-strap fragment *fluid functionality* ship italic-rust in full. This is a controlled exception to both the accent scope rule and the one-italic-word rule, scoped strictly to the homepage hero on internetcomputer.org. Every other surface (off-homepage product pages, decks, banners, signatures, video conference backgrounds, this guide) continues to ship the canonical strap *Sovereign cloud. Software that's alive.* with italic-rust on *alive.* only, and the one-italic-word rule still applies there. Off-homepage surfaces stay locked.
 
 The dark accent is warmed to `#c25a37` because the same rust at `#a8482b` does not pass AA on a dark surface for small UI text. Both values resolve to `var(--icp-accent)` once the theme is set.
 
@@ -202,7 +233,11 @@ The system has **three faces, each with one job**.
 
 **Italic**
 
-- Newsreader italic carries a single emphasis word inside an otherwise roman headline ("Sovereign *frontier* cloud", "What *ICP* is"), captions, attributions, and asides. The emphasis word is colored in the rust accent on the live site. The italic word is always **the subject of the heading**, the noun or noun phrase the line is about, never a verb, copula, article, or connector. Test, can the heading still stand if the italic word is removed; if yes, the emphasis is on the wrong word.
+- Newsreader italic carries a single emphasis word inside an otherwise roman headline, captions, attributions, and asides. The emphasis word is colored in the rust accent on the live site. The italic word lands on one of three targets:
+  - **(a) Subject noun.** The noun the line is about. Example: "What *ICP* is".
+  - **(b) Metaphor carrying the claim.** A factual metaphor describing a real product property. Example: "Sovereign cloud. Software that's *alive*." (italic on *alive*).
+  - **(c) Possessive pronoun asserting sovereignty.** Used in pillar rows. Example: "On-demand · Tamperproof · Always-on · Fluid · *Yours*" (italic on *Yours*).
+- Never italicise a verb, copula, article, or connector. Never more than one italic word per line. Use the removal test: if the line still stands after removing the italic word, the emphasis is on the wrong word.
 - Never italic for stress in body copy. Never italic for entire paragraphs.
 
 **Weights**
@@ -236,6 +271,39 @@ Pills are scoped strictly to the CTA pattern. Cards, panels, and inputs never go
 - Photography is rare. When used, warm-toned, documentary, no stock illustrations.
 - No 3D renders, no isometric illustrations, no crypto iconography (no chains, no shields, no padlocks).
 - The DFINITY infinity logo is the only mark. Always paired with the wordmark in nav, never alone outside small avatar contexts.
+
+### 6.5 Favicon
+
+The favicon is the smallest surface the brand ships on. The DFINITY gradient infinity is isolated on a transparent canvas because the brand's typography and grid texture do not survive at 16px. The browser places the mark on its own chrome, light or dark, and the mark holds either way.
+
+**Files (ship all of them for full coverage):**
+
+| Purpose                              | File                                          | Notes                                       |
+| ------------------------------------ | --------------------------------------------- | ------------------------------------------- |
+| Modern browsers, preferred           | `assets/favicon/favicon.svg`                  | Vector, transparent canvas                  |
+| Legacy fallback (IE, older tabs)     | `assets/favicon/favicon.ico`                  | Multi-size (16, 32, 48 px)                  |
+| PNG raster fallbacks                 | `favicon-16.png`, `-32.png`, `-48.png`, `-192.png`, `-512.png` | For consumers that want a specific size     |
+| iOS home screen (light)              | `apple-touch-icon.png`                        | 180x180                                     |
+| iOS home screen (dark)               | `apple-touch-icon-dark.png`                   | 180x180, dark-optimized variant             |
+| Safari pinned tab                    | `safari-pinned-tab.svg`                       | Monochrome mask, rust `#a8482b` as color    |
+
+**Recommended `<head>` snippet:**
+
+```html
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#a8482b" />
+```
+
+**Rules:**
+
+- Do not place the favicon on a filled background. The transparent canvas is intentional so the browser chrome, light or dark, becomes the background.
+- Do not add a border, drop shadow, or wordmark to the favicon. The mark alone.
+- Do not substitute a different logo, monogram, or letter mark. The DFINITY infinity is the only favicon.
+- The Safari pinned-tab mask uses rust `#a8482b` as its color. Do not swap for another accent.
+
+The download bundle at `downloads/icp-favicon.zip` on the brand guide ships all files above in a flat archive. Machine-readable pointer at `favicon` in `/rules.json`.
 
 ### 7. Motion
 
@@ -346,11 +414,24 @@ The live `internetcomputer.org` ships light only and does not expose a toggle to
 
 Before merging any ICP / DFINITY visual change, confirm:
 
+**Visual QA before shipping (the lessons learned the hard way).** Source code is not the deliverable. The rendered pixels are. Every one of the corrections the user has had to flag on this brand traces back to skipping one of the steps below:
+
+- [ ] **Render and look at it.** For any PNG, slide, banner, signature, or HTML page, render to image and open it. Do not ship anything visual you have not personally inspected as pixels.
+- [ ] **Zoom in on every styled fragment.** When a rule says "rust accent on the metaphor word", "italic on *Yours*", or "rust period inside the strap", zoom to that exact glyph and confirm the color, weight, and italic angle are correct. Body ink at the edge of a rust span is the failure mode that hides easiest.
+- [ ] **Audit trailing punctuation.** Periods, commas, and ellipses inherit the parent span's color only when they live inside that span. `<em>alive</em>.` paints the period in body ink; `<em>alive.</em>` paints it in rust. The locked rule is: the trailing punctuation that closes a styled phrase sits inside the styled span, not outside it.
+- [ ] **Sweep every instance.** When a styled fragment lives in more than one place (the strap appears in the hero, the type specimen, the theme cards, the banners, and the JSON contract), fix every instance in the same pass. One-place fixes ship inconsistent surfaces.
+- [ ] **Avatar and PFP overlap.** Any social banner has a profile picture sitting on top of it. Confirm no important glyph lands under the avatar circle (X) or the avatar square (LinkedIn). Right-align the lockup when the avatar lives bottom-left.
+- [ ] **Cross-surface consistency.** When the strap or pillar row changes, also update the brand guide HTML, `rules.json`, the deck master, the email signature, the VC backgrounds, and the social banners. The brand guide is the source of truth, but every applied surface that carries the strap must be re-rendered against the new markup.
+- [ ] **Re-render after every markup change.** Edit, render, inspect, ship. Never edit and ship.
+- [ ] **Em-dash sweep (`grep -c $'\xe2\x80\x94'`) returns 0** on every HTML, JSON, and markdown file before deploy.
+
+If any of the above is skipped, expect the user to flag it and ask why it was not caught.
+
 - [ ] Uses `tokens.css` variables, no hardcoded brand hex values
 - [ ] Light editorial parchment is the default (no `data-theme` attribute on `<html>`). Dark is opt-in via `data-theme="dark"`, exposed as an explicit toggle, never auto from `prefers-color-scheme`
 - [ ] Newsreader for editorial type, Inter for UI chrome, JetBrains Mono for technical readouts. No other faces.
 - [ ] Sentence case for headlines and body. UPPERCASE only on Inter eyebrows, JetBrains Mono markers, and small CTA labels.
-- [ ] Italic used only for asides, captions, attributions, or a single heading emphasis word
+- [ ] Italic used only for asides, captions, attributions, or a single emphasis word per heading / strap / pillar row. The italic word lands on the subject noun, a factual metaphor, or a possessive pronoun asserting sovereignty. Never on a verb, copula, article, or connector.
 - [ ] One primary accent on the page (rust `#a8482b` light, `#c25a37` dark). Section stripes scoped to 3px category coding only.
 - [ ] No section-stripe fills on CTAs, body text, or emphasis
 - [ ] Body prose capped at 720px
@@ -395,6 +476,11 @@ This skill follows semantic versioning at the brand level.
 
 ## Changelog
 
+- **v2.7** (2026-07-17). Tracks brand guide v2.26. Adds Section 6.5 *Favicon* documenting the favicon as a first-class brand surface: SVG for modern browsers, multi-size `.ico` fallback, five raster PNG sizes (16, 32, 48, 192, 512), Apple touch icon in light and dark variants, Safari pinned-tab mask using rust `#a8482b` as its color, and the recommended `<head>` snippet. Rules added: transparent canvas is intentional (the browser chrome is the background), no filled background, no border, no drop shadow, no substituted mark, no swapped mask color. The favicon files ship inside the skill zip alongside `assets/tokens.css`. Machine-readable pointer added to `/rules.json` under the `favicon` key. No changes to color tokens, type stack, layout, italic rule, accent scope, components, or accessibility rules.
+- **v2.6** (2026-06-30). Tracks brand guide v2.25. Adds a homepage hero carve-out to the accent scope rule and the italic rule: the internetcomputer.org homepage H1 line two (rotation between *Runs AIware.* and *Tamperproof, always-on.*) and the sub-strap fragment *fluid functionality* ship italic-rust in full as a controlled exception. The carve-out is scoped strictly to the homepage hero on internetcomputer.org. Off-homepage surfaces continue to ship the canonical strap *Sovereign cloud. Software that's alive.* with italic-rust on *alive.* only, and both the accent scope rule and the one-italic-word rule still apply there. No changes to color tokens, type stack, layout, components, or accessibility rules.
+- **v2.5** (2026-06-15). Tracks brand guide v2.22. Adds a *Visual QA before shipping* sub-section to the design review checklist, codifying the lessons from the v2.21 → v2.22 cycle: render and look at every visual deliverable before claiming a fix; zoom in on every styled fragment (rust periods, italic words, accent glyphs); place trailing punctuation inside the styled span when it should inherit the style; sweep every instance of a shared styled fragment in the same pass; check avatar overlap on social banners; re-render after every markup change. The trigger case was the trailing period after *alive* shipping in body ink because the markup placed it outside the rust-colored italic span on every surface (hero, type specimen, theme cards, social banners, JSON contract). All markup now wraps the punctuation inside the styled span.
+- **v2.4** (2026-06-15). Tracks brand guide v2.20. Video conference backgrounds re-anchored: the editorial lockup (eyebrow, two-line strap with italic-rust on *alive*, pillar row with italic on *Yours*) and the gradient infinity mark move from the bottom of the frame to the top, occupying the upper twenty-five percent of the canvas. The lower two thirds of the frame are now the speaker safe zone. The radial glow center moves with the type to keep the brighter zone behind the lockup. No changes to color tokens, type stack, italic rule, accent scope, or any other component pattern.
+- **v2.3** (2026-06-15). Positioning reset aligning the skill with brand guide v2.19 and the internetcomputer.org refresh. Italic rule widens from "subject noun only" to three targets: subject noun, metaphor carrying the claim (e.g., *alive*), or possessive pronoun asserting sovereignty (e.g., *Yours*). No changes to color tokens, type stack, layout, components, or accessibility rules. Visual system is stable; only the verbal emphasis rule moves.
 - **v2.2** (2026-05-08). Two permissive rules promoted to prescriptive. Hero rule: "the hero section must use the grid paper overlay" (was "use it sparingly: hero, feature surface, ..."), so the brand's signature texture is no longer skippable when scanning for violations. Accent scope rule added: rust accent is for single words or short phrases only, never on a full sentence, subtitle, or block of text, with the precise-pointer test. Both edits sharpen what was already implicit in v2.0/v2.1.
 - **v2.1** (2026-05-08). Italic emphasis rule clarified: italic word lands on the subject of the heading (the noun the line is about), never a verb, copula, article, or connector. Removal test added. Headings on the canonical guide audited; "What ICP *is*" corrected to "What *ICP* is". Versioning rule introduced.
 - **v2.0** (2026-05-08). Initial v2 release. Light editorial parchment as the default theme, opt-in dark theme via `data-theme="dark"`, three-face system locked (Newsreader, Inter, JetBrains Mono), single rust accent `#a8482b`, sunk parchment (`--icp-bg-sunk` `#f3f1ea`) for section rhythm, hero grid paper texture (`.icp-grid-paper-overlay`), muted section stripes (rust, deep teal `#0b5e5c`, ink-blue `#1c3d5a`) replacing the v1 neon palette.
@@ -403,6 +489,7 @@ This skill follows semantic versioning at the brand level.
 
 - **Canonical brand guide v2**: the deployed HTML reference page (URL shared in conversation)
 - **Tokens file**: `assets/tokens.css` in this skill. Drop into any product as the single source of truth.
+- **Favicon set**: `assets/favicon/` in this skill. SVG, multi-size ICO and PNG, Apple touch icons (light + dark), Safari pinned-tab mask.
 - **Reference site**: [internetcomputer.org](https://internetcomputer.org)
 - **Paired skill**: `icp-brand-voice` for positioning, voice, and vocabulary.
 - **Out of scope**: products with their own brand identity (OISY wallet, Caffeine, and any future ecosystem product that ships under its own visual and verbal system).
@@ -425,4 +512,4 @@ Response: Hand over `tokens.css`, the Newsreader + Inter + JetBrains Mono Google
 
 User: "Build a landing page for an ICP campaign on agent-deployable apps."
 
-Response: Hero in Newsreader 380 with one italic emphasis word in the rust accent, sentence case, capped at 86px, tracking -0.015em. Inter UPPERCASE eyebrow above. JetBrains Mono metadata strip beneath ("AVAILABILITY · GENERAL · CADENCE · ROLLING"). Rust pill CTA as the only primary action. Editorial cards with 3px section stripes if the page belongs to a category, plain rust stripes if not. CTA bar before the footer in near-black `#1a1a1a`. Light theme only, matching the live site.
+Response: Hero in Newsreader 380 with one italic emphasis word in the rust accent (landing on subject, metaphor, or possessive pronoun per the italic rule), sentence case, capped at 86px, tracking -0.015em. Inter UPPERCASE eyebrow above. JetBrains Mono metadata strip beneath ("AVAILABILITY · GENERAL · CADENCE · ROLLING"). Rust pill CTA as the only primary action. Editorial cards with 3px section stripes if the page belongs to a category, plain rust stripes if not. CTA bar before the footer in near-black `#1a1a1a`. Light theme only, matching the live site.

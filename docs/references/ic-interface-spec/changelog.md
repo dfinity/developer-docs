@@ -8,6 +8,32 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.65.0 (2026-08-03) {$0_65_0}
+* New canister setting `status_visibility` controlling who can read a canister's status via the
+  `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,
+  `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
+  to the controllers. The canister itself and subnet admins can always read the status.
+
+### 0.64.0 (2026-07-06) {$0_64_0}
+* New optional `permissions` field in request delegations restricting the kinds of requests
+  the delegation applies for: the value `"queries"` restricts the delegation to query calls
+  and `read_state` requests, so update calls carrying such a delegation in their chain of
+  delegations are not accepted; the value `"all"` permits all kinds of requests, same as
+  omitting the field. Requests of any kind carrying a delegation with any other value of
+  the `permissions` field are not accepted.
+* `wasm_memory_threshold` in canister settings is now bounded by 2<sup>48</sup>, analogously to `wasm_memory_limit`.
+* New canister setting `minimum_incoming_canister_call_cycles`: if set, inter-canister calls
+  from a different canister that attach fewer cycles than this threshold are rejected with `CANISTER_ERROR`
+  and all attached cycles are refunded. Ingress messages and self-calls are not affected.
+
+### 0.63.0 (2026-06-29) {$0_63_0}
+* Support for the HTTP method `PATCH` in canister `http_request` in non-replicated mode.
+
+### 0.62.0 (2025-05-26) {$0_62_0}
+* Inter-canister response callback messages might still be executed after the condition for `canister_on_low_wasm_memory` is triggered
+  and before the function `canister_on_low_wasm_memory` is executed.
+* Allow EdDSA on curve Ed25519 as a third WebAuthn signature scheme (alongside ECDSA P-256 and RSA PKCS#1v1.5).
+
 ### 0.61.0 (2025-05-18) {$0_61_0}
 * New management canister endpoint `canister_metrics`.
 
@@ -494,7 +520,7 @@ sidebar:
 <!--
 Link replacements from portal source (portal used absolute paths):
   - internetcomputer.org [/docs]/home → / (site root)
-  - internetcomputer.org/.../resource-limits → ../cycles-costs.md (×3 in canister-interface.md: max response size, max inter-canister call payload, Wasm stable memory limit)
+  - internetcomputer.org/.../resource-limits → ../resource-limits.md (×3 in canister-interface.md: max response size, max inter-canister call payload, Wasm stable memory limit)
   - internetcomputer.org/.../bitcoin-how-it-works → ../../guides/chain-fusion/bitcoin.md (in management-canister.md, one level deeper than the original single file)
 -->
 

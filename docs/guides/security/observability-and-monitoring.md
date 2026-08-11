@@ -5,18 +5,24 @@ sidebar:
   order: 9
 ---
 
-## Monitor your canister
+## Expose metrics from your canister
 
 ### Security concern
 
-Without monitoring, it can be hard to detect attacks or vulnerabilities that are being actively exploited. For example, a sudden increase in cycles consumption could indicate a DoS attack, while unexpected changes in canister state could indicate a security breach.
+In case of attacks, it is great to be able to obtain relevant metrics from canisters, such as the number of accounts, size of internal data structures, stable memory, etc.
 
 ### Recommendation
 
-- Monitor your canister's cycles balance regularly, set up alerts for sudden changes in cycles consumption, and add an endpoint to expose health indicators. See the [DoS prevention best practices](./dos-prevention.md) for more context on cycles monitoring.
+[Expose metrics from your canister](https://mmapped.blog/posts/01-effective-rust-canisters.html#expose-metrics) (from [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html)).
 
-- Consider emitting logs for security-relevant events (e.g., access control failures, unexpected state transitions). Since logs are stored in the canister, they provide a tamperproof audit trail.
+## Do not publicly reveal a canister's cycles balance
 
-- See [effective Rust canisters](https://mmapped.blog/posts/01-effective-rust-canisters.html) for general patterns on canister observability.
+### Security concern
+
+Publicly revealing the canister's cycles balance allows an attacker to measure the number of instructions spent by executing the canister methods on the attacker's input. Then the attacker might be able to learn which code paths were taken during execution and derive secret information based on that. Moreover, the attacker can learn which methods and their inputs consume a lot of cycles to mount a cycles-draining attack (see also [protect against draining the cycles balance](./dos-prevention.md#handle-expensive-calls)).
+
+### Recommendation
+
+Your canisters should not publicly expose their cycles balance (available through the system API), i.e., they should only expose their cycles balance to their controllers or other trusted principals.
 
 <!-- Upstream: sync from dfinity/portal building-apps/security/observability-and-monitoring.mdx -->

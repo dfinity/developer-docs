@@ -53,13 +53,13 @@
 #   instead. This is expected behaviour with --depth 1 submodule init.
 # -------------------------------------------------------
 
-chain-fusion-signer   v0.3.0                                                    8cea727
+chain-fusion-signer   v0.4.0                                                    a18c52a
 papi                  v0.1.1                                                    168bc9d
 ic-pub-key            v1.0.1                                                    f89fa55
-icp-cli               v0.2.3                                                    caeac37
-motoko                v1.7.0                                                     1e65e26
+icp-cli               v1.1.0                                                    fe4af7c
+motoko                v1.13.0                                                     cd63c2e
 motoko-core           v2.4.0                                                    cd37dbf
 cdk-rs                ic-cdk v0.20.1 / ic-cdk-timers v1.0.0 / ic-cdk-executor v2.0.0  317f55c
 candid                2025-12-18  # candid v0.10.20, didc v0.5.4                2e4a2cf
 response-verification v3.1.0                                                    18c5a37
-internetidentity      release-2026-05-08                                         f6cf858
+internetidentity      release-2026-08-07                                         c78d1b99

@@ -2,7 +2,7 @@
 title: "Glossary"
 description: "Definitions of ICP-specific terms: canister, cycle, principal, subnet, and more"
 sidebar:
-  order: 15
+  order: 17
 ---
 
 # Glossary
@@ -71,7 +71,7 @@ hosted on this subnet. These blockchains interact using [chain-key cryptography]
 **Boundary nodes** are gateways to the Internet Computer. These nodes
 allow users to access the [canisters](#canister) running on ICP.
 The boundary nodes have several purposes: they aid in discover-ability (the
-`icp0.io` domain name points to a set of boundary nodes), they are
+`icp.net` domain name points to a set of boundary nodes), they are
 geo-aware and can route incoming requests to the nearest subnet
 [node](#node) that hosts the [canister](#canister)
 involved, they can help load balance query
@@ -663,7 +663,7 @@ the induction pool.
 
 #### vetKeys
 
-**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables onchain encryption, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
+**VetKeys** (Verifiable Encrypted Threshold Keys) is a protocol that enables ICP to derive encrypted key material on demand and deliver it to authorized callers without any single node learning the plaintext key. It enables encryption enforced by the network, identity-based encryption, and time-lock decryption without requiring trust in a single party. See [VetKeys](../concepts/vetkeys.md) for the full concept.
 
 #### voting
 

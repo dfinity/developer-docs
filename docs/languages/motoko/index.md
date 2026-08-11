@@ -1,18 +1,17 @@
 ---
 title: "Motoko"
-description: "A language designed for the Internet Computer with built-in actor model and orthogonal persistence"
+description: "A programming language designed for the Internet Computer with built-in actor model, orthogonal persistence, and native WebAssembly compilation."
 sidebar:
   order: 1
 ---
 
-<!-- Intro paragraph: keep in sync with .sources/motoko/doc/md/1-home.mdx -->
-Motoko is a next-generation, high-level programming language designed to empower AI agents building backends for apps and services on the Internet Computer cloud network. While it channels several popular modern languages, it introduces groundbreaking new features such as actor-based concurrency, orthogonal persistence, and seamless WebAssembly integration.
+Motoko is a high-level programming language designed for AI agents building backends for apps and services on the Internet Computer. It combines a familiar syntax with platform-native features: actor-based concurrency, orthogonal persistence, and direct WebAssembly compilation.
 
 ## Key features
 
-**Actor model.** Every Motoko canister is an actor — an isolated unit of state and behavior that communicates with other actors through asynchronous messages. This maps directly to how canisters work on ICP: each canister has private state and a public interface.
+**Actor model.** Every Motoko canister is an actor: an isolated unit of state and behavior that communicates with other actors through asynchronous messages. This maps directly to how canisters work on ICP: each canister has private state and a public interface.
 
-**Orthogonal persistence.** Variables declared in a `persistent actor` survive canister upgrades automatically. There is no database layer, no serialization code, and no pre/post-upgrade hooks needed for most use cases. See [Orthogonal persistence](../../concepts/orthogonal-persistence.md) for how this works at the platform level.
+**Orthogonal persistence.** Variables declared in a `persistent actor` survive canister upgrades automatically. There is no database layer, no serialization code, and no pre/post-upgrade hooks needed for most use cases. See [Orthogonal persistence](/concepts/orthogonal-persistence) for how this works at the platform level.
 
 **Async/await messaging.** Inter-canister calls use `async`/`await`, making sequential message flows read like synchronous code. The compiler and runtime handle the underlying callback mechanics.
 
@@ -38,37 +37,6 @@ persistent actor Counter {
 };
 ```
 
-The `persistent actor` declaration means `count` survives canister upgrades. The `query` keyword marks `get` as a fast, read-only call. The `increment` function is an update call that modifies state and goes through consensus.
-
-## Getting started
-
-Create a new Motoko project with icp-cli:
-
-```bash
-icp new my-project --subfolder motoko
-```
-
-This generates a Motoko canister project with an `icp.yaml` build configuration and a source file. The build configuration uses the Motoko recipe:
-
-```yaml
-canisters:
-  - name: backend
-    recipe:
-      type: "@dfinity/motoko@<version>"
-      configuration:
-        main: src/main.mo
-        shrink: true
-```
-
-Start a local network and deploy:
-
-```bash
-icp network start -d
-icp deploy
-```
-
-For a guided walkthrough, see the [Quickstart](../../getting-started/quickstart.md).
-
 ## Standard library: `core`
 
 The **`core`** package ([mops.one/core](https://mops.one/core)) is the standard library for Motoko. It supersedes the older `base` library with a cleaner API, consistent naming conventions, and data structures that work directly with stable memory.
@@ -77,10 +45,10 @@ Add it to your project's `mops.toml`:
 
 ```toml
 [dependencies]
-core = "2.2.0" # Check the latest version at https://mops.one/core
+core = "2.5.0" # Check the latest version at https://mops.one/core
 
 [toolchain]
-moc = "1.3.0" # Check the latest version at https://github.com/caffeinelabs/motoko/releases
+moc = "1.8.0" # Check the latest version at https://github.com/caffeinelabs/motoko/releases
 ```
 
 Then import modules:
@@ -102,11 +70,32 @@ If you have an existing project using `base`, you can migrate incrementally; bot
 
 `core` and all other Motoko packages are managed with [Mops](https://mops.one), which handles dependency resolution, compiler toolchain management, and publishing. Browse community packages at [mops.one](https://mops.one).
 
+## Example projects
+
+Starting points by use case:
+
+**Web applications**
+
+- [Hello, world!](https://github.com/dfinity/examples/tree/master/motoko/hello_world)
+- [Calling external APIs from a Motoko canister](https://github.com/dfinity/examples/tree/master/motoko/send_http_get)
+- [Reversi game](https://github.com/ninegua/reversi)
+
+**DeFi**
+
+- [ICRC-1 token canister](https://github.com/sonicdex/icrc-1-public/)
+- [Decentralized exchange (DEX)](https://github.com/dfinity/examples/tree/master/motoko/icrc2-swap)
+- [ICRC-7 NFTs](https://github.com/noku-team/icrc7_motoko)
+
+**Chain Fusion**
+
+- [Ethereum integration](https://github.com/dfinity/icp-eth-starter)
+- [Bitcoin point-of-sale](https://github.com/dfinity/examples/tree/master/motoko/ic-pos)
+
+For more, browse the full [Motoko examples collection](https://github.com/dfinity/examples/tree/master/motoko).
+
 ## Further reading
 
-- [Quickstart](../../getting-started/quickstart.md): create and deploy your first canister
+- [Quickstart](/getting-started/quickstart): create and deploy your first canister
 - [core library API docs](https://mops.one/core/docs): standard library reference
-- [Orthogonal persistence](../../concepts/orthogonal-persistence.md): how persistent memory works at the platform level
+- [Orthogonal persistence](/concepts/orthogonal-persistence): how persistent memory works at the platform level
 - [Motoko GitHub](https://github.com/caffeinelabs/motoko): compiler source and issue tracker
-
-<!-- Upstream: hand-written -->
