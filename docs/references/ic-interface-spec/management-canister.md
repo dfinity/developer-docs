@@ -247,7 +247,8 @@ The optional `sender_canister_version` parameter can contain the caller's canist
 ### IC method `canister_status` {#ic-canister_status}
 
 This method can be called by canisters as well as by external users via ingress messages.
-This method can also be called by external users via non-replicated (query) calls, but it cannot be called from composite query calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 Indicates various information about the canister. It contains:
 
@@ -336,7 +337,8 @@ All sizes are expressed in bytes.
 ### IC method `canister_metrics` {#ic-canister_metrics}
 
 This method can be called by canisters as well as by external users via ingress messages.
-This method can also be called by external users via non-replicated (query) calls, but it cannot be called from composite query calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 This method returns a set of canister related metrics for the requested canister, like cycles consumed by different use cases. These metrics should be counters (i.e. monotonically increasing values) that report the accumulated respective amount since the canister was created for new canisters or since the metrics introduction for existing canisters.
 
@@ -948,7 +950,8 @@ A snapshot may be deleted only by the controllers of the canister that the snaps
 
 ### IC method `fetch_canister_logs` {#ic-fetch_canister_logs}
 
-This method can only be called by external users via non-replicated (query) calls, i.e., it cannot be called by canisters, cannot be called via replicated calls, and cannot be called from composite query calls.
+This method can only be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks, i.e., it cannot be called via replicated calls.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 Given a canister ID as input, this method returns a vector of logs of that canister including its trap messages.
 The canister logs are *not* collected in canister methods running in non-replicated mode (NRQ, TQ, CQ, CRy, CRt, CC, and F modes, as defined in [Overview of imports](./canister-interface.md#system-api-imports)) and the canister logs are *purged* when the canister is reinstalled or uninstalled.
@@ -977,7 +980,8 @@ Replica-signed queries may improve security because the recipient can verify the
 
 ### IC method `list_canisters` {#ic-list_canisters}
 
-This method can only be called by external users with subnet admin privileges via non-replicated (query) calls, i.e., it cannot be called by canisters, cannot be called via replicated calls, and cannot be called from composite query calls.
+This method can only be called by subnet admins via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks, i.e., it cannot be called via replicated calls.
+A call from a composite query returns the canisters on the subnet hosting the calling canister.
 
 This method returns the list of all canisters on the subnet as consecutive canister ID ranges. Deleted canisters are not included in the result.
 

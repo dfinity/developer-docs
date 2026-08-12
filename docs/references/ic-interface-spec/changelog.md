@@ -8,6 +8,13 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.66.0 (2026-08-12) {$0_66_0}
+* Composite query methods and their callbacks can call the management canister query methods
+  `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`.
+  Such a call is always executed against the state of the subnet hosting the calling canister
+  and it is subject to the same access control as the corresponding query call submitted by a user,
+  with the calling canister as the caller. Calls to all other management canister methods are rejected.
+
 ### 0.65.0 (2026-08-03) {$0_65_0}
 * New canister setting `status_visibility` controlling who can read a canister's status via the
   `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,
