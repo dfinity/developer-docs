@@ -8,7 +8,7 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.66.0 (2026-08-12) {$0_66_0}
+### 0.66.0 (2026-08-17) {$0_66_0}
 * Composite query methods and their callbacks can call the management canister query methods
   `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`.
   Such a call is always executed against the state of the subnet hosting the calling canister
