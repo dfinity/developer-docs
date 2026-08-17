@@ -57,7 +57,7 @@ chain-fusion-signer   v0.4.0                                                    
 papi                  v0.1.1                                                    168bc9d
 ic-pub-key            v1.0.1                                                    f89fa55
 icp-cli               v1.1.0                                                    fe4af7c
-motoko                v1.13.0                                                     cd63c2e
+motoko                v1.14.0                                                     38528ec
 motoko-core           v2.4.0                                                    cd37dbf
 cdk-rs                ic-cdk v0.20.1 / ic-cdk-timers v1.0.0 / ic-cdk-executor v2.0.0  317f55c
 candid                2025-12-18  # candid v0.10.20, didc v0.5.4                2e4a2cf
