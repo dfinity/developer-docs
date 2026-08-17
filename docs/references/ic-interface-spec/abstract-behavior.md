@@ -1992,6 +1992,7 @@ canister_status(S, Canister_id) =
         freezing_threshold = S.freezing_threshold[Canister_id];
         reserved_cycles_limit = S.reserved_balance_limit[Canister_id];
         minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[Canister_id];
+        log_memory_limit = S.canister_log_memory_limit[Canister_id];
         wasm_memory_limit = S.wasm_memory_limit[Canister_id];
         wasm_memory_threshold = S.wasm_memory_threshold[Canister_id];
         environment_variables = S.environment_variables[Canister_id];
