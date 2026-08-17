@@ -9,6 +9,11 @@ sidebar:
 ## Changelog {#changelog}
 
 ### 0.66.0 (2026-08-17) {$0_66_0}
+* Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`
+  (the time at which the canister was created) and `/canister/<canister_id>/last_install_timestamp`
+  (the time at which the canister's code was most recently deployed or a snapshot was loaded onto it),
+  both expressed in nanoseconds since 1970-01-01. Both can be requested via `read_state` if
+  `<canister_id>` matches the effective canister id of the request.
 * Composite query methods and their callbacks can call the management canister query methods
   `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`.
   Such a call is always executed against the state of the subnet hosting the calling canister

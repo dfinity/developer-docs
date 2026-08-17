@@ -519,6 +519,8 @@ S = {
   environment_variables: CanisterId ↦ (Text ↦ Text)
   on_low_wasm_memory_hook_status: CanisterId ↦ OnLowWasmMemoryHookStatus;
   certified_data: CanisterId ↦ Blob;
+  canister_creation_timestamp: CanisterId ↦ Timestamp;
+  last_install_timestamp: CanisterId ↦ Timestamp;
   canister_history: CanisterId ↦ CanisterHistory;
   canister_log_visibility: CanisterId ↦ CanisterLogVisibility;
   canister_snapshot_visibility: CanisterId ↦ CanisterSnapshotVisibility;
@@ -630,6 +632,8 @@ The initial state of the IC is
   environment_variables = ();
   on_low_wasm_memory_hook_status = ();
   certified_data = ();
+  canister_creation_timestamp = ();
+  last_install_timestamp = ();
   canister_history = ();
   canister_log_visibility = ();
   canister_snapshot_visibility = ();
@@ -1778,6 +1782,7 @@ S' = S with
     canisters[Canister_id] = EmptyCanister
     snapshots[A.canister_id] = null
     time[Canister_id] = CurrentTime
+    canister_creation_timestamp[Canister_id] = CurrentTime
     global_timer[Canister_id] = 0
     controllers[Canister_id] = New_controllers
     chunk_store[Canister_id] = ()
@@ -2434,6 +2439,7 @@ S' = S with
     else:
       global_timer[A.canister_id] = 0
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     balances[A.canister_id] = New_balance
     reserved_balances[A.canister_id] = New_reserved_balance
     canister_history[A.canister_id] = New_canister_history
@@ -2600,6 +2606,7 @@ S' = S with
     else:
       global_timer[A.canister_id] = 0
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     balances[A.canister_id] = New_balance;
     reserved_balances[A.canister_id] = New_reserved_balance;
     canister_history[A.canister_id] = New_canister_history
@@ -2679,6 +2686,7 @@ State after
 
 S with
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -2969,6 +2977,8 @@ S with
     canister_version[A.canister_id] = (deleted)
     canister_subnet[A.canister_id] = (deleted)
     time[A.canister_id] = (deleted)
+    canister_creation_timestamp[A.canister_id] = (deleted)
+    last_install_timestamp[A.canister_id] = (deleted)
     global_timer[A.canister_id] = (deleted)
     balances[A.canister_id] = (deleted)
     reserved_balances[A.canister_id] = (deleted)
@@ -2976,6 +2986,7 @@ S with
     minimum_incoming_canister_call_cycles[A.canister_id] = (deleted)
     wasm_memory_limit[A.canister_id] = (deleted)
     wasm_memory_threshold[A.canister_id] = (deleted)
+    environment_variables[A.canister_id] = (deleted)
     on_low_wasm_memory_hook_status[A.canister_id] = (deleted)
     certified_data[A.canister_id] = (deleted)
     canister_history[A.canister_id] = (deleted)
@@ -3237,6 +3248,7 @@ S' = S with
     canisters[Canister_id] = EmptyCanister
     snapshots[Canister_id] = null
     time[Canister_id] = CurrentTime
+    canister_creation_timestamp[Canister_id] = CurrentTime
     global_timer[Canister_id] = 0
     controllers[Canister_id] = New_controllers
     compute_allocation[Canister_id] = New_compute_allocation
@@ -3419,6 +3431,7 @@ S' = S with
     reserved_balances[A.canister_id] = New_reserved_balance
 
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -3573,6 +3586,7 @@ S' = S with
     reserved_balances[A.canister_id] = New_reserved_balance
     canister_history[A.canister_id] = New_canister_history
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin;
@@ -4101,6 +4115,7 @@ State after
 
 S with
     canisters[CanisterId] = EmptyCanister
+    last_install_timestamp[Canister_id] = (deleted)
     snapshots[CanisterId] = null
     certified_data[CanisterId] = ""
     canister_history[CanisterId] = {
@@ -4193,6 +4208,10 @@ State after
 S with
   canisters[New_canister_id] = S.canisters[Canister_id]
   canisters[Canister_id] = (deleted)
+  canister_creation_timestamp[New_canister_id] = S.canister_creation_timestamp[Canister_id]
+  canister_creation_timestamp[Canister_id] = (deleted)
+  last_install_timestamp[New_canister_id] = S.last_install_timestamp[Canister_id]
+  last_install_timestamp[Canister_id] = (deleted)
   snapshots[New_canister_id] = {}
   snapshots[Canister_id] = (deleted)
   controllers[New_canister_id] = S.controllers[Canister_id]
@@ -4827,6 +4846,8 @@ may_read_path_for_canister(S, _, ["request_status", Rid, "error_code"]) =
   ∀ (R ↦ (_, ECID')) ∈ dom(S.requests). hash_of_map(R) = Rid => RS.sender == R.sender ∧ ECID == ECID'
 may_read_path_for_canister(S, _, ["canister", cid, "module_hash"]) = cid == ECID
 may_read_path_for_canister(S, _, ["canister", cid, "controllers"]) = cid == ECID
+may_read_path_for_canister(S, _, ["canister", cid, "canister_creation_timestamp"]) = cid == ECID
+may_read_path_for_canister(S, _, ["canister", cid, "last_install_timestamp"]) = cid == ECID
 may_read_path_for_canister(S, _, ["canister", cid, "metadata", name]) = cid == ECID ∧ UTF8(name) ∧
   (cid ∉ dom(S.canisters[cid]) ∨
    S.canisters[cid] = EmptyCanister ∨
@@ -4904,6 +4925,8 @@ state_tree(S) = {
     { canister_id :
         { "module_hash" : SHA256(C.raw_module) | if C ≠ EmptyCanister } ∪
         { "controllers" : CBOR(S.controllers[canister_id]) } ∪
+        { "canister_creation_timestamp" : S.canister_creation_timestamp[canister_id] } ∪
+        { "last_install_timestamp" : S.last_install_timestamp[canister_id] | if C ≠ EmptyCanister } ∪
         { "metadata": { name: blob | (name, blob) ∈ S.canisters[canister_id].public_custom_sections ∪ S.canisters[canister_id].private_custom_sections } }
     | (canister_id, C) ∈ S.canisters };
 }
