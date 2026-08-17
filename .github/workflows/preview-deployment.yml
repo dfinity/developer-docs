@@ -5,8 +5,12 @@ on:
 
 jobs:
   build_and_deploy:
-    # do not run in forks
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Needs repo secrets and write access to post the preview comment, so skip
+    # any PR whose runs get a read-only token: forks and Dependabot. Those are
+    # covered by build.yml instead.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     concurrency:
       group: pr-${{ github.event.pull_request.number || github.event.number }}
@@ -41,7 +45,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install icp-cli
-        run: npm i -g @icp-sdk/icp-cli@0.2.7 @icp-sdk/ic-wasm
+        run: npm i -g @icp-sdk/icp-cli@1.2.0 @icp-sdk/ic-wasm
 
       - run: npm ci
 
@@ -64,7 +68,7 @@ jobs:
           echo "PREVIEW_CANISTER_ID=$canister_id" >> $GITHUB_ENV
 
           # Deploy (icp.yaml recipe handles the build)
-          icp deploy frontend -e ic --mode reinstall
+          ICP_CLI_PLUGIN_COMPUTE_LIMIT_SECS=120 icp deploy frontend -e ic --mode reinstall
 
         env:
           POOL_CONTROLLER_IDENTITY: ${{ secrets.POOL_CONTROLLER_IDENTITY }}

@@ -8,12 +8,19 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.65.0 (2026-07-24) {$0_65_0}
+### 0.66.0 (2026-08-17) {$0_66_0}
 * Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`
   (the time at which the canister was created) and `/canister/<canister_id>/last_install_timestamp`
   (the time at which the canister's code was most recently deployed or a snapshot was loaded onto it),
   both expressed in nanoseconds since 1970-01-01. Both can be requested via `read_state` if
   `<canister_id>` matches the effective canister id of the request.
+
+### 0.65.0 (2026-08-03) {$0_65_0}
+* New canister setting `status_visibility` controlling who can read a canister's status via the
+  `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,
+  `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
+  to the controllers. The canister itself and subnet admins can always read the status.
+
 
 ### 0.64.0 (2026-07-06) {$0_64_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests
