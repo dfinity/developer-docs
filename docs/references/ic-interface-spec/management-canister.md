@@ -107,7 +107,8 @@ The optional `settings` parameter can be used to set the following settings:
 
 -   `log_memory_limit` (`nat`)
 
-    Must be at most `2097152` (`2 MiB`) and indicates the maximum amount of memory used for canister logs.
+    Must be either `0` or a number between `4096` and `2097152` (`2 MiB`), inclusively, and indicates the maximum amount of memory used for canister logs.
+    In particular, values between `1` and `4095`, inclusively, are not allowed.
     Oldest canister logs are purged if the total memory used for canister logs exceeds this value.
 
     Default value: `4096`.

@@ -180,6 +180,8 @@ The default log buffer size is 4096 bytes. When the buffer fills up, older log e
 icp canister settings update <canister-name> -e ic --log-memory-limit 2mib
 ```
 
+The limit must be either 0 (no memory for logs) or at least 4096 bytes: values between 1 and 4095 are rejected.
+
 Supported suffixes: `kb` (1,000 bytes), `kib` (1,024 bytes), `mb` (1,000,000 bytes), `mib` (1,048,576 bytes). In `icp.yaml`:
 
 ```yaml
