@@ -21,7 +21,6 @@ sidebar:
   `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
   to the controllers. The canister itself and subnet admins can always read the status.
 
-
 ### 0.64.0 (2026-07-06) {$0_64_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests
   the delegation applies for: the value `"queries"` restricts the delegation to query calls
