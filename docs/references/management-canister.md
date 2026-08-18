@@ -7,7 +7,7 @@ sidebar:
 
 The management canister provides access to system features on the Internet Computer: creating and managing canisters, chain-key signing, HTTPS outcalls, randomness, and Bitcoin integration. It is not a real canister with its own state or Wasm module. It is a virtual canister implemented as part of the IC protocol itself.
 
-The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently.
+The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently. Calls made from a composite query are the exception: they are always answered by the calling canister's own subnet.
 
 Most methods require the caller to be a **controller** of the target canister. Some methods (such as `raw_rand` and `deposit_cycles`) can only be called by canisters, not by external users. When an external user calls the management canister, the cost is charged to the managed canister.
 
@@ -119,7 +119,7 @@ Removes a canister's code and state, making it empty. Outstanding calls are reje
 
 Returns detailed information about a canister: status, settings, module hash, cycle balance, memory usage, and query statistics.
 
-- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call)
+- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call, including from composite queries)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -141,7 +141,7 @@ By default, only controllers can read a canister's status. The `status_visibilit
 
 Returns cycle consumption metrics for a canister broken down by use case. Metrics are monotonically increasing counters accumulating since canister creation (or since the metrics feature was introduced for existing canisters).
 
-- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, but query responses come from a single replica and are not suitable for security-sensitive use)
+- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, including from composite queries, but query responses come from a single replica and are not suitable for security-sensitive use)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -536,7 +536,7 @@ For Bitcoin integration patterns, see the [Bitcoin guide](../guides/chain-fusion
 
 Returns the most recent log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. Total log size is capped at 4 KiB.
 
-- **Caller:** External users only (query call; not callable by canisters)
+- **Caller:** External users via query calls, or canisters from composite queries (not callable via replicated calls)
 - **Parameters:** `canister_id` (`principal`)
 - **Returns:**
   - `canister_log_records` (`vec record { idx : nat64; timestamp_nanos : nat64; content : blob }`)
@@ -575,9 +575,9 @@ Returns metadata about a subnet.
 
 ### `list_canisters`
 
-Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call; not callable by canisters, via replicated calls, or from composite query calls.
+Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call, either by an external user directly or by a canister from a composite query; not callable via replicated calls.
 
-- **Caller:** Subnet admins only (query call; not callable by canisters)
+- **Caller:** Subnet admins only (query call, including from composite queries)
 - **Parameters:** none
 - **Returns:**
   - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive

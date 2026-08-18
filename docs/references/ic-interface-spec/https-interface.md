@@ -314,6 +314,10 @@ All requested paths must have the following form:
 
 -   `/canister/<canister_id>/controllers`. Can be requested if `<canister_id>` matches `<effective_canister_id>`. The order of controllers in the value at this path may vary depending on the implementation.
 
+-   `/canister/<canister_id>/canister_creation_timestamp`. Can be requested if `<canister_id>` matches `<effective_canister_id>`.
+
+-   `/canister/<canister_id>/last_install_timestamp`. Can be requested if `<canister_id>` matches `<effective_canister_id>`.
+
 -   `/canister/<canister_id>/metadata/<name>`. Can be requested if `<canister_id>` matches `<effective_canister_id>`, `<name>` is encoded in UTF-8, and
 
     -   canister with canister id `<canister_id>` does not exist or
