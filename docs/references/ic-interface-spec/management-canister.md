@@ -18,7 +18,7 @@ The *IC management canister* is just a facade; it does not actually exist as a c
 
 The IC management canister address is `aaaaa-aa` (i.e. the empty blob).
 
-It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand` and `deposit_cycles` are never accepted as ingress messages.
+It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand`, `deposit_cycles`, and `canister_info` are never accepted as ingress messages (but `canister_info` can be invoked via query calls, see [IC method `canister_info`](#ic-canister_info)).
 
 ### Interface overview {#ic-candid}
 
@@ -353,9 +353,11 @@ Replica-signed queries may improve security because the recipient can verify the
 
 ### IC method `canister_info` {#ic-canister_info}
 
-This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+This method can be called by canisters, but it cannot be called by external users via ingress messages.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
-Provides the history of the canister, its current module SHA-256 hash, and its current controllers. Every canister can call this method on every other canister (including itself). Users cannot call this method.
+Provides the history of the canister, its current module SHA-256 hash, and its current controllers. This method is not subject to any access control: every canister and every external user can retrieve this information about every canister (including, for a canister caller, itself).
 
 The canister history consists of a list of canister changes (canister creation, code uninstallation, code deployment, loading a snapshot, controllers change, canister renaming). Every canister change consists of the system timestamp at which the change was performed, the canister version after performing the change, the change's origin (a user or a canister), and its details. The change origin includes the principal (called *originator* in the following) that initiated the change and, if the originator is a canister, the originator's canister version when the originator initiated the change (if available).
 - Canister creation is described by the full set of controllers along with a [hash of the environment variables](./https-interface.md#hash-of-map), if environment variables were specified. The order of controllers stored in the canister history may vary depending on the implementation.
@@ -381,6 +383,13 @@ The returned response contains the following fields:
 -   `module_hash`: the SHA-256 hash of the currently installed canister module (or `null` if the canister is empty).
 
 -   `controllers`: the current set of canister controllers. The order of returned controllers may vary depending on the implementation.
+
+:::warning
+
+The response of a query comes from a single replica, and is therefore not appropriate for security-sensitive applications.
+Replica-signed queries may improve security because the recipient can verify the response comes from the correct subnet.
+
+:::
 
 ### IC method `canister_metadata` {#ic-canister_metadata}
 
