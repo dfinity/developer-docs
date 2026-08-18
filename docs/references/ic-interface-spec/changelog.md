@@ -14,6 +14,11 @@ sidebar:
   (the time at which the canister's code was most recently deployed or a snapshot was loaded onto it),
   both expressed in nanoseconds since 1970-01-01. Both can be requested via `read_state` if
   `<canister_id>` matches the effective canister id of the request.
+* Composite query methods and their callbacks can call the management canister query methods
+  `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`.
+  Such a call is always executed against the state of the subnet hosting the calling canister
+  and it is subject to the same access control as the corresponding query call submitted by a user,
+  with the calling canister as the caller. Calls to all other management canister methods are rejected.
 
 ### 0.65.0 (2026-08-03) {$0_65_0}
 * New canister setting `status_visibility` controlling who can read a canister's status via the

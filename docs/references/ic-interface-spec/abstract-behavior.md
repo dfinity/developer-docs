@@ -4574,13 +4574,55 @@ for calls to `/api/v3/subnet/<ESID>/read_state`.
 
 #### Query call {#query-call}
 
-This section specifies query calls `Q` whose `Q.canister_id` is a non-empty canister `S.canisters[Q.canister_id]`. Query calls to the management canister, i.e., `Q.canister_id = ic_principal`, are specified in Sections [Canister status](#ic-management-canister-canister-status), [Canister logs](#ic-mgmt-canister-fetch-canister-logs), and [List canisters](#ic-mgmt-canister-list-canisters).
+This section specifies query calls `Q` whose `Q.canister_id` is a non-empty canister `S.canisters[Q.canister_id]`. Query calls to the management canister, i.e., `Q.canister_id = ic_principal`, are specified in Sections [Canister status](#ic-management-canister-canister-status), [Canister metrics](#ic-management-canister-canister-metrics), [Canister logs](#ic-mgmt-canister-fetch-canister-logs), and [List canisters](#ic-mgmt-canister-list-canisters).
 
 Canister query calls to `/api/v3/canister/<ECID>/query` can be executed directly. They can only be executed against non-empty canisters which have a status of `Running` and are also not frozen.
 
 In query and composite query methods evaluated on the target canister of the query call, a certificate is provided to the canister that is valid, contains a current state tree (or "recent enough"; the specification is currently vague about how old the certificate may be), and reveals the canister's [Certified Data](./canister-interface.md#system-api-certified-data).
 
 Composite query methods can call query methods and composite query methods up to a maximum depth `MAX_CALL_DEPTH_COMPOSITE_QUERY` of the call graph. The total amount of cycles consumed by executing a (composite) query method and all (transitive) calls it makes must be at most `MAX_CYCLES_PER_QUERY`. This limit applies in addition to the limit `MAX_CYCLES_PER_MESSAGE` for executing a single (composite) query method and `MAX_CYCLES_PER_RESPONSE` for executing a single callback of a (composite) query method.
+
+Composite query methods and their callbacks can also call the management canister query methods `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`. Unlike calls to the management canister in replicated mode, such a call is not routed based on the method name and the argument: it is always executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet. Who is allowed to call these methods is determined in the same way as for the corresponding query call submitted by a user, with the calling canister as the caller. Calls to all other management canister methods are rejected. Calls to the management canister do not contribute to the depth of the call graph, but the cycles consumed while producing their responses count towards `MAX_CYCLES_PER_QUERY`.
+
+We define an auxiliary function that handles calls from composite query methods to the management canister. It returns the response to the call and the amount of cycles consumed while producing that response. The reject code and reject message of a reject response are implementation-specific.
+```
+management_canister_query(S, Caller, Method_name, Arg) =
+  let Cycles_used = <implementation-specific>
+  if Method_name = 'canister_status' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     ((Caller = A.canister_id)
+       or
+       (Caller ∈ S.subnet_admins[S.canister_subnet[A.canister_id]])
+       or
+       (S.canister_status_visibility[A.canister_id] = Public)
+       or
+       (S.canister_status_visibility[A.canister_id] = Controllers and Caller ∈ S.controllers[A.canister_id])
+       or
+       (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (Caller ∈ S.controllers[A.canister_id] or Caller ∈ Principals)))
+  then
+     Return (Reply (candid(canister_status(S, A.canister_id))), Cycles_used)
+  if Method_name = 'canister_metrics' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     Caller ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+  then
+     Return (Reply (candid(<implementation-specific>)), Cycles_used)
+  if Method_name = 'fetch_canister_logs' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     ((S.canister_log_visibility[A.canister_id] = Public)
+       or
+       (S.canister_log_visibility[A.canister_id] = Controllers and Caller ∈ S.controllers[A.canister_id])
+       or
+       (S.canister_log_visibility[A.canister_id] = AllowedViewers Principals and (Caller ∈ S.controllers[A.canister_id] or Caller ∈ Principals)))
+  then
+     Return (Reply (candid(S.canister_logs[A.canister_id])), Cycles_used)
+  if Method_name = 'list_canisters' and
+     Caller ∈ S.subnet_admins[S.canister_subnet[Caller]]
+  then
+     // CanisterIdRanges is the list of all canister IDs on the subnet S.canister_subnet[Caller]
+     // encoded as consecutive canister ID ranges (excluding deleted canisters)
+     Return (Reply (candid({canisters: CanisterIdRanges})), Cycles_used)
+  Return (Reject (<implementation-specific>, <implementation-specific>), Cycles_used)
+```
 
 We define an auxiliary method that handles calls from composite query methods by performing a call graph traversal. It can also be (trivially) invoked for query methods that do not make further calls.
 ```
@@ -4641,12 +4683,17 @@ composite_query_helper(S, Cycles, Depth, Root_canister_id, Caller, Caller_info_d
                  Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // max call graph depth exceeded
               let Calls' · Call · Calls''  = Calls
               Calls := Calls' · Calls''
-              if S.canister_subnet[Canister_id].subnet_id ≠ S.canister_subnet[Call.callee].subnet_id
+              if Call.callee = ic_principal
               then
-                 Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // calling to another subnet
-              let (Response', Cycles', S') = composite_query_helper(S, Cycles, Depth + 1, Root_canister_id, Canister_id, "", "", Call.callee, Call.method_name, Call.arg)
-              Cycles := Cycles'
-              S := S'
+                 let (Response', Cycles_used') = management_canister_query(S, Canister_id, Call.method_name, Call.arg)
+                 Cycles := Cycles - Cycles_used'
+              else
+                 if S.canister_subnet[Canister_id].subnet_id ≠ S.canister_subnet[Call.callee].subnet_id
+                 then
+                    Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // calling to another subnet
+                 let (Response', Cycles', S') = composite_query_helper(S, Cycles, Depth + 1, Root_canister_id, Canister_id, "", "", Call.callee, Call.method_name, Call.arg)
+                 Cycles := Cycles'
+                 S := S'
               if Cycles < MAX_CYCLES_PER_RESPONSE
               then
                  Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // composite query out of cycles
