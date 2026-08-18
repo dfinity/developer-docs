@@ -105,6 +105,14 @@ The optional `settings` parameter can be used to set the following settings:
 
     Default value: `controllers`.
 
+-   `log_memory_limit` (`nat`)
+
+    Must be either `0` or a number between `4096` and `2097152` (`2 MiB`), inclusively, and indicates the maximum amount of memory used for canister logs.
+    In particular, values between `1` and `4095`, inclusively, are not allowed.
+    Oldest canister logs are purged if the total memory used for canister logs exceeds this value.
+
+    Default value: `4096`.
+
 -   `snapshot_visibility` (`snapshot_visibility`)
 
     Controls who can access the canister's snapshots through the following endpoints of the management canister:
@@ -331,6 +339,8 @@ Regardless of this setting, the canister itself and subnet admins can always req
     * `wasm_chunk_store_size`: Represents the memory used by the Wasm chunk store of the canister.
 
     * `snapshots_size`: Represents the memory consumed by all snapshots that belong to this canister.
+
+    * `log_memory_store_size`: Represents the memory used by canister logs of the canister.
 
 All sizes are expressed in bytes.
 
@@ -950,13 +960,14 @@ A snapshot may be deleted only by the controllers of the canister that the snaps
 
 ### IC method `fetch_canister_logs` {#ic-fetch_canister_logs}
 
-This method can only be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks, i.e., it cannot be called via replicated calls.
+This method can be called by canisters via replicated calls, i.e., it cannot be called by external users via replicated (update) calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
 A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 Given a canister ID as input, this method returns a vector of logs of that canister including its trap messages.
 The canister logs are *not* collected in canister methods running in non-replicated mode (NRQ, TQ, CQ, CRy, CRt, CC, and F modes, as defined in [Overview of imports](./canister-interface.md#system-api-imports)) and the canister logs are *purged* when the canister is reinstalled or uninstalled.
-The total size of all returned logs does not exceed 4KiB.
-If new logs are added resulting in exceeding the maximum total log size of 4KiB, the oldest logs will be removed.
+The total size of all returned logs does not exceed an implementation-defined constant chosen so as not to exceed the maximum response size.
+Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
 Logs persist across canister upgrades and they are deleted if the canister is reinstalled or uninstalled.
 
 The log visibility is defined in the `log_visibility` field of `canister_settings` and can be one of the following variants:
@@ -970,6 +981,14 @@ A single log is a record with the following fields:
 - `idx` (`nat64`): the unique sequence number of the log for this particular canister;
 - `timestamp_nanos` (`nat64`): the timestamp as nanoseconds since 1970-01-01 at which the log was recorded;
 - `content` (`blob`): the actual content of the log;
+
+To filter canister logs, an optional filter can be provided and have one of the following variants:
+- `by_idx` (`record { start : nat64; end : nat64 }`): only logs are returned whose `idx` is within the provided range (`start` is inclusive, but `end` is exclusive);
+- `by_timestamp_nanos` (`record { start : nat64; end : nat64 }`): only logs are returned whose `timestamp_nanos` is within the provided range (`start` is inclusive, but `end` is exclusive).
+
+When the logs selected for the response do not all fit within a single response, they are trimmed to fit, and the direction of trimming differs between filtered and unfiltered reads:
+- An **unfiltered** read trims the **oldest** log records, so the response ends with the newest log record. This surfaces the most recent activity.
+- A **filtered** read trims the **newest** log records, so the response starts with the oldest log record satisfying the filter. This lets a filtered read page forward through logs starting from the beginning of the requested range.
 
 :::warning
 
