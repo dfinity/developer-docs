@@ -603,6 +603,62 @@ To keep principals consistent across your own custom domains, configure **altern
 
 For full details, see the [Internet Identity specification](../../references/internet-identity-spec.md).
 
+## App metadata
+
+By default, the sign-in screens identify your app by its origin alone. To have II show your app's name, a short description, and its logo, serve a JSON document at `/.well-known/ii-app-metadata`. Any app can publish it: there is no list to join and no approval step.
+
+```json
+{
+  "name": "Example App",
+  "description": "A short tagline shown on the sign-in screen",
+  "logo": "/logo.png"
+}
+```
+
+II fetches this document when the authorization flow starts, from the origin your users' identities are derived for: your `derivationOrigin` when you set one (see [Alternative origins](#alternative-origins) above), and the origin the request came from otherwise. Publish it once on that origin, and every alternative origin listed there is presented with the same name, description, and logo, with nothing to keep in sync between them.
+
+All three fields are optional, and unknown fields are ignored, so a document stays valid as fields are added:
+
+- `name` is limited to 40 characters and `description` to 120, counted in Unicode code points on the value as served. Runs of whitespace are collapsed before display.
+- Control characters, `U+FEFF`, and the bidirectional embedding and override characters `U+202A` to `U+202E` are rejected, since they can make rendered text read differently from what it contains. The bidirectional marks and isolates that mixed-direction names legitimately need are accepted, provided every isolate a field opens it also closes.
+- A field that fails validation invalidates the **whole document**, which is then ignored, so an app is never shown with half of its metadata applied. II logs which field is at fault to the browser console: check the console on the sign-in screen if your metadata does not appear.
+- `logo` must point to a raster image on the same origin as the document (relative URLs resolve against it), served as `image/png`, `image/jpeg`, `image/webp`, `image/gif`, or `image/avif`, at most 1 MiB and 4096 pixels per side. SVG is not accepted. II downloads the image, re-encodes it at up to 512 pixels on its longest side, and renders its own copy, so a roughly square PNG or WebP of about 512 pixels works well.
+- Only the shape of `logo` (a non-empty URL on the document's own origin) is part of the validation above. Once it passes, a logo that cannot be fetched or decoded, or that breaks the content type, size, or dimension rules, costs you the logo alone: the name and description still render. Fetching a second resource can fail transiently, so that is treated differently from a mistake in the document itself.
+- The document must not exceed 8 KiB, must be answered with `200`, and must not redirect. II requests it without credentials and gives up after 10 seconds.
+
+Both the document and the logo are read cross-origin, so they need CORS headers. Extend the `.ic-assets.json5` shown under [Alternative origins](#alternative-origins) with an entry for each:
+
+```json
+[
+  {
+    "match": ".well-known",
+    "ignore": false
+  },
+  {
+    "match": ".well-known/ii-app-metadata",
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json"
+    },
+    "ignore": false
+  },
+  {
+    "match": "logo.png",
+    "headers": {
+      "Access-Control-Allow-Origin": "*"
+    }
+  }
+]
+```
+
+If the document is missing, unreachable, or invalid, sign-in is unaffected: the screens fall back to the curated entry II still ships for a small list of apps (the mechanism this file supersedes), and to showing your origin alone otherwise. Metadata is a display nicety and never blocks authentication.
+
+:::note
+This metadata is exactly as trustworthy as the origin serving it, and publishing it does not verify your app's identity in any way. II therefore keeps displaying the origin alongside whatever you provide, since the origin is the value users can actually check.
+:::
+
+For the normative rules, including a JSON schema to validate your document against, see [App metadata](../../references/internet-identity-spec.md#app-metadata) in the Internet Identity specification.
+
 ## Common mistakes
 
 - **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
@@ -625,4 +681,4 @@ For full details, see the [Internet Identity specification](../../references/int
 
 {/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
-{/* Upstream: informed by dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/: AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md: AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); dfinity/motoko-identity-attributes (README.md, src/lib.mo, src/Internal/Verify.mo @ v0.4.1: the mixin and its verification order); caffeinelabs/motoko-core (src/CallerAttributes.mo getAttributes wrapper, src/Map.mo); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo); dfinity/icp-cli (docs/reference/canister-settings.md#environment_variables) */}
+{/* Upstream: informed by dfinity/internet-identity (docs/ii-spec.mdx: the App metadata section, #4221); dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/: AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md: AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); dfinity/motoko-identity-attributes (README.md, src/lib.mo, src/Internal/Verify.mo @ v0.4.1: the mixin and its verification order); caffeinelabs/motoko-core (src/CallerAttributes.mo getAttributes wrapper, src/Map.mo); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo); dfinity/icp-cli (docs/reference/canister-settings.md#environment_variables) */}
