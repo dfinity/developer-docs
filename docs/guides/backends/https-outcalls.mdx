@@ -18,7 +18,7 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. In Rust, `ic_cdk::management_canister::http_request` auto-calculates and attaches cycles. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the exact amount and attaches it: `ic_cdk::management_canister::http_request` in Rust, and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
 - The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1–2 KB of headers before any body. Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated mode (`is_replicated = false`), a transform is unnecessary because only one node makes the request. See [Replicated vs non-replicated mode](#replicated-vs-non-replicated-mode) below.
@@ -141,7 +141,7 @@ A transform strips headers for consensus, not to save space: `max_response_bytes
 
 HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
 
-In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
+In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, `Call.httpRequest` from the `ic` package does the same. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 For reference, on a 13-node subnet:
 - Base cost: ~49 million cycles
