@@ -81,10 +81,10 @@ For exact pricing formulas, see the [cycles costs reference](../references/cycle
 ## Limitations
 
 - **HTTPS only.** Plain HTTP is not supported. The target server must have a valid TLS certificate.
-- **2 MB response limit.** The maximum is 2,000,000 bytes (decimal, not 2^21). The limit covers the response's header names and values plus the body, not the body alone, and it also bounds the output of the transform function: a transform cannot bring an oversized response back under the cap. If the response exceeds `max_response_bytes`, the call fails.
+- **2 MB response limit.** The maximum is 2,000,000 bytes (decimal, not 2^21). The limit covers the response's header names and values plus the body, not the body alone, and it is enforced twice: on the raw response as it arrives from the server, and again on the output of the transform function. A transform therefore cannot rescue a response that already exceeded the cap, because the first check runs before the transform does. Size `max_response_bytes` for the headers and body as they arrive from the server.
 - **Public endpoints only.** Canisters cannot reach localhost, private IP ranges (10.x.x.x, 192.168.x.x), or other non-routable addresses.
 - **No streaming or WebSocket.** Outcalls are single request-response pairs. Long-lived connections are not supported.
-- **~30-second timeout.** If the external server doesn't respond in time, the call fails.
+- **Two timeouts.** If the external server does not respond within 30 seconds, or the subnet does not produce a response within 60 seconds, the call is rejected. It does not trap, so handle the error case rather than relying on a trap.
 - **Rate limiting.** All canisters on a subnet share the same IPv6 prefixes. If many canisters on the same subnet call the same server, they share its rate limit quota. Using API keys with per-key quotas mitigates this.
 - **Shared API keys are visible to all replicas.** An API key stored in canister state is readable by every replica. A compromised replica could use the key to make entirely different, unauthorized requests to the external service: not just replay the canister's intended request. [TEE-enabled subnets](node-infrastructure.md#trusted-execution-environments) mitigate this by running replicas in hardware-enforced enclaves, preventing node operators from reading canister memory. Consider deploying canisters that store sensitive credentials on a TEE-enabled subnet.
 
