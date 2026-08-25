@@ -124,7 +124,7 @@ base_fee   = (3_000_000 + 60_000 * n) * n
 size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 ```
 
-`request_bytes` is the total serialized request size (URL + headers + body + transform name/context). `max_response_bytes` defaults to 2 MiB if not explicitly set by the canister.
+`request_bytes` is the total serialized request size (URL + headers + body + transform name/context). `max_response_bytes` defaults to 2 MB (2,000,000 bytes, decimal) if not explicitly set by the canister, which on a 13-node subnet costs roughly 20.85 billion cycles.
 
 | Component | 13-node cycles | ~USD | 34-node cycles | ~USD |
 |-----------|----------------|------|----------------|------|
