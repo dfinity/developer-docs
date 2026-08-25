@@ -19,7 +19,7 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
 - [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. In Rust, `ic_cdk::management_canister::http_request` auto-calculates and attaches cycles. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
-- The **maximum response body is 2MB** (2,097,152 bytes). Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
+- The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1–2 KB of headers before any body. Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated mode (`is_replicated = false`), a transform is unnecessary because only one node makes the request. See [Replicated vs non-replicated mode](#replicated-vs-non-replicated-mode) below.
 
@@ -133,11 +133,13 @@ In replicated mode, a transform function is strongly recommended (without one, r
 
 If the response body also contains dynamic fields (timestamps, per-request IDs, the caller's IP), parse and re-serialize the body to extract only the deterministic fields you need.
 
+A transform strips headers for consensus, not to save space: `max_response_bytes` also bounds the transform's own output, so stripping headers there cannot bring an oversized response under the cap. Size the cap for the headers and body as they arrive from the server.
+
 **Debugging "no consensus" errors:** If you see `"No consensus could be reached"`, the transform is not making responses identical. Common culprits: response headers differ, JSON fields arrive in a different order, or the response body contains timestamps. Strip all headers first; if that doesn't resolve it, also normalize or strip the body.
 
 ## Cycle costs
 
-HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **21.5 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
+HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
 
 In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
 

@@ -74,14 +74,14 @@ The cost depends on two factors:
 - **Request size**: the combined byte length of the URL, headers, body, transform function name, and transform context.
 - **`max_response_bytes`**: the maximum response size you declare. This is what you're charged for, not the actual response size.
 
-If you omit `max_response_bytes`, the system assumes the maximum of 2 MB and charges accordingly: roughly 21.5 billion cycles on a 13-node subnet. Always set this to a reasonable upper bound for your expected response to avoid overpaying. Unused cycles are refunded.
+If you omit `max_response_bytes`, the system assumes the maximum of 2 MB and charges accordingly: roughly 20.85 billion cycles on a 13-node subnet. Always set this to a reasonable upper bound for your expected response to avoid overpaying. Unused cycles are refunded.
 
 For exact pricing formulas, see the [cycles costs reference](../references/cycle-costs.md).
 
 ## Limitations
 
 - **HTTPS only.** Plain HTTP is not supported. The target server must have a valid TLS certificate.
-- **2 MB response limit.** The maximum response body is 2,097,152 bytes. If the response exceeds `max_response_bytes`, the call fails.
+- **2 MB response limit.** The maximum is 2,000,000 bytes (decimal, not 2^21). The limit covers the response's header names and values plus the body, not the body alone, and it also bounds the output of the transform function: a transform cannot bring an oversized response back under the cap. If the response exceeds `max_response_bytes`, the call fails.
 - **Public endpoints only.** Canisters cannot reach localhost, private IP ranges (10.x.x.x, 192.168.x.x), or other non-routable addresses.
 - **No streaming or WebSocket.** Outcalls are single request-response pairs. Long-lived connections are not supported.
 - **~30-second timeout.** If the external server doesn't respond in time, the call fails.
