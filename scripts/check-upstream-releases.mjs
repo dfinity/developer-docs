@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Check the upstream repos listed in `.sources/upstream.json` for a newer ref
- * than the one the docs are pinned to, and write an issue body for each.
+ * Check every upstream in `.sources/upstream.json` for a newer ref than the one
+ * the docs are pinned to, and write an issue body for each that moved.
  *
- * These repos are deliberately NOT submodules: nothing they contain is
- * published, so the repo watches their releases instead of vendoring them.
+ * Covers both groups in that file: `vendored` submodules whose pin has no sync
+ * workflow of its own (their pin is read from the gitlink, so git stays the
+ * single source of truth), and `watched` repos that are not vendored at all.
  * See AGENTS.md "Source material" and .agents/upstream-tracking.md.
  *
  * Usage:
@@ -86,6 +87,18 @@ function defaultBranchHead(repo) {
   return { branch, sha };
 }
 
+function gitlinkSha(path) {
+  // The committed submodule pointer, readable without initializing the
+  // submodule, so this works on a bare checkout in CI.
+  const out = git('ls-tree', 'HEAD', path);
+  return out.match(/^\d+ commit ([0-9a-f]{40})\t/)?.[1];
+}
+
+function branchHead(repo, branch) {
+  const out = git('ls-remote', `https://github.com/${repo}.git`, `refs/heads/${branch}`);
+  return out.match(/^([0-9a-f]{40})/)?.[1];
+}
+
 async function fetchFile(repo, ref, path) {
   const url = `https://raw.githubusercontent.com/${repo}/${ref}/${path}`;
   const res = await fetch(url);
@@ -112,6 +125,45 @@ function summarizeChange(oldText, newText) {
 
 function slugFor(repo) {
   return repo.replace('/', '-');
+}
+
+function checkVendored(entry) {
+  const { path, repo, branch, affects } = entry;
+  const pinnedSha = gitlinkSha(path);
+  if (!pinnedSha) throw new Error(`${path}: not a submodule in this commit`);
+  const headSha = branchHead(repo, branch);
+  if (!headSha) throw new Error(`${repo}: no branch ${branch}`);
+  if (pinnedSha === headSha) return null;
+
+  const pinned = pinnedSha.slice(0, 7);
+  const latest = headSha.slice(0, 7);
+  const name = path.replace(/^\.sources\//, '');
+  const body = [
+    `The \`${path}\` submodule is behind \`${repo}@${branch}\`.`,
+    '',
+    '| | |',
+    '|---|---|',
+    `| Pinned (gitlink) | \`${pinned}\` |`,
+    `| Branch head | \`${latest}\` |`,
+    `| Compare | https://github.com/${repo}/compare/${pinned}...${latest} |`,
+    '',
+    '## What to re-check',
+    '',
+    affects ?? 'No notes recorded for this submodule.',
+    '',
+    '## How to close this',
+    '',
+    '```bash',
+    `git -C ${path} fetch origin ${branch}`,
+    `git -C ${path} checkout ${latest}`,
+    '```',
+    '',
+    'Then work through the submodule checklist and commit the new pointer.',
+    '',
+    'Procedure: `.agents/upstream-tracking.md`',
+  ].join('\n');
+
+  return { slug: `submodule-${name}`, title: `chore: submodule ${name} is behind ${repo}@${branch}`, body };
 }
 
 async function checkOne(entry) {
@@ -213,15 +265,32 @@ async function checkOne(entry) {
 }
 
 const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
-const entries = config.watched.filter((e) => !only || e.repo === only);
-if (only && entries.length === 0) {
+const vendored = (config.vendored ?? []).filter((e) => !only || e.repo === only);
+const watched = (config.watched ?? []).filter((e) => !only || e.repo === only);
+if (only && vendored.length + watched.length === 0) {
   console.error(`No entry for --repo ${only} in ${CONFIG}`);
   process.exit(2);
 }
 
 const results = [];
 let failed = false;
-for (const entry of entries) {
+
+for (const entry of vendored) {
+  try {
+    const r = checkVendored(entry);
+    if (r) {
+      results.push(r);
+      console.error(`behind:   ${entry.path} -> ${entry.repo}@${entry.branch}`);
+    } else {
+      console.error(`current:  ${entry.path}`);
+    }
+  } catch (e) {
+    failed = true;
+    console.error(`FAILED:   ${entry.path}: ${e.message}`);
+  }
+}
+
+for (const entry of watched) {
   try {
     const r = await checkOne(entry);
     if (r) {

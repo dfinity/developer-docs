@@ -230,7 +230,10 @@ git submodule update --init --depth 1   # do NOT use --recursive
 | Canister IDs and skill files | `.sources/icskills/` |
 | Technical documentation skill | `.sources/dotskills/` |
 
-Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS).
+Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS). `motoko` and
+`internetidentity` are release-checked and synced by their own workflows;
+`examples`, `icskills`, and `dotskills` track a branch and are checked by the
+weekly **Upstream release check**.
 
 **Watched, not vendored** — everything else. Nothing they contain is published,
 so the repo records a pinned ref instead of a copy, and a weekly workflow opens

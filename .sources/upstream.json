@@ -1,8 +1,18 @@
 {
   "$comment": [
-    "Upstream repos that are NOT vendored as submodules. They are watched instead:",
-    "scripts/check-upstream-releases.mjs compares `pinned` against the newest matching",
-    "tag, and .github/workflows/upstream-releases.yml opens an issue when they differ.",
+    "Every upstream this repo tracks, in two groups.",
+    "",
+    "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
+    "is the gitlink in git, not a field here, so it has one source of truth; the entry",
+    "records which branch to compare against and what a bump affects. `motoko` and",
+    "`internetidentity` are absent on purpose: sync-motoko.yml and sync-ii-spec.yml",
+    "already check for a new release and open the bump PR themselves.",
+    "",
+    "`watched` are repos that are not vendored at all. Nothing they contain is",
+    "published, so this file records the ref the docs are verified against.",
+    "",
+    "scripts/check-upstream-releases.mjs checks both groups and",
+    ".github/workflows/upstream-releases.yml opens an issue per repo that moved.",
     "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
     "",
     "`pinned` is the ref the docs were last verified against. Agents verify claims",
@@ -18,6 +28,29 @@
     "  verify      file whose diff between the two refs is the review payload (optional)",
     "  affects     what to re-check in docs/ when this moves",
     "  reference   authoritative published docs for the topic, for readers and agents"
+  ],
+  "vendored": [
+    {
+      "path": ".sources/examples",
+      "repo": "dfinity/examples",
+      "track": "branch",
+      "branch": "master",
+      "affects": "Every `snippet=` path and `#region` marker resolved at build time by plugins/remark-snippet.mjs. A renamed region is a build error, so verify each one after bumping."
+    },
+    {
+      "path": ".sources/icskills",
+      "repo": "dfinity/icskills",
+      "track": "branch",
+      "branch": "main",
+      "affects": "The 16 skill symlinks in .agents/skills/ follow this pin, so a bump changes the guidance agents load. Check for changed canister IDs and code patterns."
+    },
+    {
+      "path": ".sources/dotskills",
+      "repo": "vincentkoc/dotskills",
+      "track": "branch",
+      "branch": "main",
+      "affects": "The `technical-documentation` skill in .agents/skills/. Check whether the review criteria changed."
+    }
   ],
   "watched": [
     {

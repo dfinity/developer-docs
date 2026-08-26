@@ -1,22 +1,25 @@
 # Upstream tracking
 
-How this repo stays current with the projects it documents. Replaces the old
-`submodule-bumping.md`, which assumed every upstream was a submodule.
+How this repo stays current with the projects it documents.
 
 Upstream repos fall into two groups, and the group decides the procedure.
 
 | | Vendored (submodule) | Watched (not vendored) |
 |---|---|---|
-| Which | `motoko`, `internetidentity`, `examples`, `icskills`, `dotskills` | everything in `.sources/upstream.json` |
+| Which | `motoko`, `internetidentity`, `examples`, `icskills`, `dotskills` | the `watched` array in `.sources/upstream.json` |
 | Why | their bytes reach the built site or the agent workflow | nothing they contain is published |
-| Pin lives in | git (`.gitmodules`) plus a label in `.sources/VERSIONS` | `pinned` in `.sources/upstream.json` |
-| Moved by | a bump PR (below) | a bump PR triggered by an **Upstream release check** issue |
+| Pin lives in | git (the gitlink), plus a label in `.sources/VERSIONS` for the release-pinned ones | `pinned` in `.sources/upstream.json` |
+| Moved by | a bump PR (below) | a bump PR, triggered by an **Upstream release check** issue |
 | Verified against | the checked-out working tree | the pinned ref, fetched on demand |
+
+Every one of them is checked weekly. `motoko` and `internetidentity` have their
+own sync workflows that open the bump PR directly; the rest are covered by
+**Upstream release check**, which opens an issue.
 
 ## Why only five are vendored
 
-A submodule is justified when the repo's content is part of the build or the
-agent workflow, because then it has to be on disk anyway:
+A submodule is justified only when the repo's content is part of the build or
+the agent workflow, because then it has to be on disk anyway:
 
 - `motoko` — synced into `docs/languages/motoko/` **and** resolved at build time
   by 52 `<motokoExamples>` file includes.
@@ -27,9 +30,9 @@ agent workflow, because then it has to be on disk anyway:
 - `icskills` — 16 of the 17 symlinks in `.agents/skills/` point into it.
 - `dotskills` — the 17th (`technical-documentation`).
 
-Every other repo was only ever read to check a fact. Vendoring those meant a
-recurring bump PR per repo with nothing to show for it, which is how several of
-them ended up years of releases behind without anyone noticing.
+Everything else is only ever read to check a fact, which needs a pinned ref
+rather than a copy. Add a submodule only if something in the build or the agent
+workflow has to open its files.
 
 ## Watched repos
 
@@ -128,6 +131,15 @@ When `icp-cli` moves to a new minor:
 ## Vendored submodules
 
 Only the project maintainer bumps submodule refs.
+
+`examples`, `icskills`, and `dotskills` track a branch and are checked by the
+same **Upstream release check** workflow, which opens an issue when the gitlink
+falls behind that branch. Their pin lives in git, so `upstream.json` records only
+the branch to compare against and what a bump affects.
+
+`motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
+`sync-ii-spec.yml` already check for a new release, run the sync, and open the
+bump PR with the result.
 
 ### Determine the new ref
 
