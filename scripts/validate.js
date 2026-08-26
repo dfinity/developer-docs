@@ -34,8 +34,13 @@ function checkFrontmatter(file, content) {
   }
 }
 
+// `checkForbiddenPatterns` skips fenced code, so these patterns only ever see
+// prose. `mo:base` is the exception: what must never appear is an *import*
+// (`mo:base/Buffer`), which lives inside a fence, while naming the legacy
+// library in prose is legitimate (base-to-core migration tables do it). It
+// therefore matches the import path and is checked inside fences too.
 const FORBIDDEN = [
-  { re: /mo:base/, msg: '"mo:base" is banned — use "mo:core" instead' },
+  { re: /mo:base\//, msg: '"mo:base/" import is banned — use "mo:core" instead', includeFences: true },
   { re: /https?:\/\/(?:www\.)?internetcomputer\.org\/docs/, msg: 'internetcomputer.org/docs is retired — link internally or inline' },
   { re: /docs\.internetcomputer\.org/, msg: 'docs.internetcomputer.org is this site — use relative paths for internal links' },
 ];
@@ -68,8 +73,8 @@ function checkForbiddenPatterns(file, content) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (/^```/.test(line.trimStart())) { inFence = !inFence; continue; }
-    if (inFence) continue;
-    for (const { re, msg } of FORBIDDEN) {
+    for (const { re, msg, includeFences } of FORBIDDEN) {
+      if (inFence && !includeFences) continue;
       if (re.test(line)) errors.push(`line ${i + 1}: ${msg}`);
     }
   }

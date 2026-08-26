@@ -380,7 +380,7 @@ The ckETH minter handles both ETH and ERC-20 deposits using a shared Ethereum he
 1. Call `depositEth` on the ckETH helper contract on Ethereum (mainnet: `0x18901044688D3756C35Ed2b36D93e6a5B8e00E68`), passing:
    - The amount of ETH.
    - Your ICP principal encoded as `bytes32`.
-   - A 32-byte subaccount (`0x` for the default account, or a derived subaccount for per-user deposits — see [Per-user deposit addresses](#per-user-deposit-addresses)).
+   - A 32-byte subaccount (`0x` for the default account, or a derived subaccount for per-user deposits; see [Per-user deposit addresses](#per-user-deposit-addresses)).
 2. The minter detects the `ReceivedEthOrErc20` event and mints ckETH to `(principal, subaccount)` after roughly 20 minutes.
 
 > The ckETH deposit flow requires an Ethereum wallet or library. For sending Ethereum transactions from an ICP canister, see [Ethereum integration](../chain-fusion/ethereum.md).
