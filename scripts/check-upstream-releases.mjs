@@ -197,8 +197,10 @@ async function checkOne(entry) {
   let kind;
   // A registry-tracked ref is a package version, not something git can resolve,
   // so those entries get a registry link instead of a compare view and no file
-  // diff.
+  // diff. `moved` is set by tracks whose refs are not version-ordered.
   let compare;
+  let compareLabel = 'Compare';
+  let moved;
   if (track === 'release') {
     if (!tagPattern) throw new Error(`${repo}: track "release" needs a tagPattern`);
     const re = new RegExp(tagPattern);
@@ -225,21 +227,29 @@ async function checkOne(entry) {
     latest = await cratesIoNewest(entry.crate);
     kind = `crates.io release of ${entry.crate}`;
     compare = `https://crates.io/crates/${entry.crate}`;
+    compareLabel = 'Registry';
   } else if (track === 'npm') {
     if (!entry.package) throw new Error(`${repo}: track "npm" needs a package name`);
     latest = await npmLatest(entry.package);
     kind = `npm release of ${entry.package}`;
     compare = `https://www.npmjs.com/package/${entry.package}`;
+    compareLabel = 'Registry';
   } else if (track === 'commit') {
     const { branch, sha } = defaultBranchHead(repo);
     if (!sha) throw new Error(`${repo}: could not resolve HEAD`);
     latest = sha.slice(0, 7);
     kind = `commit on ${branch}`;
+    // Commit SHAs have no order, so "newer" cannot be a comparison: the pin is
+    // a prefix of the head or it is not. Ordering them would silently report a
+    // real update as current whenever the new SHA happened to sort lower.
+    moved = !sha.startsWith(pinned);
+    // Links resolve against the full SHA; only the display is shortened.
+    compare = `https://github.com/${repo}/compare/${pinned}...${sha}`;
   } else {
     throw new Error(`${repo}: unknown track "${track}"`);
   }
 
-  if (compareRefs(latest, pinned) <= 0) return null;
+  if (!(moved ?? compareRefs(latest, pinned) > 0)) return null;
 
   const title = `chore: upstream ${repo} moved to ${latest}`;
   const lines = [
@@ -249,7 +259,7 @@ async function checkOne(entry) {
     `|---|---|`,
     `| Pinned in \`.sources/upstream.json\` | \`${pinned}\` |`,
     `| Latest ${kind} | \`${latest}\` |`,
-    `| ${compare ? 'Registry' : 'Compare'} | ${compare ?? `https://github.com/${repo}/compare/${pinned}...${latest}`} |`,
+    `| ${compareLabel} | ${compare ?? `https://github.com/${repo}/compare/${pinned}...${latest}`} |`,
   ];
   if (reference) lines.push(`| Published reference | ${reference} |`);
   lines.push('');
@@ -257,7 +267,7 @@ async function checkOne(entry) {
   lines.push('');
   lines.push(affects ?? 'No notes recorded for this repo.');
 
-  if (verify && !compare) {
+  if (verify && compareLabel !== 'Registry') {
     const [oldText, newText] = await Promise.all([
       fetchFile(repo, pinned, verify),
       fetchFile(repo, latest, verify),

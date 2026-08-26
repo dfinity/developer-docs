@@ -18,7 +18,7 @@
 #   The merge commit of the release PR represents the same state and is used
 #   instead. This is expected behaviour with --depth 1 submodule init.
 #
-# FORMAT: <submodule>   <version label>   <7-char hash>
+# FORMAT: <submodule>   <version label>   <short commit hash>
 #
 # The hash is the authoritative ref — it is what .gitmodules pins and what
 # git checks out. The version label is the human-readable release name.

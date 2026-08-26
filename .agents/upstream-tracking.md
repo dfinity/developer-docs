@@ -65,7 +65,10 @@ pinned source file, because a published site always shows "latest".
 ### When an upstream moves
 
 `.github/workflows/upstream-releases.yml` runs weekly and opens one issue per
-repo that has moved past its pin, labelled `upstream-<owner>-<repo>`. The issue
+repo that has moved past its pin. Every issue carries `upstream-sync`, so they
+are findable as a class, plus a per-upstream label so a later run can supersede
+its own issue: `upstream-dfinity-<repo>` for a watched repo and
+`upstream-submodule-<name>` for a vendored one. The issue
 carries the ref delta, a compare link, a summary of what changed in the repo's
 `verify` file when one is configured, and the `affects` note saying which pages
 to re-check.
