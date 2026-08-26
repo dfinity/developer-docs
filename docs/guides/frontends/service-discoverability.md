@@ -171,6 +171,10 @@ curl -sf https://APP/.well-known/ii-derivation-origin || echo "default (https://
 
 End to end: an agent given only `https://APP` resolves the backend ID first (labeled with its role), reads `getApiDoc` to learn behavior, queries data apps via OQL, and, to act as the user, derives the user's principal against the app's declared derivation origin. All of that happens without a human supplying an ID or guessing which origin the user's principal comes from.
 
+## Connecting an agent
+
+You do not need to build a bespoke agent to consume these layers. An MCP-capable assistant (Claude, ChatGPT, or any MCP client) can use them out of the box through the DFINITY-hosted [ICP MCP connector](https://internetcomputer.org/icp-mcp/#enable). Once connected, the assistant discovers your app's canisters, reads their interfaces and `getApiDoc` guidance, queries OQL data, and acts as the signed-in user through Internet Identity.
+
 ## Related documents
 
 - [Asset canister](asset-canister.md): serve `.well-known` files and configure SPA routing.
