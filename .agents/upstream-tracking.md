@@ -92,12 +92,31 @@ Exit code 0 means nothing moved, 1 means at least one did (bodies are written to
 
 ### Adding a repo to the watch list
 
-Add an entry to `.sources/upstream.json`. `track: "release"` needs a
-`tagPattern` that matches only the tags that count as a release for the thing we
-document — several of these repos tag per crate or per recipe, so an unanchored
-pattern picks up the wrong series. `track: "commit"` is for repos with no tags at
-all. Set `verify` when a single file carries the API surface we check against;
-its diff becomes the issue's review payload.
+Add an entry to `.sources/upstream.json`, declaring where its releases actually
+appear:
+
+| `track` | Latest ref comes from | Use it when |
+|---|---|---|
+| `release` | git tags matching `tagPattern` | tags are the release identity |
+| `crate` | crates.io `newest_version` for `crate` | the repo publishes without tagging |
+| `npm` | the npm registry `latest` for `package` | same, for a JS package |
+| `commit` | the default branch head | the repo has no releases at all |
+
+Two traps this has already hit:
+
+- **`tagPattern` must be anchored and specific.** Several of these repos tag per
+  crate or per recipe, so a loose pattern picks the wrong series and reports a
+  version from a different artifact.
+- **A `release` pin must be a real tag.** A pin that no tag can overtake makes
+  the repo report "current" for ever. The script fails loudly on this rather than
+  going quiet, which is how `cdk-rs` was caught pinned to a crate version that
+  its tags were two minors behind.
+
+Set `verify` when a single file carries the surface we check against; its diff
+becomes the issue's review payload, and a changelog is usually the best choice
+because it names what changed instead of leaving "check every signature" as the
+task. It only applies to `release` and `commit` tracks, since a registry version
+is not a ref git can resolve.
 
 ### `icp-cli`: link slug adaptation
 

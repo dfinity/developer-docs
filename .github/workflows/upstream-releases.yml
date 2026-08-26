@@ -67,6 +67,10 @@ jobs:
             [ -n "$slug" ] || continue
             label="upstream-${slug}"
 
+            # `upstream-sync` groups every issue this workflow opens so they are
+            # findable as a class; `upstream-<slug>` identifies the one repo, so a
+            # later run can find and supersede its own issue.
+            gh label create upstream-sync --description "An upstream release needs the docs re-checked" --color 0e8a16 2>/dev/null || true
             gh label create "$label" --description "Upstream ref moved: ${slug}" --color ededed 2>/dev/null || true
 
             existing=$(gh issue list --label "$label" --state open --limit 1 --json number,title --jq 'first // empty')
@@ -81,7 +85,7 @@ jobs:
               echo "Closed superseded #$num"
             fi
 
-            gh issue create --title "$title" --body-file ".upstream-checks/${slug}.md" --label "$label"
+            gh issue create --title "$title" --body-file ".upstream-checks/${slug}.md" --label "$label" --label upstream-sync
           done < moved.tsv
 
       - name: Fail if a check errored

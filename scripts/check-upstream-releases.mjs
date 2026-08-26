@@ -6,6 +6,11 @@
  * Covers both groups in that file: `vendored` submodules whose pin has no sync
  * workflow of its own (their pin is read from the gitlink, so git stays the
  * single source of truth), and `watched` repos that are not vendored at all.
+ *
+ * A watched repo declares where its releases actually appear: `release` (git
+ * tags matching a pattern), `crate` (crates.io) or `npm` (the npm registry) for
+ * repos that publish without tagging, or `commit` for repos with no releases at
+ * all.
  * See AGENTS.md "Source material" and .agents/upstream-tracking.md.
  *
  * Usage:
@@ -110,6 +115,14 @@ async function cratesIoNewest(crate) {
   return v;
 }
 
+async function npmLatest(pkg) {
+  const res = await fetch(`https://registry.npmjs.org/${pkg}/latest`);
+  if (!res.ok) throw new Error(`npm returned ${res.status} for ${pkg}`);
+  const v = (await res.json())?.version;
+  if (!v) throw new Error(`npm gave no version for ${pkg}`);
+  return v;
+}
+
 async function fetchFile(repo, ref, path) {
   const url = `https://raw.githubusercontent.com/${repo}/${ref}/${path}`;
   const res = await fetch(url);
@@ -182,6 +195,10 @@ async function checkOne(entry) {
 
   let latest;
   let kind;
+  // A registry-tracked ref is a package version, not something git can resolve,
+  // so those entries get a registry link instead of a compare view and no file
+  // diff.
+  let compare;
   if (track === 'release') {
     if (!tagPattern) throw new Error(`${repo}: track "release" needs a tagPattern`);
     const re = new RegExp(tagPattern);
@@ -203,10 +220,16 @@ async function checkOne(entry) {
     kind = 'release';
   } else if (track === 'crate') {
     // Some repos publish releases to a package registry without tagging them,
-    // so the crate version is the release identity and tags lag behind it.
+    // so the package version is the release identity and tags lag behind it.
     if (!entry.crate) throw new Error(`${repo}: track "crate" needs a crate name`);
     latest = await cratesIoNewest(entry.crate);
     kind = `crates.io release of ${entry.crate}`;
+    compare = `https://crates.io/crates/${entry.crate}`;
+  } else if (track === 'npm') {
+    if (!entry.package) throw new Error(`${repo}: track "npm" needs a package name`);
+    latest = await npmLatest(entry.package);
+    kind = `npm release of ${entry.package}`;
+    compare = `https://www.npmjs.com/package/${entry.package}`;
   } else if (track === 'commit') {
     const { branch, sha } = defaultBranchHead(repo);
     if (!sha) throw new Error(`${repo}: could not resolve HEAD`);
@@ -226,7 +249,7 @@ async function checkOne(entry) {
     `|---|---|`,
     `| Pinned in \`.sources/upstream.json\` | \`${pinned}\` |`,
     `| Latest ${kind} | \`${latest}\` |`,
-    `| Compare | https://github.com/${repo}/compare/${pinned}...${latest} |`,
+    `| ${compare ? 'Registry' : 'Compare'} | ${compare ?? `https://github.com/${repo}/compare/${pinned}...${latest}`} |`,
   ];
   if (reference) lines.push(`| Published reference | ${reference} |`);
   lines.push('');
@@ -234,7 +257,7 @@ async function checkOne(entry) {
   lines.push('');
   lines.push(affects ?? 'No notes recorded for this repo.');
 
-  if (verify) {
+  if (verify && !compare) {
     const [oldText, newText] = await Promise.all([
       fetchFile(repo, pinned, verify),
       fetchFile(repo, latest, verify),
