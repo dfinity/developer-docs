@@ -273,14 +273,44 @@ For the tracking and bump procedures, see
 
 Load skills matching the task before starting any content work.
 
-Skills live in `.claude/skills/`. The IC skills are mirrored from
+Skills live in `.claude/skills/` and come from two places.
+
+**The IC skills** are mirrored from
 [skills.internetcomputer.org](https://skills.internetcomputer.org) by
-`.claude/sync-ic-skills.sh`, which runs on session start and re-downloads only
-what changed. They are not committed. Three skills are maintained in this repo
-and are committed: `icp-brand-design`, `icp-brand-voice`, and
-`technical-documentation`. The sync only ever prunes skills it installed itself,
-so those three are never touched. If the sync cannot reach the registry it keeps
-whatever is already on disk, so an offline session still has skills.
+`.claude/sync-ic-skills.sh`, which runs on session start, re-downloads only what
+changed, and keeps whatever is on disk when the registry is unreachable. They are
+**not committed**, so a skill changing upstream leaves nothing to review.
+
+**Three skills are maintained in this repo** and are committed:
+`icp-brand-design`, `icp-brand-voice`, and `technical-documentation`. None of
+them is on the registry. The sync only prunes skills it installed itself, so it
+never touches them.
+
+Read a skill's `SKILL.md` from `.claude/skills/<name>/` at any point; the files
+are plain markdown with frontmatter and nothing about them is Claude-specific.
+
+### Skills outside Claude Code
+
+The session-start hook is Claude Code only, and automatic skill loading is
+specific to every harness, so nothing loads skills automatically elsewhere. What
+is portable is where to get them:
+
+- **The IC skills:** fetch `https://skills.internetcomputer.org/.well-known/skills/index.json`
+  once, then fetch the matching skill's `SKILL.md` before writing. No repo state
+  is involved, and it is always current. This is the path to use in Cursor,
+  Copilot, Codex, and anything else that is not Claude Code. Do not read the IC
+  skills from `.claude/skills/` outside Claude Code: they are gitignored, so a
+  fresh clone has none of them until a sync has run.
+- **The three repo-maintained skills:** read them from `.claude/skills/<name>/`.
+  They are in git, so they are present in every clone.
+
+To force a refresh in a running Claude Code session, or to populate the
+directory by hand, run `bash .claude/sync-ic-skills.sh`.
+
+If one of the three repo-maintained names is ever published to the registry, the
+sync replaces the local copy with the published one. That is the right outcome
+when we publish a skill deliberately, so delete the local copy in the same change
+rather than working around it.
 
 Always load for content writing:
 - **`technical-documentation`** — quality and structure

@@ -116,7 +116,8 @@ Some files are auto-synced from other repositories.
 
 Currently synced:
 - `docs/languages/motoko/` — from `caffeinelabs/motoko`
-- `docs/guides/tools/migrating-from-dfx.md` — from `dfinity/icp-cli`
+- `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — from `dfinity/internet-identity`
+- `.claude/skills/` (except `icp-brand-design`, `icp-brand-voice`, and `technical-documentation`) — from [skills.internetcomputer.org](https://skills.internetcomputer.org), refreshed on session start and not committed. See AGENTS.md "Skills" for how to consume them outside Claude Code.
 
 ## Review ownership
 
