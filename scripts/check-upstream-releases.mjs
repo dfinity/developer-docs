@@ -159,6 +159,8 @@ function checkVendored(entry) {
   if (!headSha) throw new Error(`${repo}: no branch ${branch}`);
   if (pinnedSha === headSha) return null;
 
+  // Short SHAs are for the table and the issue title; anything a machine
+  // consumes (the compare link, the checkout command) gets the full SHA.
   const pinned = pinnedSha.slice(0, 7);
   const latest = headSha.slice(0, 7);
   const name = path.replace(/^\.sources\//, '');
@@ -169,7 +171,7 @@ function checkVendored(entry) {
     '|---|---|',
     `| Pinned (gitlink) | \`${pinned}\` |`,
     `| Branch head | \`${latest}\` |`,
-    `| Compare | https://github.com/${repo}/compare/${pinned}...${latest} |`,
+    `| Compare | https://github.com/${repo}/compare/${pinnedSha}...${headSha} |`,
     '',
     '## What to re-check',
     '',
@@ -179,7 +181,7 @@ function checkVendored(entry) {
     '',
     '```bash',
     `git -C ${path} fetch origin ${branch}`,
-    `git -C ${path} checkout ${latest}`,
+    `git -C ${path} checkout ${headSha}`,
     '```',
     '',
     'Then work through the submodule checklist and commit the new pointer.',
@@ -243,7 +245,9 @@ async function checkOne(entry) {
     // a prefix of the head or it is not. Ordering them would silently report a
     // real update as current whenever the new SHA happened to sort lower.
     moved = !sha.startsWith(pinned);
-    // Links resolve against the full SHA; only the display is shortened.
+    // The head side uses the full SHA. The pin side is whatever `upstream.json`
+    // records, kept short there for readability; GitHub's compare view resolves
+    // a short prefix on either side.
     compare = `https://github.com/${repo}/compare/${pinned}...${sha}`;
   } else {
     throw new Error(`${repo}: unknown track "${track}"`);
