@@ -1,11 +1,11 @@
 # Pinned submodule versions
 # -------------------------------------------------------
-# This file covers the FIVE submodules under .sources/ — the repos whose bytes
-# reach the built site or the agent workflow. Every other upstream repo is
-# watched rather than vendored; its pin lives in .sources/upstream.json.
+# This file covers the three submodules under .sources/ — the repos whose
+# content is resolved during the build. Every other upstream repo is watched
+# rather than vendored; its pin lives in .sources/upstream.json.
 #
 # Submodules that track a branch are NOT listed here (they have no fixed
-# release version): examples, icskills, dotskills.
+# release version): examples.
 #
 # internetidentity — uses date-based release tags (release-YYYY-MM-DD).
 #   Only ii-spec.mdx, vc-spec.md, and internet_identity.did are synced.

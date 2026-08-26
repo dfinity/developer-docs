@@ -61,7 +61,7 @@ Each top-level section has a specific purpose. Match your content accordingly:
 ### Don't
 - Reference `dfx` — it is deprecated. CI will reject it.
 - Use `.mdx` without a clear need for interactive components (default to `.md`)
-- Duplicate content that lives in external docs (icp-cli, JS SDK, icskills)
+- Duplicate content that lives in external docs (icp-cli, JS SDK, the IC skills)
 - Nest sidebar items more than 3 levels deep
 - Add images without alt text
 - Write for a specific framework version — always describe "latest"
@@ -104,7 +104,7 @@ The build generates `/llms.txt` and per-page `.md` endpoints from your content. 
 
 Upstream repos are tracked two ways, because most of them are only ever read to check a fact.
 
-- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`, `icskills`, `dotskills`) — five repos whose content reaches the built site or the agent workflow. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
+- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`) — three repos whose content is resolved during the build. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
 - **Watched, not vendored** — everything else, listed in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
 
 Bumping either is a maintainer task — follow [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for the procedure.

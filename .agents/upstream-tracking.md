@@ -6,7 +6,7 @@ Upstream repos fall into two groups, and the group decides the procedure.
 
 | | Vendored (submodule) | Watched (not vendored) |
 |---|---|---|
-| Which | `motoko`, `internetidentity`, `examples`, `icskills`, `dotskills` | the `watched` array in `.sources/upstream.json` |
+| Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` |
 | Why | their bytes reach the built site or the agent workflow | nothing they contain is published |
 | Pin lives in | git (the gitlink), plus a label in `.sources/VERSIONS` for the release-pinned ones | `pinned` in `.sources/upstream.json` |
 | Moved by | a bump PR (below) | a bump PR, triggered by an **Upstream release check** issue |
@@ -16,23 +16,22 @@ Every one of them is checked weekly. `motoko` and `internetidentity` have their
 own sync workflows that open the bump PR directly; the rest are covered by
 **Upstream release check**, which opens an issue.
 
-## Why only five are vendored
+## Why only three are vendored
 
-A submodule is justified only when the repo's content is part of the build or
-the agent workflow, because then it has to be on disk anyway:
+A submodule is justified only when the repo's content is resolved during the
+build, because then it has to be on disk at a known ref:
 
 - `motoko` — synced into `docs/languages/motoko/` **and** resolved at build time
   by 52 `<motokoExamples>` file includes.
 - `internetidentity` — `scripts/sync-ii-spec.mjs` generates two reference pages
   from it.
 - `examples` — `plugins/remark-snippet.mjs` extracts `snippet=` code at build
-  time. Only one page uses it today; more are planned.
-- `icskills` — 16 of the 17 symlinks in `.agents/skills/` point into it.
-- `dotskills` — the 17th (`technical-documentation`).
+  time.
 
-Everything else is only ever read to check a fact, which needs a pinned ref
-rather than a copy. Add a submodule only if something in the build or the agent
-workflow has to open its files.
+Everything else is read to check a fact, which needs a pinned ref rather than a
+copy, or is a skill, which the session-start sync mirrors from
+[skills.internetcomputer.org](https://skills.internetcomputer.org) (see AGENTS.md
+"Skills"). Add a submodule only if the build has to open its files.
 
 ## Watched repos
 
@@ -132,10 +131,10 @@ When `icp-cli` moves to a new minor:
 
 Only the project maintainer bumps submodule refs.
 
-`examples`, `icskills`, and `dotskills` track a branch and are checked by the
-same **Upstream release check** workflow, which opens an issue when the gitlink
-falls behind that branch. Their pin lives in git, so `upstream.json` records only
-the branch to compare against and what a bump affects.
+`examples` tracks a branch and is checked by the same **Upstream release check**
+workflow, which opens an issue when the gitlink falls behind that branch. Its pin
+lives in git, so `upstream.json` records only the branch to compare against and
+what a bump affects.
 
 `motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
 `sync-ii-spec.yml` already check for a new release, run the sync, and open the
@@ -145,8 +144,7 @@ bump PR with the result.
 
 - **Release-pinned** (`motoko`, `internetidentity`): `git ls-remote --tags origin`,
   pin to the highest version tag's commit.
-- **Branch-tracking** (`examples`, `icskills`, `dotskills`): fetch and check out
-  `origin/main` or `origin/master`.
+- **Branch-tracking** (`examples`): fetch and check out `origin/master`.
 
 ### Checklist
 
@@ -175,8 +173,6 @@ EOF
 | `motoko` | **Automated** — `.github/workflows/sync-motoko.yml` opens a PR with the bump, the synced docs, and the VERSIONS update already committed. Review the content diff and merge. Also grep Motoko code blocks for changed API signatures. |
 | `internetidentity` | Run `npm run sync:ii-spec`. If it warns about an unhandled link, add the pattern to `linkMap` (ii-spec) or `vcLinkMap` (vc-spec) in `scripts/sync-ii-spec.mjs`. Pin to the latest `release-YYYY-MM-DD` tag. `.github/workflows/sync-ii-spec.yml` runs this automatically; trigger it manually for an early sync. |
 | `examples` | Verify every `snippet=` path and `#region` marker still resolves — a missing region is a build error. |
-| `icskills` | Check for changed canister IDs or code patterns; the 16 skill symlinks in `.agents/skills/` follow the pin. |
-| `dotskills` | Check whether the `technical-documentation` skill changed in ways that affect review criteria. |
 
 ### Link adaptation for the synced specs
 

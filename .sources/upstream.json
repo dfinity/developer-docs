@@ -36,20 +36,6 @@
       "track": "branch",
       "branch": "master",
       "affects": "Every `snippet=` path and `#region` marker resolved at build time by plugins/remark-snippet.mjs. A renamed region is a build error, so verify each one after bumping."
-    },
-    {
-      "path": ".sources/icskills",
-      "repo": "dfinity/icskills",
-      "track": "branch",
-      "branch": "main",
-      "affects": "The 16 skill symlinks in .agents/skills/ follow this pin, so a bump changes the guidance agents load. Check for changed canister IDs and code patterns."
-    },
-    {
-      "path": ".sources/dotskills",
-      "repo": "vincentkoc/dotskills",
-      "track": "branch",
-      "branch": "main",
-      "affects": "The `technical-documentation` skill in .agents/skills/. Check whether the review criteria changed."
     }
   ],
   "watched": [

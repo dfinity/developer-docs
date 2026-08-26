@@ -1,7 +1,3 @@
-[submodule ".sources/icskills"]
-	path = .sources/icskills
-	url = git@github.com:dfinity/icskills.git
-	branch = main
 [submodule ".sources/examples"]
 	path = .sources/examples
 	url = git@github.com:dfinity/examples.git
@@ -9,9 +5,6 @@
 [submodule ".sources/motoko"]
 	path = .sources/motoko
 	url = git@github.com:caffeinelabs/motoko.git
-[submodule ".sources/dotskills"]
-	path = .sources/dotskills
-	url = git@github.com:vincentkoc/dotskills.git
 [submodule ".sources/internetidentity"]
 	path = .sources/internetidentity
 	url = https://github.com/dfinity/internet-identity.git
