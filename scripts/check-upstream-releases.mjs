@@ -99,6 +99,17 @@ function branchHead(repo, branch) {
   return out.match(/^([0-9a-f]{40})/)?.[1];
 }
 
+async function cratesIoNewest(crate) {
+  const res = await fetch(`https://crates.io/api/v1/crates/${crate}`, {
+    headers: { 'User-Agent': 'dfinity-developer-docs upstream check' },
+  });
+  if (!res.ok) throw new Error(`crates.io returned ${res.status} for ${crate}`);
+  const body = await res.json();
+  const v = body?.crate?.newest_version;
+  if (!v) throw new Error(`crates.io gave no newest_version for ${crate}`);
+  return v;
+}
+
 async function fetchFile(repo, ref, path) {
   const url = `https://raw.githubusercontent.com/${repo}/${ref}/${path}`;
   const res = await fetch(url);
@@ -178,9 +189,24 @@ async function checkOne(entry) {
     if (matching.length === 0) {
       throw new Error(`${repo}: no tags match ${tagPattern}`);
     }
+    // A pin that is not one of the matched tags can never be overtaken by them,
+    // so the repo would report "current" forever. Fail instead of going quiet.
+    if (!matching.includes(pinned)) {
+      throw new Error(
+        `${repo}: pinned "${pinned}" is not a tag matching ${tagPattern} ` +
+          `(newest matching tag is "${[...matching].sort(compareRefs).pop()}"). ` +
+          `Fix the pin, the pattern, or switch this entry to another track.`
+      );
+    }
     matching.sort(compareRefs);
     latest = matching[matching.length - 1];
     kind = 'release';
+  } else if (track === 'crate') {
+    // Some repos publish releases to a package registry without tagging them,
+    // so the crate version is the release identity and tags lag behind it.
+    if (!entry.crate) throw new Error(`${repo}: track "crate" needs a crate name`);
+    latest = await cratesIoNewest(entry.crate);
+    kind = `crates.io release of ${entry.crate}`;
   } else if (track === 'commit') {
     const { branch, sha } = defaultBranchHead(repo);
     if (!sha) throw new Error(`${repo}: could not resolve HEAD`);

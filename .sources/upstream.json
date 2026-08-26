@@ -69,14 +69,15 @@
       "track": "release",
       "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
       "affects": "Every `mo:core` import and API signature in Motoko code blocks.",
-      "reference": "https://mops.one/core/docs"
+      "reference": "https://mops.one/core/docs",
+      "verify": "Changelog.md"
     },
     {
       "repo": "dfinity/cdk-rs",
       "pinned": "0.20.1",
-      "track": "release",
-      "tagPattern": "^\\d+\\.\\d+\\.\\d+$",
-      "affects": "`ic-cdk` APIs in Rust code blocks. `ic-cdk-timers` and `ic-cdk-executor` tag separately (`timers-*`, `executor-*`) and usually release in the same batch, so check whether they moved too. Bare semver tags are `ic-cdk` itself.",
+      "track": "crate",
+      "crate": "ic-cdk",
+      "affects": "`ic-cdk` APIs in Rust code blocks. The repo stopped tagging releases (its newest bare-semver tag is two minors behind the published crate), so the crate version on crates.io is the release identity. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk/CHANGELOG.md, then grep docs/ for the symbols they name. `ic-cdk-timers` and `ic-cdk-executor` version separately; check whether they moved too.",
       "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
     },
     {
@@ -94,7 +95,8 @@
       "track": "release",
       "tagPattern": "^\\d+\\.\\d+\\.\\d+$",
       "affects": "guides/frontends/certification.md and guides/backends/certified-variables.md: the `ic-http-certification`, `ic-asset-certification`, and `@dfinity/certificate-verification` APIs.",
-      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/"
+      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/",
+      "verify": "CHANGELOG.md"
     },
     {
       "repo": "dfinity/chain-fusion-signer",
