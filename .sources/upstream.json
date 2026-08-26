@@ -123,12 +123,21 @@
       "reference": "https://github.com/dfinity/ic-pub-key"
     },
     {
-      "repo": "dfinity/icp-js-sdk-docs",
-      "pinned": "5.4.0",
+      "repo": "dfinity/icp-js-core",
+      "pinned": "v5.4.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "verify": "CHANGELOG.md",
+      "affects": "`@icp-sdk/core` APIs in JavaScript and TypeScript code blocks: agents, identity, Candid, and the canister-env helpers. Tags match the published npm versions.",
+      "reference": "https://js.icp.build/core/"
+    },
+    {
+      "repo": "dfinity/icp-js-canisters",
+      "pinned": "3.5.0",
       "track": "npm",
-      "package": "@icp-sdk/core",
-      "affects": "`@icp-sdk/core` and `@icp-sdk/canisters` APIs in JavaScript and TypeScript code blocks. This repo is the docs mirror and carries no tags, so the released package version is the signal rather than a commit on it. `@icp-sdk/canisters` versions separately; check whether it moved too. The mirror's `public/core/versions.json` lists which versions it carries, and `public/<lib>/latest.zip` holds the API docs to unzip.",
-      "reference": "https://js.icp.build"
+      "package": "@icp-sdk/canisters",
+      "affects": "`@icp-sdk/canisters` APIs, notably `AssetManager` in references/application-canisters.md and guides/frontends/asset-canister.md, which states a minimum of 3.5.0. This repo's semver tags lag its published versions, so npm is the release signal. Changelog: https://github.com/dfinity/icp-js-canisters/blob/main/CHANGELOG.md",
+      "reference": "https://js.icp.build/canisters/"
     }
   ]
 }

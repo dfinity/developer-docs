@@ -255,7 +255,8 @@ have not adapted yet.
 | Project templates | `dfinity/icp-cli-templates` | the template's `icp.yaml` |
 | Motoko APIs (`mo:core`) | `dfinity/motoko-core` | `src/` |
 | Rust CDK (`ic-cdk`, `ic-cdk-timers`) | `dfinity/cdk-rs` | the crate's `src/` and `CHANGELOG.md` |
-| JavaScript / TypeScript SDK | `dfinity/icp-js-sdk-docs` | `public/<lib>/latest.zip` |
+| JS SDK core (`@icp-sdk/core`) | `dfinity/icp-js-core` | `src/`, `CHANGELOG.md` |
+| JS SDK canisters (`@icp-sdk/canisters`) | `dfinity/icp-js-canisters` | `src/`, `CHANGELOG.md` |
 | Candid spec | `dfinity/candid` | `spec/Candid.md` |
 | Certified variables | `dfinity/response-verification` | `packages/<pkg>/README.md` |
 | Chain Fusion Signer | `dfinity/chain-fusion-signer` | the canister's `.did` |
