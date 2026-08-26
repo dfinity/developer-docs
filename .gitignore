@@ -35,3 +35,6 @@ public/docs-manifest.json
 # Skills install artifacts (npx skills add writes here; committed skills live in .agents/skills/)
 /skills/
 skills-lock.json
+
+# Upstream release check output (scripts/check-upstream-releases.mjs)
+.upstream-checks/

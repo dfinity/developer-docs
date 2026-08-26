@@ -15,12 +15,15 @@ Tasks come on-demand — no GitHub issue required unless proposing a structural 
 
 Load `technical-documentation`, `icp-brand-voice`, and the relevant icskill before writing (see "Skills" for the topic-to-skill mapping). Then:
 
-- Read relevant source material from `.sources/` to verify CLI commands, API signatures, and technical claims (see "Source material" below for what to consult per topic).
-- **CLI commands:** verify every flag against `.sources/icp-cli/docs/reference/cli.md` — never guess syntax.
+- Verify CLI commands, API signatures, and technical claims against the source material for that topic (see "Source material" below). Never verify from memory.
+- **CLI commands:** verify every flag against `docs/reference/cli.md` in `dfinity/icp-cli` at the ref pinned in `.sources/upstream.json` — never guess syntax:
+  ```bash
+  curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/<pinned>/docs/reference/cli.md
+  ```
 - **Internal links:** run `ls <target>` before adding any link. Always use `.md` extension, even for `.mdx` targets.
 - **External URLs:** use the "Linking rules" table below. Verify any URL not in the table — do not guess.
-- **Flag uncertainty:** add `<!-- Needs human verification: [reason] -->` next to any claim you can't verify from `.sources/`. Never silently guess.
-- **Do not invent command output** — copy from `.sources/` READMEs or test fixtures, or write `<!-- TODO: verify output -->`.
+- **Flag uncertainty:** add `<!-- Needs human verification: [reason] -->` next to any claim you can't verify against a pinned source. Never silently guess.
+- **Do not invent command output** — copy from an upstream README or test fixture, or write `<!-- TODO: verify output -->`.
 - **`.md` → `.mdx` conversion:** if a page needs multi-language tabs, rename `.md` → `.mdx`, add `import { Tabs, TabItem } from '@astrojs/starlight/components';` after the frontmatter, and convert `<!-- -->` comments to `{/* */}`. Astro resolves `.md` links to `.mdx` files — no link updates needed.
 - For pages that closely track a specific upstream file, add at the bottom: `<!-- Upstream: informed by <repo> <path> -->`. Skip for pages that draw from multiple sources or are fully original.
 - Follow the "Content rules" section below.
@@ -47,7 +50,7 @@ Only when explicitly asked. Load `technical-documentation` and the relevant icsk
 *Mechanical checks:*
 1. **Internal links** — `ls` every `[text](path.md)` target. Flag as broken only if neither `.md` nor `.mdx` exists.
 2. **External URLs** — verify against the linking rules table below.
-3. **CLI commands** — verify against `.sources/icp-cli/docs/reference/cli.md`.
+3. **CLI commands** — verify against `docs/reference/cli.md` in `dfinity/icp-cli` at the pinned ref (see "Source material").
 4. **Frontmatter** — title and description present and consistent with body.
 5. **Rules compliance** — no `dfx`, no `.mdx` without interactive components, relative `.md` links, `mo:core` not `mo:base`.
 
@@ -55,7 +58,7 @@ Only when explicitly asked. Load `technical-documentation` and the relevant icsk
 6. **Reader test** — does the opening deliver on the title's promise and stand alone without assumed prior context?
 7. **Funnel** — orient → explain/instruct → next steps. Flag buried leads and pages that end without direction.
 8. **Scanability** — can a developer get the gist from headings and bold text alone?
-9. **Accuracy** — cross-check technical claims against `.sources/`. Flag anything wrong or outdated.
+9. **Accuracy** — cross-check technical claims against the pinned source material. Flag anything wrong or outdated.
 10. **Developer empathy** — does it address what a developer will actually struggle with?
 
 Post using this format:
@@ -171,7 +174,7 @@ EOF
 - Link to `internetcomputer.org/docs/` (retired) or `learn.internetcomputer.org` (content is now in this repo under `docs/concepts/`)
 - Link to internal pages that don't exist — run `ls <target>` before linking. Links to `.mdx` files use `.md` extension.
 - Link to an internal page without checking for a relevant section anchor — read the target page to find the most specific section that fits, then derive the anchor slug from its heading (lowercase, spaces → `-`, special chars stripped).
-- Link to `https://cli.internetcomputer.org/` bare root — use the versioned path. Current slug: `1.1` (the `major.minor` of the pinned icp-cli release). Do not trust `.sources/icp-cli/docs-site/versions.json` here: at a release tag it still lists the *previous* slug, because the docs-site version bump lands as a follow-up commit after the tag. Confirm the live slug at the docs-site root (it redirects to the latest version).
+- Link to `https://cli.internetcomputer.org/` bare root — use the versioned path. Current slug: `1.3`. It is the `major.minor` of the latest icp-cli release, and the docs always track the latest. Do not read it from the repo's `docs-site/versions.json`: at a release tag that file still lists the *previous* slug, because the docs-site version bump lands as a follow-up commit after the tag. Confirm the live slug at the docs-site root (it redirects to the latest version), and see `.agents/upstream-tracking.md` for the full slug-bump procedure.
 - Link externally when an internal page exists — check `docs/` first
 - Write em-dashes (`—`) or use `--` as prose punctuation — use colon, semicolon, or parentheses instead. (`--` is fine inside code blocks as a CLI flag or comment.)
 - Rename Candid field names, management canister API identifiers, or example repo names — these are protocol-level identifiers
@@ -182,10 +185,10 @@ EOF
 
 - `docs/` — All documentation (`.md` by default). `src/content/docs/` symlinks here.
 - `docs/languages/motoko/` — Auto-synced from `caffeinelabs/motoko` (do not edit directly)
-- `docs/guides/tools/migrating-from-dfx.md` — Synced from `dfinity/icp-cli` (do not edit directly)
-- `.sources/` — Pinned source submodules (read-only)
+- `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — Synced from `dfinity/internet-identity` (do not edit directly)
+- `.sources/` — Vendored submodules, read-only, plus `upstream.json` (watched repos) and `VERSIONS` (submodule pins)
 - `.agents/skills/` — Agent skill files. Run `git submodule update --init --depth 1` if broken.
-- `.agents/submodule-bumping.md` — Procedures for bumping source submodules (maintainer use)
+- `.agents/upstream-tracking.md` — How upstreams are tracked and bumped (maintainer use)
 
 ## Project structure
 
@@ -210,36 +213,60 @@ docs/
 
 ## Source material
 
-All source repos are pinned as git submodules under `.sources/`. Always read from `.sources/` — never from local clones, `gh api`, or training data. Do not modify `.sources/` — it is read-only.
+Upstream repos are tracked two ways. Which one decides where you read from.
+
+**Vendored as submodules** — five repos, because their bytes reach the built site
+or the agent workflow. Read them from disk; do not edit them.
 
 ```bash
 git submodule update --init --depth 1   # do NOT use --recursive
 ```
 
-Consult the relevant submodule when writing or reviewing:
-
 | Topic | Submodule |
 |-------|-----------|
-| CLI commands and flags | `.sources/icp-cli/` — verify against `.sources/icp-cli/docs/reference/cli.md` |
-| Motoko APIs (`mo:core`) | `.sources/motoko-core/` |
-| Motoko compiler / syntax | `.sources/motoko/` |
-| Rust CDK (`ic-cdk`, `ic-cdk-timers`) | `.sources/cdk-rs/` |
-| JavaScript / TypeScript SDK | `.sources/icp-js-sdk-docs/` — unzip: `unzip -p .sources/icp-js-sdk-docs/public/<lib>/latest.zip <file>` |
-| Code examples | `.sources/examples/` |
-| CLI recipes | `.sources/icp-cli-recipes/` |
-| Project templates | `.sources/icp-cli-templates/` |
+| Motoko compiler / syntax, synced Motoko pages | `.sources/motoko/` |
+| Internet Identity and VC specs | `.sources/internetidentity/` |
+| Code examples (`snippet=`, `<CodeExample>`) | `.sources/examples/` |
 | Canister IDs and skill files | `.sources/icskills/` |
-| Candid spec | `.sources/candid/` |
-| Certified variables | `.sources/response-verification/` |
-| Chain Fusion Signer | `.sources/chain-fusion-signer/` |
-| PAPI (payment API) | `.sources/papi/` |
-| `@dfinity/ic-pub-key` CLI | `.sources/ic-pub-key/` |
-| Internet Identity spec | `.sources/internetidentity/` |
 | Technical documentation skill | `.sources/dotskills/` |
 
-For current pinned versions, see `.sources/VERSIONS`.
+Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS).
 
-For submodule bump procedures, see [`.agents/submodule-bumping.md`](.agents/submodule-bumping.md).
+**Watched, not vendored** — everything else. Nothing they contain is published,
+so the repo records a pinned ref instead of a copy, and a weekly workflow opens
+an issue when one moves. Read the file you need at the **pinned ref** in
+[`.sources/upstream.json`](.sources/upstream.json):
+
+```bash
+curl -sL https://raw.githubusercontent.com/<repo>/<pinned-ref>/<path>
+```
+
+Use `raw.githubusercontent.com`, not `gh api .../contents/...`: the API returns
+base64 that gets truncated, and a truncated reference is worse than none because
+it looks complete. Read the pinned ref rather than `main`, so a review is
+reproducible and a page cannot document something from a release whose links we
+have not adapted yet.
+
+| Topic | Repo | Verify against |
+|-------|------|----------------|
+| CLI commands and flags | `dfinity/icp-cli` | `docs/reference/cli.md` |
+| CLI recipes | `dfinity/icp-cli-recipes` | `recipes/<name>/` |
+| Project templates | `dfinity/icp-cli-templates` | the template's `icp.yaml` |
+| Motoko APIs (`mo:core`) | `dfinity/motoko-core` | `src/` |
+| Rust CDK (`ic-cdk`, `ic-cdk-timers`) | `dfinity/cdk-rs` | the crate's `src/` and `CHANGELOG.md` |
+| JavaScript / TypeScript SDK | `dfinity/icp-js-sdk-docs` | `public/<lib>/latest.zip` |
+| Candid spec | `dfinity/candid` | `spec/Candid.md` |
+| Certified variables | `dfinity/response-verification` | `packages/<pkg>/README.md` |
+| Chain Fusion Signer | `dfinity/chain-fusion-signer` | the canister's `.did` |
+| PAPI (payment API) | `dfinity/papi` | `README.md` |
+| `@dfinity/ic-pub-key` CLI | `dfinity/ic-pub-key` | `README.md` |
+
+Several of these also publish authoritative docs (the `reference` field in
+`upstream.json`). Those are what to **link readers to**; for verifying a claim,
+prefer the pinned source file, since a published site always shows "latest".
+
+For the tracking and bump procedures, see
+[`.agents/upstream-tracking.md`](.agents/upstream-tracking.md).
 
 ## Skills
 

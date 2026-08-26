@@ -102,11 +102,12 @@ The build generates `/llms.txt` and per-page `.md` endpoints from your content. 
 
 ## Source material
 
-`.sources/` contains pinned git submodules that agents use as ground truth when writing and reviewing content — CLI references, API signatures, skill files, and code examples.
+Upstream repos are tracked two ways, because most of them are only ever read to check a fact.
 
-**Do not edit files in `.sources/` directly.** They are read-only references; changes go to the upstream repos.
+- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`, `icskills`, `dotskills`) — five repos whose content reaches the built site or the agent workflow. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
+- **Watched, not vendored** — everything else, listed in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
 
-Current pinned release versions are in [`.sources/VERSIONS`](.sources/VERSIONS). Bumping a submodule is a maintainer task — follow [`.agents/submodule-bumping.md`](.agents/submodule-bumping.md) for the full procedure.
+Bumping either is a maintainer task — follow [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for the procedure.
 
 ## Synced content
 

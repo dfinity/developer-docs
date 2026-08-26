@@ -1,0 +1,112 @@
+{
+  "$comment": [
+    "Upstream repos that are NOT vendored as submodules. They are watched instead:",
+    "scripts/check-upstream-releases.mjs compares `pinned` against the newest matching",
+    "tag, and .github/workflows/upstream-releases.yml opens an issue when they differ.",
+    "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
+    "",
+    "`pinned` is the ref the docs were last verified against. Agents verify claims",
+    "against THIS ref rather than against main, so that a review is reproducible and a",
+    "page cannot document a flag from a release whose links we have not adapted yet.",
+    "Moving `pinned` is deliberate and comes with re-checking the affected pages.",
+    "",
+    "Fields:",
+    "  repo        owner/name on GitHub",
+    "  pinned      the ref docs are currently verified against",
+    "  track       'release' (tags matching tagPattern) or 'commit' (repo has no tags)",
+    "  tagPattern  anchored JS regex selecting the tags that count as a release",
+    "  verify      file whose diff between the two refs is the review payload (optional)",
+    "  affects     what to re-check in docs/ when this moves",
+    "  reference   authoritative published docs for the topic, for readers and agents"
+  ],
+  "watched": [
+    {
+      "repo": "dfinity/icp-cli",
+      "pinned": "v1.1.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "verify": "docs/reference/cli.md",
+      "affects": "Every `icp` command and flag in docs/. A new minor also moves the cli.internetcomputer.org link slug (AGENTS.md 'Linking rules'). NOTE: the doc links were moved to the 1.3 slug in #354, but the commands themselves were last verified against v1.1.0, so the first bump of this pin carries that verification pass.",
+      "reference": "https://cli.internetcomputer.org/"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "pinned": "static-site-v0.3.3",
+      "track": "release",
+      "tagPattern": "^(static-site|asset-canister|motoko|rust|prebuilt)-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Recipe versions in `icp.yaml` examples. Each recipe releases on its own tag, so the tag prefix says which one moved. NOTE: docs currently cite `@dfinity/asset-canister@v2.2.1` while v2.3.0 is out, and `@dfinity/static-site` is not documented at all yet (dfinity/certified-assets#124).",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-templates",
+      "pinned": "9f1e819",
+      "track": "commit",
+      "affects": "Template layout and the recipes templates ship with, referenced from getting-started/ and guides/frontends/. All frontend templates moved to `@dfinity/static-site` after this pin.",
+      "reference": "https://github.com/dfinity/icp-cli-templates"
+    },
+    {
+      "repo": "dfinity/motoko-core",
+      "pinned": "v2.4.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Every `mo:core` import and API signature in Motoko code blocks.",
+      "reference": "https://mops.one/core/docs"
+    },
+    {
+      "repo": "dfinity/cdk-rs",
+      "pinned": "0.20.1",
+      "track": "release",
+      "tagPattern": "^\\d+\\.\\d+\\.\\d+$",
+      "affects": "`ic-cdk` APIs in Rust code blocks. `ic-cdk-timers` and `ic-cdk-executor` tag separately (`timers-*`, `executor-*`) and usually release in the same batch, so check whether they moved too. Bare semver tags are `ic-cdk` itself.",
+      "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
+    },
+    {
+      "repo": "dfinity/candid",
+      "pinned": "2025-12-18",
+      "track": "release",
+      "tagPattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "verify": "spec/Candid.md",
+      "affects": "references/candid-spec.md and the Candid type-mapping tables. The repo uses date tags; the candid, candid_parser, and didc crates carry their own semver in Cargo.toml.",
+      "reference": "https://github.com/dfinity/candid/blob/master/spec/Candid.md"
+    },
+    {
+      "repo": "dfinity/response-verification",
+      "pinned": "3.1.0",
+      "track": "release",
+      "tagPattern": "^\\d+\\.\\d+\\.\\d+$",
+      "affects": "guides/frontends/certification.md and guides/backends/certified-variables.md: the `ic-http-certification`, `ic-asset-certification`, and `@dfinity/certificate-verification` APIs.",
+      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/"
+    },
+    {
+      "repo": "dfinity/chain-fusion-signer",
+      "pinned": "v0.4.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "affects": "guides/chain-fusion/chain-fusion-signer.md: canister IDs, API methods, key derivation.",
+      "reference": "https://github.com/dfinity/chain-fusion-signer"
+    },
+    {
+      "repo": "dfinity/papi",
+      "pinned": "v0.1.1",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Payment interface and cycle cost model wherever PAPI is referenced.",
+      "reference": "https://github.com/dfinity/papi"
+    },
+    {
+      "repo": "dfinity/ic-pub-key",
+      "pinned": "v1.0.1",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "affects": "guides/chain-fusion/offline-key-derivation.md: CLI flags and the library API.",
+      "reference": "https://github.com/dfinity/ic-pub-key"
+    },
+    {
+      "repo": "dfinity/icp-js-sdk-docs",
+      "pinned": "17e4346",
+      "track": "commit",
+      "affects": "`@icp-sdk/core` and `@icp-sdk/canisters` APIs in JavaScript and TypeScript code blocks.",
+      "reference": "https://js.icp.build"
+    }
+  ]
+}
