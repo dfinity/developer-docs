@@ -33,6 +33,11 @@ copy, or is a skill, which the session-start sync mirrors from
 [skills.internetcomputer.org](https://skills.internetcomputer.org) (see AGENTS.md
 "Skills"). Add a submodule only if the build has to open its files.
 
+Third-party content that is copied in rather than referenced must carry its
+license with it: the license text alongside the files, and an entry in
+[`NOTICE`](../NOTICE). A license that forbids that is a reason to reference the
+upstream instead of copying it.
+
 ## Watched repos
 
 ### Verifying a fact against a watched repo
