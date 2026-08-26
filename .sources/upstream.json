@@ -1,6 +1,6 @@
 {
   "$comment": [
-    "Every upstream this repo tracks, in two groups.",
+    "Every upstream this repo tracks, in three groups.",
     "",
     "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
     "is the gitlink in git, not a field here, so it has one source of truth; the entry",
@@ -8,19 +8,21 @@
     "`internetidentity` are absent on purpose: sync-motoko.yml and sync-ii-spec.yml",
     "already check for a new release and open the bump PR themselves.",
     "",
-    "`watched` are repos that are not vendored at all. Nothing they contain is",
-    "published, so this file records the ref the docs are verified against.",
+    "`watched` are repos where a release can silently invalidate a lot of published",
+    "content, so they get a pinned ref and a weekly issue when they move. Verify",
+    "claims against the pinned ref, not against main, so a review is reproducible.",
     "",
-    "scripts/check-upstream-releases.mjs checks both groups and",
+    "`reference` are repos the docs draw on too lightly to be worth a weekly issue:",
+    "each `why` records the footprint that decided it. They carry no pin. Verify",
+    "against the latest release on demand; the surface is small enough that the next",
+    "edit to those pages catches any drift. Promote one to `watched` if its footprint",
+    "grows.",
+    "",
+    "scripts/check-upstream-releases.mjs checks `vendored` and `watched` only, and",
     ".github/workflows/upstream-releases.yml opens an issue per repo that moved.",
     "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
     "",
-    "`pinned` is the ref the docs were last verified against. Agents verify claims",
-    "against THIS ref rather than against main, so that a review is reproducible and a",
-    "page cannot document a flag from a release whose links we have not adapted yet.",
-    "Moving `pinned` is deliberate and comes with re-checking the affected pages.",
-    "",
-    "Fields:",
+    "Fields (watched):",
     "  repo        owner/name on GitHub",
     "  pinned      the ref docs are currently verified against",
     "  track       where releases appear: 'release' (git tags matching tagPattern),",
@@ -28,9 +30,9 @@
     "              `package`), or 'commit' (no releases; the default branch head).",
     "              Entries in `vendored` use 'branch' and name the branch instead.",
     "  tagPattern  anchored JS regex selecting the tags that count as a release",
-    "  verify      file whose diff between the two refs is the review payload (optional)",
+    "  verify      file whose diff between the two refs is the review payload",
     "  affects     what to re-check in docs/ when this moves",
-    "  reference   authoritative published docs for the topic, for readers and agents"
+    "  reference   authoritative published docs for the topic"
   ],
   "vendored": [
     {
@@ -60,13 +62,6 @@
       "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
     },
     {
-      "repo": "dfinity/icp-cli-templates",
-      "pinned": "9f1e819",
-      "track": "commit",
-      "affects": "Template layout and the recipes templates ship with, referenced from getting-started/ and guides/frontends/. All frontend templates moved to `@dfinity/static-site` after this pin.",
-      "reference": "https://github.com/dfinity/icp-cli-templates"
-    },
-    {
       "repo": "dfinity/motoko-core",
       "pinned": "v2.4.0",
       "track": "release",
@@ -84,48 +79,6 @@
       "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
     },
     {
-      "repo": "dfinity/candid",
-      "pinned": "2025-12-18",
-      "track": "release",
-      "tagPattern": "^\\d{4}-\\d{2}-\\d{2}$",
-      "verify": "spec/Candid.md",
-      "affects": "references/candid-spec.md and the Candid type-mapping tables. The repo uses date tags; the candid, candid_parser, and didc crates carry their own semver in Cargo.toml.",
-      "reference": "https://github.com/dfinity/candid/blob/master/spec/Candid.md"
-    },
-    {
-      "repo": "dfinity/response-verification",
-      "pinned": "3.1.0",
-      "track": "release",
-      "tagPattern": "^\\d+\\.\\d+\\.\\d+$",
-      "affects": "guides/frontends/certification.md and guides/backends/certified-variables.md: the `ic-http-certification`, `ic-asset-certification`, and `@dfinity/certificate-verification` APIs.",
-      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/",
-      "verify": "CHANGELOG.md"
-    },
-    {
-      "repo": "dfinity/chain-fusion-signer",
-      "pinned": "v0.4.0",
-      "track": "release",
-      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
-      "affects": "guides/chain-fusion/chain-fusion-signer.md: canister IDs, API methods, key derivation.",
-      "reference": "https://github.com/dfinity/chain-fusion-signer"
-    },
-    {
-      "repo": "dfinity/papi",
-      "pinned": "v0.1.1",
-      "track": "release",
-      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
-      "affects": "Payment interface and cycle cost model wherever PAPI is referenced.",
-      "reference": "https://github.com/dfinity/papi"
-    },
-    {
-      "repo": "dfinity/ic-pub-key",
-      "pinned": "v1.0.1",
-      "track": "release",
-      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
-      "affects": "guides/chain-fusion/offline-key-derivation.md: CLI flags and the library API.",
-      "reference": "https://github.com/dfinity/ic-pub-key"
-    },
-    {
       "repo": "dfinity/icp-js-core",
       "pinned": "v5.4.0",
       "track": "release",
@@ -141,6 +94,44 @@
       "package": "@icp-sdk/canisters",
       "affects": "`@icp-sdk/canisters` APIs, notably `AssetManager` in references/application-canisters.md and guides/frontends/asset-canister.md, which states a minimum of 3.5.0. This repo's semver tags lag its published versions, so npm is the release signal. Changelog: https://github.com/dfinity/icp-js-canisters/blob/main/CHANGELOG.md",
       "reference": "https://js.icp.build/canisters/"
+    }
+  ],
+  "reference": [
+    {
+      "repo": "dfinity/icp-cli-templates",
+      "verify": "the template's `icp.yaml`",
+      "why": "Docs link to templates rather than restating them: 12 mentions over 8 pages, no version asserted.",
+      "reference": "https://github.com/dfinity/icp-cli-templates"
+    },
+    {
+      "repo": "dfinity/candid",
+      "verify": "spec/Candid.md",
+      "why": "references/candid-spec.md points at the spec and restates the type tables. The spec moves rarely (date tags, latest 2025-12-18).",
+      "reference": "https://github.com/dfinity/candid/blob/master/spec/Candid.md"
+    },
+    {
+      "repo": "dfinity/response-verification",
+      "verify": "packages/<pkg>/README.md",
+      "why": "Two pages, guides/frontends/certification.md and guides/backends/certified-variables.md, both of which link to docs.rs for the API.",
+      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/"
+    },
+    {
+      "repo": "dfinity/chain-fusion-signer",
+      "verify": "the canister's `.did`",
+      "why": "Three pages, seven mentions.",
+      "reference": "https://github.com/dfinity/chain-fusion-signer"
+    },
+    {
+      "repo": "dfinity/papi",
+      "verify": "README.md",
+      "why": "One page mentions it.",
+      "reference": "https://github.com/dfinity/papi"
+    },
+    {
+      "repo": "dfinity/ic-pub-key",
+      "verify": "README.md",
+      "why": "Three pages; guides/chain-fusion/offline-key-derivation.md is the only one with CLI detail.",
+      "reference": "https://github.com/dfinity/ic-pub-key"
     }
   ]
 }

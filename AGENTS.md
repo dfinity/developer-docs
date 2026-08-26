@@ -233,10 +233,10 @@ Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS). `motoko` and
 `examples` tracks a branch and is checked by the weekly **Upstream release
 check**. Canister IDs and code patterns are in the skills (see "Skills").
 
-**Watched, not vendored** — everything else. Nothing they contain is published,
-so the repo records a pinned ref instead of a copy, and a weekly workflow opens
-an issue when one moves. Read the file you need at the **pinned ref** in
-[`.sources/upstream.json`](.sources/upstream.json):
+**Watched** are the repos where a release can silently invalidate a lot of what
+is published, so [`.sources/upstream.json`](.sources/upstream.json) records the
+ref the docs are verified against and a weekly workflow opens an issue when one
+moves. Read the file you need at that **pinned ref**:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/<repo>/<pinned-ref>/<path>
@@ -251,12 +251,19 @@ have not adapted yet.
 | Topic | Repo | Verify against |
 |-------|------|----------------|
 | CLI commands and flags | `dfinity/icp-cli` | `docs/reference/cli.md` |
-| CLI recipes | `dfinity/icp-cli-recipes` | `recipes/<name>/` |
-| Project templates | `dfinity/icp-cli-templates` | the template's `icp.yaml` |
-| Motoko APIs (`mo:core`) | `dfinity/motoko-core` | `src/` |
-| Rust CDK (`ic-cdk`, `ic-cdk-timers`) | `dfinity/cdk-rs` | the crate's `src/` and `CHANGELOG.md` |
+| Recipe versions in `icp.yaml` | `dfinity/icp-cli-recipes` | `recipes/<name>/` |
+| Motoko APIs (`mo:core`) | `dfinity/motoko-core` | `src/`, `Changelog.md` |
+| Rust CDK (`ic-cdk`) | `dfinity/cdk-rs` | `ic-cdk/src/`, `ic-cdk/CHANGELOG.md` |
 | JS SDK core (`@icp-sdk/core`) | `dfinity/icp-js-core` | `src/`, `CHANGELOG.md` |
 | JS SDK canisters (`@icp-sdk/canisters`) | `dfinity/icp-js-canisters` | `src/`, `CHANGELOG.md` |
+
+**Reference** repos are drawn on too lightly to be worth a weekly issue, so they
+carry no pin. Verify against the **latest** release on demand; the surface is
+small enough that the next edit to those pages catches any drift.
+
+| Topic | Repo | Verify against |
+|-------|------|----------------|
+| Project templates | `dfinity/icp-cli-templates` | the template's `icp.yaml` |
 | Candid spec | `dfinity/candid` | `spec/Candid.md` |
 | Certified variables | `dfinity/response-verification` | `packages/<pkg>/README.md` |
 | Chain Fusion Signer | `dfinity/chain-fusion-signer` | the canister's `.did` |
@@ -265,7 +272,7 @@ have not adapted yet.
 
 Several of these also publish authoritative docs (the `reference` field in
 `upstream.json`). Those are what to **link readers to**; for verifying a claim,
-prefer the pinned source file, since a published site always shows "latest".
+prefer the source file, since a published site always shows "latest".
 
 For the tracking and bump procedures, see
 [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md).

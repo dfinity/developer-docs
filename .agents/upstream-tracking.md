@@ -2,19 +2,23 @@
 
 How this repo stays current with the projects it documents.
 
-Upstream repos fall into two groups, and the group decides the procedure.
+Upstream repos fall into three groups, and the group decides the procedure.
 
-| | Vendored (submodule) | Watched (not vendored) |
-|---|---|---|
-| Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` |
-| Why | their bytes reach the built site or the agent workflow | nothing they contain is published |
-| Pin lives in | git (the gitlink), plus a label in `.sources/VERSIONS` for the release-pinned ones | `pinned` in `.sources/upstream.json` |
-| Moved by | a bump PR (below) | a bump PR, triggered by an **Upstream release check** issue |
-| Verified against | the checked-out working tree | the pinned ref, fetched on demand |
+| | Vendored (submodule) | Watched | Reference |
+|---|---|---|---|
+| Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
+| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly for a weekly issue |
+| Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
+| Notified | yes | yes | no |
 
-Every one of them is checked weekly. `motoko` and `internetidentity` have their
-own sync workflows that open the bump PR directly; the rest are covered by
-**Upstream release check**, which opens an issue.
+Deciding between the last two is a judgment about blast radius, and the `why`
+field on each `reference` entry records the footprint that decided it. Promote an
+entry to `watched` if its footprint grows.
+
+`motoko` and `internetidentity` have their own weekly sync workflows that open
+the bump PR directly. `examples` and the `watched` repos are covered by the
+weekly **Upstream release check**, which opens an issue. `reference` repos are
+not checked at all.
 
 ## Why only three are vendored
 
