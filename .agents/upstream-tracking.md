@@ -9,7 +9,7 @@ Upstream repos fall into three groups, and the group decides the procedure.
 | Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
 | Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
 | Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
-| Release issue | no: each has its own check | yes | no |
+| Release issue | only `examples`, and only when a quoted file moved | yes | no |
 
 Deciding between the last two is a judgment about blast radius, and the `why`
 field on each `reference` entry records the footprint that decided it. Promote an
@@ -167,12 +167,14 @@ When `icp-cli` moves to a new minor:
 
 Only the project maintainer bumps submodule refs.
 
-`examples` gets no release issue. The only thing a bump can break is a `snippet=`
-path or `#region` marker, and `plugins/remark-snippet.mjs` fails the build on
-either, so a bump that breaks nothing needs no doc change. Bump it when a page
-needs newer example code and let the build verify it. The `vendored` group in
-`upstream.json` still exists for a submodule that has no check of its own; it is
-empty today.
+`examples` is checked, but only for the case the build cannot see. A `snippet=`
+path or `#region` marker that stops resolving already fails the build. What the
+build cannot notice is an example being corrected upstream while still
+resolving, which leaves the docs quoting old code with everything green. So its
+entry carries `pathFilter: "snippets"`: the check intersects the files changed
+between the pinned gitlink and the branch head with every file a `snippet=`
+quotes, and opens an issue only when they overlap, naming the files. Any other
+commit on that repo stays silent.
 
 `motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
 `sync-ii-spec.yml` already check for a new release, run the sync, and open the
