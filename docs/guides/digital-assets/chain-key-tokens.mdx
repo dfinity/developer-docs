@@ -220,11 +220,11 @@ persistent actor Self {
     let bytes = Blob.toArray(Principal.toBlob(p));
     let size = bytes.size();
     let sub = Array.tabulate<Nat8>(32, func(i : Nat) : Nat8 {
-      if (i == 0) { Nat8.fromNat(size) }
+      if (i == 0) { Nat.toNat8(size) }
       else if (i <= size) { bytes[i - 1] }
       else { 0 }
     });
-    Blob.fromArray(sub)
+    Array.toBlob(sub)
   };
 
   // Withdraw ckBTC to a Bitcoin address (minimum 50,000 satoshis)
@@ -234,7 +234,7 @@ persistent actor Self {
     let minterPrincipal = Principal.fromText("mqygn-kiaaa-aaaar-qaadq-cai");
     // Set created_at_time for deduplication: two identical approvals within 24h
     // would both execute without this. Omit if you intentionally allow retries.
-    let now = ?Nat64.fromNat(Int.abs(Time.now()));
+    let now = ?Nat.toNat64(Int.abs(Time.now()));
 
     // Step 1: approve the minter to spend ckBTC (amount + fee)
     let approveResult = await ckbtcLedger.icrc2_approve({

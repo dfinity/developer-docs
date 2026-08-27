@@ -229,9 +229,10 @@ git submodule update --init --depth 1   # do NOT use --recursive
 | Code examples (`snippet=`, `<CodeExample>`) | `.sources/examples/` |
 
 Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS). `motoko` and
-`internetidentity` are release-checked and synced by their own workflows;
-`examples` tracks a branch and is checked by the weekly **Upstream release
-check**. Canister IDs and code patterns are in the skills (see "Skills").
+`internetidentity` are release-checked and synced by their own workflows.
+`examples` is checked weekly, but reports only when a commit touches a file a
+`snippet=` quotes; the build already fails if such a path or `#region` marker
+stops resolving. Canister IDs and code patterns are in the skills (see "Skills").
 
 **Watched** are the repos where a release can silently invalidate a lot of what
 is published, so [`.sources/upstream.json`](.sources/upstream.json) records the

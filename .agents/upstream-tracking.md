@@ -7,18 +7,19 @@ Upstream repos fall into three groups, and the group decides the procedure.
 | | Vendored (submodule) | Watched | Reference |
 |---|---|---|---|
 | Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
-| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly for a weekly issue |
+| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
 | Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
-| Notified | yes | yes | no |
+| Release issue | only `examples`, and only when a quoted file moved | yes | no |
 
 Deciding between the last two is a judgment about blast radius, and the `why`
 field on each `reference` entry records the footprint that decided it. Promote an
 entry to `watched` if its footprint grows.
 
 `motoko` and `internetidentity` have their own weekly sync workflows that open
-the bump PR directly. `examples` and the `watched` repos are covered by the
-weekly **Upstream release check**, which opens an issue. `reference` repos are
-not checked at all.
+the bump PR directly. The `watched` repos are covered by the weekly **Upstream
+release check**, which opens an issue whenever one moves. That same check covers
+`examples`, but opens an issue only when the range touched a file a `snippet=`
+quotes. `reference` repos are not checked at all.
 
 ## Why only three are vendored
 
@@ -167,10 +168,14 @@ When `icp-cli` moves to a new minor:
 
 Only the project maintainer bumps submodule refs.
 
-`examples` tracks a branch and is checked by the same **Upstream release check**
-workflow, which opens an issue when the gitlink falls behind that branch. Its pin
-lives in git, so `upstream.json` records only the branch to compare against and
-what a bump affects.
+`examples` is checked, but only for the case the build cannot see. A `snippet=`
+path or `#region` marker that stops resolving already fails the build. What the
+build cannot notice is an example being corrected upstream while still
+resolving, which leaves the docs quoting old code with everything green. So its
+entry carries `pathFilter: "snippets"`: the check intersects the files changed
+between the pinned gitlink and the branch head with every file a `snippet=`
+quotes, and opens an issue only when they overlap, naming the files. Any other
+commit on that repo stays silent.
 
 `motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
 `sync-ii-spec.yml` already check for a new release, run the sync, and open the

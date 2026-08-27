@@ -44,7 +44,7 @@ Define an asset canister using the `@dfinity/asset-canister` recipe in your `icp
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -64,7 +64,7 @@ For a fullstack project with a backend canister, list both in the same `icp.yaml
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -72,7 +72,7 @@ canisters:
           - npm run build
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.3.0"
+      type: "@dfinity/rust@v3.4.0"
 ```
 
 For more on project configuration, see [Project structure](../../getting-started/project-structure.md).
