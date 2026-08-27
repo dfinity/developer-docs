@@ -54,14 +54,6 @@
       "reference": "https://cli.internetcomputer.org/"
     },
     {
-      "repo": "dfinity/icp-cli-recipes",
-      "pinned": "static-site-v0.3.3",
-      "track": "release",
-      "tagPattern": "^(static-site|asset-canister|motoko|rust|prebuilt)-v\\d+\\.\\d+\\.\\d+$",
-      "affects": "Recipe versions in `icp.yaml` examples. Each recipe releases on its own tag, so the tag prefix says which one moved. NOTE: docs currently cite `@dfinity/asset-canister@v2.2.1` while v2.3.0 is out, and `@dfinity/static-site` is not documented at all yet (dfinity/certified-assets#124).",
-      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
-    },
-    {
       "repo": "dfinity/motoko-core",
       "pinned": "v2.4.0",
       "track": "release",
@@ -94,6 +86,51 @@
       "package": "@icp-sdk/canisters",
       "affects": "`@icp-sdk/canisters` APIs, notably `AssetManager` in references/application-canisters.md and guides/frontends/asset-canister.md, which states a minimum of 3.5.0. This repo's semver tags lag its published versions, so npm is the release signal. Changelog: https://github.com/dfinity/icp-js-canisters/blob/main/CHANGELOG.md",
       "reference": "https://js.icp.build/canisters/"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "asset-canister",
+      "pinned": "asset-canister-v2.2.1",
+      "track": "release",
+      "tagPattern": "^asset-canister-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 10 places across docs/, including references/application-canisters.md and guides/frontends/asset-canister.md. The legacy frontend recipe; static-site supersedes it. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "static-site",
+      "pinned": "static-site-v0.3.3",
+      "track": "release",
+      "tagPattern": "^static-site-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Not yet documented (dfinity/certified-assets#124). This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "rust",
+      "pinned": "rust-v3.3.0",
+      "track": "release",
+      "tagPattern": "^rust-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 6 places as the Rust canister recipe in icp.yaml examples. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "motoko",
+      "pinned": "motoko-v5.0.0",
+      "track": "release",
+      "tagPattern": "^motoko-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 3 places as the Motoko canister recipe in icp.yaml examples. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "prebuilt",
+      "pinned": "prebuilt-v2.0.0",
+      "track": "release",
+      "tagPattern": "^prebuilt-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited once, in guides/canister-management/reproducible-builds.md. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
     }
   ],
   "reference": [
@@ -132,6 +169,12 @@
       "verify": "README.md",
       "why": "Three pages; guides/chain-fusion/offline-key-derivation.md is the only one with CLI detail.",
       "reference": "https://github.com/dfinity/ic-pub-key"
+    },
+    {
+      "repo": "vincentkoc/dotskills",
+      "verify": "skills/technical-documentation/",
+      "why": "Source of the vendored `technical-documentation` skill in .claude/skills/. Not watched: two commits touched the skill in its history, the second only relicensing it to MIT. Re-copy from upstream if it changes, keeping the LICENSE and the NOTICE entry.",
+      "reference": "https://github.com/vincentkoc/dotskills"
     }
   ]
 }

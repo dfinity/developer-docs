@@ -110,17 +110,20 @@ async function cratesIoNewest(crate) {
   });
   if (!res.ok) throw new Error(`crates.io returned ${res.status} for ${crate}`);
   const body = await res.json();
-  const v = body?.crate?.newest_version;
-  if (!v) throw new Error(`crates.io gave no newest_version for ${crate}`);
-  return v;
+  // max_stable_version excludes prereleases, which is what the docs document.
+  const v = body?.crate?.max_stable_version ?? body?.crate?.newest_version;
+  if (!v) throw new Error(`crates.io gave no version for ${crate}`);
+  const known = (body?.versions ?? []).map((x) => x.num);
+  return { latest: v, known };
 }
 
 async function npmLatest(pkg) {
-  const res = await fetch(`https://registry.npmjs.org/${pkg}/latest`);
+  const res = await fetch(`https://registry.npmjs.org/${pkg}`);
   if (!res.ok) throw new Error(`npm returned ${res.status} for ${pkg}`);
-  const v = (await res.json())?.version;
-  if (!v) throw new Error(`npm gave no version for ${pkg}`);
-  return v;
+  const body = await res.json();
+  const v = body?.['dist-tags']?.latest;
+  if (!v) throw new Error(`npm gave no latest version for ${pkg}`);
+  return { latest: v, known: Object.keys(body?.versions ?? {}) };
 }
 
 async function fetchFile(repo, ref, path) {
@@ -134,10 +137,29 @@ async function fetchFile(repo, ref, path) {
 function summarizeChange(oldText, newText) {
   const oldLines = oldText.split('\n');
   const newLines = newText.split('\n');
-  const oldSet = new Set(oldLines);
-  const newSet = new Set(newLines);
-  const added = newLines.filter((l) => l.trim() && !oldSet.has(l));
-  const removed = oldLines.filter((l) => l.trim() && !newSet.has(l));
+  // Count occurrences, not set membership: an added line that already appears
+  // elsewhere in the file is still an added line, and set membership would
+  // silently drop it from the total.
+  const tally = (lines) => {
+    const m = new Map();
+    for (const l of lines) m.set(l, (m.get(l) ?? 0) + 1);
+    return m;
+  };
+  const oldCount = tally(oldLines);
+  const newCount = tally(newLines);
+  const surplus = (lines, mine, theirs) => {
+    const budget = new Map(theirs);
+    const out = [];
+    for (const l of lines) {
+      if (!l.trim()) continue;
+      const left = budget.get(l) ?? 0;
+      if (left > 0) budget.set(l, left - 1);
+      else out.push(l);
+    }
+    return out;
+  };
+  const added = surplus(newLines, newCount, oldCount);
+  const removed = surplus(oldLines, oldCount, newCount);
   const heading = (l) => /^#{1,6}\s/.test(l);
   return {
     addedHeadings: added.filter(heading),
@@ -147,8 +169,11 @@ function summarizeChange(oldText, newText) {
   };
 }
 
-function slugFor(repo) {
-  return repo.replace('/', '-');
+function slugFor(entry) {
+  // `name` lets one repo carry several independently released things (the
+  // recipes repo tags per recipe), each with its own pin, issue and label.
+  const base = entry.repo.replace('/', '-');
+  return entry.name ? `${base}-${entry.name}` : base;
 }
 
 function checkVendored(entry) {
@@ -203,6 +228,11 @@ async function checkOne(entry) {
   let compare;
   let compareLabel = 'Compare';
   let moved;
+  // Published versions, for registry tracks: a pin in the wrong shape
+  // (`v0.20.1` for a crate that publishes `0.20.1`) compares as older for ever
+  // and would report "current" silently, so it is rejected the same way a
+  // non-existent tag is.
+  let known;
   if (track === 'release') {
     if (!tagPattern) throw new Error(`${repo}: track "release" needs a tagPattern`);
     const re = new RegExp(tagPattern);
@@ -226,13 +256,13 @@ async function checkOne(entry) {
     // Some repos publish releases to a package registry without tagging them,
     // so the package version is the release identity and tags lag behind it.
     if (!entry.crate) throw new Error(`${repo}: track "crate" needs a crate name`);
-    latest = await cratesIoNewest(entry.crate);
+    ({ latest, known } = await cratesIoNewest(entry.crate));
     kind = `crates.io release of ${entry.crate}`;
     compare = `https://crates.io/crates/${entry.crate}`;
     compareLabel = 'Registry';
   } else if (track === 'npm') {
     if (!entry.package) throw new Error(`${repo}: track "npm" needs a package name`);
-    latest = await npmLatest(entry.package);
+    ({ latest, known } = await npmLatest(entry.package));
     kind = `npm release of ${entry.package}`;
     compare = `https://www.npmjs.com/package/${entry.package}`;
     compareLabel = 'Registry';
@@ -253,9 +283,18 @@ async function checkOne(entry) {
     throw new Error(`${repo}: unknown track "${track}"`);
   }
 
+  if (known && !known.includes(pinned)) {
+    throw new Error(
+      `${repo}: pinned "${pinned}" is not a published version ` +
+        `(latest is "${latest}"). Fix the pin to match the registry's format.`
+    );
+  }
+
   if (!(moved ?? compareRefs(latest, pinned) > 0)) return null;
 
-  const title = `chore: upstream ${repo} moved to ${latest}`;
+  const title = entry.name
+    ? `chore: upstream ${repo} (${entry.name}) moved to ${latest}`
+    : `chore: upstream ${repo} moved to ${latest}`;
   const lines = [
     `\`${repo}\` has moved past the ref the docs are verified against.`,
     '',
@@ -324,7 +363,7 @@ async function checkOne(entry) {
   lines.push('');
   lines.push('Procedure: `.agents/upstream-tracking.md`');
 
-  return { slug: slugFor(repo), title, body: lines.join('\n') };
+  return { slug: slugFor(entry), title, body: lines.join('\n') };
 }
 
 const config = JSON.parse(readFileSync(CONFIG, 'utf8'));

@@ -109,15 +109,20 @@ appear:
 | `npm` | the npm registry `latest` for `package` | same, for a JS package |
 | `commit` | the default branch head | the repo has no releases at all |
 
-Two traps this has already hit:
+Three traps this has already hit:
 
-- **`tagPattern` must be anchored and specific.** Several of these repos tag per
-  crate or per recipe, so a loose pattern picks the wrong series and reports a
-  version from a different artifact.
-- **A `release` pin must be a real tag.** A pin that no tag can overtake makes
-  the repo report "current" for ever. The script fails loudly on this rather than
-  going quiet, which is how `cdk-rs` was caught pinned to a crate version that
-  its tags were two minors behind.
+- **One entry cannot cover several tag prefixes.** Refs are compared by numeric
+  runs, so `rust-` against `static-site-` compares textually and only the
+  alphabetically-last prefix can ever be reported. `icp-cli-recipes` tags per
+  recipe, so each recipe gets its own entry with a `name`, which also gives it
+  its own pin, issue and label.
+- **A `release` pin must be a real tag**, and a `crate` or `npm` pin must be a
+  published version. A pin nothing can overtake makes the repo report "current"
+  for ever, so both are rejected loudly. That is how `cdk-rs` was caught pinned
+  to a crate version its tags were two minors behind, and it also catches a pin
+  in the wrong shape, such as `v0.20.1` for a crate that publishes `0.20.1`.
+- **`tagPattern` must be anchored**, or a prefix match picks up a neighbouring
+  series.
 
 Set `verify` when a single file carries the surface we check against; its diff
 becomes the issue's review payload, and a changelog is usually the best choice

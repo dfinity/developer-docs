@@ -138,7 +138,7 @@ Currently synced:
 
 Before submitting a PR, manually verify:
 
-1. **No dfx references** — `dfx` is banned (except in `guides/tools/migrating-from-dfx.md`)
+1. **No dfx references** — `dfx` is banned
 2. **`.mdx` only where needed** — default to `.md`; use `.mdx` only for interactive components (tabs)
 3. **Valid frontmatter** — required fields present, valid values
 4. **`npm run build`** — Site builds without errors

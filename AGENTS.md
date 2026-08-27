@@ -168,7 +168,7 @@ EOF
 - Use `mo:base` — use `mo:core` instead. Critical replacements: `Buffer` → `List`, `HashMap`/`TrieMap`/`Trie`/`RBTree` → `Map`, `Deque` → `Queue`, `OrderedMap` → `pure/Map`, `OrderedSet` → `pure/Set`
 - Create `.mdx` without a clear need for interactive components
 - Duplicate content that lives in external docs (icp-cli site, JS SDK docs, the IC skills)
-- Edit synced files directly (`docs/languages/motoko/`, `docs/guides/tools/migrating-from-dfx.md`)
+- Edit synced files directly (`docs/languages/motoko/`, `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md`)
 - Nest sidebar items more than 3 levels deep
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
 - Link to `internetcomputer.org/docs/` (retired) or `learn.internetcomputer.org` (content is now in this repo under `docs/concepts/`)
@@ -215,8 +215,8 @@ docs/
 
 Upstream repos are tracked two ways. Which one decides where you read from.
 
-**Vendored as submodules** — five repos, because their bytes reach the built site
-or the agent workflow. Read them from disk; do not edit them.
+**Vendored as submodules** — three repos, because the build opens their files.
+Read them from disk; do not edit them.
 
 ```bash
 git submodule update --init --depth 1   # do NOT use --recursive

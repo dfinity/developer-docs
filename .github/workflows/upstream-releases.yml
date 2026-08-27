@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
 
@@ -36,10 +36,15 @@ jobs:
 
       - name: Check upstream refs
         id: check
+        env:
+          # Passed through the environment and quoted below rather than
+          # interpolated into the script: a dispatch input is caller-controlled
+          # text, and `${{ }}` would splice it into the shell body.
+          REPO: ${{ github.event.inputs.repo }}
         run: |
           ARGS=""
-          if [ -n "${{ github.event.inputs.repo }}" ]; then
-            ARGS="--repo ${{ github.event.inputs.repo }}"
+          if [ -n "$REPO" ]; then
+            ARGS="--repo $REPO"
           fi
           set +e
           node scripts/check-upstream-releases.mjs $ARGS --out-dir .upstream-checks > moved.tsv

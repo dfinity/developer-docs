@@ -32,6 +32,27 @@ echo "Initializing submodules (shallow, no-op for already-initialized ones)..."
 git submodule update --init --depth 1
 ok "Submodules initialized"
 
+# Prune directories left behind by submodules this repo no longer vendors. An
+# existing clone keeps them on disk after the submodule is removed, and a stale
+# .sources/icp-cli/ is exactly the trap the "verify at the pinned ref" rule
+# exists to close: it looks authoritative and is frozen at whatever ref it was
+# last checked out at. Only untracked directories are touched.
+declared=$(git config -f .gitmodules --get-regexp path 2>/dev/null | awk '{print $2}')
+stale=0
+for dir in .sources/*/; do
+  [ -d "$dir" ] || continue
+  path="${dir%/}"
+  if ! printf '%s\n' "$declared" | grep -qxF "$path"; then
+    rm -rf "$path"
+    warn "removed stale $path (no longer a submodule)"
+    stale=$((stale + 1))
+  fi
+done
+if [ $stale -gt 0 ]; then
+  echo "  Verify watched upstreams at the ref pinned in .sources/upstream.json;"
+  echo "  see AGENTS.md \"Source material\"."
+fi
+
 # ---------------------------------------------------------------------------
 # 2. Node dependencies
 # ---------------------------------------------------------------------------
