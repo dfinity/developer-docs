@@ -247,7 +247,7 @@ function slugFor(entry) {
 }
 
 async function checkVendored(entry) {
-  const { path, repo, branch, affects, pathFilter } = entry;
+  const { path, repo, branch, affects, pathFilter, reference } = entry;
   const pinnedSha = gitlinkSha(path);
   if (!pinnedSha) throw new Error(`${path}: not a submodule in this commit`);
   const headSha = branchHead(repo, branch);
@@ -283,6 +283,7 @@ async function checkVendored(entry) {
     `| Pinned (gitlink) | \`${pinned}\` |`,
     `| Branch head | \`${latest}\` |`,
     `| Compare | https://github.com/${repo}/compare/${pinnedSha}...${headSha} |`,
+    ...(reference ? [`| Published reference | ${reference} |`] : []),
     '',
     '## What to re-check',
     '',

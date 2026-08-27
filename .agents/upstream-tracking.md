@@ -17,8 +17,9 @@ entry to `watched` if its footprint grows.
 
 `motoko` and `internetidentity` have their own weekly sync workflows that open
 the bump PR directly. The `watched` repos are covered by the weekly **Upstream
-release check**, which opens an issue. `examples` and the `reference` repos get
-no issue.
+release check**, which opens an issue whenever one moves. That same check covers
+`examples`, but opens an issue only when the range touched a file a `snippet=`
+quotes. `reference` repos are not checked at all.
 
 ## Why only three are vendored
 
