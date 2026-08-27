@@ -7,18 +7,18 @@ Upstream repos fall into three groups, and the group decides the procedure.
 | | Vendored (submodule) | Watched | Reference |
 |---|---|---|---|
 | Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
-| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly for a weekly issue |
+| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
 | Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
-| Notified | yes | yes | no |
+| Release issue | no: each has its own check | yes | no |
 
 Deciding between the last two is a judgment about blast radius, and the `why`
 field on each `reference` entry records the footprint that decided it. Promote an
 entry to `watched` if its footprint grows.
 
 `motoko` and `internetidentity` have their own weekly sync workflows that open
-the bump PR directly. `examples` and the `watched` repos are covered by the
-weekly **Upstream release check**, which opens an issue. `reference` repos are
-not checked at all.
+the bump PR directly. The `watched` repos are covered by the weekly **Upstream
+release check**, which opens an issue. `examples` and the `reference` repos get
+no issue.
 
 ## Why only three are vendored
 
@@ -167,10 +167,12 @@ When `icp-cli` moves to a new minor:
 
 Only the project maintainer bumps submodule refs.
 
-`examples` tracks a branch and is checked by the same **Upstream release check**
-workflow, which opens an issue when the gitlink falls behind that branch. Its pin
-lives in git, so `upstream.json` records only the branch to compare against and
-what a bump affects.
+`examples` gets no release issue. The only thing a bump can break is a `snippet=`
+path or `#region` marker, and `plugins/remark-snippet.mjs` fails the build on
+either, so a bump that breaks nothing needs no doc change. Bump it when a page
+needs newer example code and let the build verify it. The `vendored` group in
+`upstream.json` still exists for a submodule that has no check of its own; it is
+empty today.
 
 `motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
 `sync-ii-spec.yml` already check for a new release, run the sync, and open the

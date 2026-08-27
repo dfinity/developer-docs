@@ -3,9 +3,10 @@
  * Check every upstream in `.sources/upstream.json` for a newer ref than the one
  * the docs are pinned to, and write an issue body for each that moved.
  *
- * Covers both groups in that file: `vendored` submodules whose pin has no sync
- * workflow of its own (their pin is read from the gitlink, so git stays the
- * single source of truth), and `watched` repos that are not vendored at all.
+ * Covers the `watched` group. The optional `vendored` group compares a
+ * submodule's gitlink against a branch head, so git stays the single source of
+ * truth for its pin; it is empty today because every submodule this repo keeps
+ * has a check of its own (a sync workflow, or the build).
  *
  * A watched repo declares where its releases actually appear: `release` (git
  * tags matching a pattern), `crate` (crates.io) or `npm` (the npm registry) for

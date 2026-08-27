@@ -1,48 +1,36 @@
 {
   "$comment": [
-    "Every upstream this repo tracks, in three groups.",
-    "",
-    "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
-    "is the gitlink in git, not a field here, so it has one source of truth; the entry",
-    "records which branch to compare against and what a bump affects. `motoko` and",
-    "`internetidentity` are absent on purpose: sync-motoko.yml and sync-ii-spec.yml",
-    "already check for a new release and open the bump PR themselves.",
+    "Every upstream this repo tracks, in two groups.",
     "",
     "`watched` are repos where a release can silently invalidate a lot of published",
     "content, so they get a pinned ref and a weekly issue when they move. Verify",
     "claims against the pinned ref, not against main, so a review is reproducible.",
     "",
-    "`reference` are repos the docs draw on too lightly to be worth a weekly issue:",
-    "each `why` records the footprint that decided it. They carry no pin. Verify",
-    "against the latest release on demand; the surface is small enough that the next",
-    "edit to those pages catches any drift. Promote one to `watched` if its footprint",
-    "grows.",
+    "`reference` are repos the docs draw on too lightly, or whose drift another check",
+    "already catches: each `why` records what decided it. They carry no pin. Verify",
+    "against the latest release on demand. Promote one to `watched` if that changes.",
     "",
-    "scripts/check-upstream-releases.mjs checks `vendored` and `watched` only, and",
+    "The three submodules are not watched here. `motoko` and `internetidentity` have",
+    "their own sync workflows that release-check and open the bump PR themselves;",
+    "`examples` is covered by the build, which fails on a broken snippet region.",
+    "",
+    "scripts/check-upstream-releases.mjs checks `watched`, and",
     ".github/workflows/upstream-releases.yml opens an issue per repo that moved.",
     "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
     "",
     "Fields (watched):",
     "  repo        owner/name on GitHub",
+    "  name        optional, when one repo releases several things independently",
     "  pinned      the ref docs are currently verified against",
     "  track       where releases appear: 'release' (git tags matching tagPattern),",
     "              'crate' (crates.io, needs `crate`), 'npm' (npm registry, needs",
-    "              `package`), or 'commit' (no releases; the default branch head).",
-    "              Entries in `vendored` use 'branch' and name the branch instead.",
+    "              `package`), or 'commit' (no releases; the default branch head)",
     "  tagPattern  anchored JS regex selecting the tags that count as a release",
     "  verify      file whose diff between the two refs is the review payload",
     "  affects     what to re-check in docs/ when this moves",
     "  reference   authoritative published docs for the topic"
   ],
-  "vendored": [
-    {
-      "path": ".sources/examples",
-      "repo": "dfinity/examples",
-      "track": "branch",
-      "branch": "master",
-      "affects": "Every `snippet=` path and `#region` marker resolved at build time by plugins/remark-snippet.mjs. A renamed region is a build error, so verify each one after bumping."
-    }
-  ],
+  "vendored": [],
   "watched": [
     {
       "repo": "dfinity/icp-cli",
@@ -134,6 +122,12 @@
     }
   ],
   "reference": [
+    {
+      "repo": "dfinity/examples",
+      "verify": "the paths and `#region` markers named by `snippet=` in docs/",
+      "why": "A submodule, but not watched: the only thing a bump can break is a snippet path or region, and `plugins/remark-snippet.mjs` already fails the build on either. A bump that does not break one needs no doc change, so an issue per upstream commit would be pure noise. Bump it when a page needs newer example code, and let the build verify it.",
+      "reference": "https://github.com/dfinity/examples"
+    },
     {
       "repo": "dfinity/icp-cli-templates",
       "verify": "the template's `icp.yaml`",
