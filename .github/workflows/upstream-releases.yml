@@ -1,0 +1,100 @@
+name: Upstream release check
+
+# Watches the repos in .sources/upstream.json (the ones that are deliberately
+# not submodules) and opens an issue when one moves past the ref the docs are
+# verified against. See .agents/upstream-tracking.md.
+
+on:
+  schedule:
+    - cron: '0 8 * * 1' # Weekly on Monday
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Check a single repo (owner/name), or leave empty for all'
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          client-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_CLIENT_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
+
+      - name: Check upstream refs
+        id: check
+        env:
+          # Passed through the environment and quoted below rather than
+          # interpolated into the script: a dispatch input is caller-controlled
+          # text, and `${{ }}` would splice it into the shell body.
+          REPO: ${{ github.event.inputs.repo }}
+        run: |
+          ARGS=""
+          if [ -n "$REPO" ]; then
+            ARGS="--repo $REPO"
+          fi
+          set +e
+          node scripts/check-upstream-releases.mjs $ARGS --out-dir .upstream-checks > moved.tsv
+          rc=$?
+          set -e
+          case $rc in
+            0) echo "moved=false" >> $GITHUB_OUTPUT ;;
+            1) echo "moved=true"  >> $GITHUB_OUTPUT ;;
+            # 2 means at least one check errored. Any repo that did move still
+            # wrote its body, so surface those rather than failing the run
+            # outright, and mark the job failed at the end.
+            2) echo "moved=true" >> $GITHUB_OUTPUT; echo "partial=true" >> $GITHUB_OUTPUT ;;
+            *) exit $rc ;;
+          esac
+
+      - name: Open or refresh an issue per moved repo
+        if: steps.check.outputs.moved == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # One issue per upstream, labelled `upstream-<slug>` so a later run can
+          # find and supersede it. An issue whose title already matches is left
+          # alone, so a repo that stays ahead does not generate weekly noise.
+          while IFS=$'\t' read -r slug title; do
+            [ -n "$slug" ] || continue
+            label="upstream-${slug}"
+
+            # `upstream-sync` groups every issue this workflow opens so they are
+            # findable as a class; `upstream-<slug>` identifies the one repo, so a
+            # later run can find and supersede its own issue.
+            gh label create upstream-sync --description "An upstream release needs the docs re-checked" --color 0e8a16 2>/dev/null || true
+            gh label create "$label" --description "Upstream ref moved: ${slug}" --color ededed 2>/dev/null || true
+
+            existing=$(gh issue list --label "$label" --state open --limit 1 --json number,title --jq '.[0] // empty')
+            if [ -n "$existing" ]; then
+              num=$(echo "$existing" | jq -r .number)
+              old=$(echo "$existing" | jq -r .title)
+              if [ "$old" = "$title" ]; then
+                echo "#$num already tracks '$title' — skipping"
+                continue
+              fi
+              gh issue close "$num" --comment "Superseded: a newer ref is available. Closing in favour of a fresh issue; target the new ref directly, there is no need to step through the one this issue tracked."
+              echo "Closed superseded #$num"
+            fi
+
+            gh issue create --title "$title" --body-file ".upstream-checks/${slug}.md" --label "$label" --label upstream-sync
+          done < moved.tsv
+
+      - name: Fail if a check errored
+        if: steps.check.outputs.partial == 'true'
+        run: |
+          echo "At least one upstream check failed; see the 'Check upstream refs' step."
+          exit 1

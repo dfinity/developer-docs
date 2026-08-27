@@ -109,7 +109,7 @@ For canister-level integration tests that need an SNS subnet, use PocketIC with 
 
 In Rust:
 
-<!-- Needs human verification: with_sns_subnet() existence in pocket-ic crate — not found in .sources/ (cdk-rs, examples). The verified pattern uses with_nns_subnet() + with_application_subnet(); SNS subnet topology may be achieved differently or not yet exposed in the public API at version 9.0.2. -->
+<!-- Needs human verification: with_sns_subnet() existence in pocket-ic crate — not found in dfinity/cdk-rs or dfinity/examples. The verified pattern uses with_nns_subnet() + with_application_subnet(); SNS subnet topology may be achieved differently or not yet exposed in the public API at version 9.0.2. -->
 ```rust title=tests/sns_integration.rs
 use pocket_ic::{PocketIc, PocketIcBuilder};
 use candid::Principal;
