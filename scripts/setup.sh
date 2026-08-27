@@ -35,17 +35,27 @@ ok "Submodules initialized"
 # Prune directories left behind by submodules this repo no longer vendors. An
 # existing clone keeps them on disk after the submodule is removed, and a stale
 # .sources/icp-cli/ is exactly the trap the "verify at the pinned ref" rule
-# exists to close: it looks authoritative and is frozen at whatever ref it was
-# last checked out at. Only untracked directories are touched.
+# exists to close: it looks authoritative while being frozen at whatever ref it
+# was last checked out at.
+#
+# A directory is removed only when it is both undeclared in .gitmodules and
+# recognisable as a former submodule working tree, meaning it is empty or holds
+# a .git entry. Anything else parked under .sources/ is reported and left alone,
+# so this never deletes someone's scratch directory.
 declared=$(git config -f .gitmodules --get-regexp path 2>/dev/null | awk '{print $2}')
 stale=0
 for dir in .sources/*/; do
   [ -d "$dir" ] || continue
   path="${dir%/}"
-  if ! printf '%s\n' "$declared" | grep -qxF "$path"; then
+  if printf '%s\n' "$declared" | grep -qxF "$path"; then
+    continue
+  fi
+  if [ -e "$path/.git" ] || [ -z "$(ls -A "$path" 2>/dev/null)" ]; then
     rm -rf "$path"
     warn "removed stale $path (no longer a submodule)"
     stale=$((stale + 1))
+  else
+    warn "left $path alone: not declared in .gitmodules and not a submodule working tree"
   fi
 done
 if [ $stale -gt 0 ]; then
