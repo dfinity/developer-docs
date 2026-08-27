@@ -28,8 +28,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -91,6 +91,71 @@ function defaultBranchHead(repo) {
   const branch = out.match(/^ref:\s+refs\/heads\/(\S+)\s+HEAD$/m)?.[1] ?? 'HEAD';
   const sha = out.match(/^([0-9a-f]{40})\s+HEAD$/m)?.[1];
   return { branch, sha };
+}
+
+/**
+ * Language-to-directory map, mirroring LANG_TO_DIR in plugins/remark-snippet.mjs.
+ * It is copied rather than imported because that plugin pulls in remark
+ * dependencies and this script must run in the workflow, which installs none.
+ * Keep the two in step; an unknown language here fails the check rather than
+ * silently reporting fewer files than the docs actually quote.
+ */
+const LANG_TO_DIR = {
+  rust: 'rust',
+  rs: 'rust',
+  motoko: 'motoko',
+  mo: 'motoko',
+  javascript: 'hosting',
+  js: 'hosting',
+};
+
+/**
+ * Every file in the examples repo that a `snippet=` in docs/ quotes, as a
+ * repo-relative path. The attribute is relative to `.sources/examples/<lang>/`,
+ * where the directory comes from the fence's language, so both parts are needed
+ * to reconstruct the path the compare API reports.
+ */
+function snippetPaths() {
+  const out = new Set();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) walk(full);
+      else if (/\.mdx?$/.test(entry)) {
+        const text = readFileSync(full, 'utf8');
+        for (const m of text.matchAll(/^```(\w+)[^\n]*\ssnippet="([^"#]+)/gm)) {
+          const [, lang, path] = m;
+          const dir = LANG_TO_DIR[lang];
+          if (!dir) {
+            throw new Error(
+              `${relative(ROOT, full)}: snippet in an unmapped language "${lang}"; ` +
+                `add it to LANG_TO_DIR here and in plugins/remark-snippet.mjs`
+            );
+          }
+          out.add(`${dir}/${path}`);
+        }
+      }
+    }
+  };
+  walk(join(ROOT, 'docs'));
+  return out;
+}
+
+/**
+ * Files changed between two refs, via the compare API. Returns null when the
+ * answer cannot be trusted (request failed, or the response was truncated at
+ * the API's 300-file cap), so callers report rather than assume nothing moved.
+ */
+async function changedFiles(repo, base, head) {
+  const headers = { Accept: 'application/vnd.github+json' };
+  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`https://api.github.com/repos/${repo}/compare/${base}...${head}`, { headers });
+  if (!res.ok) return null;
+  const body = await res.json();
+  if (!Array.isArray(body.files)) return null;
+  if (body.files.length >= 300) return null;
+  return new Set(body.files.map((f) => f.filename));
 }
 
 function gitlinkSha(path) {
@@ -177,8 +242,8 @@ function slugFor(entry) {
   return entry.name ? `${base}-${entry.name}` : base;
 }
 
-function checkVendored(entry) {
-  const { path, repo, branch, affects } = entry;
+async function checkVendored(entry) {
+  const { path, repo, branch, affects, pathFilter } = entry;
   const pinnedSha = gitlinkSha(path);
   if (!pinnedSha) throw new Error(`${path}: not a submodule in this commit`);
   const headSha = branchHead(repo, branch);
@@ -187,6 +252,22 @@ function checkVendored(entry) {
 
   // Short SHAs are for the table and the issue title; anything a machine
   // consumes (the compare link, the checkout command) gets the full SHA.
+  let touched;
+  if (pathFilter === 'snippets') {
+    // A commit on an active examples repo is not news by itself. What matters
+    // is whether it touched a file the docs quote: an improvement upstream
+    // leaves our copy stale while the build stays green, since the build only
+    // catches a path or region that stopped resolving.
+    const wanted = snippetPaths();
+    const changed = await changedFiles(repo, pinnedSha, headSha);
+    if (changed) {
+      touched = [...wanted].filter((f) => changed.has(f));
+      if (touched.length === 0) return null;
+    }
+    // changed === null: the comparison could not be trusted, so fall through
+    // and report rather than assume nothing moved.
+  }
+
   const pinned = pinnedSha.slice(0, 7);
   const latest = headSha.slice(0, 7);
   const name = path.replace(/^\.sources\//, '');
@@ -201,7 +282,11 @@ function checkVendored(entry) {
     '',
     '## What to re-check',
     '',
-    affects ?? 'No notes recorded for this submodule.',
+    touched?.length
+      ? 'Files the docs quote that changed in this range:\n\n' +
+          touched.map((f) => `- \`${f}\``).join('\n') +
+          '\n\n' + (affects ?? '')
+      : affects ?? 'No notes recorded for this submodule.',
     '',
     '## How to close this',
     '',
@@ -380,7 +465,7 @@ let failed = false;
 
 for (const entry of vendored) {
   try {
-    const r = checkVendored(entry);
+    const r = await checkVendored(entry);
     if (r) {
       results.push(r);
       console.error(`behind:   ${entry.path} -> ${entry.repo}@${entry.branch}`);

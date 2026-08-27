@@ -1,20 +1,21 @@
 {
   "$comment": [
-    "Every upstream this repo tracks, in two groups.",
+    "Every upstream this repo tracks, in three groups.",
     "",
     "`watched` are repos where a release can silently invalidate a lot of published",
     "content, so they get a pinned ref and a weekly issue when they move. Verify",
     "claims against the pinned ref, not against main, so a review is reproducible.",
     "",
-    "`reference` are repos the docs draw on too lightly, or whose drift another check",
-    "already catches: each `why` records what decided it. They carry no pin. Verify",
-    "against the latest release on demand. Promote one to `watched` if that changes.",
+    "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
+    "is the gitlink, so git stays the single source of truth. `motoko` and",
+    "`internetidentity` are absent on purpose: sync-motoko.yml and sync-ii-spec.yml",
+    "already release-check and open the bump PR themselves.",
     "",
-    "The three submodules are not watched here. `motoko` and `internetidentity` have",
-    "their own sync workflows that release-check and open the bump PR themselves;",
-    "`examples` is covered by the build, which fails on a broken snippet region.",
+    "`reference` are repos the docs draw on too lightly to be worth a weekly issue:",
+    "each `why` records the footprint that decided it. They carry no pin. Verify",
+    "against the latest release on demand. Promote one if that changes.",
     "",
-    "scripts/check-upstream-releases.mjs checks `watched`, and",
+    "scripts/check-upstream-releases.mjs checks `watched` and `vendored`, and",
     ".github/workflows/upstream-releases.yml opens an issue per repo that moved.",
     "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
     "",
@@ -28,9 +29,23 @@
     "  tagPattern  anchored JS regex selecting the tags that count as a release",
     "  verify      file whose diff between the two refs is the review payload",
     "  affects     what to re-check in docs/ when this moves",
-    "  reference   authoritative published docs for the topic"
+    "  reference   authoritative published docs for the topic",
+    "",
+    "Fields (vendored): path, repo, track 'branch', branch, affects, and an optional",
+    "pathFilter. 'snippets' reports only when the range touched a file quoted by a",
+    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent."
   ],
-  "vendored": [],
+  "vendored": [
+    {
+      "path": ".sources/examples",
+      "repo": "dfinity/examples",
+      "track": "branch",
+      "branch": "master",
+      "pathFilter": "snippets",
+      "affects": "Bump the submodule and re-read the affected pages: the example moved on, so the code the docs quote is behind. The build already fails if a `snippet=` path or `#region` marker stops resolving, so this reports the case the build cannot see, an example that changed while still resolving.",
+      "reference": "https://github.com/dfinity/examples"
+    }
+  ],
   "watched": [
     {
       "repo": "dfinity/icp-cli",
@@ -122,12 +137,6 @@
     }
   ],
   "reference": [
-    {
-      "repo": "dfinity/examples",
-      "verify": "the paths and `#region` markers named by `snippet=` in docs/",
-      "why": "A submodule, but not watched: the only thing a bump can break is a snippet path or region, and `plugins/remark-snippet.mjs` already fails the build on either. A bump that does not break one needs no doc change, so an issue per upstream commit would be pure noise. Bump it when a page needs newer example code, and let the build verify it.",
-      "reference": "https://github.com/dfinity/examples"
-    },
     {
       "repo": "dfinity/icp-cli-templates",
       "verify": "the template's `icp.yaml`",
