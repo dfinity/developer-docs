@@ -3,10 +3,12 @@
  * Check every upstream in `.sources/upstream.json` for a newer ref than the one
  * the docs are pinned to, and write an issue body for each that moved.
  *
- * Covers the `watched` group. The optional `vendored` group compares a
- * submodule's gitlink against a branch head, so git stays the single source of
- * truth for its pin; it is empty today because every submodule this repo keeps
- * has a check of its own (a sync workflow, or the build).
+ * Covers two groups. `watched` repos are compared against the ref recorded in
+ * that file. `vendored` submodules are compared gitlink against branch head, so
+ * git stays the single source of truth for their pin; an entry may narrow that
+ * to the paths the docs actually depend on via `pathFilter`. `motoko` and
+ * `internetidentity` are in neither group: their own sync workflows
+ * release-check them and open the bump PR.
  *
  * A watched repo declares where its releases actually appear: `release` (git
  * tags matching a pattern), `crate` (crates.io) or `npm` (the npm registry) for
@@ -107,6 +109,8 @@ const LANG_TO_DIR = {
   mo: 'motoko',
   javascript: 'hosting',
   js: 'hosting',
+  typescript: 'hosting',
+  ts: 'hosting',
 };
 
 /**
