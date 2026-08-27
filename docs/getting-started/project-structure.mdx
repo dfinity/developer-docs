@@ -87,7 +87,7 @@ The Motoko backend uses the `@dfinity/motoko` recipe, which compiles via `mops b
 ```yaml
 name: backend
 recipe:
-  type: "@dfinity/motoko@v5.0.0"
+  type: "@dfinity/motoko@v5.1.0"
 ```
 
 The recipe takes no source or Candid configuration. Instead, the source file (and optionally the Candid file and compiler flags) are declared in a `mops.toml` at the project root. The `[canisters]` key must match the canister `name`:
@@ -106,7 +106,7 @@ The Rust backend uses the `@dfinity/rust` recipe:
 ```yaml
 name: backend
 recipe:
-  type: "@dfinity/rust@v3.3.0"
+  type: "@dfinity/rust@v3.4.0"
   configuration:
     shrink: true
     candid: backend.did
@@ -123,7 +123,7 @@ The frontend uses the `@dfinity/asset-canister` recipe, which builds the fronten
 ```yaml
 name: frontend
 recipe:
-  type: "@dfinity/asset-canister@v2.2.1"
+  type: "@dfinity/asset-canister@v2.3.0"
   configuration:
     build:
       - npm install

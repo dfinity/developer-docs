@@ -36,7 +36,7 @@ The [hello-world template](../../getting-started/project-structure.md) uses Reac
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -214,7 +214,7 @@ export default {
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -246,7 +246,7 @@ This outputs static files to the `out/` directory.
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -271,7 +271,7 @@ Export your game from Unity Editor: **File → Build Settings → WebGL → Buil
 canisters:
   - name: unity_webgl_template_assets
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -293,7 +293,7 @@ Export your game from Godot Editor: **Project → Export → HTML5 → Export Pr
 canisters:
   - name: godot_html5_assets
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -330,7 +330,7 @@ For sites with no backend canister (portfolios, landing pages, documentation):
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install

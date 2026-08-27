@@ -213,11 +213,11 @@ Add the SNS root canister as an **additional** controller of each app canister. 
 ```bash
 # Locally:
 icp canister settings update test \
-  --add-controller $(icp canister id sns_root)
+  --add-controller $(icp canister status sns_root -i)
 
 # On mainnet:
 icp canister settings update test \
-  --add-controller $(icp canister id sns_root -e ic) \
+  --add-controller $(icp canister status sns_root -e ic -i) \
   -e ic
 ```
 
@@ -231,7 +231,7 @@ export DEVELOPER_NEURON_ID="<neuron-id-from-step-2>"
 # is where dfx stores PEM files. If you created your identity with icp-cli, the path
 # may differ: check ~/.config/icp/identity/ or the path shown by `icp identity export`.
 export PEM_FILE="$HOME/.config/dfx/identity/$(icp identity default)/identity.pem"
-export CID="$(icp canister id test -e ic)"
+export CID="$(icp canister status test -e ic -i)"
 ```
 
 Submit the registration proposal:

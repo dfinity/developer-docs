@@ -93,8 +93,8 @@ persistent actor {
 
     switch result {
       case (#Ok rate) {
-        let scale = Float.fromInt(Int.pow(10, Nat32.toNat(rate.metadata.decimals)));
-        ?(Float.fromInt(Nat64.toNat(rate.rate)) / scale)
+        let scale = Int.toFloat(Int.pow(10, Nat32.toNat(rate.metadata.decimals)));
+        ?(Int.toFloat(Nat64.toNat(rate.rate)) / scale)
       };
       case (#Err err) {
         // handle specific errors as needed (see Error handling section below)
@@ -198,7 +198,7 @@ For reliability, use the start of the **previous minute** rather than the curren
 <TabItem label="Motoko">
 
 ```motoko
-let oneMinuteAgo : Nat64 = (Nat64.fromNat(Int.abs(Time.now())) / 1_000_000_000) - 60;
+let oneMinuteAgo : Nat64 = (Nat.toNat64(Int.abs(Time.now())) / 1_000_000_000) - 60;
 
 let request : GetExchangeRateRequest = {
   base_asset  = { symbol = "ICP"; class_ = #Cryptocurrency };

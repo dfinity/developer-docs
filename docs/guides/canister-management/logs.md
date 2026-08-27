@@ -155,7 +155,7 @@ You can configure log visibility per canister in `icp.yaml` so it is applied on 
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.3.0"
+      type: "@dfinity/rust@v3.4.0"
     settings:
       log_visibility: controllers   # "controllers" | "public" | allowed_viewers object
 ```
