@@ -10,7 +10,7 @@ When an AI agent is handed only your app's URL (for example, `https://yourapp.co
 This guide describes what a canister app exposes to make that possible, ordered by priority.
 
 :::caution[Adopting this protocol opts your app in]
-By implementing this service discoverability protocol for your app, you agree that your app should be discovered by [ICP MCP](https://internetcomputer.org/icp-mcp/), and that you respect its [terms of service](https://internetcomputer.org/icp-mcp/terms/).
+By implementing this service discoverability protocol for your app, you agree that your app should be discovered by [ICP MCP](https://internetcomputer.org/icp-mcp/), and that you respect its [terms of service](https://internetcomputer.org/icp-mcp/terms/). Publishing the Layer 1 manifest at `/.well-known/ic-architecture` is the act that opts your app in: the layers are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
 :::
 
 ## The five layers
