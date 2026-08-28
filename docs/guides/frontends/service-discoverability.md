@@ -9,6 +9,10 @@ When an AI agent is handed only your app's URL (for example, `https://yourapp.co
 
 This guide describes what a canister app exposes to make that possible, ordered by priority.
 
+:::caution[Adopting this protocol opts your app in]
+By implementing this service discoverability protocol for your app, you agree that your app should be discovered by [ICP MCP](https://internetcomputer.org/icp-mcp/), and that you respect its [terms of service](https://internetcomputer.org/icp-mcp/terms/).
+:::
+
 ## The five layers
 
 An agent handed only your app's URL should be able to do five things, unattended:
