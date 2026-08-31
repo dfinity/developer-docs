@@ -8,6 +8,27 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.67.0 (2026-08-31) {$0_67_0}
+* New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`
+  or a number between `4096` and `2097152` (`2 MiB`), inclusively, with the default value `4096`.
+  The oldest canister logs are purged if the total memory used for canister logs exceeds this value.
+  The memory used by the store holding the canister logs is determined by this setting
+  (it does not depend on the canister logs actually stored) and counted in the canister's memory usage.
+  Hence, raising this setting might require reserving cycles. Changing this setting also resizes
+  the store holding the canister logs, which consumes cycles.
+  The setting is reset if the canister runs out of cycles.
+* `canister_status` returns the setting `log_memory_limit` and the memory used by the store holding
+  the canister logs in the new field `log_memory_store_size` of `memory_metrics`.
+* `fetch_canister_logs` can also be called by canisters via replicated (update) calls.
+  It still cannot be called by external users via replicated calls.
+* New optional `filter` argument of `fetch_canister_logs` restricting the returned logs to a range of
+  log indices (`by_idx`) or timestamps (`by_timestamp_nanos`).
+* The total size of all logs returned by `fetch_canister_logs` is bounded by an implementation-defined
+  constant chosen so as not to exceed the maximum response size (instead of the previous bound of 4KiB).
+  If the selected logs do not all fit, an unfiltered read trims the oldest logs (so the response ends
+  with the newest log) and a filtered read trims the newest logs (so the response starts with the oldest
+  log satisfying the filter).
+
 ### 0.66.0 (2026-08-17) {$0_66_0}
 * Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`
   (the time at which the canister was created) and `/canister/<canister_id>/last_install_timestamp`
