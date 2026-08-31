@@ -8,7 +8,7 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.67.0 (2026-08-17) {$0_67_0}
+### 0.67.0 (2026-08-31) {$0_67_0}
 * The management canister method `canister_info` can now also be invoked via non-replicated (query) calls
   by external users and from composite query methods (it remains callable by canisters via inter-canister
   calls and remains rejected for ingress messages). Retrieving canister information is not subject to any
