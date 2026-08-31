@@ -12,7 +12,7 @@ ICP uses WebAssembly as the execution environment for canisters. Because WebAsse
 | Limit | Value |
 |-------|-------|
 | Message queue limit (between a canister pair) | 500 |
-| Max ingress message payload | 2 MiB |
+| Max ingress message payload | 2 MiB (3.5 MiB on the NNS subnet) |
 | Max cross-subnet inter-canister message payload | 2 MiB |
 | Max same-subnet inter-canister request payload | 10 MiB |
 | Max response size (replicated execution) | 2 MiB |
@@ -26,7 +26,7 @@ ICP uses WebAssembly as the execution environment for canisters. Because WebAsse
 | Per query call | 5 billion |
 | Per canister install or upgrade | 300 billion |
 | Per `inspect_message` | 200 million |
-| Per round per execution thread | 7 billion |
+| Per round per execution thread | 4 billion |
 
 ## Memory limits
 
@@ -38,15 +38,17 @@ ICP uses WebAssembly as the execution environment for canisters. Because WebAsse
 | Stable memory written per replicated message | 2 GiB |
 | Stable memory read per upgrade message | 8 GiB |
 | Stable memory written per upgrade message | 8 GiB |
-| Stable memory read per replicated query | 1 GiB |
-| Stable memory written per replicated query | 1 GiB |
+| Stable memory read per query call | 1 GiB |
+| Stable memory written per query call | 1 GiB |
+
+The query limits apply to every query type: non-replicated, replicated, and composite queries, as well as `inspect_message`.
 
 ## Wasm module limits
 
 | Limit | Value |
 |-------|-------|
 | Wasm total size per canister | 100 MiB |
-| Wasm code section per canister | 10 MiB |
+| Wasm code section per canister | 12 MiB |
 | Custom sections per subnet | 2 GiB |
 | Custom sections per canister | 1 MiB |
 | Custom section count per canister | 16 |
@@ -72,13 +74,13 @@ ICP uses WebAssembly as the execution environment for canisters. Because WebAsse
 
 | Limit | Value |
 |-------|-------|
-| Environment variables per canister | 20 |
+| Environment variables per canister | 32 |
 | Variable name length | 128 bytes |
 | Variable value length | 128 bytes |
 
 ## Performance characteristics
 
-Block production rate varies from 0.75 to 1.5 blocks per second depending on [subnet](../concepts/network-overview.md#subnets) load and node count. Up to 1,000 messages can be included in a block. Because ICP decouples message reception from message execution, messages included in a block are not guaranteed to execute in the same block. Messages for different canisters may execute in parallel across up to 4 execution threads, each capable of handling up to 1,000 messages. ICP targets a throughput of 2 billion Wasm instructions per thread per second.
+Block production rate varies from 1 to 3 blocks per second depending on [subnet](../concepts/network-overview.md#subnets) load and node count. Up to 1,000 messages can be included in a block. Because ICP decouples message reception from message execution, messages included in a block are not guaranteed to execute in the same block. Messages for different canisters may execute in parallel across up to 4 execution threads. ICP targets a throughput of 2 billion Wasm instructions per thread per second.
 
 ## Additional notes
 
@@ -90,8 +92,8 @@ The IC rejects Wasm modules that exceed these structural limits:
 - More than 1,000 declared globals
 - A function body containing more than 1,000,000 Wasm instructions
 - More than 16 exported custom sections (names prefixed with `icp:`)
-- More than 1,000 exported `canister_update <name>` or `canister_query <name>` functions
-- Combined `<name>` lengths across all exported update and query functions exceeding 20,000 characters
+- More than 1,000 exported `canister_update <name>`, `canister_query <name>`, or `canister_composite_query <name>` functions
+- Combined `<name>` lengths across all exported update, query, and composite query functions exceeding 20,000 characters
 - Total exported custom sections size exceeding 1 MiB
 
 For the full specification of these constraints, see [WebAssembly module requirements](ic-interface-spec/canister-interface.md#system-api-module).
