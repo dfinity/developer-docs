@@ -28,6 +28,10 @@ sidebar:
   If the selected logs do not all fit, an unfiltered read trims the oldest logs (so the response ends
   with the newest log) and a filtered read trims the newest logs (so the response starts with the oldest
   log satisfying the filter).
+* The management canister method `canister_info` can now also be invoked via non-replicated (query) calls
+  by external users and from composite query methods (it remains callable by canisters via inter-canister
+  calls and remains rejected for ingress messages). Retrieving canister information is not subject to any
+  access control, so any principal, including the anonymous one, can call it.
 
 ### 0.66.0 (2026-08-17) {$0_66_0}
 * Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`

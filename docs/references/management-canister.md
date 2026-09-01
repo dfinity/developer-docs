@@ -150,9 +150,9 @@ Returns cycle consumption metrics for a canister broken down by use case. Metric
 
 ### `canister_info`
 
-Returns the history, current module hash, and controllers of any canister. Unlike `canister_status`, any canister can call this on any other canister.
+Returns the history, current module hash, and controllers of any canister. Unlike `canister_status`, this information is public: it is not subject to any access control.
 
-- **Caller:** Canisters only
+- **Caller:** Anyone (canisters via inter-canister calls; external users via query calls only, not update calls; also callable from composite query methods. Query responses come from a single replica and are not suitable for security-sensitive use)
 - **Parameters:**
   - `canister_id` (`principal`)
   - `num_requested_changes` (`opt nat64`): how many history entries to return (default `0`)
