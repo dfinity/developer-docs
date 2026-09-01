@@ -201,7 +201,7 @@ Deployment order does not matter: `icp deploy` creates all canisters first, then
 **Init arguments.** Accept the target `Principal` as an `#[init]` argument and store it. This avoids the environment variable lookup at call time but requires passing the ID at every deploy and upgrade:
 
 ```bash
-TARGET_ID=$(icp canister id counter)
+TARGET_ID=$(icp canister status counter -i)
 icp deploy my_canister --argument "(principal \"$TARGET_ID\")"
 ```
 

@@ -1,0 +1,189 @@
+{
+  "$comment": [
+    "Every upstream this repo tracks, in three groups.",
+    "",
+    "`watched` are repos where a release can silently invalidate a lot of published",
+    "content, so they get a pinned ref and a weekly issue when they move. Verify",
+    "claims against the pinned ref, not against main, so a review is reproducible.",
+    "",
+    "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
+    "is the gitlink, so git stays the single source of truth. `motoko` and",
+    "`internetidentity` are absent on purpose: sync-motoko.yml and sync-ii-spec.yml",
+    "already release-check and open the bump PR themselves.",
+    "",
+    "`reference` are repos the docs draw on too lightly to be worth a weekly issue:",
+    "each `why` records the footprint that decided it. They carry no pin. Verify",
+    "against the latest release on demand. Promote one if that changes.",
+    "",
+    "scripts/check-upstream-releases.mjs checks `watched` and `vendored`, and",
+    ".github/workflows/upstream-releases.yml opens an issue per repo that moved.",
+    "See AGENTS.md 'Source material' and .agents/upstream-tracking.md.",
+    "",
+    "Fields (watched):",
+    "  repo        owner/name on GitHub",
+    "  name        optional, when one repo releases several things independently",
+    "  pinned      the ref docs are currently verified against",
+    "  track       where releases appear: 'release' (git tags matching tagPattern),",
+    "              'crate' (crates.io, needs `crate`), 'npm' (npm registry, needs",
+    "              `package`), or 'commit' (no releases; the default branch head)",
+    "  tagPattern  anchored JS regex selecting the tags that count as a release",
+    "  verify      file whose diff between the two refs is the review payload",
+    "  affects     what to re-check in docs/ when this moves",
+    "  reference   authoritative published docs for the topic, deliberately the",
+    "              living version rather than a pinned one: an issue exists because a",
+    "              NEW release shipped, so a maintainer opening it wants the docs for",
+    "              that release, not for the version being replaced. This is why the",
+    "              icp-cli entry uses the bare root while AGENTS.md requires a",
+    "              versioned slug in docs/ pages, and why every other entry here",
+    "              points at docs.rs/latest, mops.one, js.icp.build or a branch.",
+    "",
+    "Fields (vendored): path, repo, track 'branch', branch, affects, and an optional",
+    "pathFilter. 'snippets' reports only when the range touched a file quoted by a",
+    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent."
+  ],
+  "vendored": [
+    {
+      "path": ".sources/examples",
+      "repo": "dfinity/examples",
+      "track": "branch",
+      "branch": "master",
+      "pathFilter": "snippets",
+      "affects": "Bump the submodule and re-read the affected pages: the example moved on, so the code the docs quote is behind. The build already fails if a `snippet=` path or `#region` marker stops resolving, so this reports the case the build cannot see, an example that changed while still resolving.",
+      "reference": "https://github.com/dfinity/examples"
+    }
+  ],
+  "watched": [
+    {
+      "repo": "dfinity/icp-cli",
+      "pinned": "v1.3.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "verify": "docs/reference/cli.md",
+      "affects": "Every `icp` command and flag in docs/. A new minor also moves the cli.internetcomputer.org link slug (AGENTS.md 'Linking rules'), so check the slug procedure in .agents/upstream-tracking.md when the minor changes.",
+      "reference": "https://cli.internetcomputer.org/"
+    },
+    {
+      "repo": "dfinity/motoko-core",
+      "pinned": "v2.6.1",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Every `mo:core` import and API signature in Motoko code blocks.",
+      "reference": "https://mops.one/core/docs",
+      "verify": "Changelog.md"
+    },
+    {
+      "repo": "dfinity/cdk-rs",
+      "pinned": "0.20.2",
+      "track": "crate",
+      "crate": "ic-cdk",
+      "affects": "`ic-cdk` APIs in Rust code blocks. The repo stopped tagging releases (its newest bare-semver tag is two minors behind the published crate), so the crate version on crates.io is the release identity. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk/CHANGELOG.md, then grep docs/ for the symbols they name. `ic-cdk-timers` and `ic-cdk-executor` version separately; check whether they moved too.",
+      "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
+    },
+    {
+      "repo": "dfinity/icp-js-core",
+      "pinned": "v6.1.0",
+      "track": "release",
+      "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "verify": "CHANGELOG.md",
+      "affects": "`@icp-sdk/core` APIs in JavaScript and TypeScript code blocks: agents, identity, Candid, and the canister-env helpers. Tags match the published npm versions.",
+      "reference": "https://js.icp.build/core/"
+    },
+    {
+      "repo": "dfinity/icp-js-canisters",
+      "pinned": "3.6.0",
+      "track": "npm",
+      "package": "@icp-sdk/canisters",
+      "affects": "`@icp-sdk/canisters` APIs, notably `AssetManager` in references/application-canisters.md and guides/frontends/asset-canister.md, which states a minimum of 3.5.0. This repo's semver tags lag its published versions, so npm is the release signal. Changelog: https://github.com/dfinity/icp-js-canisters/blob/main/CHANGELOG.md",
+      "reference": "https://js.icp.build/canisters/"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "asset-canister",
+      "pinned": "asset-canister-v2.3.0",
+      "track": "release",
+      "tagPattern": "^asset-canister-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 10 places across docs/, including references/application-canisters.md and guides/frontends/asset-canister.md. The legacy frontend recipe; static-site supersedes it. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "static-site",
+      "pinned": "static-site-v0.3.3",
+      "track": "release",
+      "tagPattern": "^static-site-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Not yet documented (dfinity/certified-assets#124). This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "rust",
+      "pinned": "rust-v3.4.0",
+      "track": "release",
+      "tagPattern": "^rust-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 6 places as the Rust canister recipe in icp.yaml examples. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "motoko",
+      "pinned": "motoko-v5.1.0",
+      "track": "release",
+      "tagPattern": "^motoko-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited in 3 places as the Motoko canister recipe in icp.yaml examples. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    },
+    {
+      "repo": "dfinity/icp-cli-recipes",
+      "name": "prebuilt",
+      "pinned": "prebuilt-v2.1.0",
+      "track": "release",
+      "tagPattern": "^prebuilt-v\\d+\\.\\d+\\.\\d+$",
+      "affects": "Cited once, in guides/canister-management/reproducible-builds.md. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
+    }
+  ],
+  "reference": [
+    {
+      "repo": "dfinity/icp-cli-templates",
+      "verify": "the template's `icp.yaml`",
+      "why": "Docs link to templates rather than restating them: 12 mentions over 8 pages, no version asserted.",
+      "reference": "https://github.com/dfinity/icp-cli-templates"
+    },
+    {
+      "repo": "dfinity/candid",
+      "verify": "spec/Candid.md",
+      "why": "references/candid-spec.md points at the spec and restates the type tables. The spec moves rarely (date tags, latest 2025-12-18).",
+      "reference": "https://github.com/dfinity/candid/blob/master/spec/Candid.md"
+    },
+    {
+      "repo": "dfinity/response-verification",
+      "verify": "packages/<pkg>/README.md",
+      "why": "Two pages, guides/frontends/certification.md and guides/backends/certified-variables.md, both of which link to docs.rs for the API.",
+      "reference": "https://docs.rs/ic-http-certification/latest/ic_http_certification/"
+    },
+    {
+      "repo": "dfinity/chain-fusion-signer",
+      "verify": "the canister's `.did`",
+      "why": "Three pages, seven mentions.",
+      "reference": "https://github.com/dfinity/chain-fusion-signer"
+    },
+    {
+      "repo": "dfinity/papi",
+      "verify": "README.md",
+      "why": "One page mentions it.",
+      "reference": "https://github.com/dfinity/papi"
+    },
+    {
+      "repo": "dfinity/ic-pub-key",
+      "verify": "README.md",
+      "why": "Three pages; guides/chain-fusion/offline-key-derivation.md is the only one with CLI detail.",
+      "reference": "https://github.com/dfinity/ic-pub-key"
+    },
+    {
+      "repo": "vincentkoc/dotskills",
+      "verify": "skills/technical-documentation/",
+      "why": "Source of the vendored `technical-documentation` skill in .claude/skills/. Not watched: two commits touched the skill in its history, the second only relicensing it to MIT. Re-copy from upstream if it changes, keeping the LICENSE and the NOTICE entry.",
+      "reference": "https://github.com/vincentkoc/dotskills"
+    }
+  ]
+}

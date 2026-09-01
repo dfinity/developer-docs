@@ -34,7 +34,7 @@ The Rust and prebuilt recipes expose a `compress` flag that gzip-compresses the 
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.3.0"
+      type: "@dfinity/rust@v3.4.0"
       configuration:
         shrink: true
         compress: true

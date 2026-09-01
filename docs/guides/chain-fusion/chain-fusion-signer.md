@@ -14,7 +14,7 @@ The signer charges callers in cycles for each API call. You pre-approve the sign
 ## Prerequisites
 
 - An ICP identity with cycles in the [Cycles Ledger](../../references/system-canisters.md#cycles-ledger) (`um5iw-rqaaa-aaaaq-qaaba-cai`)
-- icp-cli installed and authenticated (`icp identity whoami`)
+- icp-cli installed and authenticated (`icp identity principal`)
 - For offline address derivation: Node.js and `npx`
 
 ## Approve payment

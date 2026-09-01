@@ -61,7 +61,7 @@ Each top-level section has a specific purpose. Match your content accordingly:
 ### Don't
 - Reference `dfx` — it is deprecated. CI will reject it.
 - Use `.mdx` without a clear need for interactive components (default to `.md`)
-- Duplicate content that lives in external docs (icp-cli, JS SDK, icskills)
+- Duplicate content that lives in external docs (icp-cli, JS SDK, the IC skills)
 - Nest sidebar items more than 3 levels deep
 - Add images without alt text
 - Write for a specific framework version — always describe "latest"
@@ -102,11 +102,12 @@ The build generates `/llms.txt` and per-page `.md` endpoints from your content. 
 
 ## Source material
 
-`.sources/` contains pinned git submodules that agents use as ground truth when writing and reviewing content — CLI references, API signatures, skill files, and code examples.
+Upstream repos are tracked two ways, because most of them are only ever read to check a fact.
 
-**Do not edit files in `.sources/` directly.** They are read-only references; changes go to the upstream repos.
+- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`) — three repos whose content is resolved during the build. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
+- **Watched, not vendored** — everything else, listed in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
 
-Current pinned release versions are in [`.sources/VERSIONS`](.sources/VERSIONS). Bumping a submodule is a maintainer task — follow [`.agents/submodule-bumping.md`](.agents/submodule-bumping.md) for the full procedure.
+Bumping either is a maintainer task — follow [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for the procedure.
 
 ## Synced content
 
@@ -115,7 +116,8 @@ Some files are auto-synced from other repositories.
 
 Currently synced:
 - `docs/languages/motoko/` — from `caffeinelabs/motoko`
-- `docs/guides/tools/migrating-from-dfx.md` — from `dfinity/icp-cli`
+- `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — from `dfinity/internet-identity`
+- `.claude/skills/` (except `icp-brand-design`, `icp-brand-voice`, and `technical-documentation`) — from [skills.internetcomputer.org](https://skills.internetcomputer.org), refreshed on session start and not committed. See AGENTS.md "Skills" for how to consume them outside Claude Code.
 
 ## Review ownership
 
@@ -136,7 +138,7 @@ Currently synced:
 
 Before submitting a PR, manually verify:
 
-1. **No dfx references** — `dfx` is banned (except in `guides/tools/migrating-from-dfx.md`)
+1. **No dfx references** — `dfx` is banned
 2. **`.mdx` only where needed** — default to `.md`; use `.mdx` only for interactive components (tabs)
 3. **Valid frontmatter** — required fields present, valid values
 4. **`npm run build`** — Site builds without errors

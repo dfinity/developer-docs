@@ -1,13 +1,17 @@
 ---
 title: "Service discoverability"
-description: "What a canister app exposes so an AI agent can discover its canisters, interfaces, behavior, data, and identity from just its URL"
+description: "What an app exposes so ICP MCP can discover its canisters, interfaces, behavior, data, and identity from just its URL."
 sidebar:
   order: 3
 ---
 
-When an AI agent is handed only your app's URL (for example, `https://yourapp.com`), it should be able to work out the rest on its own: which canisters your app comprises, what each one does, how to call them, how to query their data, and how to act as the signed-in user. No human supplying canister IDs, no bespoke integration.
+When an agent working through ICP MCP is handed only your app's URL (for example, `https://yourapp.com`), it should be able to work out the rest on its own: which canisters your app comprises, what each one does, how to call them, how to query their data, and how to act as the signed-in user. No human supplying canister IDs, no bespoke integration.
 
 This guide describes what a canister app exposes to make that possible, ordered by priority.
+
+:::caution[Adopting this protocol opts your app in]
+By implementing this service discoverability protocol for your app, you agree that your app should be discovered by [ICP MCP](https://internetcomputer.org/icp-mcp/), that you accept its [terms of service](https://internetcomputer.org/icp-mcp/terms/), and that you comply with its [privacy policy](https://internetcomputer.org/icp-mcp/privacy-policy/). Publishing the Layer 1 manifest at `/.well-known/ic-architecture` is the act that opts your app in: the layers are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
+:::
 
 ## The five layers
 

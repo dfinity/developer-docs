@@ -27,6 +27,7 @@ Several methods accept or return a `canister_settings` record. The fields are:
 | `wasm_memory_limit` | `nat` | `0` | Upper limit on Wasm heap memory in bytes (0 = no limit) |
 | `wasm_memory_threshold` | `nat` | `0` | Remaining Wasm memory threshold that triggers the low-memory hook |
 | `log_visibility` | `log_visibility` | `controllers` | Who can read canister logs: `controllers`, `public`, or `allowed_viewers(vec principal)` |
+| `log_memory_limit` | `nat` | `4096` | Memory in bytes for storing canister logs: either `0` or between `4096` and `2097152` (2 MiB) |
 | `snapshot_visibility` | `snapshot_visibility` | `controllers` | Who can list and read canister snapshots: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `status_visibility` | `status_visibility` | `controllers` | Who can read the canister status: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `environment_variables` | `opt record` | `null` | Key-value pairs accessible during canister execution |
@@ -129,7 +130,7 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `settings`: the definite canister settings currently in effect
   - `module_hash` (`opt blob`): SHA-256 of installed module (`null` if empty)
   - `memory_size` (`nat`): total memory consumed
-  - `memory_metrics`: breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots)
+  - `memory_metrics`: breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots, log memory store)
   - `cycles` (`nat`): current cycle balance
   - `reserved_cycles` (`nat`): reserved cycle balance
   - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
@@ -534,12 +535,16 @@ For Bitcoin integration patterns, see the [Bitcoin guide](../guides/chain-fusion
 
 ### `fetch_canister_logs`
 
-Returns the most recent log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. Total log size is capped at 4 KiB.
+Returns log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. The oldest logs are purged once the memory used for canister logs exceeds the `log_memory_limit` canister setting.
 
-- **Caller:** External users via query calls, or canisters from composite queries (not callable via replicated calls)
-- **Parameters:** `canister_id` (`principal`)
+- **Caller:** Canisters via replicated calls or composite queries, and external users via query calls (external users cannot call it via replicated calls)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `filter` (`opt variant { by_idx : record { start : nat64; end : nat64 }; by_timestamp_nanos : record { start : nat64; end : nat64 } }`): returns only the logs whose `idx` or `timestamp_nanos` falls in the given range (`start` is inclusive, `end` is exclusive)
 - **Returns:**
   - `canister_log_records` (`vec record { idx : nat64; timestamp_nanos : nat64; content : blob }`)
+
+The total size of the returned logs is bounded by an implementation-defined constant chosen so as not to exceed the maximum response size. When the selected logs do not all fit, an unfiltered read trims the oldest records, so the response ends with the newest log, and a filtered read trims the newest records, so the response starts with the oldest log matching the filter.
 
 Log visibility is controlled by the `log_visibility` canister setting.
 

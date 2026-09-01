@@ -19,7 +19,7 @@ Asset canisters are deployed per-project. There is no global asset canister ID: 
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.2.1"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
