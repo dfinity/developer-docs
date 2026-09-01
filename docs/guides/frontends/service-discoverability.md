@@ -10,7 +10,7 @@ When an agent working through ICP MCP is handed only your app's URL (for example
 This guide describes what a canister app exposes to make that possible, ordered by priority.
 
 :::caution[Adopting this protocol opts your app in]
-By implementing this service discoverability protocol for your app, you agree that your app should be discovered by [ICP MCP](https://internetcomputer.org/icp-mcp/), that you accept its [terms of service](https://internetcomputer.org/icp-mcp/terms/), and that you comply with its [privacy policy](https://internetcomputer.org/icp-mcp/privacy-policy/). Publishing the Layer 1 manifest at `/.well-known/ic-architecture` is the act that opts your app in: the layers are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
+Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/) is governed by the [ICP MCP App Operator Terms](https://internetcomputer.org/icp-mcp/app-operator-terms/), an agreement between DFINITY and the app's operator: the person or entity legally authorized to operate the app and declare its canisters. The operator accepts the terms by registering, as their acceptance section describes, and what ICP MCP discloses to a participating app is described in its [privacy policy](https://internetcomputer.org/icp-mcp/privacy-policy/). Publishing the Layer 1 manifest at `/.well-known/ic-architecture` is the act that activates the app's participation (publishing without registering counts as accepting the terms by conduct): the layers are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
 :::
 
 ## The five layers
