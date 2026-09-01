@@ -423,7 +423,7 @@ type StreamingCallbackHttpResponse = record {
 
 type StreamingStrategy = variant {
     Callback: record {
-        callback: func (StreamingToken) -> (opt StreamingCallbackHttpResponse) query;
+        callback: func (StreamingToken) -> (StreamingCallbackHttpResponse) query;
         token: StreamingToken;
     };
 };
@@ -509,7 +509,7 @@ type StreamingCallbackHttpResponse = record {
 
 type StreamingStrategy = variant {
     Callback: record {
-        callback: func (StreamingToken) -> (opt StreamingCallbackHttpResponse) query;
+        callback: func (StreamingToken) -> (StreamingCallbackHttpResponse) query;
         token: StreamingToken;
     };
 };

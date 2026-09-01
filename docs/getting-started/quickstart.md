@@ -22,7 +22,7 @@ npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
 This installs:
 
 - **icp-cli**: builds and deploys [canisters](../concepts/canisters.md) on the Internet Computer
-- **ic-wasm**: optimizes WebAssembly modules for onchain deployment
+- **ic-wasm**: optimizes WebAssembly modules for deployment to the network
 
 For Motoko projects, also install the Motoko package manager:
 
@@ -37,20 +37,17 @@ icp --version
 ic-wasm --version
 ```
 
-> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/0.2/guides/installation) are also available.
+> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/1.3/guides/installation) are also available.
 
 ## Create a project
 
 ```bash
-icp new my-project --subfolder hello-world \
-  --define backend_type=motoko \
-  --define frontend_type=react \
-  --define network_type=Default && cd my-project
+icp new hello-icp --subfolder hello-world --silent && cd hello-icp
 ```
 
-This creates a fullstack project from the `hello-world` template with a Motoko backend and React frontend. The `--define` flags skip interactive prompts. Without them, `icp new` asks you to choose a template, language, and network type.
+This creates a fullstack project from the [`hello-world` template](https://github.com/dfinity/icp-cli-templates/tree/main/hello-world) with a Motoko backend and React frontend. `--silent` skips the interactive prompt and applies the template's default values. To use different values, add `--define <placeholder>=<value>` (for example, `--define backend_type=rust`). See the [template placeholders](https://github.com/dfinity/icp-cli-templates/blob/main/hello-world/cargo-generate.toml) for all available options.
 
-> **Prefer Rust?** Use `--define backend_type=rust` instead. You'll need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
+> **Prefer Rust?** Add `--define backend_type=rust` to the command. You'll also need Rust installed with the WASM target: `rustup target add wasm32-unknown-unknown`.
 
 > **Backend only?** Use a language-specific template instead: `--subfolder rust` or `--subfolder motoko`. These templates have no frontend.
 
@@ -130,6 +127,6 @@ Each canister name maps to a directory containing its own `canister.yaml` with b
 - [Choose your path](choose-your-path.md): pick a development path based on what you want to build
 - [Concepts: Canisters](../concepts/canisters.md): learn what canisters are and how they work
 - [AI coding agents](../guides/ai-coding-agents.md): use ICP skills to build on the Internet Computer with AI
-- [icp-cli documentation](https://cli.internetcomputer.org/0.2/): full CLI reference and guides
+- [icp-cli documentation](https://cli.internetcomputer.org/1.3/): full CLI reference and guides
 
 <!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->

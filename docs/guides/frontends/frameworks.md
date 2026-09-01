@@ -2,16 +2,16 @@
 title: "Frontend frameworks"
 description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using the asset canister and icp-cli"
 sidebar:
-  order: 4
+  order: 5
 ---
 
-ICP hosts frontend applications as asset [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed onchain and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
+ICP hosts frontend applications as asset [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed to the network and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
 
 This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy to an asset canister.
 
 ## Prerequisites
 
-- [icp-cli](https://cli.internetcomputer.org/0.2/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
+- [icp-cli](https://cli.internetcomputer.org/1.3/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
 - A backend canister deployed (or a static-only site with no backend)
 - Familiarity with [asset canisters](asset-canister.md)
 
@@ -36,7 +36,7 @@ The [hello-world template](../../getting-started/project-structure.md) uses Reac
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -214,7 +214,7 @@ export default {
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -246,7 +246,7 @@ This outputs static files to the `out/` directory.
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -271,7 +271,7 @@ Export your game from Unity Editor: **File → Build Settings → WebGL → Buil
 canisters:
   - name: unity_webgl_template_assets
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -293,7 +293,7 @@ Export your game from Godot Editor: **Project → Export → HTML5 → Export Pr
 canisters:
   - name: godot_html5_assets
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         dir: dist
         build:
@@ -330,7 +330,7 @@ For sites with no backend canister (portfolios, landing pages, documentation):
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/asset-canister@v2.3.0"
       configuration:
         build:
           - npm install
@@ -360,7 +360,7 @@ After deployment, the asset canister URL depends on your canister ID:
 | Environment | URL |
 |-------------|-----|
 | Local | `http://<canister-id>.localhost:8000` |
-| Mainnet | `https://<canister-id>.ic0.app` |
+| Mainnet | `https://<canister-id>.icp.net` |
 
 Get your canister ID with:
 

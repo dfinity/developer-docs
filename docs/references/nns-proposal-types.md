@@ -65,7 +65,7 @@ Reward weight: 20 (higher than most topics, incentivizing participation). Covers
 
 | Proposal type | Description |
 |---|---|
-| `Motion` | Opinion poll with no direct onchain effect. Used to signal community consensus on strategy. |
+| `Motion` | Non-binding vote used to signal community consensus on strategy. |
 | `UninstallCode` | Uninstall code from a canister. |
 | `SetDefaultFollowees` | Set the default following for newly created neurons. |
 | `KnownNeuron` | Register or update a known neuron with a name, optional description, links, and committed proposal topics. |

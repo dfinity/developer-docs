@@ -12,7 +12,8 @@ Cycles cover four resource categories:
 - **Compute**: executing instructions (update calls, timers, heartbeats)
 - **Storage**: Wasm heap memory and stable memory, charged per byte per second
 - **Messaging**: ingress messages from users, inter-canister calls, responses
-- **Special features**: HTTPS outcalls, threshold signatures, Bitcoin integration, EVM RPC
+- **Threshold cryptography**: threshold ECDSA/Schnorr signing and VetKeys key derivation
+- **External integrations**: HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin
 
 Query calls are free: they run on a single node, do not go through consensus, and are not charged.
 
@@ -27,6 +28,8 @@ For step-by-step instructions, see [Acquiring cycles](../guides/canister-managem
 ### Cycles are pegged to XDR
 
 Unlike ICP tokens, whose price fluctuates with markets, cycles are pegged to the [Special Drawing Right (XDR)](https://www.imf.org/external/np/fin/data/rms_sdrv.aspx): a basket of currencies maintained by the IMF. **1 trillion (T) cycles = 1 XDR** (approximately $1.30–$1.40 USD). This peg makes infrastructure costs predictable for developers regardless of ICP token price movements.
+
+The [CMC](../references/system-canisters.md#cycles-minting-canister-cmc) samples the current ICP/XDR rate from the [exchange rate canister](../references/protocol-canisters.md#exchange-rate-canister-xrc) every 5 minutes. For how to look up the current XDR/USD rate programmatically or from a canister, see [Getting the current XDR/USD rate](../references/cycle-costs.md#getting-the-current-xdrusd-rate).
 
 ## Pricing
 
@@ -44,18 +47,13 @@ Compute allocation costs 10M cycles per 1% per second. Best-effort scheduling (0
 
 ### Storage
 
-Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles (≈$5.40 USD, May 2025). The cost is the same whether the data is in heap or stable memory.
+Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles. The cost is the same whether the data is in heap or stable memory.
 
 When a canister allocates new storage bytes on a subnet that is more than 750 GiB full, the system moves cycles from the canister's main balance into a **reserved cycles balance** to cover future storage payments for those bytes. This reservation is non-transferable and grows linearly as the subnet fills toward its 2 TiB capacity.
 
 ### Messaging
 
-| Message type | Cost |
-|---|---|
-| Query call | Free |
-| Ingress update (user → canister) | 1.2M base + 2K cycles/byte, paid by receiving canister |
-| Inter-canister call | 260K base + 1K cycles/byte, paid by sending canister |
-| Canister creation | 500B cycles (≈$0.68, May 2025) |
+Query calls are free. Update messages carry a base fee plus a per-byte variable cost; ingress messages (user to canister) are charged to the receiving canister, while inter-canister calls are charged to the sending canister. Canister creation carries a one-time fee. For exact cycle counts and USD equivalents, see [Cycle costs](../references/cycle-costs.md#cost-table).
 
 ### Replication factor
 
@@ -71,7 +69,9 @@ Each resource category is metered and charged differently:
 
 **Messaging** costs are charged to the sending canister. Ingress messages (user to canister) are charged to the receiving canister. Each inter-canister call has a fixed base cost plus a per-byte variable cost. The calling canister also prepays the maximum-size reply cost upfront; if the actual reply is smaller, the difference is refunded.
 
-**Special features** (HTTPS outcalls, threshold signatures, Bitcoin API calls) charge the calling canister an additional amount on top of standard messaging costs. These features require extra protocol-level work and are priced accordingly.
+**Threshold cryptography** (threshold ECDSA/Schnorr signing, VetKeys key derivation) charges the calling canister an additional amount on top of standard messaging costs. The extra cost reflects the computationally intensive threshold cryptographic operations and cross-subnet coordination required to produce the result. For exact amounts, see [Threshold cryptography costs](../references/cycle-costs.md#threshold-cryptography).
+
+**External integrations** (HTTPS outcalls, EVM RPC, SOL RPC, Bitcoin, Dogecoin) charge an additional amount because every node on the relevant subnet must participate in each outbound call to an external network. For exact amounts, see [External integration costs](../references/cycle-costs.md#external-integrations).
 
 ## Cycles ledger
 
@@ -94,7 +94,7 @@ Every state-changing operation (each block created) costs 100M cycles as a fee. 
 The cycles ledger does not support calling arbitrary canisters with cycles attached, because open call contexts can cause the ledger to become stuck. Two patterns address this:
 
 - **Top up the target canister first**: if you control the canister, transfer cycles to it using `withdraw` or `icp canister top-up`, then let the canister attach cycles internally from its own balance. This is the preferred pattern for canisters you deploy and control.
-- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles) for the how-to.
+- **Proxy canister**: if you need to call a canister method with cycles attached from the CLI or an external agent, deploy a proxy canister using the [`proxy` template](https://github.com/dfinity/icp-cli-templates/tree/main/proxy) and route the call through it. See [Calls with attached cycles](../guides/canister-calls/inter-canister-calls.md#calls-with-attached-cycles) for the how-to.
 
 ## Developer responsibility
 
@@ -118,9 +118,9 @@ The tradeoff is that developers must forecast and fund usage upfront rather than
 ## Related
 
 - [Cycles Management](../guides/canister-management/cycles-management.md): how to check balances, top up canisters, and set freezing thresholds
-- [Calling canisters that require cycles](../guides/canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for attaching cycles from the CLI
+- [Calls with attached cycles](../guides/canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an inter-canister call and use the proxy canister pattern for the CLI
 - [Cycles ledger reference](../references/system-canisters.md#cycles-ledger): canister IDs, interface specification, and CMC integration
-- [Cycles Costs Reference](../references/cycles-costs.md): exact cost tables for all operations
+- [Cycle costs](../references/cycle-costs.md): exact cost tables for all operations
 - [Canisters](./canisters.md): canisters as the paying entity for compute and storage
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/building-apps/getting-started/tokens-and-cycles.mdx; learn hub staging: canister-smart-contracts/cycles.md, canister-smart-contracts/cycles-ledger.md -->

@@ -51,6 +51,8 @@ Key constraints:
 - **Ingress only**: only external clients (browsers, CLI tools) can invoke composite queries. Other canisters cannot call them.
 - **No replicated mode**: unlike regular queries, composite queries cannot be executed as update calls for stronger authenticity.
 
+A composite query can also call the [management canister](../references/management-canister.md) query methods `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`. These calls are answered from the state of the calling canister's own subnet, so they can only target canisters on that subnet, and the calling canister must be permitted to read that data (for example, be a controller of the target canister).
+
 ## Memory model
 
 Each canister has two storage regions:
@@ -121,6 +123,8 @@ If a canister has **no controllers**, it is immutable: no one can change its cod
 
 ## Canister internals
 
+![Canister components: input queue, Wasm module, heap and stable memory, output queue, cycles balance, controllers, and settings](/concepts/canisters/inside-canister.png)
+
 Under the hood, each canister maintains several components:
 
 - **Input queue**: holds incoming messages waiting to be processed. The canister processes one message at a time.
@@ -143,7 +147,7 @@ This has a practical implication: if a canister modifies state and then makes an
 
 - [Cycles](cycles.md): how canisters pay for computation
 - [Principals](principals.md): the identity model and caller authentication
-- [App architecture](app-architecture.md): how canisters fit into application design
+- [App architecture](../getting-started/app-architecture.md): how canisters fit into application design
 - [Canister lifecycle](../guides/canister-management/lifecycle.md): practical guide to managing canisters
 - [Network overview](network-overview.md): the infrastructure canisters run on
 

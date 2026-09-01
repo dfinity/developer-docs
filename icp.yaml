@@ -1,10 +1,15 @@
+networks:
+  - name: local
+    mode: managed
+    gateway:
+      port: 0
+
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/asset-canister@v2.1.0"
+      type: "@dfinity/static-site@v0.3.1"
       configuration:
-        dir: dist
-        version: asset-canister-404-support
         build:
           - npm install
           - npm run build
+        dir: dist

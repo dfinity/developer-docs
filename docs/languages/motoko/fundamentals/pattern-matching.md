@@ -1,7 +1,8 @@
 ---
-sidebar_position: 8
-description: "Motoko language documentation"
 title: "Pattern matching"
+description: "Pattern matching in Motoko is a language feature that makes it easy to test and break down complex data structures."
+sidebar:
+  order: 8
 ---
 
 Pattern matching in Motoko is a language feature that makes it easy to test and break down complex data structures. It is commonly used in `switch` expressions to extract and work with parts of a value.
@@ -20,6 +21,7 @@ Motoko supports several types of patterns:
 | Named  | Introduces identifiers into a new scope. | `age`, `x` |
 | Tuple                   | Must have at least two components.   | `( component0, component1, …​ )` |
 | Alternative (`or`-pattern) | Match multiple patterns. | `0 or 1`                        |
+| Conjunctive (`and`-pattern) | Match both patterns; bindings combine. | `?x and s`                    |
 
 ## Concepts
 
@@ -29,7 +31,7 @@ Unlike traditional `enum` types in other languages, which define fixed sets of v
 
 ### Irrefutable and refutable patterns
 
-Patterns are either refutable** or irrefutable. A refutable pattern can fail to match (like literal patterns or specific variant tags). An irrefutable pattern always matches any value of its type. Examples include the wildcard `_`, simple variable names, or structured patterns (like records or tuples) made only from irrefutable parts.
+Patterns are either **refutable** or **irrefutable**. A refutable pattern can fail to match (like literal patterns or specific variant tags). An irrefutable pattern always matches any value of its type. Examples include the wildcard `_`, simple variable names, or structured patterns (like records or tuples) made only from irrefutable parts.
 
 ### Singleton types
 
@@ -43,7 +45,7 @@ To prevent runtime errors when no `switch` case matches, the Motoko compiler per
 
 Consider the following function call:
 
-```motoko
+```motoko no-repl
 let name : Text = fullName({ first = "Motoko"; mid = "X"; last = "Ghost" });
 ```
 
@@ -51,7 +53,7 @@ This creates a record with three fields and passes it to the `fullName` function
 
 Now, look at the function itself:
 
-```motoko
+```motoko no-repl
 func fullName({ first : Text; mid : Text; last : Text }) : Text {
   first # " " # mid # " " # last
 };
@@ -59,7 +61,7 @@ func fullName({ first : Text; mid : Text; last : Text }) : Text {
 
 Here, the input record is*destructured. Its fields are matched and their values are assigned to the variables `first`, `mid`, and `last`, which are then used in the function body. This example uses name punning, where the field name (e.g., `first`) is reused as the variable name. A more flexible pattern lets you give the value a different name, like this:
 
-```motoko
+```motoko no-repl
 mid = m : Text
 ```
 

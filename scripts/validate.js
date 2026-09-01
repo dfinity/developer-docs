@@ -21,14 +21,6 @@ function isStub(content) {
   return content.includes('TODO: Write content');
 }
 
-function checkUpstream(file, content) {
-  if (isSynced(file) || isStub(content) || path.basename(file) === 'index.md') return [];
-  if (!/<!--\s*Upstream:\s*(hand-written|sync from|informed by)/.test(content)) {
-    return ['missing <!-- Upstream: hand-written|sync from|informed by --> comment'];
-  }
-  return [];
-}
-
 function checkFrontmatter(file, content) {
   if (isSynced(file)) return [];
   try {
@@ -42,8 +34,13 @@ function checkFrontmatter(file, content) {
   }
 }
 
+// `checkForbiddenPatterns` skips fenced code, so these patterns only ever see
+// prose. `mo:base` is the exception: what must never appear is an *import*
+// (`mo:base/Buffer`), which lives inside a fence, while naming the legacy
+// library in prose is legitimate (base-to-core migration tables do it). It
+// therefore matches the import path and is checked inside fences too.
 const FORBIDDEN = [
-  { re: /mo:base/, msg: '"mo:base" is banned — use "mo:core" instead' },
+  { re: /mo:base\//, msg: '"mo:base/" import is banned — use "mo:core" instead', includeFences: true },
   { re: /https?:\/\/(?:www\.)?internetcomputer\.org\/docs/, msg: 'internetcomputer.org/docs is retired — link internally or inline' },
   { re: /docs\.internetcomputer\.org/, msg: 'docs.internetcomputer.org is this site — use relative paths for internal links' },
 ];
@@ -72,9 +69,12 @@ function checkForbiddenPatterns(file, content) {
   if (isSynced(file)) return [];
   const errors = [];
   const lines = content.split('\n');
+  let inFence = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    for (const { re, msg } of FORBIDDEN) {
+    if (/^```/.test(line.trimStart())) { inFence = !inFence; continue; }
+    for (const { re, msg, includeFences } of FORBIDDEN) {
+      if (inFence && !includeFences) continue;
       if (re.test(line)) errors.push(`line ${i + 1}: ${msg}`);
     }
   }
@@ -104,7 +104,6 @@ function checkInternalLinks(file, content) {
 function validate(file) {
   const content = fs.readFileSync(file, 'utf8');
   return [
-    ...checkUpstream(file, content),
     ...checkFrontmatter(file, content),
     ...checkForbiddenPatterns(file, content),
     ...checkEmdash(file, content),

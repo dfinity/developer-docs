@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { unified } from "@astrojs/markdown-remark";
 import rehypeRewriteLinks from "./plugins/rehype-rewrite-links.mjs";
 import rehypeExternalLinks from "./plugins/rehype-external-links.mjs";
 import remarkIcpCliVersion from "./plugins/remark-icp-cli-version.mjs";
@@ -16,10 +17,15 @@ import { TITLE, DESCRIPTION, PUBLISHER, OG_ALT } from "./src/branding.mjs";
 export default defineConfig({
   site: "https://docs.internetcomputer.org",
   markdown: {
+    // Astro 7 defaults to the Sätteri processor; `unified()` opts back into the
+    // remark/rehype pipeline these plugins need. Top-level `markdown.remarkPlugins`
+    // and `markdown.rehypePlugins` are deprecated in favour of this.
     // Rehype plugins work with Starlight (remark plugins don't — Starlight overrides them).
     // See: https://github.com/dfinity/icp-cli/issues/423
-    rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
-    remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML, remarkIncludeFile],
+    processor: unified({
+      rehypePlugins: [rehypeRewriteLinks, rehypeExternalLinks],
+      remarkPlugins: [remarkHeadingId, remarkSnippet, remarkIcpCliVersion, remarkPlantUML, remarkIncludeFile],
+    }),
   },
   integrations: [
     starlight({
@@ -34,6 +40,35 @@ export default defineConfig({
         ThemeSelect: "./src/components/ThemeSelect.astro",
       },
       head: [
+        // Favicon set for ICP brand guide v2.26 (see .claude/skills/icp-brand-design SKILL.md §6.5).
+        // Starlight emits the primary SVG (rel="shortcut icon") from the top-level favicon option;
+        // these entries add the .ico fallback, PNG rasters, Apple touch icon, and Safari mask.
+        {
+          tag: "link",
+          attrs: { rel: "alternate icon", type: "image/x-icon", href: "/favicon.ico" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "mask-icon", href: "/safari-pinned-tab.svg", color: "#a8482b" },
+        },
+        // Browser chrome tint. Matches the light parchment default; the theme scripts
+        // update this to the dark bark value when the user opts into dark.
+        {
+          tag: "meta",
+          attrs: { name: "theme-color", content: "#faf9f5" },
+        },
         {
           tag: "link",
           attrs: {
@@ -116,7 +151,6 @@ export default defineConfig({
         "@fontsource/inter/400.css",
         "@fontsource/inter/500.css",
         "@fontsource/inter/600.css",
-        "@fontsource/inter/700.css",
         "@fontsource/newsreader/400.css",
         "@fontsource/newsreader/400-italic.css",
         "@fontsource/newsreader/500.css",

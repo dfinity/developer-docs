@@ -24,6 +24,7 @@ In Motoko, declare the XRC actor interface inline and use the `(with cycles = am
 import Cycles "mo:core/Cycles";
 import Float "mo:core/Float";
 import Int "mo:core/Int";
+import Nat "mo:core/Nat";
 import Nat32 "mo:core/Nat32";
 import Nat64 "mo:core/Nat64";
 
@@ -93,8 +94,8 @@ persistent actor {
 
     switch result {
       case (#Ok rate) {
-        let scale = Float.fromInt(Int.pow(10, Nat32.toNat(rate.metadata.decimals)));
-        ?(Float.fromInt(Nat64.toNat(rate.rate)) / scale)
+        let scale = Int.toFloat(Int.pow(10, Nat32.toNat(rate.metadata.decimals)));
+        ?(Int.toFloat(Nat64.toNat(rate.rate)) / scale)
       };
       case (#Err err) {
         // handle specific errors as needed (see Error handling section below)
@@ -198,7 +199,7 @@ For reliability, use the start of the **previous minute** rather than the curren
 <TabItem label="Motoko">
 
 ```motoko
-let oneMinuteAgo : Nat64 = (Nat64.fromNat(Int.abs(Time.now())) / 1_000_000_000) - 60;
+let oneMinuteAgo : Nat64 = (Nat.toNat64(Int.abs(Time.now())) / 1_000_000_000) - 60;
 
 let request : GetExchangeRateRequest = {
   base_asset  = { symbol = "ICP"; class_ = #Cryptocurrency };
@@ -240,7 +241,7 @@ The most important errors to handle explicitly:
 
 ## Testing from the CLI
 
-The XRC requires cycles attached to the call, so you cannot call it directly from the CLI on mainnet. To test the integration from the terminal, use the [proxy canister pattern](../canister-management/cycles-management.md#calling-canisters-that-require-cycles): deploy a proxy canister that forwards the call with cycles attached.
+The XRC requires cycles attached to the call, so you cannot call it directly from the CLI on mainnet. To test the integration from the terminal, use the [proxy canister pattern](../canister-calls/inter-canister-calls.md#attaching-cycles-from-the-cli): deploy a proxy canister that forwards the call with cycles attached.
 
 On a local replica, note that the XRC fetches from live external exchanges via HTTPS outcalls, so local testing requires a connection to the internet and a subnet configured as type `system`.
 
@@ -248,7 +249,7 @@ On a local replica, note that the XRC fetches from live external exchanges via H
 
 - [Exchange rate canister concept](../../concepts/chain-fusion/exchange-rate-canister.md): how median aggregation and rate derivation work
 - [Exchange rate canister reference](../../references/protocol-canisters.md#exchange-rate-canister-xrc): full Candid interface, all error types, and data sources
-- [Calling canisters that require cycles](../canister-management/cycles-management.md#calling-canisters-that-require-cycles): proxy canister pattern for CLI testing
+- [Calls with attached cycles](../canister-calls/inter-canister-calls.md#calls-with-attached-cycles): attach cycles to an outgoing call and use the proxy canister pattern for CLI testing
 - [HTTPS outcalls](../../concepts/https-outcalls.md): how the XRC fetches external price data
 - [Full Rust example](https://github.com/dfinity/examples/tree/master/rust/exchange-rates): complete Rust project with build configuration
 

@@ -8,7 +8,7 @@ sidebar:
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import CodeExample from '../../../src/components/CodeExample.astro';
 
-[Canisters](../../concepts/canisters.md) can make HTTP requests to external web services using HTTPS outcalls. This lets your canister fetch offchain data, call REST APIs, or send notifications: all from onchain code.
+[Canisters](../../concepts/canisters.md) can make HTTP requests to external web services using HTTPS outcalls. This lets your canister call REST APIs or send notifications: all from canister code.
 
 HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
 
@@ -18,8 +18,8 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. In Rust, `ic_cdk::management_canister::http_request` auto-calculates and attaches cycles. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
-- The **maximum response body is 2MB** (2,097,152 bytes). Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the exact amount and attaches it: `ic_cdk::management_canister::http_request` in Rust, and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
+- The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1–2 KB of headers before any body. Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated mode (`is_replicated = false`), a transform is unnecessary because only one node makes the request. See [Replicated vs non-replicated mode](#replicated-vs-non-replicated-mode) below.
 
@@ -51,7 +51,7 @@ A minimal example that sends a GET request to an echo service. The response body
 
 <CodeExample example="send_http_get" lang="motoko">
 
-```motoko snippet="send_http_get/src/send_http_get_backend/main.mo#get_request"
+```motoko snippet="send_http_get/backend/main.mo#get_request"
 ```
 
 </CodeExample>
@@ -61,7 +61,7 @@ A minimal example that sends a GET request to an echo service. The response body
 
 <CodeExample example="send_http_get" lang="rust">
 
-```rust snippet="send_http_get/src/send_http_get_backend/src/lib.rs#get_request"
+```rust snippet="send_http_get/backend/src/lib.rs#get_request"
 ```
 
 </CodeExample>
@@ -76,7 +76,7 @@ Because these examples use replicated mode, they include a transform function to
 
 <CodeExample example="send_http_get" lang="motoko">
 
-```motoko snippet="send_http_get/src/send_http_get_backend/main.mo#transform"
+```motoko snippet="send_http_get/backend/main.mo#transform"
 ```
 
 </CodeExample>
@@ -86,7 +86,7 @@ Because these examples use replicated mode, they include a transform function to
 
 <CodeExample example="send_http_get" lang="rust">
 
-```rust snippet="send_http_get/src/send_http_get_backend/src/lib.rs#transform"
+```rust snippet="send_http_get/backend/src/lib.rs#transform"
 ```
 
 </CodeExample>
@@ -106,7 +106,7 @@ POST requests work the same way, with two additional considerations:
 
 <CodeExample example="send_http_post" lang="motoko">
 
-```motoko snippet="send_http_post/src/send_http_post_backend/main.mo#post_request"
+```motoko snippet="send_http_post/backend/main.mo#post_request"
 ```
 
 </CodeExample>
@@ -116,7 +116,7 @@ POST requests work the same way, with two additional considerations:
 
 <CodeExample example="send_http_post" lang="rust">
 
-```rust snippet="send_http_post/src/send_http_post_backend/src/lib.rs#post_request"
+```rust snippet="send_http_post/backend/src/lib.rs#post_request"
 ```
 
 </CodeExample>
@@ -133,26 +133,28 @@ In replicated mode, a transform function is strongly recommended (without one, r
 
 If the response body also contains dynamic fields (timestamps, per-request IDs, the caller's IP), parse and re-serialize the body to extract only the deterministic fields you need.
 
+`max_response_bytes` is enforced twice: once on the raw response as it arrives from the server, and again on the transform's own output. Stripping headers in the transform therefore cannot rescue a response that already exceeded the cap, because the first check runs before the transform does. It only keeps the transform's own output within the cap. Size `max_response_bytes` for the headers and body as they arrive from the server.
+
 **Debugging "no consensus" errors:** If you see `"No consensus could be reached"`, the transform is not making responses identical. Common culprits: response headers differ, JSON fields arrive in a different order, or the response body contains timestamps. Strip all headers first; if that doesn't resolve it, also normalize or strip the body.
 
 ## Cycle costs
 
-HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **21.5 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
+HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
 
-In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, cycles must be attached explicitly with `await (with cycles = ...)`.
+In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, `Call.httpRequest` from the `ic` package does the same. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 For reference, on a 13-node subnet:
 - Base cost: ~49 million cycles
 - Per request byte: 5,200 cycles
 - Per `max_response_bytes` byte: 10,400 cycles
 
-See [Cycles costs](../../references/cycles-costs.md#https-outcalls) for the full pricing table.
+See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing table.
 
 ## Limitations and pitfalls
 
 - **Public endpoints only.** HTTPS outcalls can only reach public internet endpoints. Localhost (`127.0.0.1`), private IP ranges (`10.x.x.x`, `192.168.x.x`), and other non-routable addresses are blocked.
 - **`Host` header may be required.** Some API endpoints require the `Host` header to be explicitly set. The IC does not automatically set it from the URL: add it to your headers if the server requires it.
-- **~30-second timeout.** If the external server does not respond within the timeout, the call traps. Design for failure and handle errors gracefully.
+- **Two timeouts.** If the external server does not respond within 30 seconds, or the subnet does not produce a response within 60 seconds, the call is rejected. It does not trap, so handle the error case rather than relying on a trap.
 
 ## Testing locally
 
@@ -166,6 +168,6 @@ Use the "Full example in ICP Ninja" links above to deploy and test directly in t
 - [Management canister reference](../../references/management-canister.md#http_request): full `http_request` parameter reference including all fields
 - [Exchange Rate Canister (XRC)](https://github.com/dfinity/exchange-rate-canister): a production service powered by HTTPS outcalls that fetches digital asset and fiat exchange rates
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md): the EVM RPC canister uses HTTPS outcalls under the hood
-- [Cycles costs](../../references/cycles-costs.md#https-outcalls): outcall pricing details
+- [Cycles costs](../../references/cycle-costs.md#https-outcalls): outcall pricing details
 
 {/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/; dfinity/examples send_http_get, send_http_post */}

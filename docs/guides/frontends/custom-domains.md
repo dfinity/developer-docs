@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-By default, every canister on ICP is accessible at `https://<canister-id>.icp0.io`. To serve your frontend under your own domain (e.g., `app.example.com`), you register it with the HTTP gateway custom domain service.
+By default, every canister on ICP is accessible at `https://<canister-id>.icp.net`. To serve your frontend under your own domain (e.g., `app.example.com`), you register it with the HTTP gateway custom domain service.
 
 The service handles TLS certificate provisioning, renewal, and routing automatically. You configure three DNS records, deploy a domain ownership file to your canister, and call a registration API.
 
@@ -95,7 +95,7 @@ Replace `frontend` with your canister's name as defined in `icp.yaml`.
 Verify the file is accessible:
 
 ```bash
-curl -sL https://<canister-id>.icp0.io/.well-known/ic-domains
+curl -sL https://<canister-id>.icp.net/.well-known/ic-domains
 ```
 
 You should see your domain listed in the response.
@@ -105,7 +105,7 @@ You should see your domain listed in the response.
 Before registering, validate that your DNS records and canister file are correct:
 
 ```bash
-curl -sL -X GET "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN/validate" | jq
+curl -sL -X GET "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN/validate" | jq
 ```
 
 A successful response:
@@ -136,7 +136,7 @@ If validation fails, the response indicates what is wrong:
 ## Step 5: Register the domain
 
 ```bash
-curl -sL -X POST "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+curl -sL -X POST "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
 ```
 
 A successful response:
@@ -163,7 +163,7 @@ Common registration errors:
 Registration takes a few minutes. Poll the status endpoint:
 
 ```bash
-curl -sL -X GET "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+curl -sL -X GET "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
 ```
 
 The `registration_status` field progresses from `registering` → `registered`:
@@ -199,13 +199,13 @@ foo.bar.com
 
 ```bash
 # Validate
-curl -sL -X GET "https://icp0.io/custom-domains/v1/foo.bar.com/validate" | jq
+curl -sL -X GET "https://icp.net/custom-domains/v1/foo.bar.com/validate" | jq
 
 # Register
-curl -sL -X POST "https://icp0.io/custom-domains/v1/foo.bar.com" | jq
+curl -sL -X POST "https://icp.net/custom-domains/v1/foo.bar.com" | jq
 
 # Check status
-curl -sL -X GET "https://icp0.io/custom-domains/v1/foo.bar.com" | jq
+curl -sL -X GET "https://icp.net/custom-domains/v1/foo.bar.com" | jq
 ```
 
 ## HttpAgent configuration for custom domains
@@ -233,13 +233,13 @@ To point an existing custom domain at a different canister:
 2. Notify the service:
 
    ```bash
-   curl -sL -X PATCH "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+   curl -sL -X PATCH "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
    ```
 
 3. Check the registration status to track progress:
 
    ```bash
-   curl -sL -X GET "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+   curl -sL -X GET "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
    ```
 
 ## Removing a custom domain
@@ -249,18 +249,18 @@ To point an existing custom domain at a different canister:
 2. Notify the service:
 
    ```bash
-   curl -sL -X DELETE "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+   curl -sL -X DELETE "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
    ```
 
 3. Confirm deletion. The status endpoint should return 404:
 
    ```bash
-   curl -sL -X GET "https://icp0.io/custom-domains/v1/CUSTOM_DOMAIN" | jq
+   curl -sL -X GET "https://icp.net/custom-domains/v1/CUSTOM_DOMAIN" | jq
    ```
 
 ## Internet Identity and custom domains
 
-Internet Identity (II) derives user principals from the origin domain. If your users authenticate using the canister URL (`<canister-id>.icp0.io`) and you switch to a custom domain, they will get different principals on the new domain.
+Internet Identity (II) derives user principals from the origin domain. If your users authenticate using the canister URL (`<canister-id>.icp.net`) and you switch to a custom domain, they will get different principals on the new domain.
 
 To preserve the same principals across both origins, configure alternative origins. See [Internet Identity](../authentication/internet-identity.md) for the setup.
 
@@ -334,7 +334,7 @@ The `.well-known/ic-domains` file is not accessible on your canister. Check:
 Verify directly:
 
 ```bash
-curl -sL https://<canister-id>.icp0.io/.well-known/ic-domains
+curl -sL https://<canister-id>.icp.net/.well-known/ic-domains
 ```
 
 **Certificate renewal failing**

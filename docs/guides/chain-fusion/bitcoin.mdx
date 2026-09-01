@@ -47,6 +47,7 @@ import Blob "mo:core/Blob";
 import Nat8 "mo:core/Nat8";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
+import Nat "mo:core/Nat";
 
 persistent actor Self {
 
@@ -63,11 +64,11 @@ persistent actor Self {
     let bytes = Blob.toArray(Principal.toBlob(p));
     let size = bytes.size();
     let sub = Array.tabulate<Nat8>(32, func(i : Nat) : Nat8 {
-      if (i == 0) { Nat8.fromNat(size) }
+      if (i == 0) { Nat.toNat8(size) }
       else if (i <= size) { bytes[i - 1] }
       else { 0 }
     });
-    Blob.fromArray(sub)
+    Array.toBlob(sub)
   };
 
   public shared ({ caller }) func getDepositAddress() : async Text {
@@ -1010,7 +1011,7 @@ fn select_one_utxo<'a>(
 
 ### Cycle costs
 
-All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`.
+All Bitcoin API calls require cycles attached to the call. In Rust, the `ic-cdk-bitcoin-canister` crate handles this automatically. In Motoko, attach cycles explicitly with `(with cycles = amount)`. The table below shows minimum cycles to attach; for base costs and USD values see [Cycle costs](../../references/cycle-costs.md#bitcoin-integration-api).
 
 | API call | Testnet / Regtest | Mainnet |
 |---|---|---|

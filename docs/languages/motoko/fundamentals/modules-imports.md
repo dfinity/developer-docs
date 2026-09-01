@@ -1,7 +1,8 @@
 ---
-sidebar_position: 7
-description: "Motoko language documentation"
 title: "Modules and imports"
+description: "Motoko minimizes built-in types and operations, relying on a core package of modules to provide essential functionality."
+sidebar:
+  order: 7
 ---
 
 Motoko minimizes built-in types and operations, relying on a core package of modules to provide essential functionality. This modular approach keeps the language simple.
@@ -28,7 +29,7 @@ The `mo:` prefix identifies a Motoko module. The declaration does not include th
 
 You can also selectively import and rename a subset of named values and types from a module by using the object pattern syntax:
 
-``` motoko
+```motoko no-repl
 import { type List; get; foldLeft = fold } "mo:core/List";
 ```
 
@@ -48,7 +49,7 @@ In this scenario, you might place all three files in the same directory and use 
 
 For example, the `main.mo` contains the following lines to reference the modules in the same directory:
 
-``` motoko no-repl
+```motoko no-repl
 import Types "types";
 import Utils "utils";
 ```
@@ -61,7 +62,7 @@ You can also import modules from other packages or from directories other than t
 
 For example, the following lines import modules from a `redraw` package that is defined as a dependency:
 
-``` motoko no-repl
+```motoko no-repl
 import Render "mo:redraw/Render";
 import Mono5x5 "mo:redraw/glyph/Mono5x5";
 ```
@@ -110,7 +111,7 @@ import PureList "mo:core/pure/List";
 
 ## Importing from another canister
 
-Actors and their functions can be imported from other [canisters](https://internetcomputer.org/docs/building-apps/essentials/canisters) using the `canister:` prefix.
+Actors and their functions can be imported from other [canisters](/concepts/canisters) using the `canister:` prefix.
 
 ```motoko no-repl
 import BigMap "canister:BigMap";
@@ -144,9 +145,30 @@ When importing from another canister, the canister must be listed as a dependenc
 
 :::
 
+## Importing a local `.did` file
+
+A Candid interface file can be imported with the `idl:` URI scheme to get Motoko **types only**: not a canister handle:
+
+```motoko no-repl
+import S "idl:interfaces/ledger.did";
+
+type Ledger = S.Self;       // actor { ... } from the Candid service
+type Account = S.Account; // named Candid types (PascalCased when unambiguous)
+```
+
+`S` is a module of type aliases (only types declared in that `.did` file, not transitive Candid imports). It cannot be used to call methods. For a live reference, use a separate `canister:` / `ic:` import, or `actor "<principal>" : S.Self`. Types-only and actor imports of the same `.did` path are distinct and can be used together.
+
+As with any module import, a pattern can bind selected types directly:
+
+```motoko no-repl
+import { type Self; type Account } "idl:interfaces/ledger.did";
+```
+
+Snake_case Candid type names are exported in PascalCase when that does not collide with another type in the same file (`user_id` → `UserId`). If both `user_id` and `UserId` exist, both keep their original names. Names that do not start with a lowercase letter (`HTTP_request`, `_internal`) are kept as-is.
+
 ## Importing actor classes
 
-When imported, an [actor](/languages/motoko/fundamentals/actors-async) class provides a type definition describing the class interface and a function that returns an instance of the class.
+When imported, an [actor](./actors/actors-async.md) class provides a type definition describing the class interface and a function that returns an instance of the class.
 
 For example, if you define the following actor class:
 
@@ -183,7 +205,7 @@ persistent actor CountToTen {
 };
 ```
 
-`Counters.Counter(1)` installs a new counter on the network. Installation is [asynchronous](/languages/motoko/fundamentals/actors-async#async--await), so the result is awaited.  If the actor class is not named, it will result in a bad import error because actor class imports cannot be anonymous.
+`Counters.Counter(1)` installs a new counter on the network. Installation is [asynchronous](./actors/actors-async.md#async--await), so the result is awaited.  If the actor class is not named, it will result in a bad import error because actor class imports cannot be anonymous.
 
 ## Importing `Blob` values
 

@@ -1,17 +1,18 @@
 ---
-sidebar_position: 5
-description: "Motoko language documentation"
 title: "Stable memory and regions"
+description: "Canisters have two types of storage: Wasm memory and stable memory."
+sidebar:
+  order: 5
 ---
 
-Canisters have two types of storage: Wasm memory and stable memory. The Wasm memory is often referred to as the [heap memory](https://internetcomputer.org/docs/building-apps/canister-management/storage#heap-memory). It is automatically used for heap-allocated objects and has a maximum size limitation of 4 GiB or 6 GiB respective to whether you are using 32-bit or 64-bit heap storage without enhanced orthogonal persistence. When a canister is upgraded, the heap memory is cleared, only retaining data stored in stable variables.
+Canisters have two types of storage: Wasm memory and stable memory. The Wasm memory is often referred to as the [heap memory](/concepts/orthogonal-persistence#heap-wasm-linear-memory). It is automatically used for heap-allocated objects and has a maximum size limitation of 4 GiB or 6 GiB respective to whether you are using 32-bit or 64-bit heap storage without enhanced orthogonal persistence. When a canister is upgraded, the heap memory is cleared, only retaining data stored in stable variables.
 
-Stable memory has a maximum size of 500 GiB and is preserved across canister upgrades. Motoko utilizes [stable memory](https://internetcomputer.org/docs/building-apps/canister-management/storage#stable-memory) through the [stable storage feature](https://internetcomputer.org/docs/building-apps/canister-management/storage#motoko-storage-handling) to preserve data across canister upgrades. Stable regions extend this functionality to allow more structured and flexible memory management.
+Stable memory has a maximum size of 500 GiB and is preserved across canister upgrades. Motoko utilizes [stable memory](/concepts/orthogonal-persistence#stable-memory) through the [stable storage feature](/concepts/orthogonal-persistence#motoko-true-orthogonal-persistence) to preserve data across canister upgrades. Stable regions extend this functionality to allow more structured and flexible memory management.
 
 The system automatically commits all memory modifications, both Wasm and stable, after the successful execution of a message. If a message execution fails, the changes are not committed.
 
 :::caution
-The `Regions` library should only be used if [enhanced orthogonal persistence](/languages/motoko/fundamentals/orthogonal-persistence-enhanced) does not fit your use case.
+The `Regions` library should only be used if [enhanced orthogonal persistence](../fundamentals/actors/orthogonal-persistence/enhanced.md) does not fit your use case.
 :::
 
 ## What is a `Region`?
@@ -56,7 +57,7 @@ let previousSize = Region.grow(myRegion, 10);  // Add 10 pages (640 KiB)
 
 ### Growing a `Region` safely
 
-`Regions` can only grow, never shrink. Growth may fail due to [ICP resource limitations](https://internetcomputer.org/docs/building-apps/canister-management/resource-limits) and it is recommended to use the minimum pages needed to conserve resources.
+`Regions` can only grow, never shrink. Growth may fail due to [ICP resource limitations](/guides/canister-management/large-wasm) and it is recommended to use the minimum pages needed to conserve resources.
 
 Growing a [`Region`](https://mops.one/core/docs/Region) safely requires checking the current allocated size and ensuring that the required space does not exceed available capacity. Since stable memory is allocated in fixed-size pages of 64 KiB, any expansion must be done in page increments. To determine how many additional pages are needed, the difference between the required memory and the current capacity is calculated and rounded up to the nearest page boundary. Once the necessary pages are determined, the [`Region`](https://mops.one/core/docs/Region) is expanded accordingly. After growth, verifying that the expansion was successful ensures stability and prevents unintended memory access issues.
 

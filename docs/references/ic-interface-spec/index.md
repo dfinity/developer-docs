@@ -353,6 +353,8 @@ The allowed signature schemes for web authentication are
 
 -   [**RSA PKCS\#1v1.5 (RSASSA-PKCS1-v1\_5)**](https://datatracker.ietf.org/doc/html/rfc8017#section-8.2), using SHA-256 as hash function.
 
+-   [**EdDSA**](https://datatracker.ietf.org/doc/html/rfc8032) on curve Ed25519.
+
 The signature is calculated by using the payload as the challenge in the web authentication assertion.
 
 The signature is checked by verifying that the `challenge` field contains the [base64url encoding](https://datatracker.ietf.org/doc/html/rfc4648#section-5) of the payload, and that `signature` verifies on `authenticatorData · SHA-256(utf8(clientDataJSON))`, as specified in the [WebAuthn w3c recommendation](https://www.w3.org/TR/webauthn/#op-get-assertion).
@@ -385,7 +387,7 @@ You can also view the wrapping in [an online ASN.1 JavaScript decoder](https://l
 
     -   `client_data_json` (`text`): WebAuthn client data in JSON representation.
 
-    -   `signature` (`blob`): Signature as specified in the [WebAuthn w3c recommendation](https://www.w3.org/TR/webauthn/#signature-attestation-types), which means DER encoding in the case of an ECDSA signature.
+    -   `signature` (`blob`): Signature as specified in the [WebAuthn w3c recommendation](https://www.w3.org/TR/webauthn/#signature-attestation-types), which means DER encoding in the case of an ECDSA signature, and the 64-byte concatenation `R || s` as defined in [RFC 8032, Section 5.1.6](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.6) in the case of an EdDSA signature on curve Ed25519.
 
 #### Canister signatures {#canister-signatures}
 
@@ -613,7 +615,7 @@ Request statuses will not actually be kept around indefinitely, and eventually t
 
 ### Canister information {#state-tree-canister-information}
 
-Users have the ability to learn about the hash of the canister's module, its current controllers, and metadata in a certified way.
+Users have the ability to learn about the hash of the canister's module, its current controllers, metadata, creation time, and last install time in a certified way.
 
 -   `/canister/<canister_id>/module_hash` (blob):
 
@@ -622,6 +624,14 @@ Users have the ability to learn about the hash of the canister's module, its cur
 -   `/canister/<canister_id>/controllers` (blob):
 
     The current controllers of the canister. The value consists of a CBOR (see [CBOR](#cbor)) data item with major type 6 ("Semantic tag") and tag value `55799`, followed by an array of principals in their binary form (CDDL `#6.55799([* bytes .size (0..29)])`, see [CDDL](#cddl)).
+
+-   `/canister/<canister_id>/canister_creation_timestamp` (natural):
+
+    The time at which the canister was created, expressed in nanoseconds since 1970-01-01. If the canister was created before this information was recorded, this path does not exist.
+
+-   `/canister/<canister_id>/last_install_timestamp` (natural):
+
+    The time at which the canister's code was most recently deployed ([code install, reinstall, or upgrade](./management-canister.md#ic-install_code)) or a [snapshot was loaded](./management-canister.md#ic-load_canister_snapshot) onto it, expressed in nanoseconds since 1970-01-01. If the canister is empty, or its code was deployed before this information was recorded, this path does not exist.
 
 -   `/canister/<canister_id>/metadata/<name>` (blob):
 

@@ -64,7 +64,7 @@ ICP limits the number of WebAssembly instructions a canister can execute per mes
 | Canister install / upgrade | 300 billion |
 | `inspect_message` | 200 million |
 
-See [resource limits](./cycles-costs.md) for the full table.
+See [resource limits](./resource-limits.md) for the full table.
 
 To fix this error, use tools such as the performance counter API or [canbench](https://github.com/dfinity/canbench) to identify which sections of code use the most instructions and optimize them.
 
@@ -77,7 +77,7 @@ The amount of data the canister tried to read or write from stable memory exceed
 Canister exceeded memory access limits: Exceeded the limit for the number of modified pages in the stable memory in a single message execution: limit: 8388608 KB.
 ```
 
-Although stable memory can hold hundreds of GiB of data, each message must execute within a round and is limited to reading and writing only a portion of that data. See [resource limits](./cycles-costs.md) for current values.
+Although stable memory can hold hundreds of GiB of data, each message must execute within a round and is limited to reading and writing only a portion of that data. See [resource limits](./resource-limits.md) for current values.
 
 To fix this error, break up operations that read or write large regions of stable memory into multiple messages, using self-calls if necessary.
 
@@ -806,7 +806,7 @@ To fix this error, confirm that the metadata section exists for the given canist
 
 ## Next steps
 
-- Review [resource limits](./cycles-costs.md) for the full table of ICP constraints.
+- Review [resource limits](./resource-limits.md) for the full table of ICP constraints.
 - Learn about [canister lifecycle](../guides/canister-management/lifecycle.md) including traps during upgrades.
 - Optimize resource usage with the [canister optimization guide](../guides/canister-management/optimization.md).
 - Understand the system APIs in the [IC interface specification](./ic-interface-spec/canister-interface.md).

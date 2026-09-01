@@ -7,12 +7,16 @@
  *
  * Format follows the Starlight sidebar schema:
  *   https://starlight.astro.build/reference/configuration/#sidebar
+ *
+ * The Motoko section is maintained in sidebar-motoko.mjs. Update that file
+ * when Motoko pages are added, removed, or reordered.
  */
+import { motokoSidebar } from "./sidebar-motoko.mjs";
 
 export const sidebar = [
   {
     label: "Getting started",
-    autogenerate: { directory: "getting-started" },
+    items: [{ autogenerate: { directory: "getting-started" } }],
   },
   {
     label: "Guides",
@@ -22,54 +26,54 @@ export const sidebar = [
       {
         label: "Backends",
         collapsed: true,
-        autogenerate: { directory: "guides/backends" },
+        items: [{ autogenerate: { directory: "guides/backends", collapsed: true } }],
       },
       {
         label: "Canister calls",
         collapsed: true,
-        autogenerate: { directory: "guides/canister-calls" },
+        items: [{ autogenerate: { directory: "guides/canister-calls", collapsed: true } }],
       },
       {
         label: "Frontends",
         collapsed: true,
-        autogenerate: { directory: "guides/frontends" },
+        items: [{ autogenerate: { directory: "guides/frontends", collapsed: true } }],
       },
       {
         label: "Authentication",
         collapsed: true,
-        autogenerate: { directory: "guides/authentication" },
+        items: [{ autogenerate: { directory: "guides/authentication", collapsed: true } }],
       },
       // Quality & shipping
       {
         label: "Testing",
         collapsed: true,
-        autogenerate: { directory: "guides/testing" },
+        items: [{ autogenerate: { directory: "guides/testing", collapsed: true } }],
       },
       {
         label: "Canister management",
         collapsed: true,
-        autogenerate: { directory: "guides/canister-management" },
+        items: [{ autogenerate: { directory: "guides/canister-management", collapsed: true } }],
       },
       {
         label: "Security",
         collapsed: true,
-        autogenerate: { directory: "guides/security" },
+        items: [{ autogenerate: { directory: "guides/security", collapsed: true } }],
       },
       // Advanced features
       {
         label: "Digital assets",
         collapsed: true,
-        autogenerate: { directory: "guides/digital-assets" },
+        items: [{ autogenerate: { directory: "guides/digital-assets", collapsed: true } }],
       },
       {
         label: "Chain Fusion",
         collapsed: true,
-        autogenerate: { directory: "guides/chain-fusion" },
+        items: [{ autogenerate: { directory: "guides/chain-fusion", collapsed: true } }],
       },
       {
         label: "Governance",
         collapsed: true,
-        autogenerate: { directory: "guides/governance" },
+        items: [{ autogenerate: { directory: "guides/governance", collapsed: true } }],
       },
     ],
   },
@@ -109,7 +113,6 @@ export const sidebar = [
         items: [
           { slug: "concepts/canisters" },
           { slug: "concepts/principals" },
-          { slug: "concepts/app-architecture" },
           { slug: "concepts/cycles" },
           { slug: "concepts/orthogonal-persistence" },
           { slug: "concepts/timers" },
@@ -159,39 +162,15 @@ export const sidebar = [
     label: "Languages",
     items: [
       { slug: "languages", label: "Overview" },
-      {
-        label: "Motoko",
-        collapsed: true,
-        items: [
-          { slug: "languages/motoko", label: "Overview" },
-          {
-            label: "Fundamentals",
-            autogenerate: {
-              directory: "languages/motoko/fundamentals",
-            },
-          },
-          {
-            label: "ICP features",
-            autogenerate: {
-              directory: "languages/motoko/icp-features",
-            },
-          },
-          {
-            label: "Reference",
-            autogenerate: {
-              directory: "languages/motoko/reference",
-            },
-          },
-        ],
-      },
+      motokoSidebar,
       {
         label: "Rust",
         collapsed: true,
-        autogenerate: { directory: "languages/rust" },
+        items: [{ autogenerate: { directory: "languages/rust", collapsed: true } }],
       },
     ],
   },
-  { slug: "references/developer-tools", label: "Developer tools" },
+  { slug: "developer-tools", label: "Developer tools" },
   {
     label: "References",
     collapsed: true,
@@ -202,7 +181,8 @@ export const sidebar = [
         collapsed: true,
         items: [
           { slug: "references/management-canister" },
-          { slug: "references/cycles-costs" },
+          { slug: "references/cycle-costs" },
+          { slug: "references/resource-limits" },
           { slug: "references/subnet-types" },
           { slug: "references/execution-errors" },
         ],
@@ -241,10 +221,12 @@ export const sidebar = [
       {
         label: "IC interface spec",
         collapsed: true,
-        autogenerate: { directory: "references/ic-interface-spec" },
+        items: [{ autogenerate: { directory: "references/ic-interface-spec", collapsed: true } }],
       },
+      { slug: "references/message-execution-properties" },
       { slug: "references/http-gateway-protocol-spec" },
       { slug: "references/internet-identity-spec" },
+      { slug: "references/verifiable-credentials-spec" },
       { slug: "references/glossary" },
     ],
   },

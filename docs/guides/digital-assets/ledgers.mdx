@@ -73,7 +73,7 @@ persistent actor {
   /// Transfer tokens from this canister's default account.
   /// WARNING: Add access control in production.
   public func sendTokens(to : Principal, amount : Nat) : async Nat {
-    let now = Nat64.fromNat(Int.abs(Time.now()));
+    let now = Nat.toNat64(Int.abs(Time.now()));
     let result = await icpLedger.icrc1_transfer({
       from_subaccount = null;
       to = { owner = to; subaccount = null };
@@ -180,7 +180,7 @@ Without `created_at_time` (set to `null`), every submission is treated as a new 
 
 Set `created_at_time` to the current nanosecond timestamp to enable deduplication:
 
-- **Motoko**: `Nat64.fromNat(Int.abs(Time.now()))` (as shown in `sendTokens` above)
+- **Motoko**: `Nat.toNat64(Int.abs(Time.now()))` (as shown in `sendTokens` above)
 - **Rust**: `ic_cdk::api::time()` (as shown in `send_tokens` above)
 
 Two boundary errors to handle alongside the normal transfer errors:
@@ -252,6 +252,8 @@ ICRC-2 adds an approve/transferFrom pattern. The asset owner first approves a sp
 
 **When to use:** Exchange logic, payment processing, subscription services, or any case where a canister needs to pull assets from a user's account.
 
+> To grant or inspect an allowance manually without writing code, use the [`icp token approve`](https://cli.internetcomputer.org/1.3/reference/cli#icp-token-approve) and [`icp token allowance`](https://cli.internetcomputer.org/1.3/reference/cli#icp-token-allowance) CLI commands.
+
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
@@ -317,7 +319,7 @@ persistent actor {
   };
 
   public func approveSpender(spender : Principal, amount : Nat) : async Nat {
-    let now = Nat64.fromNat(Int.abs(Time.now()));
+    let now = Nat.toNat64(Int.abs(Time.now()));
     let result = await icpLedger.icrc2_approve({
       from_subaccount = null;
       spender = { owner = spender; subaccount = null };
@@ -336,7 +338,7 @@ persistent actor {
 
   /// WARNING: Add access control in production.
   public func transferFrom(from : Principal, to : Principal, amount : Nat) : async Nat {
-    let now = Nat64.fromNat(Int.abs(Time.now()));
+    let now = Nat.toNat64(Int.abs(Time.now()));
     let result = await icpLedger.icrc2_transfer_from({
       spender_subaccount = null;
       from = { owner = from; subaccount = null };
@@ -443,6 +445,7 @@ import Principal "mo:core/Principal";
 import Blob "mo:core/Blob";
 import Array "mo:core/Array";
 import Nat8 "mo:core/Nat8";
+import Nat "mo:core/Nat";
 
 type Account = { owner : Principal; subaccount : ?Blob };
 
@@ -450,11 +453,11 @@ type Account = { owner : Principal; subaccount : ?Blob };
 func depositAccount(canister : Principal, user : Principal) : Account {
   let bytes = Blob.toArray(Principal.toBlob(user));
   let subaccount = Array.tabulate<Nat8>(32, func(i) {
-    if (i == 0) { Nat8.fromNat(bytes.size()) }
+    if (i == 0) { Nat.toNat8(bytes.size()) }
     else if (i <= bytes.size()) { bytes[i - 1] }
     else { 0 }
   });
-  { owner = canister; subaccount = ?Blob.fromArray(subaccount) }
+  { owner = canister; subaccount = ?Array.toBlob(subaccount) }
 };
 ```
 

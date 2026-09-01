@@ -52,7 +52,7 @@ The threshold VRF is appropriate for a wide range of use cases where unpredictab
 
 - **Fair selection.** Lotteries, raffles, jury selection, random assignment of roles or rewards.
 - **Games.** Procedural generation, shuffle mechanics, NPC behavior, any outcome that must not be predictable by the player.
-- **Cryptographic protocols.** Generating nonces, challenge values, or session keys entirely onchain.
+- **Cryptographic protocols.** Generating nonces, challenge values, or session keys entirely on the network.
 - **Sampling.** Random subsets for audits, testing, or statistical processes.
 
 ### When to use additional mechanisms

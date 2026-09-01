@@ -75,7 +75,7 @@ Returns the consent text shown to the user in the II dialog. This message must c
 Returns the URL used to derive the user's principal for this issuer. If you do not use [alternative derivation origins](../../references/internet-identity-spec.md), return the canister's default URL:
 
 ```
-https://<issuer-canister-id>.icp0.io
+https://<issuer-canister-id>.icp.net
 ```
 
 If you use alternative origins, return the same value as your `derivationOrigin` login parameter. The returned value is verified via `.well-known/ii-alternative-origins`.
@@ -365,10 +365,10 @@ See the [demo relying party implementation](https://github.com/dfinity/vc-playgr
 ### Live demo environment
 
 A demo relying party is deployed on ICP for testing:
-[https://l7rua-raaaa-aaaap-ahh6a-cai.icp0.io/](https://l7rua-raaaa-aaaap-ahh6a-cai.icp0.io/)
+[https://l7rua-raaaa-aaaap-ahh6a-cai.icp.net/](https://l7rua-raaaa-aaaap-ahh6a-cai.icp.net/)
 
 Use the II staging instance to avoid using real user credentials:
-[https://fgte5-ciaaa-aaaad-aaatq-cai.ic0.app/](https://fgte5-ciaaa-aaaad-aaatq-cai.ic0.app/)
+[https://fgte5-ciaaa-aaaad-aaatq-cai.icp.net/](https://fgte5-ciaaa-aaaad-aaatq-cai.icp.net/)
 
 A demo issuer is deployed that will issue any requested credential. Explore the issuer canister on the [NNS dashboard](https://dashboard.internetcomputer.org/canister/qdiif-2iaaa-aaaap-ahjaq-cai) or browse its implementation in the [vc-playground repository](https://github.com/dfinity/vc-playground).
 
@@ -395,7 +395,7 @@ The VC protocol provides the following privacy guarantees:
 
 ## Next steps
 
-- Read the [VC specification](https://github.com/dfinity/internet-identity/blob/main/docs/vc-spec.md) for the full protocol details.
+- Read the [VC specification](../../references/verifiable-credentials-spec.md) for the full protocol details.
 - Explore the [verifiable credentials playground](https://github.com/dfinity/vc-playground) for issuer and relying party reference implementations.
 - Review [Internet Identity integration](internet-identity.md) for authentication setup.
 - See the [Internet Identity specification](../../references/internet-identity-spec.md) for alternative derivation origins and canister signature details.

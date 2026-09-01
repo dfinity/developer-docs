@@ -3,7 +3,7 @@ title: "SNS framework"
 description: "How the Service Nervous System works: framework architecture, launch process, neurons, proposals, and configurable rewards"
 ---
 
-The Service Nervous System (SNS) is a governance framework built into ICP that lets any developer hand control of their application to a community-governed SNS. When an app is governed by an SNS, all upgrades, treasury decisions, and parameter changes require onchain proposals voted on by SNS asset holders.
+The Service Nervous System (SNS) is a governance framework built into ICP that lets any developer hand control of their application to a community-governed SNS. When an app is governed by an SNS, all upgrades, treasury decisions, and parameter changes require network-enforced proposals voted on by SNS asset holders.
 
 For a high-level introduction comparing the NNS and SNS, see [Governance](governance.md#the-service-nervous-system).
 

@@ -9,14 +9,14 @@ sidebar:
 
 ### Security concern
 
-ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` methods as query methods for the rest of this section.
+ICP offers three modes of operation for canisters: `update`, `query`, and `composite_query`. For simplicity, this guide treats `composite_query` methods as query methods for the rest of this section. For more information, view the [detailed overview between update and query calls](../canister-calls/inter-canister-calls.md#query-vs-update-calls).
 
 Update calls are slow and expensive but provide integrity guarantees as their responses include a threshold signature signed by the subnet.
 
 On the other hand, query calls are fast since a single replica formulates the response, but **there is no integrity guarantee, since the response can be manipulated by a single replica or boundary node.** For example, if the NNS app fetches proposal information from the governance canister via query calls and the responding node is malicious, it can mask an ill-intentioned proposal that causes irrevocable damage as innocuous by modifying the proposal payload in the response and mislead voters into voting yes. Another consequence of query calls is that users can't rely on [canister_inspect_message](../../references/ic-interface-spec/canister-interface.md#system-api-inspect-message) as a guard. **This makes query calls, in their raw form, unfit to serve data for security-critical applications.**
 
 ### Using certified variables for secure queries
-In certain use cases, there is a third option whereby query results can return data that has been certified by the subnet in an earlier update call. This is the concept of certified data, and it requires changes to the update call to create the certification, the query call to return the certificate, and the frontend to verify the certificate. Using certified data provides query-like response times with update-like certified responses.
+In certain use cases, there is a third option whereby query results can return data that has been certified by the subnet in an earlier update call. This is the concept of certified data, and it requires changes to the update call to create the certification, the query call to return the certificate, and the frontend to verify the certificate. Using certified data provides query-like response times with update-like certified responses. This forms the core of [certified variables](../backends/certified-variables.md).
 
 Some examples of certified variables are asset certification in [Internet Identity](https://github.com/dfinity/internet-identity/blob/b29a6f68bbe5a49d048e12bc7a3263a9f43d080b/src/internet_identity/src/main.rs#L775-L808), [NNS app](https://github.com/dfinity/nns-dapp/blob/372c3562127d70c2fde059bc9c268e8ae858583e/rs/src/assets.rs#L121-L145), or the [canister signature implementation in Internet Identity](https://github.com/dfinity/ic-canister-sig-creation).
 
@@ -91,6 +91,7 @@ import Debug "mo:core/Debug";
 import Text "mo:core/Text";
 import Nat64 "mo:core/Nat64";
 import Array "mo:core/Array";
+import Nat "mo:core/Nat";
 import CertTree "mo:ic-certification/CertTree";
 import CV "mo:cbor/Value";
 import CborEncoder "mo:cbor/Encoder";
@@ -157,11 +158,11 @@ actor CertifiedVariable {
   func encodeUser(user : User) : Blob {
     let bytes : CV.Value = #majorType5([
       (#majorType3("name"), #majorType3(user.name)),
-      (#majorType3("age"), #majorType0(Nat64.fromNat(Nat8.toNat(user.age)))),
+      (#majorType3("age"), #majorType0(Nat.toNat64(Nat8.toNat(user.age)))),
     ]);
 
     let #ok(encoded_user) = CborEncoder.encode(bytes);
-    return Blob.fromArray(encoded_user);
+    return Array.toBlob(encoded_user);
   };
 
   func decodeUser(bytes : Blob) : User {
@@ -182,7 +183,7 @@ actor CertifiedVariable {
     let age = switch (age_tag) {
       case (?age_value) {
         let #majorType0(age) = age_value.1;
-        Nat8.fromNat(Nat64.toNat(age));
+        Nat.toNat8(Nat64.toNat(age));
       };
       case (null) {
         Debug.trap("Decoding failed for age");
@@ -198,9 +199,9 @@ actor CertifiedVariable {
   func blobOfNat64(n : Nat64) : Blob {
     let byteMask : Nat64 = 0xff;
     func byte(x : Nat64) : Nat8 {
-      Nat8.fromNat(Nat64.toNat(x));
+      Nat.toNat8(Nat64.toNat(x));
     };
-    Blob.fromArray([
+    Array.toBlob([
       byte(((byteMask << 56) & n) >> 56),
       byte(((byteMask << 48) & n) >> 48),
       byte(((byteMask << 40) & n) >> 40),
@@ -608,17 +609,17 @@ function bigEndian(n) {
 }
 ```
 
-## Use HTTP asset certification and avoid serving your app through `raw.icp0.io`
+## Use HTTP asset certification and avoid serving your app through `raw.icp.net`
 
 ### Security concern
 
-Apps on ICP can use [asset certification](../frontends/certification.md) to make sure the HTTP assets delivered to the browser are authentic (i.e., threshold-signed by the subnet). If an app does not do asset certification, it can only be served insecurely through `raw.icp0.io`, where no asset certification is checked. This is insecure since a single malicious node or boundary node can freely modify the assets delivered to the browser.
+Apps on ICP can use [asset certification](../frontends/certification.md) to make sure the HTTP assets delivered to the browser are authentic (i.e., threshold-signed by the subnet). If an app does not do asset certification, it can only be served insecurely through `raw.icp.net`, where no asset certification is checked. This is insecure since a single malicious node or boundary node can freely modify the assets delivered to the browser.
 
-If an app is served through `raw.icp0.io` in addition to `icp0.io`, an adversary may trick users (phishing) into using the insecure `raw.icp0.io`.
+If an app is served through `raw.icp.net` in addition to `icp.net`, an adversary may trick users (phishing) into using the insecure `raw.icp.net`.
 
 ### Recommendation
 
-- Only serve assets through `<canister-id>.icp0.io`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp0.io`.
+- Only serve assets through `<canister-id>.icp.net`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp.net`.
 
 - Serve assets using the asset canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
 

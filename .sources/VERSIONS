@@ -1,57 +1,42 @@
-# Pinned submodule versions (release-pinned repos only)
+# Pinned submodule versions
 # -------------------------------------------------------
-# Repos that track main/master are NOT listed here — they have no fixed release
-# version. Those repos are: portal, examples, icskills, dotskills,
-# icp-cli-recipes, icp-cli-templates, icp-js-sdk-docs.
+# This file covers the three submodules under .sources/ — the repos whose
+# content is resolved during the build. Every other upstream repo is watched
+# rather than vendored; its pin lives in .sources/upstream.json.
 #
-# FORMAT: <submodule>   <version label>   <7-char hash>
+# Submodules that track a branch are NOT listed here (they have no fixed
+# release version): examples.
+#
+# internetidentity — uses date-based release tags (release-YYYY-MM-DD).
+#   Only ii-spec.mdx, vc-spec.md, and internet_identity.did are synced.
+#   Pin to the latest release tag, not the tip of main — spec changes are
+#   only live once the canister is deployed at that release.
+#   The automated workflow (.github/workflows/sync-ii-spec.yml) finds the
+#   latest release-YYYY-MM-DD tag and only opens a PR if those files changed.
+#
+# motoko — the release tag commit may not resolve in a shallow clone.
+#   The merge commit of the release PR represents the same state and is used
+#   instead. This is expected behaviour with --depth 1 submodule init.
+#
+# FORMAT: <submodule>   <version label>   <short commit hash>
 #
 # The hash is the authoritative ref — it is what .gitmodules pins and what
 # git checks out. The version label is the human-readable release name.
 # Verify with: git -C .sources/<repo> rev-parse HEAD
 #
 # -------------------------------------------------------
-# AGENTS — when bumping a release-pinned submodule:
+# AGENTS — when bumping a submodule:
 #   1. Find the latest release tag:
 #        git -C .sources/<repo> ls-remote --tags origin
 #   2. Fetch and pin to that tag's commit (NOT the tip of main):
 #        git -C .sources/<repo> fetch origin refs/tags/<tag>
 #        git -C .sources/<repo> checkout FETCH_HEAD
 #   3. Update the version label and hash in this file
-#   4. Follow the full checklist in AGENTS.md "Bumping submodules"
+#   4. Follow the full checklist in .agents/upstream-tracking.md
 #
 # Do NOT pin past the latest release — unreleased changes must not
 # appear in docs before they ship to users.
 # -------------------------------------------------------
-# REPO-SPECIFIC NOTES
-#
-# cdk-rs — monorepo with per-crate tags using different prefixes:
-#   ic-cdk:          plain semver tags (0.19.0, 0.18.x, ...)
-#   ic-cdk-timers:   timers-1.0.0, timers-0.12.x, ...
-#   ic-cdk-executor: executor-2.0.0, executor-1.0.x, ...
-#   Releases are usually batched: a single merge commit releases all crates
-#   together. Individual crate tags may point to slightly earlier commits within
-#   the release PR branch. Pin to the combined release merge commit for
-#   coherence, and list all crate versions explicitly below.
-#   When bumping: check if timers/executor also released alongside ic-cdk.
-#
-# candid — uses date-based release tags (no semver git tags exist).
-#   The candid crate, candid_parser, and didc tool each have their own semver
-#   in Cargo.toml. Check these after bumping:
-#     find .sources/candid -name "Cargo.toml" | xargs grep -l "^name = \"candid\"$" | xargs grep "^version"
-#     find .sources/candid -name "Cargo.toml" | xargs grep -l "name = \"didc\""    | xargs grep "^version"
-#
-# motoko — the release tag commit may not resolve in a shallow clone.
-#   The merge commit of the release PR represents the same state and is used
-#   instead. This is expected behaviour with --depth 1 submodule init.
-# -------------------------------------------------------
 
-chain-fusion-signer   v0.3.0                                                    8cea727
-papi                  v0.1.1                                                    168bc9d
-ic-pub-key            v1.0.1                                                    f89fa55
-icp-cli               v0.2.3                                                    caeac37
-motoko                v1.7.0                                                     1e65e26
-motoko-core           v2.4.0                                                    cd37dbf
-cdk-rs                ic-cdk v0.20.1 / ic-cdk-timers v1.0.0 / ic-cdk-executor v2.0.0  317f55c
-candid                2025-12-18  # candid v0.10.20, didc v0.5.4                2e4a2cf
-response-verification v3.1.0                                                    18c5a37
+motoko                v1.15.0                                                     0cc90c1
+internetidentity      release-2026-08-21                                        4c934d1f

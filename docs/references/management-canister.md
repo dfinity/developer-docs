@@ -7,7 +7,7 @@ sidebar:
 
 The management canister provides access to system features on the Internet Computer: creating and managing canisters, chain-key signing, HTTPS outcalls, randomness, and Bitcoin integration. It is not a real canister with its own state or Wasm module. It is a virtual canister implemented as part of the IC protocol itself.
 
-The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently.
+The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently. Calls made from a composite query are the exception: they are always answered by the calling canister's own subnet.
 
 Most methods require the caller to be a **controller** of the target canister. Some methods (such as `raw_rand` and `deposit_cycles`) can only be called by canisters, not by external users. When an external user calls the management canister, the cost is charged to the managed canister.
 
@@ -28,6 +28,7 @@ Several methods accept or return a `canister_settings` record. The fields are:
 | `wasm_memory_threshold` | `nat` | `0` | Remaining Wasm memory threshold that triggers the low-memory hook |
 | `log_visibility` | `log_visibility` | `controllers` | Who can read canister logs: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `snapshot_visibility` | `snapshot_visibility` | `controllers` | Who can list and read canister snapshots: `controllers`, `public`, or `allowed_viewers(vec principal)` |
+| `status_visibility` | `status_visibility` | `controllers` | Who can read the canister status: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `environment_variables` | `opt record` | `null` | Key-value pairs accessible during canister execution |
 
 For practical guidance on configuring these, see the [canister settings guide](../guides/canister-management/settings.md).
@@ -118,7 +119,7 @@ Removes a canister's code and state, making it empty. Outstanding calls are reje
 
 Returns detailed information about a canister: status, settings, module hash, cycle balance, memory usage, and query statistics.
 
-- **Caller:** Controllers, the canister itself, or subnet admins (canisters or external users; also available as a query call)
+- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call, including from composite queries)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -133,6 +134,18 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `reserved_cycles` (`nat`): reserved cycle balance
   - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
   - `query_stats`: query call statistics (total calls, instructions, request/response bytes)
+
+By default, only controllers can read a canister's status. The `status_visibility` setting relaxes this: set it to `public` to let anyone read the status, or `allowed_viewers` to grant access to a specific list of up to 10 principals (in addition to the controllers). The canister itself and subnet admins can always read the status regardless of this setting.
+
+### `canister_metrics`
+
+Returns cycle consumption metrics for a canister broken down by use case. Metrics are monotonically increasing counters accumulating since canister creation (or since the metrics feature was introduced for existing canisters).
+
+- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, including from composite queries, but query responses come from a single replica and are not suitable for security-sensitive use)
+- **Parameters:**
+  - `canister_id` (`principal`)
+- **Returns:** A record containing:
+  - `cycles_consumed`: a record with `nat` fields for each use case: `memory`, `compute_allocation`, `ingress_induction`, `instructions`, `request_and_response_transmission`, `uninstall`, `canister_creation`, `http_outcalls`, `burned_cycles`
 
 ### `canister_info`
 
@@ -523,7 +536,7 @@ For Bitcoin integration patterns, see the [Bitcoin guide](../guides/chain-fusion
 
 Returns the most recent log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. Total log size is capped at 4 KiB.
 
-- **Caller:** External users only (query call; not callable by canisters)
+- **Caller:** External users via query calls, or canisters from composite queries (not callable via replicated calls)
 - **Parameters:** `canister_id` (`principal`)
 - **Returns:**
   - `canister_log_records` (`vec record { idx : nat64; timestamp_nanos : nat64; content : blob }`)
@@ -562,9 +575,9 @@ Returns metadata about a subnet.
 
 ### `list_canisters`
 
-Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call; not callable by canisters, via replicated calls, or from composite query calls.
+Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call, either by an external user directly or by a canister from a composite query; not callable via replicated calls.
 
-- **Caller:** Subnet admins only (query call; not callable by canisters)
+- **Caller:** Subnet admins only (query call, including from composite queries)
 - **Parameters:** none
 - **Returns:**
   - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive
@@ -614,8 +627,6 @@ Methods that require explicit cycle attachment (`create_canister`, `sign_with_ec
 
 The complete Candid interface definition for the management canister is available at [`ic.did`](/references/ic.did). This file defines all types and method signatures in machine-readable Candid format and can be used for binding generation and type checking.
 
-<!-- sync public/references/ic.did from .sources/portal/docs/references/_attachments/ic.did -->
-
 ## Next steps
 
 - [Canister lifecycle guide](../guides/canister-management/lifecycle.md): practical workflows for creating, upgrading, and managing canisters
@@ -624,4 +635,4 @@ The complete Candid interface definition for the management canister is availabl
 - [Bitcoin integration](../guides/chain-fusion/bitcoin.md): building Bitcoin-native applications with chain-key signing
 - [IC interface specification](ic-interface-spec/management-canister.md#ic-management-canister): formal specification for the IC management canister
 
-<!-- Upstream: informed by dfinity/portal — docs/references/system-canisters/management-canister.mdx, docs/references/ic-interface-spec.md, docs/references/_attachments/ic.did; dfinity/icskills — skills/cycles-management/SKILL.md -->
+<!-- Upstream: informed by dfinity/icskills — skills/cycles-management/SKILL.md; ic.did maintained directly in public/references/ic.did -->

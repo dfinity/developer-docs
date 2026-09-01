@@ -12,7 +12,7 @@ npm run build    # Production build
 
 ## Content format
 
-Documentation is Markdown (`.md`) by default. Pages that need interactive components — such as `<Tabs syncKey="lang">` for multi-language sections — use `.mdx`. See `.docs-plan/decisions.md` for the full policy.
+Documentation is Markdown (`.md`) by default. Pages that need interactive components — such as `<Tabs syncKey="lang">` for multi-language sections — use `.mdx`.
 
 Files live in `docs/` (project root) and follow the site map defined in `astro.config.mjs`. Astro reads them via a symlink at `src/content/docs/`.
 
@@ -48,7 +48,7 @@ Each top-level section has a specific purpose. Match your content accordingly:
 | `concepts/` | Explanation | What it is, how it works, why it matters | No — link to guides |
 | `getting-started/` | Tutorial | Step-by-step learning path | Yes — complete and linear |
 | `guides/` | How-to | Task-oriented instructions | Yes — where relevant |
-| `reference/` | Reference | Lookup information | Sparingly — for syntax examples only |
+| `references/` | Reference | Lookup information | Sparingly — for syntax examples only |
 
 ### Do
 - Write in plain, direct language
@@ -61,7 +61,7 @@ Each top-level section has a specific purpose. Match your content accordingly:
 ### Don't
 - Reference `dfx` — it is deprecated. CI will reject it.
 - Use `.mdx` without a clear need for interactive components (default to `.md`)
-- Duplicate content that lives in external docs (icp-cli, JS SDK, icskills)
+- Duplicate content that lives in external docs (icp-cli, JS SDK, the IC skills)
 - Nest sidebar items more than 3 levels deep
 - Add images without alt text
 - Write for a specific framework version — always describe "latest"
@@ -91,9 +91,7 @@ src/assets/images/
 - Use descriptive kebab-case filenames (e.g., `canister-internals.png`, `create-canister-flow.png`)
 - Always include alt text: `![Canister internals](../../assets/images/concepts/canister-internals.png)`
 - Prefer SVG for diagrams (scalable, smaller). Use PNG for hand-drawn illustrations and screenshots.
-- When carrying over portal images, keep the existing hand-drawn visual style
-- Decide case-by-case during content writing whether a portal image is worth carrying over
-- Portal images are in `portal/static/img/docs/` — copy and rename to match the new structure
+- Keep the hand-drawn visual style consistent with existing images
 
 ## Agent-friendly documentation
 
@@ -104,14 +102,12 @@ The build generates `/llms.txt` and per-page `.md` endpoints from your content. 
 
 ## Source material
 
-`.sources/` contains pinned git submodules that agents use as ground truth when writing and reviewing content — CLI references, API signatures, skill files, code examples, and the old portal docs.
+Upstream repos are tracked two ways, because most of them are only ever read to check a fact.
 
-**Do not edit files in `.sources/` directly.** They are read-only references; changes go to the upstream repos.
+- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`) — three repos whose content is resolved during the build. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
+- **Watched, not vendored** — everything else, listed in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
 
-Current pinned release versions are in [`.sources/VERSIONS`](.sources/VERSIONS). Bumping a submodule is a maintainer task — follow the procedure in `AGENTS.md` "Bumping submodules". The two pinning strategies are:
-
-- **Release-pinned** (`icp-cli`, `motoko`, `motoko-core`, `cdk-rs`, `candid`, `response-verification`) — pinned to the latest release tag so docs reflect what users actually have installed. Never pin past the latest release.
-- **main/master-tracked** (`portal`, `examples`, `icskills`, and others) — track the default branch; the branch tip is the canonical source.
+Bumping either is a maintainer task — follow [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for the procedure.
 
 ## Synced content
 
@@ -120,7 +116,8 @@ Some files are auto-synced from other repositories.
 
 Currently synced:
 - `docs/languages/motoko/` — from `caffeinelabs/motoko`
-- `docs/guides/tools/migrating-from-dfx.md` — from `dfinity/icp-cli`
+- `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — from `dfinity/internet-identity`
+- `.claude/skills/` (except `icp-brand-design`, `icp-brand-voice`, and `technical-documentation`) — from [skills.internetcomputer.org](https://skills.internetcomputer.org), refreshed on session start and not committed. See AGENTS.md "Skills" for how to consume them outside Claude Code.
 
 ## Review ownership
 
@@ -141,31 +138,9 @@ Currently synced:
 
 Before submitting a PR, manually verify:
 
-1. **No dfx references** — `dfx` is banned (except in `guides/tools/migrating-from-dfx.md`)
+1. **No dfx references** — `dfx` is banned
 2. **`.mdx` only where needed** — default to `.md`; use `.mdx` only for interactive components (tabs)
 3. **Valid frontmatter** — required fields present, valid values
 4. **`npm run build`** — Site builds without errors
 
-> **Note:** Validation scripts are not yet set up on this branch. They are preserved on `restructuring-attempt-1` and will be restored when the docs are ready for production. CI deployment to the IC asset canister runs on every push to `main` (see `.github/workflows/deploy-ic.yml`).
-
-## Draft completeness checklist
-
-Before setting a task to `draft` status in Beads, verify:
-
-1. Content brief from the stub is fully addressed
-2. All code examples are tested and copy-pasteable
-3. icp-cli commands verified against [CLI reference](https://cli.internetcomputer.org/)
-4. Cross-links from `<!-- Cross-Links -->` converted to actual markdown links
-5. Source material HTML comments removed from the final content
-6. `npm run build` passes
-
-## Progress tracking
-
-All tasks are tracked in [Beads](https://github.com/steveyegge/beads) (`bd`). See `AGENTS.md` → "Multi-agent workflow" for the full coordination protocol.
-
-Key commands:
-- `bd ready` — show tasks you can work on (no unresolved blockers)
-- `bd update <id> --status draft --notes "PR #X"` — mark task as draft after PR creation
-- `bd list --limit 0` — see all tasks (default caps at 50)
-
-See `.docs-plan/README.md` for analysis artifacts and `.docs-plan/migration-plan.md` for execution details.
+See [AGENTS.md](AGENTS.md) for the full authoring workflow and content rules.

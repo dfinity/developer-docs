@@ -2,7 +2,7 @@
 title: "Canister optimization"
 description: "Reduce Wasm binary size and improve canister performance with ic-wasm, SIMD, performance counters, and memory tuning"
 sidebar:
-  order: 4
+  order: 6
 ---
 
 Canister Wasm binaries compiled from Rust or Motoko are often larger than necessary and may execute more instructions than needed. Smaller binaries install faster, consume fewer [cycles](../../concepts/cycles.md) on deployment, and leave more room within the per-canister Wasm memory limit. Better runtime efficiency directly reduces the cycles charged per call.
@@ -26,13 +26,12 @@ This guide covers the main tools and techniques available:
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.2.0"
+      type: "@dfinity/rust@v3.4.0"
       configuration:
-        package: backend
         shrink: true
 ```
 
-**Using the official Motoko recipe:**
+**Using the official Motoko recipe:** enable `shrink` in the recipe configuration. The source file is declared separately in `mops.toml`:
 
 ```yaml
 canisters:
@@ -40,7 +39,6 @@ canisters:
     recipe:
       type: "@dfinity/motoko@<version>"
       configuration:
-        main: src/main.mo
         shrink: true
 ```
 
@@ -73,23 +71,20 @@ For binary size over speed, use `opt-level = "z"` (optimize for size, disabling 
 
 The Motoko compiler uses the **incremental GC** by default starting with Motoko 0.15 and enhanced orthogonal persistence. You cannot choose a different GC when enhanced orthogonal persistence is active. The GC is fixed.
 
-For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler arguments through the Motoko recipe:
+For projects using legacy persistence (without enhanced orthogonal persistence), you can select an alternative GC by passing compiler flags through the canister's `args` entry in `mops.toml`. The `@dfinity/motoko` recipe (v5 and later) builds with `mops build`, so these flags belong in `mops.toml` rather than the recipe configuration. When `--legacy-persistence` is specified, you can use `--copying-gc`, `--compacting-gc`, or `--generational-gc`:
 
-```yaml
-canisters:
-  - name: backend
-    recipe:
-      type: "@dfinity/motoko@<version>"
-      configuration:
-        main: src/main.mo
-        args: --incremental-gc
+```toml
+# mops.toml
+[canisters.backend]
+main = "src/main.mo"
+args = ["--legacy-persistence", "--compacting-gc"]
 ```
 
-> **New projects:** If you are using enhanced orthogonal persistence (the current default), no `args` configuration is needed. The incremental GC is already selected automatically. The `args` field only becomes relevant when selecting an alternative GC under `--legacy-persistence`.
+The compacting GC supports larger heap sizes than the default 2-space copying collector, while the generational GC performs well when most heap data has a short lifetime.
+
+> **New projects:** If you are using enhanced orthogonal persistence (the current default), no GC configuration is needed. The incremental GC is already selected automatically.
 
 The incremental GC is designed to scale for large heap sizes and is more efficient on average than the older copying or compacting collectors. It is the recommended choice for most workloads.
-
-For legacy-persistence projects: if `--legacy-persistence` is specified, you can use `--copying-gc`, `--compacting-gc`, or `--generational-gc`. The compacting GC supports larger heap sizes than the default 2-space copying collector, while the generational GC performs well when most heap data has a short lifetime.
 
 ## WebAssembly SIMD (Rust only)
 
@@ -231,7 +226,7 @@ Most production canisters benefit from combining several techniques:
 ## Next steps
 
 - [Large Wasm](large-wasm.md): when binary size exceeds the upload limit
-- [Cycles costs](../../references/cycles-costs.md): how Wasm size and instruction count map to cycle charges
+- [Cycles costs](../../references/cycle-costs.md): how Wasm size and instruction count map to cycle charges
 - [Canister lifecycle](lifecycle.md): how optimized builds integrate with the icp-cli deploy workflow
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/advanced/optimize/rust.mdx; docs/building-apps/advanced/optimize/motoko.mdx -->

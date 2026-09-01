@@ -48,7 +48,7 @@ The NNS community votes on your proposal. You are pitching your project to thous
 - Funding target and how raised ICP will be spent
 - Product roadmap
 - Security review status and open-source build instructions
-- Dependencies that cannot be managed by the DAO (off-chain services, third-party providers)
+- Dependencies that cannot be managed by the SNS (external services, third-party providers)
 
 Start a discussion thread in the [SNS Launch Proposals](https://forum.dfinity.org/c/community/sns-launch-proposals) forum category at least two weeks before submitting your NNS proposal. Share the draft `sns_init.yaml` file, the whitepaper, and the build/deploy instructions. Community trust built during this period directly affects proposal adoption.
 
@@ -219,7 +219,7 @@ dfx sns propose --network ic --neuron $NEURON_ID sns_init.yaml
 
 There can only be one SNS creation proposal active in the NNS at a time. If another project's proposal is currently being voted on, you must wait for it to resolve before submitting yours.
 
-After submitting, monitor your proposal's status on the [NNS app](https://nns.ic0.app) or by querying NNS governance directly.
+After submitting, monitor your proposal's status on the [NNS app](https://nns.icp.net) or by querying NNS governance directly.
 
 ### Stages 4–11: Automatic
 
