@@ -18,7 +18,7 @@ The *IC management canister* is just a facade; it does not actually exist as a c
 
 The IC management canister address is `aaaaa-aa` (i.e. the empty blob).
 
-It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand`, `deposit_cycles`, and `canister_info` are never accepted as ingress messages (but `canister_info` can be invoked via query calls, see [IC method `canister_info`](#ic-canister_info)).
+It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand`, `deposit_cycles`, `canister_info`, and `canister_metadata` are never accepted as ingress messages (but `canister_info` can be invoked via query calls, see [IC method `canister_info`](#ic-canister_info)).
 
 ### Interface overview {#ic-candid}
 

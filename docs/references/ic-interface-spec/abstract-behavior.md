@@ -2212,6 +2212,7 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'canister_info'
 M.arg = candid(A)
+A.canister_id ∈ dom(S.canisters)
 
 ```
 
