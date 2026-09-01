@@ -960,7 +960,7 @@ A snapshot may be deleted only by the controllers of the canister that the snaps
 
 ### IC method `fetch_canister_logs` {#ic-fetch_canister_logs}
 
-This method can be called by canisters via replicated calls, i.e., it cannot be called by external users via replicated (update) calls.
+This method can be called by canisters via replicated calls, but it cannot be called by external users via replicated (update) calls.
 This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
 A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
@@ -982,7 +982,7 @@ A single log is a record with the following fields:
 - `timestamp_nanos` (`nat64`): the timestamp as nanoseconds since 1970-01-01 at which the log was recorded;
 - `content` (`blob`): the actual content of the log;
 
-To filter canister logs, an optional filter can be provided and have one of the following variants:
+To filter canister logs, an optional filter can be provided and has one of the following variants:
 - `by_idx` (`record { start : nat64; end : nat64 }`): only logs are returned whose `idx` is within the provided range (`start` is inclusive, but `end` is exclusive);
 - `by_timestamp_nanos` (`record { start : nat64; end : nat64 }`): only logs are returned whose `timestamp_nanos` is within the provided range (`start` is inclusive, but `end` is exclusive).
 

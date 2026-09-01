@@ -515,7 +515,7 @@ type fetch_canister_logs_args = record {
     filter : opt variant {
         by_idx : record { start : nat64; end : nat64 };
         by_timestamp_nanos : record { start : nat64; end : nat64 };
-    }
+    };
 };
 
 type canister_log_record = record {
