@@ -5486,8 +5486,7 @@ ic0.subnet_self_copy<es>(dst : I, offset : I, size : I) =
   if es.context = s then Trap {cycles_used = es.cycles_used;}
   copy_to_canister<es>(dst, offset, size, es.params.sysenv.subnet_id)
 
-I ∈ {i32, i64}
-ic0.subnet_self_node_count<es>() : I =
+ic0.subnet_self_node_count<es>() : i32 =
   if es.context = s then Trap {cycles_used = es.cycles_used;}
   return es.params.sysenv.subnet_size
 
@@ -5754,6 +5753,9 @@ ic0.cost_http_request<es>(request_size: i64, max_res_bytes: i64, dst: I) : () =
 
 I ∈ {i32, i64}
 ic0.cost_http_request_v2<es>(params_src : I, params_size : I, dst : I) : ()= 
+  params = copy_from_canister<es>(params_src, params_size)
+  if params is not a valid Candid encoding of an HTTP outcall cost parameter record then
+    Trap {cycles_used = es.cycles_used;}
   copy_cycles_to_canister<es>(dst, arbitrary())
 
 I ∈ {i32, i64}

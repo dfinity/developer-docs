@@ -934,7 +934,7 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
 
 -   `ic0.cost_http_request_v2(params_src: I, params_size: I, dst : I) -> ();    I ∈ {i32, i64}`
 
-    The cost of a canister HTTP outcall via [`http_request`](./management-canister.md#ic-http_request) with the pricing version set to `2`. The blob described by `params_src` and `params_size` must be a valid Candid encoding of a value of the following type:
+    The cost of a canister HTTP outcall, either via [`http_request`](./management-canister.md#ic-http_request) with the pricing version set to `2`, or via [`flexible_http_request`](./management-canister.md#ic-flexible_http_request), which takes no pricing version argument and is priced this way. The blob described by `params_src` and `params_size` must be a valid Candid encoding of a value of the following type:
     ```
     record {
         request_bytes : nat64;
@@ -954,7 +954,9 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
     }
     ```
 
-    The function traps if `params_src` and `params_size` do not describe a valid Candid encoding of a value of the above type, or if the encoding contains additional fields other than the ones above. The function returns the cycle cost of an HTTP outcall whose execution uses up exactly the amount of resources specified by the individual fields:
+    The function traps if `params_src` and `params_size` do not describe a valid Candid encoding of a value of the above type. Beyond that type, decoding may skip only a very small, fixed amount of data, so the payload of the `fully_replicated` and `non_replicated` variants must be encoded as `null` and the encoding must not carry record fields other than the ones above; an encoding that violates either of these may trap. Similarly, the function also traps if the given blob is too large.
+
+    The function returns the amount of cycles to attach to an HTTP outcall in which every participating node consumes exactly the amount of resources specified by the individual fields. Part of this amount is a _reservation_ rather than a charge: every node the outcall is assigned to is assumed to attempt it, and enough is reserved to fund whichever result ends up being delivered, including a reject delivered in place of the response that was asked for. Whatever is not spent is refunded (see [`http_request`](./management-canister.md#ic-http_request)), so the actual cost of such an outcall may be less than this system call predicts, but assuming parameters are accurate, it cannot be more. The individual fields are:
     - `request_bytes` is the sum of the byte lengths of the following components of an HTTP request:
       - `url`
       - `headers` - i.e., the sum of the lengths of all keys and values
@@ -969,7 +971,7 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
 
     - `transform_instructions` is the number of instructions the transform function takes.
 
-    - `outcall_type` is the type of HTTP outcall issued: a fully replicated call (made through the `http_request` endpoint with `is_replicated` set to `null` or `opt false`), non-replicated (made through `http_request` with `is_replicated` set to `opt true`), or flexible (made through the `flexible_http_request` endpoint). When the `flexible` outcall variant is selected, it can optionally be supplemented with the `min_responses`, `max_responses`, and `total_requests` parameters provided to the endpoint.
+    - `outcall_type` is the type of HTTP outcall issued: a fully replicated call (made through the `http_request` endpoint with `is_replicated` set to `null` or `opt true`), non-replicated (made through `http_request` with `is_replicated` set to `opt false`), or flexible (made through the [`flexible_http_request`](./management-canister.md#ic-flexible_http_request) endpoint). If `outcall_type` is absent, the cost of a fully replicated call is returned. When the `flexible` outcall variant is selected, it can optionally be supplemented with the `min_responses`, `max_responses`, and `total_requests` parameters provided to the endpoint; if that record is omitted, the endpoint's own defaults of `floor(2 / 3 * N) + 1`, `N` and `N` are used, where `N` is the number of the nodes on the caller's subnet. Unlike the endpoint, this System API call does not validate the counts: a combination that `flexible_http_request` would reject simply yields a price that no outcall will ever be charged.
 
 -   `ic0.cost_sign_with_ecdsa(src : I, size : I, ecdsa_curve: i32, dst : I) -> i32`; `I ∈ {i32, i64}`
 
