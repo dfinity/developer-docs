@@ -9,7 +9,7 @@ When an agent working through ICP MCP is handed only your app's URL (for example
 
 This guide describes what a canister app exposes to make that possible, ordered by priority.
 
-:::caution[Adopting this protocol opts your app in]
+:::caution[Publishing the Layer 1 manifest opts your app in]
 Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/) is governed by the [ICP MCP App Operator Terms](https://internetcomputer.org/icp-mcp/app-operator-terms/), an agreement between DFINITY and the app's operator: the person or entity legally authorized to operate the app and declare its canisters.
 
 **Publishing the Layer 1 manifest at `/.well-known/ic-architecture` opts the app into ICP MCP and constitutes the operator's acceptance of those terms.** Publishing enables discovery and read-only interaction: agents can find the app, read the metadata it publishes, and submit queries. **State-changing calls are enabled only after DFINITY confirms the operator's registration**, so an operator whose app needs to be acted on has to register (by email, as the terms' acceptance section describes) and keep that registration current as domains and canisters are added.
