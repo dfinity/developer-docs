@@ -12,7 +12,7 @@ This guide describes what a canister app exposes to make that possible, ordered 
 :::caution[Publishing the Layer 1 manifest opts your app in]
 Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/) is governed by the [ICP MCP App Operator Terms](https://internetcomputer.org/icp-mcp/app-operator-terms/), an agreement between DFINITY and the app's operator: the person or entity legally authorized to operate the app and declare its canisters.
 
-**Publishing the Layer 1 manifest at `/.well-known/ic-architecture` opts the app into ICP MCP and constitutes the operator's acceptance of those terms**. ICP MCP may fetch the app’s public website and manifest to resolve it. After validating the manifest, ICP MCP retrieves canister metadata or invokes query or update methods only on canisters declared in that manifest. If the manifest is missing or invalid, these operations are refused. Removing the manifest blocks new metadata reads and query or update calls.
+**Publishing the Layer 1 manifest at `/.well-known/ic-architecture` opts the app into ICP MCP and constitutes the operator's acceptance of those terms**. ICP MCP may fetch the app’s public website and manifest to resolve it. After validating the manifest, ICP MCP retrieves canister metadata or invokes query or update methods only on canisters declared in that manifest. If the manifest is missing or invalid, these operations are refused. Once ICP MCP observes the removal, it blocks new metadata reads and query or update calls.
 
 **Registration is optional** and is not a condition of participation. It is how an operator tells DFINITY who they are, so they can be reached with the notices the terms provide for, and so there is a record of who accepted and which version; it can include the URL of the app's own privacy policy, so ICP MCP can present it to users. What ICP MCP discloses to a participating app, and what it processes if an operator registers, are described in the [ICP MCP Privacy Policy](https://internetcomputer.org/icp-mcp/privacy-policy/); under the App Operator Terms the operator remains responsible for handling the personal data that reaches the app lawfully, and for keeping the app's own privacy notice accurate and available to its users.
 
@@ -29,7 +29,7 @@ An agent handed only your app's URL should be able to do five things, unattended
 4. Query the app's data efficiently, without a bespoke method per question.
 5. Act as the signed-in user, with that user's own permissions.
 
-Layer 1 is required for participation through ICP MCP. Once the manifest is published, Layers 2–5 remain independently optional and useful; together they make an app fully agent-ready.
+Layers 2–5 are independently optional and independently useful; only Layer 1 is required, as noted above. Together they make an app fully agent-ready.
 
 | Layer | Question it answers | Mechanism |
 |-------|---------------------|-----------|
