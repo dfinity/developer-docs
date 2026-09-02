@@ -16,7 +16,7 @@ Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/)
 
 **Registration is optional** and is not a condition of participation. It is how an operator tells DFINITY who they are, so they can be reached with the notices the terms provide for, and so there is a record of who accepted and which version; it can include the URL of the app's own privacy policy, so ICP MCP can present it to users. What ICP MCP discloses to a participating app, and what it processes if an operator registers, are described in the [ICP MCP Privacy Policy](https://internetcomputer.org/icp-mcp/privacy-policy/); under the App Operator Terms the operator remains responsible for handling the personal data that reaches the app lawfully, and for keeping the app's own privacy notice accurate and available to its users.
 
-The layers below are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
+Layer 1 is required for participation through ICP MCP. Once the manifest is published, Layers 2–5 remain independently optional and useful; together they make an app fully agent-ready.
 :::
 
 ## The five layers
@@ -29,7 +29,7 @@ An agent handed only your app's URL should be able to do five things, unattended
 4. Query the app's data efficiently, without a bespoke method per question.
 5. Act as the signed-in user, with that user's own permissions.
 
-Each layer is independently adoptable and independently useful. Together they make an app agent-ready.
+Layer 1 is required for participation through ICP MCP. Once the manifest is published, Layers 2–5 remain independently optional and useful; together they make an app fully agent-ready.
 
 | Layer | Question it answers | Mechanism |
 |-------|---------------------|-----------|
