@@ -10,7 +10,13 @@ When an agent working through ICP MCP is handed only your app's URL (for example
 This guide describes what a canister app exposes to make that possible, ordered by priority.
 
 :::caution[Adopting this protocol opts your app in]
-Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/) is governed by the [ICP MCP App Operator Terms](https://internetcomputer.org/icp-mcp/app-operator-terms/), an agreement between DFINITY and the app's operator: the person or entity legally authorized to operate the app and declare its canisters. The operator accepts the terms by registering, as their acceptance section describes, and what ICP MCP discloses to a participating app is described in its [privacy policy](https://internetcomputer.org/icp-mcp/privacy-policy/). Publishing the Layer 1 manifest at `/.well-known/ic-architecture` is the act that activates the app's participation (publishing without registering counts as accepting the terms by conduct): the layers are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
+Making an app available through [ICP MCP](https://internetcomputer.org/icp-mcp/) is governed by the [ICP MCP App Operator Terms](https://internetcomputer.org/icp-mcp/app-operator-terms/), an agreement between DFINITY and the app's operator: the person or entity legally authorized to operate the app and declare its canisters.
+
+**Publishing the Layer 1 manifest at `/.well-known/ic-architecture` opts the app into ICP MCP and constitutes the operator's acceptance of those terms.** Publishing enables discovery and read-only interaction: agents can find the app, read the metadata it publishes, and submit queries. **State-changing calls are enabled only after DFINITY confirms the operator's registration**, so an operator whose app needs to be acted on has to register (by email, as the terms' acceptance section describes) and keep that registration current as domains and canisters are added.
+
+Registration includes the URL of the app's own privacy policy, so ICP MCP can present it to users. What ICP MCP discloses to a participating app, and what it processes when an operator registers, are described in the [ICP MCP Privacy Policy](https://internetcomputer.org/icp-mcp/privacy-policy/); under the App Operator Terms the operator remains responsible for handling the personal data that reaches the app lawfully, and for keeping the app's own privacy notice accurate and available at that URL.
+
+The layers below are otherwise independently adoptable, and the rest of them describe how an agent works with an app once it has been discovered.
 :::
 
 ## The five layers
