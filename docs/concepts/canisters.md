@@ -51,7 +51,7 @@ Key constraints:
 - **Ingress only**: only external clients (browsers, CLI tools) can invoke composite queries. Other canisters cannot call them.
 - **No replicated mode**: unlike regular queries, composite queries cannot be executed as update calls for stronger authenticity.
 
-A composite query can also call the [management canister](../references/management-canister.md) query methods `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`. These calls are answered from the state of the calling canister's own subnet, so they can only target canisters on that subnet, and the calling canister must be permitted to read that data (for example, be a controller of the target canister).
+A composite query can also call the [management canister](../references/management-canister.md) query methods `canister_status`, `canister_metrics`, `canister_info`, `fetch_canister_logs`, and `list_canisters`. These calls are answered from the state of the calling canister's own subnet, so they can only target canisters on that subnet, and the calling canister must be permitted to read that data (for example, be a controller of the target canister). The exception is `canister_info`, which returns public data and is not subject to any access control.
 
 ## Memory model
 

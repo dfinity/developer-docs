@@ -382,6 +382,8 @@ icp canister status my-canister -e ic
 
 The status output includes the module hash and controller list. For full change history, use the `canister_info` management canister call.
 
+Canister history is public, so `canister_info` is not subject to any access control. External users can read it directly with a query call to the management canister (update calls to `canister_info` are rejected), and canisters can call it either as an inter-canister call or from a composite query method. See the [interface specification](../../references/ic-interface-spec/management-canister.md#ic-canister_info) for details.
+
 ## Trapping and error handling
 
 A **trap** is an unrecoverable error during WebAssembly execution: caused by panics, division by zero, out-of-bounds memory access, or explicit trap calls. When a canister traps:

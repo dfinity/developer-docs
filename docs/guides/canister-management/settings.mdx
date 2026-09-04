@@ -197,14 +197,12 @@ settings:
 
 ### Log memory limit
 
-{/* Needs human verification: log_memory_limit is exposed by icp-cli but is absent from the canonical ic.did: verify whether this is a management canister setting or an icp-cli layer setting */}
-
 Maximum memory for storing canister logs. Oldest logs are purged when usage exceeds this value.
 
 | Property | Value |
 |----------|-------|
 | Type | Integer or string with suffix |
-| Max | 2 MiB |
+| Valid values | 0, or 4096 bytes up to 2 MiB (values between 1 and 4095 are rejected) |
 | Default | 4096 bytes |
 | icp.yaml key | `log_memory_limit` |
 
