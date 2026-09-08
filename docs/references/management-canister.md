@@ -444,24 +444,41 @@ Returns an encrypted vetKD key that can be decrypted with the caller's transport
 
 Makes an HTTP request to an external URL and returns the response. This enables canisters to fetch offchain data, call external APIs, and interact with other blockchain RPCs.
 
+> Pricing version 1 is **deprecated**. It is still the default, but version 2 is to become the default, after which version 1 will be removed. Set `pricing_version = 2` on new calls and plan to migrate existing ones.
+
 - **Caller:** Canisters only
 - **Parameters:**
   - `url` (`text`): must start with `https://`; max 8192 characters
   - `max_response_bytes` (`opt nat64`): max response size (up to 2 MB; defaults to 2 MB if not set)
-  - `method`: `GET`, `HEAD`, or `POST` (replicated); additionally `PUT` and `DELETE` (non-replicated mode only)
+  - `method`: `GET`, `HEAD`, or `POST` (replicated); additionally `PUT`, `DELETE`, and `PATCH` (non-replicated mode only)
   - `headers` (`vec record { name : text; value : text }`): request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
   - `body` (`opt blob`): request body
   - `transform` (`opt record { function : func; context : blob }`): response transformation function exported by the calling canister
-  - `is_replicated` (`opt bool`): select replicated (default) or non-replicated mode
+  - `is_replicated` (`opt bool`): select replicated (`opt true` or unset) or non-replicated (`opt false`) mode
+  - `pricing_version` (`opt nat32`): `1` (default, deprecated) or `2`. Version `2` prices the resources the call consumes instead of `max_response_bytes`. The field is not validated: any other value falls back to version `1` without an error.
 - **Returns:**
   - `status` (`nat`): HTTP status code
   - `headers` (`vec record { name : text; value : text }`)
   - `body` (`blob`)
-- **Cycles:** Must be explicitly attached to the call. Charged based on `max_response_bytes`: always set this to a reasonable value to avoid overpaying.
+- **Cycles:** Must be explicitly attached to the call. Under pricing version `1`, charged based on `max_response_bytes`: always set this to a reasonable value to avoid overpaying. Under version `2`, charged for the resources actually consumed, and the attached cycles also bound what the call may consume.
 
 In replicated mode, multiple replicas make the same request. Use the `transform` function to sanitize non-deterministic parts of the response (timestamps, unique IDs) so replicas can reach consensus.
 
 For concept details, see [HTTPS outcalls](../concepts/https-outcalls.md).
+
+### `flexible_http_request`
+
+Makes an HTTP request from a committee of nodes and returns their individual responses instead of one response the subnet agreed on. Use it for endpoints whose data changes too fast for replicas to agree, and to trade cost against integrity by sizing the committee.
+
+- **Caller:** Canisters only
+- **Parameters:** as for `http_request`, except that there is no `is_replicated` and no `pricing_version`, and one argument is added:
+  - `replication` (`opt record { min_responses : nat32; max_responses : nat32; total_requests : nat32 }`): how many nodes issue the request, and the fewest and most responses the caller will accept. Must satisfy `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the subnet's node count as reported by `ic0.subnet_self_node_count`. Defaults to `floor(2 / 3 * N) + 1`, `N`, and `N`.
+- **Returns:** `variant { ok : vec http_request_result; err : flexible_http_request_err }`. Both arms arrive as a reply, not a reject: a call that cannot meet the requested replication replies with `err`, carrying a `global_error` of `timeout`, `out_of_cycles`, `responses_too_large`, or `too_many_rejects`, a message, and per-node details. Only failures detected before the requests go out are rejects.
+- **Cycles:** Must be explicitly attached to the call. Always priced with pricing version `2`, so the attached cycles also bound what each node may consume.
+
+A successful call returns between `min_responses` and `max_responses` responses, and may return as few as `min_responses` even when every node answered. The responses do not identify the node that produced them and their order is not specified, so handle any count in that range and reconcile disagreement yourself.
+
+For the full argument, result, and error types, see [`flexible_http_request`](ic-interface-spec/management-canister.md#ic-flexible_http_request) in the interface specification.
 
 ## Bitcoin API (deprecated)
 
@@ -621,7 +638,8 @@ Cycle costs for management canister calls vary depending on subnet replication f
 
 - `ic0.cost_create_canister`: cost of `create_canister`
 - `ic0.cost_call`: cost of an inter-canister call (base + per-byte)
-- `ic0.cost_http_request`: cost of `http_request`
+- `ic0.cost_http_request`: cost of `http_request` under pricing version `1` (deprecated)
+- `ic0.cost_http_request_v2`: cost of `http_request` under pricing version `2`, and of `flexible_http_request`
 - `ic0.cost_sign_with_ecdsa`: cost of `sign_with_ecdsa`
 - `ic0.cost_sign_with_schnorr`: cost of `sign_with_schnorr`
 - `ic0.cost_vetkd_derive_key`: cost of `vetkd_derive_key`

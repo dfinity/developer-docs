@@ -922,11 +922,11 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
 
     :::note
 
-    The `ic0.cost_http_request` System API call is DEPRECATED. Canister developers are advised to use the `ic0.cost_http_request_v2` call instead.
+    The `ic0.cost_http_request` System API call is DEPRECATED, along with the pricing version it prices. Canister developers are advised to use the `ic0.cost_http_request_v2` call instead.
 
     :::
 
-    The cost of a canister HTTP outcall via [`http_request`](./management-canister.md#ic-http_request) with the pricing version set to `1` (currently the default). `request_size` is the sum of the byte lengths of the following components of an http request:
+    The cost of a canister HTTP outcall via [`http_request`](./management-canister.md#ic-http_request) with the pricing version set to `1` (currently the default, and deprecated). `request_size` is the sum of the byte lengths of the following components of an http request:
     - url
     - headers - i.e., the sum of the lengths of all keys and values 
     - body
@@ -974,6 +974,10 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
     - `transform_instructions` is the number of instructions the transform function takes.
 
     - `outcall_type` is the type of HTTP outcall issued: a fully replicated call (made through the `http_request` endpoint with `is_replicated` set to `null` or `opt true`), non-replicated (made through `http_request` with `is_replicated` set to `opt false`), or flexible (made through the [`flexible_http_request`](./management-canister.md#ic-flexible_http_request) endpoint). If `outcall_type` is absent, the cost of a fully replicated call is returned. When the `flexible` outcall variant is selected, it can optionally be supplemented with the `min_responses`, `max_responses`, and `total_requests` parameters provided to the endpoint; if that record is omitted, the endpoint's own defaults of `floor(2 / 3 * N) + 1`, `N` and `N` are used, where `N` is the number of the nodes on the caller's subnet. Unlike the endpoint, this System API call does not validate the counts: a combination that `flexible_http_request` would reject simply yields a price that no outcall will ever be charged.
+
+    Of these parameters, only `request_bytes` and `outcall_type` are known before the outcall runs. For the others, pass the largest value the outcall is expected to consume, up to the following maxima: the longest time the system will wait for a response for `http_roundtrip_time_ms` (60s), the request's `max_response_bytes` for `raw_response_bytes`, and the instruction limit of a query call for `transform_instructions` (5B). For `transformed_response_bytes`, pass `max_response_bytes` plus the bytes reserved for the Candid encoding of a response. For a flexible outcall `transformed_response_bytes` need not exceed the total result limit divided by `min_responses`. The cost of delivering a result is settled against the participating nodes' allowances collectively, so that size reserves enough for any result the limit permits, whether the responses are of equal size or not.
+
+    Attaching the amount so obtained means the outcall cannot run out of cycles in any run that could have succeeded. A caller that prefers to reserve less may instead pass the resources it expects the outcall to use and attach that smaller amount: the call is not rejected for it, but the per-node limits described under [`http_request`](./management-canister.md#ic-http_request) shrink accordingly, so a run that exceeds the estimate fails part-way through. Any attached cycles that were not used to fund a response are refunded when the response is delivered.
 
 -   `ic0.cost_sign_with_ecdsa(src : I, size : I, ecdsa_curve: i32, dst : I) -> i32`; `I ∈ {i32, i64}`
 

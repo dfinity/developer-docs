@@ -676,12 +676,6 @@ This method makes an HTTP request to a given URL and returns the HTTP response, 
 
 The method can be called in either replicated or non-replicated mode. In the replicated mode, the same HTTP request is performed by multiple IC replicas, providing strong guarantees on the integrity of the response. In the non-replicated mode, the request is made by a single replica, with weak integrity guarantees.
 
-:::note
-
-The non-replicated mode is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
-
-:::
-
 Both because of replication and to handle network issues, the canister should aim to issue *idempotent* requests, meaning that it must not change the state at the remote server, or that the remote server has the means to identify duplicated requests. Otherwise, the risk of failure increases.
 
 In the replicated mode, the responses for all identical requests must match, too. However, a web service could return slightly different responses for identical idempotent requests. For example, it may include some unique identification or a timestamp that would vary across responses.
@@ -722,13 +716,13 @@ The following parameters should be supplied for the call:
 
 -   `is_replicated` - optional, selecting between replicated and non-replicated modes. Setting the field to `opt false` selects the non-replicated mode, in which a single node chosen by the system performs the request. Setting it to `opt true`, or omitting it, selects the replicated mode.
 
+-   `pricing_version` - optional, the version of the pricing mechanism for HTTP outcalls that should be applied to this call; it can be either `1` ("legacy") or `2` ("pay-as-you-go"). For compatibility reasons, the default is `1`. If the field is omitted, or set to any value other than `1` or `2`, the call is priced with version `1` and no error is reported. Note that pricing version `1` does not take the replication mode into account, so a non-replicated call is charged the same as a replicated one with the same request size and `max_response_bytes`; only version `2` prices a call according to its replication mode.
+
     :::note
 
-    The `is_replicated` field is considered EXPERIMENTAL.
+    Pricing version `1` is DEPRECATED. Version `2` is to become the default, after which version `1` will be removed and the `pricing_version` field will no longer have an effect. Canister developers are advised to select version `2`.
 
     :::
-
--   `pricing_version` - optional, the version of the pricing mechanism for HTTP outcalls that should be applied to this call; it can be either `1` ("legacy") or `2` ("pay-as-you-go"). For compatibility reasons, the default is `1`; however, version `1` is deprecated. If the field is omitted, set to a version the subnet does not support, or set to any other value, the call is priced with version `1` and no error is reported. Note that pricing version `1` does not take the replication mode into account, so a non-replicated call is charged the same as a replicated one with the same request size and `max_response_bytes`; only version `2` prices a call according to its replication mode.
 
 Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). How many cycles must be attached, and what is refunded, depends on the pricing version:
 
@@ -781,7 +775,7 @@ This method can only be called by canisters, i.e., it cannot be called by extern
 
 This is a variant of the [`http_request`](#ic-http_request) method where nodes return their individual HTTP responses to the caller instead of trying to reach consensus on the response, letting the caller do its own HTTP response processing. Use cases include calling HTTP endpoints that provide rapidly changing information (where achieving consensus is unlikely) and letting the user pick a trade-off between cheaper calls (fewer replicas requesting/responding) and stronger integrity guarantees (more replicas requesting/responding).
 
-Flexible outcalls have no `pricing_version` argument; on subnets that charge for HTTP outcalls they are always priced with pricing version `2` ("pay-as-you-go").
+Flexible outcalls have no `pricing_version` argument; they are always priced with pricing version `2` ("pay-as-you-go").
 
 The arguments of the call are as for `http_request`, except that:
 
@@ -805,7 +799,7 @@ As for `http_request`, the endpoint specified by the provided `url` should be id
 
 - The total number of bytes representing the header names and values must not exceed `48KiB`.
 
-The response from the remote server must not exceed `max_response_bytes`, if provided, and `2MB` otherwise. Moreover, the responses returned by the different nodes (possibly after the transform function) are delivered together and must jointly fit into a total result limit of `2MiB` (`2,097,152B`), which applies to their encoded sizes plus a small per-response overhead. If they do not all fit, fewer responses are returned, down to `min_responses`; only when even the smallest `min_responses` responses exceed that limit does the call fail. Since up to `max_responses` responses are returned, choosing a `max_response_bytes` of at most `2MB / max_responses` keeps the result within the limit.
+The response from the remote server must not exceed `max_response_bytes`, if provided, and `2MB` otherwise. Moreover, the responses returned by the different nodes (possibly after the transform function) are delivered together and must jointly fit into a total result limit of `2MiB` (`2,097,152B`), which applies to their encoded sizes plus a small per-response overhead. If they do not all fit, fewer responses are returned, down to `min_responses`; only when the smallest `min_responses` responses jointly exceed that limit does the call fail.
 
 Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). As for `http_request` with pricing version `2`, a base fee is charged when the call is accepted and the remaining attached cycles bound what the nodes may spend on the outcall; the unused cycles are then refunded to the caller.
 
