@@ -18,7 +18,7 @@ Key features:
 - **Environments**: named deployment targets that combine a network, canister set, and settings (e.g., local, staging, production)
 - **Project scaffolding**: `icp new` bootstraps new projects from official templates
 
-For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/1.4/). `icp completions <shell>` prints a completion script for bash, zsh, fish, elvish, or PowerShell.
+For installation, see the [Quickstart](../getting-started/quickstart.md) or the [full CLI documentation](https://cli.internetcomputer.org/1.4/). To complete `icp` commands in your shell, `icp completions <shell>` prints a script for bash, zsh, fish, elvish, or PowerShell; see [shell completions](https://cli.internetcomputer.org/1.4/guides/installation#shell-completions) for where to put it.
 
 Advanced: [creating recipes](https://cli.internetcomputer.org/1.4/guides/creating-recipes) and [creating templates](https://cli.internetcomputer.org/1.4/guides/creating-templates) are documented on the CLI docs site.
 
@@ -35,7 +35,7 @@ Resources:
 
 ### Quill
 
-Quill is a minimalistic, offline-first CLI for signing and sending governance messages (NNS and SNS proposals, neuron management) from air-gapped machines. Its focus is governance: for canister calls, icp-cli covers the same split with [`icp canister call --sign-only`](https://cli.internetcomputer.org/1.4/reference/cli#icp-canister-call), which writes a signed message on the offline device, and [`icp message send`](https://cli.internetcomputer.org/1.4/reference/cli#icp-message-send), which submits it from a networked one.
+Quill is a minimalistic, offline-first CLI for signing and sending governance messages (NNS and SNS proposals, neuron management) from air-gapped machines. Its focus is governance: for canister calls, icp-cli covers the same split with [`icp canister call --sign-only`](https://cli.internetcomputer.org/1.4/reference/cli#icp-canister-call), which writes a signed message on the offline device, and [`icp message send`](https://cli.internetcomputer.org/1.4/reference/cli#icp-message-send), which submits it from a networked one. That pair is experimental, so it can change between icp-cli releases.
 
 Quill is suited for:
 - Submitting NNS governance proposals

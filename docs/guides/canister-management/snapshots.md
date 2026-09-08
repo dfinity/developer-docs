@@ -7,7 +7,7 @@ sidebar:
 
 Canister snapshots capture the full state of a canister (its compiled Wasm module, Wasm heap memory, stable memory, certified variables, and chunk store) at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
 
-Only controllers of a canister can create or restore snapshots. Listing and reading them follows the [`snapshot_visibility`](./settings.md#snapshot-visibility) setting, which is controller-only by default. Up to 10 snapshots per canister can be stored on the network at a time.
+Only controllers of a canister can create or restore snapshots. Listing and reading them follows the [`snapshot_visibility`](settings.md#snapshot-visibility) setting, which is controller-only by default. Up to 10 snapshots per canister can be stored on the network at a time.
 
 ## When to use snapshots
 

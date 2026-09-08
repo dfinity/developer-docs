@@ -110,6 +110,8 @@ To output logs as JSON for programmatic processing:
 icp canister logs <canister-name> -e ic --json
 ```
 
+Combined with `--follow`, `--json` emits newline-delimited JSON, one record per line as it arrives.
+
 ## Log visibility
 
 By default, only the canister's controllers can read its logs. You can make logs visible to everyone, or grant read access to specific principals.
@@ -149,7 +151,7 @@ icp canister settings update <canister-name> -e ic \
   --remove-log-viewer <principal-id>
 ```
 
-A public canister has no viewers list, so `--add-log-viewer` and `--remove-log-viewer` are rejected while visibility is `public`. Use `--set-log-viewer` to replace the public policy with a list, or `--log-visibility controllers` to revoke public access.
+While log visibility is `public` there is no viewers list to be relative to, so `--add-log-viewer` and `--remove-log-viewer` are rejected. Use `--set-log-viewer` to state the list outright, or `--log-visibility controllers` to revoke public access.
 
 ### Setting log visibility in icp.yaml
 
