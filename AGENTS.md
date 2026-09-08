@@ -137,6 +137,8 @@ EOF
 
 **PR body rule:** always use a single-quoted heredoc (`<<'EOF'`). Backticks and special characters pass through literally — never escape them manually inside the heredoc.
 
+**Closing more than one issue:** repeat the keyword for every number. `Closes #1, #2, #3` closes only #1 and leaves the rest as plain mentions; write `Closes #1, closes #2, closes #3`. After merging a PR that should close several, check that they all did.
+
 **Keep descriptions current:** if new commits change the scope of a PR, update the description immediately with `gh pr edit`.
 
 **Merge conflicts:**
