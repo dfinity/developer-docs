@@ -73,7 +73,7 @@ icp canister status backend -e ic
 icp canister status ryjl3-tyaaa-aaaaa-aaaba-cai -n ic
 ```
 
-Example output, abridged (the full report also covers memory, module hash, visibility settings, and query stats):
+Example output for a canister you control:
 
 ```text
 Canister Id: <canister-id>
@@ -85,8 +85,25 @@ Canister Status Report:
   Compute allocation: 0
   Memory allocation: 0
   Freezing threshold: 2_592_000
-  ...
-  Cycles: 9_811_813_913_485
+  Reserved cycles limit: 5_000_000_000_000
+  Wasm memory limit: 3_221_225_472
+  Wasm memory threshold: 0
+  Log memory limit: 4_096
+  Log visibility: Controllers
+  Snapshot visibility: Controllers
+  Status visibility: Controllers
+  Environment Variables:
+    Name: PUBLIC_CANISTER_ID:backend, Value: <canister-id>
+  Module hash: 0x25aad4fd1781bf1d1212b9cde388b973a0bd8da7063ff16fc66dfebc3942f46d
+  Memory size: 5_537_162
+  Cycles: 1_498_736_384_244
+  Reserved cycles: 0
+  Idle cycles burned per day: 1_005_463_641
+  Query stats:
+    Calls: 0
+    Instructions: 0
+    Req payload bytes: 0
+    Res payload bytes: 0
 ```
 
 The `Cycles` line shows the current cycle balance. The `Freezing threshold` shows how many seconds of idle cycles the canister must retain before freezing (see [Freezing threshold](#freezing-threshold) below).
