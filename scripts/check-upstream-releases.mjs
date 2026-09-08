@@ -233,15 +233,18 @@ function summarizeChange(oldText, newText) {
   // Report a heading as its text rather than its raw line. A generated CLI
   // reference writes headings as ``## `icp message` ``, and the issue body puts
   // each one in a code span, which the inner backticks would break. Depth stops
-  // at h3 because a generated reference repeats the same boilerplate
-  // sub-headings ("Arguments", "Options") under every command, and a list of
-  // those says nothing about what moved.
-  const heading = (l) => /^#{1,3}\s/.test(l);
+  // at h2, the level that carries the unit of every file compared here: a
+  // command in a CLI reference, a version in a changelog. Deeper headings are
+  // per-unit boilerplate ("Arguments", "Options", "Feat") and say nothing about
+  // what moved. Underscores survive normalization, since a heading naming an
+  // identifier (`status_visibility`) is far more common than one using `_` for
+  // emphasis.
+  const heading = (l) => /^#{1,2}\s/.test(l);
   const titles = (lines) => [
     ...new Set(
       lines
         .filter(heading)
-        .map((l) => l.replace(/^#+\s+/, '').replace(/[`*_]/g, '').trim())
+        .map((l) => l.replace(/^#+\s+/, '').replace(/[`*]/g, '').trim())
         .filter(Boolean)
     ),
   ];
