@@ -188,7 +188,7 @@ settings:
 settings:
   log_visibility: public
 
-# Specific principals (e.g. a monitoring service or auditor identity)
+# Specific principals, in addition to the controllers
 settings:
   log_visibility:
     allowed_viewers:
@@ -240,7 +240,7 @@ settings:
 ```
 
 :::caution
-Reading a snapshot exposes the canister's full state: the Wasm module, Wasm memory, stable memory, and chunk store. Granting snapshot access is closer to handing out a state dump than to granting a read-only report.
+Reading a snapshot exposes the canister's full state: the Wasm module, Wasm memory, stable memory, certified variables, and the Wasm chunk store. Granting snapshot access is closer to handing out a state dump than to granting a read-only report.
 :::
 
 ### Status visibility
@@ -377,7 +377,9 @@ For mainnet canisters, add `-e <env>` where `<env>` is the name of your mainnet 
 icp canister settings update backend -e ic --freezing-threshold 90d
 ```
 
-Each of the three visibility settings takes either a fixed policy (`--log-visibility`, `--snapshot-visibility`, `--status-visibility`, each accepting `controllers` or `public`) or a list of principals (`--add-<kind>-viewer`, `--set-<kind>-viewer`, `--remove-<kind>-viewer`). The two forms conflict: a viewer list has no principals to add to or remove from while the policy is `public`, so replace a public policy with `--set-<kind>-viewer` and revoke it with `--<kind>-visibility controllers`.
+Each of the three visibility settings comes in two forms, where `<kind>` is `log`, `snapshot`, or `status`. A fixed policy is `--<kind>-visibility`, which takes `controllers` or `public`. A list of principals is `--add-<kind>-viewer`, `--set-<kind>-viewer`, or `--remove-<kind>-viewer`. One command cannot use both forms for the same setting.
+
+A viewer list is also relative to an existing one, so `--add-<kind>-viewer` and `--remove-<kind>-viewer` are rejected while that setting is `public`. To narrow a public setting, state the list outright with `--set-<kind>-viewer`, or revoke public access with `--<kind>-visibility controllers`.
 
 Additional flags: `--reserved-cycles-limit`, `--wasm-memory-threshold`, `--log-memory-limit`, `--add-environment-variable`. Run `icp canister settings update --help` for the full list.
 

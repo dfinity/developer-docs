@@ -61,7 +61,7 @@ icp cycles balance -n ic
 
 ## Checking canister cycle balances
 
-By default, only controllers can view a canister's cycle balance via `icp canister status`. The [`status_visibility`](./settings.md#status-visibility) setting can extend that to named principals or to anyone.
+By default, only controllers can view a canister's cycle balance via `icp canister status`. The [`status_visibility`](settings.md#status-visibility) setting can extend that to named principals or to anyone.
 
 ### Via icp-cli
 
@@ -73,18 +73,22 @@ icp canister status backend -e ic
 icp canister status ryjl3-tyaaa-aaaaa-aaaba-cai -n ic
 ```
 
-Example output:
+Example output, abridged (the full report also covers memory, module hash, visibility settings, and query stats):
 
 ```text
-Status: Running
-Controllers: xxxxx-xxxxx-xxxxx-xxxxx-xxx
-Memory allocation: 0
-Compute allocation: 0
-Freezing threshold: 2_592_000
-Balance: 9_811_813_913_485 Cycles
+Canister Id: ryjl3-tyaaa-aaaaa-aaaba-cai
+Canister Status Report:
+  Status: Running
+  Controllers:
+    controller: <principal>
+  Compute allocation: 0
+  Memory allocation: 0
+  Freezing threshold: 2_592_000
+  ...
+  Cycles: 9_811_813_913_485
 ```
 
-The `Balance` line shows the current cycle balance. The `Freezing threshold` shows how many seconds of idle cycles the canister must retain before freezing (see [Freezing threshold](#freezing-threshold) below).
+The `Cycles` line shows the current cycle balance. The `Freezing threshold` shows how many seconds of idle cycles the canister must retain before freezing (see [Freezing threshold](#freezing-threshold) below).
 
 ### Programmatically
 
