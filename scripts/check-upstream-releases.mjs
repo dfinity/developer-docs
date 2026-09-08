@@ -230,10 +230,24 @@ function summarizeChange(oldText, newText) {
   };
   const added = surplus(newLines, newCount, oldCount);
   const removed = surplus(oldLines, oldCount, newCount);
-  const heading = (l) => /^#{1,6}\s/.test(l);
+  // Report a heading as its text rather than its raw line. A generated CLI
+  // reference writes headings as ``## `icp message` ``, and the issue body puts
+  // each one in a code span, which the inner backticks would break. Depth stops
+  // at h3 because a generated reference repeats the same boilerplate
+  // sub-headings ("Arguments", "Options") under every command, and a list of
+  // those says nothing about what moved.
+  const heading = (l) => /^#{1,3}\s/.test(l);
+  const titles = (lines) => [
+    ...new Set(
+      lines
+        .filter(heading)
+        .map((l) => l.replace(/^#+\s+/, '').replace(/[`*_]/g, '').trim())
+        .filter(Boolean)
+    ),
+  ];
   return {
-    addedHeadings: added.filter(heading),
-    removedHeadings: removed.filter(heading),
+    addedHeadings: titles(added),
+    removedHeadings: titles(removed),
     addedCount: added.length,
     removedCount: removed.length,
   };
@@ -425,13 +439,13 @@ async function checkOne(entry) {
         lines.push('');
         lines.push('New sections:');
         lines.push('');
-        for (const h of s.addedHeadings) lines.push(`- \`${h.trim()}\``);
+        for (const h of s.addedHeadings) lines.push(`- \`${h}\``);
       }
       if (s.removedHeadings.length) {
         lines.push('');
         lines.push('Removed sections:');
         lines.push('');
-        for (const h of s.removedHeadings) lines.push(`- \`${h.trim()}\``);
+        for (const h of s.removedHeadings) lines.push(`- \`${h}\``);
       }
       lines.push('');
       lines.push('Full diff:');
