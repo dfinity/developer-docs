@@ -76,7 +76,8 @@ icp canister status ryjl3-tyaaa-aaaaa-aaaba-cai -n ic
 Example output, abridged (the full report also covers memory, module hash, visibility settings, and query stats):
 
 ```text
-Canister Id: ryjl3-tyaaa-aaaaa-aaaba-cai
+Canister Id: <canister-id>
+Canister Name: backend
 Canister Status Report:
   Status: Running
   Controllers:
@@ -89,6 +90,8 @@ Canister Status Report:
 ```
 
 The `Cycles` line shows the current cycle balance. The `Freezing threshold` shows how many seconds of idle cycles the canister must retain before freezing (see [Freezing threshold](#freezing-threshold) below).
+
+A canister you do not control reports less: unless its `status_visibility` grants you access, you get its ID, controllers, and module hash from the state tree, without the cycle balance.
 
 ### Programmatically
 
