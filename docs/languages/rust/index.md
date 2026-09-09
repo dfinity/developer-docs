@@ -204,7 +204,7 @@ Rust canisters compile to `wasm32-unknown-unknown`. Most pure-computation crates
 | Current time | `std::time::Instant` | `ic_cdk::api::time()` returns nanoseconds since the epoch. |
 | Environment variables | `std::env::var` | Not available at runtime. Use `env!()` or `option_env!()` to embed values at compile time. |
 | Random numbers | `rand`, `getrandom` | Use `ic_cdk::management_canister::raw_rand()` for verifiable randomness, or implement `getrandom::register_custom_getrandom!` for crates that depend on `getrandom`. |
-| Network I/O | `reqwest`, `hyper` | Use [HTTPS outcalls](../../guides/canister-calls/calling-from-clients.md) via the management canister. |
+| Network I/O | `reqwest`, `hyper` | Use [HTTPS outcalls](../../guides/backends/https-outcalls.md) via the management canister. |
 
 Most crates that target `wasm32-unknown-unknown` for browser use (via `wasm-bindgen` or `wasm-pack`) will **not** work because they depend on JavaScript host bindings that do not exist in the ICP runtime.
 

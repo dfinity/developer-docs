@@ -112,7 +112,7 @@ If the canister may be blackholed or called by other canisters, send more cycles
 
 ## External integrations
 
-These features involve outbound calls to external networks. Every node on the relevant subnet participates in each call, which is the primary driver of the additional cost. The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
+These features involve outbound calls to external networks. How many nodes take part in each call is the primary driver of the additional cost: the whole subnet for a fully replicated outcall, and fewer for the modes that reduce replication (see HTTPS outcalls below). The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
 
 ### HTTPS outcalls
 
@@ -174,11 +174,11 @@ delivery_fee = n * (10 * n + 600) * response_bytes
 | `http_roundtrip_time_ms` | `60_000`, the longest the system waits for a response |
 | `raw_response_bytes` | `max_response_bytes`, or `2_000_000` if it is unset |
 | `transformed_response_bytes` | the same as `raw_response_bytes`, plus `1_024` bytes reserved for the Candid encoding of the response |
-| `transform_instructions` | `5_000_000_000`, the instruction limit of a query call |
+| `transform_instructions` | `5_000_000_000` (5 billion), the instruction limit of a query call |
 
 `request_bytes` and `outcall_type` follow from the request itself.
 
-Either way, any attached surplus is refunded, so the eventual charge corresponds precisely to the resources consumed to produce the response. Those refunds arrive asynchronously: a node that died without reporting has its whole budget returned only when the request is discarded, up to a minute after the response. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as additional refunds arrive.
+Either way, any attached surplus is refunded, so the charge follows the resources actually consumed. Those refunds arrive asynchronously: a node that never reported has its whole budget returned when the request is discarded, one minute after the response was delivered. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as further refunds arrive.
 
 ### EVM RPC canister
 

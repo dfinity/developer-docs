@@ -6133,7 +6133,7 @@ ic0.cost_http_request<es>(request_size: i64, max_res_bytes: i64, dst: I) : () =
   copy_cycles_to_canister<es>(dst, arbitrary())
 
 I ∈ {i32, i64}
-ic0.cost_http_request_v2<es>(params_src : I, params_size : I, dst : I) : ()= 
+ic0.cost_http_request_v2<es>(params_src : I, params_size : I, dst : I) : () =
   params = copy_from_canister<es>(params_src, params_size)
   if params is not a valid Candid encoding of an HTTP outcall cost parameter record then
     Trap {cycles_used = es.cycles_used;}

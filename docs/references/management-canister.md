@@ -444,7 +444,11 @@ Returns an encrypted vetKD key that can be decrypted with the caller's transport
 
 Makes an HTTP request to an external URL and returns the response. This enables canisters to fetch offchain data, call external APIs, and interact with other blockchain RPCs.
 
-> Pricing version 1 is **deprecated**. It is still the default, but version 2 is to become the default, after which version 1 will be removed. Set `pricing_version = 2` on new calls and plan to migrate existing ones.
+:::caution[Version 1 is deprecated]
+
+Pricing version 1 is still the default, but version 2 is to become the default, after which version 1 will be removed. Set `pricing_version = 2` on new calls and plan to migrate existing ones.
+
+:::
 
 - **Caller:** Canisters only
 - **Parameters:**
@@ -472,6 +476,7 @@ Makes an HTTP request from a committee of nodes and returns their individual res
 
 - **Caller:** Canisters only
 - **Parameters:** as for `http_request`, except that there is no `is_replicated` and no `pricing_version`, and one argument is added:
+  - `method`: `GET`, `HEAD`, and `POST` are always supported; `PUT`, `DELETE`, and `PATCH` only when `min_responses`, `max_responses`, and `total_requests` are all equal
   - `replication` (`opt record { min_responses : nat32; max_responses : nat32; total_requests : nat32 }`): how many nodes issue the request, and the fewest and most responses the caller will accept. Must satisfy `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the subnet's node count as reported by `ic0.subnet_self_node_count`. Defaults to `floor(2 / 3 * N) + 1`, `N`, and `N`.
 - **Returns:** `variant { ok : vec http_request_result; err : flexible_http_request_err }`. Both arms arrive as a reply, not a reject: a call that cannot meet the requested replication replies with `err`, carrying a `global_error` of `timeout`, `out_of_cycles`, `responses_too_large`, or `too_many_rejects`, a message, and per-node details. Only failures detected before the requests go out are rejects, e.g. invalid or oversized parameters.
 - **Cycles:** Must be explicitly attached to the call. Always priced with pricing version `2`, so the attached cycles also bound what each node may consume.
@@ -644,7 +649,7 @@ Cycle costs for management canister calls vary depending on subnet replication f
 - `ic0.cost_sign_with_schnorr`: cost of `sign_with_schnorr`
 - `ic0.cost_vetkd_derive_key`: cost of `vetkd_derive_key`
 
-Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`) will fail if insufficient cycles are provided.
+Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`, `flexible_http_request`) will fail if insufficient cycles are provided. Under `http_request` pricing version `2`, and for `flexible_http_request`, only the base fee has to be covered up front; the rest of the attached cycles is the call's resource budget.
 
 ## Candid interface
 

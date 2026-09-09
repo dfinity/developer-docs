@@ -17,7 +17,7 @@ HTTPS outcalls come in three modes. Two are selected by the `is_replicated` fiel
 
 **Non-replicated mode** (`is_replicated = false`) has a single replica make the request. No consensus is needed, so there is no transform function requirement and no rate-limit pressure on the external server. The tradeoff is trust: the single replica that handles the request could theoretically observe or modify the response before returning it to the canister. This mode is appropriate when the endpoint is idempotent, rate limits are a concern, or you're making POST requests where duplicate submissions would cause problems.
 
-**Flexible mode** (`flexible_http_request`) has a committee of nodes make the request and hands the canister their individual responses rather than one agreed result. The canister decides what to make of them. For example: take a median, require that some of them match, or use the first that parses. The caller sizes the committee and states how many responses it needs and is willing to receive, which is where the flexibility lies: a smaller committee costs less, a larger one is harder for any single node to influence. This suits endpoints whose data changes too fast for replicas to ever agree, such as live prices or feeds that stamp every response, where replicated mode would simply fail to reach consensus. The tradeoff is that reconciling the responses becomes your canister's job.
+**Flexible mode** (`flexible_http_request`) has a committee of nodes make the request and hands the canister their individual responses rather than one agreed result. The canister decides what to make of them. For example: take a median, require that some of them match, or use the first that parses. The caller sizes the committee and states how many responses it needs and is willing to receive. A smaller committee costs less, a larger one is harder for any single node to influence. This suits endpoints whose data changes too fast for replicas to ever agree, such as live prices or feeds that stamp every response, where replicated mode would simply fail to reach consensus. The tradeoff is that reconciling the responses becomes your canister's job.
 
 Flexible outcalls are always priced with pay-as-you-go pricing (version 2), described under [Cycle costs](#cycle-costs) below.
 
@@ -37,7 +37,7 @@ When a canister calls the management canister's `http_request` method, the follo
 
 The transform function is critical. Without it, even minor differences between responses (a header timestamp off by a millisecond) prevent consensus. If consensus cannot be reached, the call eventually times out: this is the most common failure mode when developing outcalls.
 
-Steps 1 through 4 apply to flexible outcalls too, including the transform, which each node still runs on its own response. Step 5 is what differs: In flexible mode, the subnet agrees on which responses to deliver rather than on what the response says, so responses that disagree are all returned instead of failing the call.
+Flexible outcalls follow the same path, with two differences. In step 2 only the committee the caller sized issues the request, not every replica. And in step 5 the subnet agrees on which responses to deliver rather than on what the response says, so responses that disagree are returned instead of failing the call. The transform still runs, on each node's own response.
 
 > **Local testing caveat:** The local replica runs a single node, so all responses pass consensus automatically: even without a transform function. Transform and consensus issues only surface when you deploy to a multi-node subnet.
 
@@ -83,7 +83,7 @@ Version 1 is still the default, and is what a call gets unless it asks for versi
 
 :::
 
-Both the Motoko `ic` mops package and the Rust `ic-cdk` provide wrappers that automatically compute and attach the required amount using the `ic0.cost_http_request` system API (version 1). These wrappers will transition to using version 2 in the near future.
+Both the Motoko `ic` mops package and the Rust `ic-cdk-management-canister` crate provide wrappers that automatically compute and attach the required amount using the `ic0.cost_http_request` system API (version 1). Neither exposes `pricing_version` or `flexible_http_request` yet, so a canister that wants version 2 or flexible mode must build the management canister call itself.
 
 **Version 1** charges for the number of bytes you reserve. The cost depends on two factors:
 
@@ -92,7 +92,7 @@ Both the Motoko `ic` mops package and the Rust `ic-cdk` provide wrappers that au
 
 If you omit `max_response_bytes`, the system assumes the maximum of 2 MB and charges accordingly: roughly 20.85 billion cycles on a 13-node subnet. Always set this to a reasonable upper bound for your expected response to avoid overpaying. Unused cycles are refunded.
 
-**Version 2** charges for what the call actually consumes: the bytes that arrive, the time the request takes, and the instructions the transform function runs. `max_response_bytes` still bounds the response, but it no longer sets the price. Therefore, a generous cap costs nothing extra, apart from locking up more cycles during the call. The trade-off is that the attached cycles double as the call's resource budget. Attach less than the call needs and it runs with proportionally smaller limits on response size, response time, and transform instructions, and fails partway through rather than up front. Use `ic0.cost_http_request_v2` to compute a recommendation of what to attach.
+**Version 2** charges for what the call actually consumes: the bytes that arrive, the time the request takes, and the instructions the transform function runs. `max_response_bytes` still bounds the response, but it no longer sets the price. A generous cap therefore adds nothing to the charge; it only reserves more cycles for the duration of the call, which limits how many outcalls the canister can have in flight. The tradeoff is that the attached cycles double as the call's resource budget. A call that does not cover the base fee is rejected up front. Beyond that, attaching less than the call needs is accepted: it runs with proportionally smaller limits on response size, response time, and transform instructions, and fails partway through rather than up front. Use `ic0.cost_http_request_v2` to compute a recommendation of what to attach.
 
 For exact pricing formulas for both versions, see the [cycles costs reference](../references/cycle-costs.md).
 
@@ -117,12 +117,6 @@ For exact pricing formulas for both versions, see the [cycles costs reference](.
 | **Decentralization** | Built into the subnet: no third parties | Depends on the oracle provider's architecture |
 
 HTTPS outcalls can replace oracles for most use cases: price feeds, API queries, webhook notifications, and data verification. Oracles may still be useful if you need features like aggregated multi-source data feeds or historical data caching that an oracle provider maintains as a service.
-
-## Future extensions
-
-One extension is under consideration that may affect architecture decisions:
-
-- **Multiple responses:** Instead of consensus on a single response, the canister could receive all individual replica responses and resolve differences in application logic: useful for fast-moving data like price feeds.
 
 ## Next steps
 
