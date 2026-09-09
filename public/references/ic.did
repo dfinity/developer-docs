@@ -125,31 +125,31 @@ type http_request_result = record {
 };
 
 type http_request_resource_report = record {
-  raw_response_bytes: opt variant { used: nat64; exceeded: reserved };
-  http_roundtrip_time_ms: opt variant { used: nat64; exceeded: reserved };
-  transform_instructions: opt variant { used: nat64; exceeded: reserved };
-  transformed_response_bytes: opt variant { used: nat64; exceeded: reserved };
-  cycles: opt variant { used: nat; exceeded: reserved };
+    raw_response_bytes : opt variant { used : nat64; exceeded : reserved };
+    http_roundtrip_time_ms : opt variant { used : nat64; exceeded : reserved };
+    transform_instructions : opt variant { used : nat64; exceeded : reserved };
+    transformed_response_bytes : opt variant { used : nat64; exceeded : reserved };
+    cycles : opt variant { used : nat; exceeded : reserved };
 };
 
 type flexible_http_request_err = record {
-  global_error: opt variant {
-    timeout : reserved;
-    out_of_cycles : reserved;
-    responses_too_large : reserved;
-    too_many_rejects : reserved;
-  };
-  node_details : vec record {
-    node_id: principal;
-    report: http_request_resource_report;
-    error: opt record { code: text; message: text };
-  };
-  message: text;
+    global_error : opt variant {
+        timeout : reserved;
+        out_of_cycles : reserved;
+        responses_too_large : reserved;
+        too_many_rejects : reserved;
+    };
+    node_details : vec record {
+        node_id : principal;
+        report : http_request_resource_report;
+        error : opt record { code : text; message : text };
+    };
+    message : text;
 };
 
 type flexible_http_request_result = variant {
-  ok: vec http_request_result;
-  err: flexible_http_request_err;
+    ok : vec http_request_result;
+    err : flexible_http_request_err;
 };
 
 type ecdsa_curve = variant {
@@ -406,10 +406,10 @@ type flexible_http_request_args = record {
         function : func(record { response : http_request_result; context : blob }) -> (http_request_result) query;
         context : blob;
     };
-    replication: opt record {
-      min_responses: nat32;
-      max_responses: nat32;
-      total_requests: nat32;
+    replication : opt record {
+        min_responses : nat32;
+        max_responses : nat32;
+        total_requests : nat32;
     };
 };
 
