@@ -85,7 +85,7 @@ Version 1 is still the default, and is what a call gets unless it asks for versi
 
 Both the Motoko `ic` mops package and the Rust `ic-cdk` provide wrappers that automatically compute and attach the required amount using the `ic0.cost_http_request` system API (version 1). These wrappers will transition to using version 2 in the near future.
 
-**Version 1** charges for the size you reserve. The cost depends on two factors:
+**Version 1** charges for the number of bytes you reserve. The cost depends on two factors:
 
 - **Request size**: the combined byte length of the URL, headers, body, transform function name, and transform context.
 - **`max_response_bytes`**: the maximum response size you declare. This is what you're charged for, not the actual response size.

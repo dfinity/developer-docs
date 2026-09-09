@@ -178,7 +178,7 @@ delivery_fee = n * (10 * n + 600) * response_bytes
 
 `request_bytes` and `outcall_type` follow from the request itself.
 
-Either way, any attached surplus is refunded, so the eventual charge corresponds precisely to the resources consumed to produce the response. Those refunds arrive asynchronously: a node that died without reporting has its whole budget returned only when the request is discarded, up to a minute after the response. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards.
+Either way, any attached surplus is refunded, so the eventual charge corresponds precisely to the resources consumed to produce the response. Those refunds arrive asynchronously: a node that died without reporting has its whole budget returned only when the request is discarded, up to a minute after the response. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as additional refunds arrive.
 
 ### EVM RPC canister
 
