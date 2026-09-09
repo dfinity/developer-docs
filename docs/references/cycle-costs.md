@@ -120,7 +120,7 @@ Outcalls have two pricing versions, chosen per call by the `pricing_version` fie
 
 :::caution[Version 1 is deprecated]
 
-Version `1` is still the default, but it is deprecated. Version `2` is to become the default, after which version `1` will be removed. Select version `2`, and treat the version 1 figures below as the cost of an unmigrated call rather than as the price to design against.
+Version `1` is still the default, but it is deprecated. Version `2` is to become the default, after which version `1` will be removed. Callers are advised to migrate to version `2`.
 
 :::
 
@@ -153,10 +153,10 @@ base_fee     = (1_000_000 + 50 * request_bytes + replication_term) * n
 
 usage_fee    = 50 * raw_response_bytes + 300 * roundtrip_ms
                  + transform_instructions / 13
-                 + 50 * n * response_bytes      non-replicated and flexible only
+                 (+ 50 * n * response_bytes      non-replicated and flexible only)
 
 delivery_fee = n * (10 * n + 600) * response_bytes
-                 + (2_000 * n + 100_000) * n * (K - min_responses)   flexible only
+                 (+ (2_000 * n + 100_000) * n * (K - min_responses)   flexible only)
 ```
 
 `usage_fee` is charged for each node that performs the outcall: all `n` of them for a fully replicated call, one for a non-replicated call, `total_requests` for a flexible one. `response_bytes` is the size after the transform. A non-replicated call (`is_replicated = false`) takes the `otherwise` branch with `min_responses = 1`. A flexible call that does not set `replication` defaults `min_responses` to `floor(2 / 3 * n) + 1`.
@@ -167,7 +167,7 @@ delivery_fee = n * (10 * n + 600) * response_bytes
 | Per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
 | Per delivered response byte | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
 
-`ic0.cost_http_request_v2` prices whatever resource usage you hand it, so what it returns is the amount to **attach** for a run that consumes exactly that, not a prediction of the charge. Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
+`ic0.cost_http_request_v2` prices whatever resource usage you hand it, so what it returns is the recommended amount to **attach** for a run that consumes exactly that, not a prediction of the charge. Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
 
 | Parameter | Maximum |
 |-----------|---------|
