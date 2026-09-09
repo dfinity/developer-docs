@@ -134,7 +134,7 @@ Flexible outcalls go through the `flexible_http_request` management canister met
 
 Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
 
-**The delivered responses must fit 2 MiB between them.** The limit applies to their sum after the transform, not to each one, and specifically to the sum of the smallest `min_responses` of them, since those are the ones the system has to be able to deliver.
+**The delivered responses must fit 2 MiB between them.** The limit applies to the combined encoded size of every response returned after the transform, and not to each response on its own. When they do not all fit, fewer are returned, down to `min_responses`. The call fails only when even the smallest `min_responses` responses exceed the limit together.
 
 ## Transform functions
 

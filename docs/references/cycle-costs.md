@@ -142,7 +142,7 @@ size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 | Per request byte | 5_200 | ~$0.0000000071 | 13_600 | ~$0.0000000186 |
 | Per reserved response byte | 10_400 | ~$0.0000000142 | 27_200 | ~$0.0000000372 |
 
-**Version 2 (pay as you go).** The price has three parts: a base fee charged when the call is accepted, a usage fee charged for each node that performs the outcall, and a delivery fee for putting the result into a block. `max_response_bytes` appears in none of them. It still caps the response, and it affects how much of the payment is withheld while the call is in flight, but it no longer sets the price.
+**Version 2 (pay-as-you-go).** The price has three parts: a base fee charged when the call is accepted, a usage fee charged for each node that performs the outcall, and a delivery fee for putting the result into a block. `max_response_bytes` appears in none of them. It still caps the response, and it affects how much of the payment is withheld while the call is in flight, but it no longer sets the price.
 
 ```
 n = subnet size.  K = responses delivered (1 unless flexible).
