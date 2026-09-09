@@ -110,6 +110,8 @@ To output logs as JSON for programmatic processing:
 icp canister logs <canister-name> -e ic --json
 ```
 
+Combined with `--follow`, `--json` emits newline-delimited JSON, one record per line as it arrives.
+
 ## Log visibility
 
 By default, only the canister's controllers can read its logs. You can make logs visible to everyone, or grant read access to specific principals.
@@ -148,6 +150,8 @@ To revoke access for a principal:
 icp canister settings update <canister-name> -e ic \
   --remove-log-viewer <principal-id>
 ```
+
+While log visibility is `public` there is no viewers list to be relative to, so `--add-log-viewer` and `--remove-log-viewer` are rejected. Use `--set-log-viewer` to state the list outright, or `--log-visibility controllers` to revoke public access.
 
 ### Setting log visibility in icp.yaml
 
@@ -407,7 +411,7 @@ async fn main() -> Result<()> {
 
 - [Canister lifecycle](lifecycle.md): configure log visibility and memory limits when creating or deploying a canister
 - [Testing strategies](../testing/strategies.md): use canister logs as part of your debugging workflow
-- [CLI reference: `icp canister logs`](https://cli.internetcomputer.org/1.3/reference/cli#icp-canister-logs): full command flags and options
-- [CLI reference: `icp canister settings update`](https://cli.internetcomputer.org/1.3/reference/cli#icp-canister-settings-update): full command flags and options
+- [CLI reference: `icp canister logs`](https://cli.internetcomputer.org/1.4/reference/cli#icp-canister-logs): full command flags and options
+- [CLI reference: `icp canister settings update`](https://cli.internetcomputer.org/1.4/reference/cli#icp-canister-settings-update): full command flags and options
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/logs.mdx, docs/building-apps/canister-management/backtraces.mdx, docs/building-apps/advanced/canister-access-logs.mdx; dfinity/examples — rust/canister_logs, motoko/canister_logs, rust/query_stats, motoko/query_stats; dfinity/cdk-rs — ic-cdk/src/api.rs, ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/icp-cli — docs/reference/cli.md, docs/reference/canister-settings.md -->

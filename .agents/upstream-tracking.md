@@ -51,7 +51,7 @@ Read the file at the **pinned** ref, not at `main`:
 
 ```bash
 # The pinned ref for each repo is in .sources/upstream.json
-curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.1.0/docs/reference/cli.md
+curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.4.0/docs/reference/cli.md
 ```
 
 Use `raw.githubusercontent.com`, not `gh api .../contents/...`: the API returns
@@ -133,11 +133,15 @@ is not a ref git can resolve.
 
 ### `icp-cli`: link slug adaptation
 
-All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.3/...`).
+All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.4/...`).
 When `icp-cli` moves to a new minor:
 
-1. The slug is the `major.minor` of the release (`v1.3.0` → `1.3`). Confirm it is
-   live by opening the docs-site root, which redirects to the latest version.
+1. The slug is the `major.minor` of the release (`v1.4.0` → `1.4`). Confirm it is
+   live in the published version list, where the entry marked `latest: true` is
+   the slug the docs site serves at its root:
+   ```bash
+   curl -sL --compressed https://cli.internetcomputer.org/versions.json
+   ```
 2. Verify every linked path and anchor resolves at the new slug **before**
    replacing. Check the live site, not a repo tree: that validates the published
    URL, its trailing-slash behaviour, and the anchor.
@@ -151,12 +155,12 @@ When `icp-cli` moves to a new minor:
    ```
    For deep links, also confirm the anchor exists:
    ```bash
-   curl -sL "https://cli.internetcomputer.org/<new>/reference/cli/" | grep -o 'id="icp-cycles"'
+   curl -sL --compressed "https://cli.internetcomputer.org/<new>/reference/cli/" | grep -o 'id="icp-cycles"'
    ```
 3. Replace the slug across all files (per-file loop, because GNU and BSD `sed`
    disagree on `-i`):
    ```bash
-   old=1.1; new=1.3
+   old=1.3; new=1.4
    grep -rl "cli.internetcomputer.org/${old}/" docs/ | while IFS= read -r f; do
      sed -i.bak "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g" "$f" && rm -f "$f.bak"
    done
