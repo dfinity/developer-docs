@@ -26,7 +26,7 @@ See also: [data confidentiality on ICP](./miscellaneous.md#data-confidentiality-
 
 ### Security concern
 
-When an HTTPS outcall is performed, it is amplified by the number of replicas in the subnet. The target web server will receive not only one request but as many requests as the number of nodes in the subnet.
+When a replicated HTTPS outcall is performed, it is amplified by the number of replicas in the subnet. The target web server will receive not only one request but as many requests as the number of nodes in the subnet. Non-replicated mode sends a single request, and flexible mode sends `total_requests` of them; see [Outcall modes](../backends/https-outcalls.md#outcall-modes).
 
 Most web servers implement some sort of rate limiting; this is a mechanism used to restrict the number of requests a client can make to a web server within a specific time period, preventing abuse or excessive usage of their API(s).
 
@@ -40,7 +40,7 @@ See the [HTTPS outcalls guide](../backends/https-outcalls.md) for more details.
 
 ### Security concern
 
-As mentioned before, if an HTTPS outcall is performed, it is amplified by the number of replicas in the subnet. That means the queried endpoint will receive the same request several times. This is especially risky in requests that change the endpoint state, given that one HTTPS outcall could lead to unintentionally changing the endpoint state several times.
+As mentioned before, a replicated HTTPS outcall is amplified by the number of replicas in the subnet. That means the queried endpoint will receive the same request several times. This is especially risky in requests that change the endpoint state, given that one HTTPS outcall could lead to unintentionally changing the endpoint state several times.
 
 ### Recommendation
 
@@ -76,7 +76,7 @@ The [pricing](../../references/cycle-costs.md#https-outcalls) of HTTPS outcalls 
 
 When using HTTPS outcalls, be mindful of the HTTP request and response sizes. Ensure that the size of the request issued and the size of the HTTP response coming from the server are reasonable.
 
-When making an HTTPS outcall, it is possible (and highly recommended) to define the `max_response_bytes` parameter, which allows you to set the maximum allowed response size. If this parameter is not defined, it defaults to the hard response size limit of the HTTPS outcalls feature, which is 2MiB. The cycle cost of the response is always charged based on the `max_response_bytes` or 2MB if not set.
+When making an HTTPS outcall, it is possible (and highly recommended) to define the `max_response_bytes` parameter, which allows you to set the maximum allowed response size. If this parameter is not defined, it defaults to the hard response size limit of 2MB (2,000,000 bytes). Under pricing version 1 the call is charged against `max_response_bytes` whether or not the response uses it. Under version 2 the charge follows the bytes that actually arrive, but the cycles you attach still bound what the call may spend, so an oversized budget is what a slow or verbose server can drain.
 
 Finally, be aware that users may incur cycles costs for HTTPS outcalls in case these calls can be triggered by user actions.
 
@@ -93,5 +93,11 @@ HTTPS outcalls that use user-submitted data are susceptible to various injection
 Perform input validation when using user-submitted data in the HTTPS outcalls.
 
 See the [OWASP Input Validation Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html) for more information.
+
+## Next steps
+
+- [HTTPS outcalls guide](../backends/https-outcalls.md): how to make outcalls, with the three modes and both pricing versions
+- [Concepts: HTTPS outcalls](../../concepts/https-outcalls.md): how consensus works for outcalls
+- [Cycles costs](../../references/cycle-costs.md#https-outcalls): outcall pricing formulas
 
 <!-- Upstream: sync from dfinity/portal building-apps/security/https-outcalls.mdx -->
