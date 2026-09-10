@@ -144,6 +144,8 @@ size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 
 **Version 2 (pay-as-you-go).** The price has three parts: a base fee charged when the call is accepted, a usage fee charged for each node that performs the outcall, and a delivery fee for putting the result into a block. `max_response_bytes` appears in none of them. It still caps the response, and it affects how much of the payment is withheld while the call is in flight, but it no longer sets the price.
 
+What a call is **charged**, once it settles:
+
 ```
 n = subnet size.  K = responses delivered (1 unless flexible).
 
@@ -165,9 +167,11 @@ delivery_fee = n * (10 * n + 600) * response_bytes
 |-----------|----------------|------|----------------|------|
 | Per fully replicated call (base) | 38_417_600 | ~$0.0000525 | 227_283_200 | ~$0.000311 |
 | Per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
-| Per delivered response byte | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
+| Per delivered response byte, charged | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
 
-`ic0.cost_http_request_v2` prices whatever resource usage you hand it, so what it returns is the recommended amount to **attach** for a run that consumes exactly that, not a prediction of the charge. Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
+**What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the quote reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
+
+Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
 
 | Parameter | Maximum |
 |-----------|---------|
