@@ -567,6 +567,26 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
   - `num_blocks_proposed_total` (`nat64`)
   - `num_block_failures_total` (`nat64`)
 
+### `subnet_metrics`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns subnet-wide metrics for a given subnet, which does not have to be the subnet hosting the caller. Every field except `block_height` reports the same quantity that the certified state tree exposes at `/subnet/<subnet_id>/metrics`; this method makes those quantities available to canisters, which cannot read the state tree.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`): any subnet
+- **Returns:**
+  - `block_height` (`nat`): the target subnet's current block height, i.e. the height of the block in whose execution the call is processed
+  - `num_canisters` (`nat`): canisters on the subnet
+  - `canister_state_bytes` (`nat`): total size of canister state in bytes
+  - `consumed_cycles_total` (`nat`): total cycles removed from circulation on the subnet
+  - `update_transactions_total` (`nat`): total transactions processed on the subnet
+
+Only `block_height` is as of the block that processes the call. The other four fields are aggregates refreshed at block boundaries, so they describe an earlier block, and they are not refreshed in lockstep with each other. `canister_state_bytes` is the stalest: it is recomputed only every 10 blocks, at heights that are multiples of 10, so it can be up to 10 blocks behind the others, and it reads 0 until the first recomputation after the subnet was created.
+
+`update_transactions_total` only ever grows. `consumed_cycles_total` covers deleted canisters and cycles consumed by the subnet itself, and it nets out refunds of cycles charged in advance, so it can decrease. `num_canisters` and `canister_state_bytes` are current values, not counters.
+
 ### `subnet_info`
 
 Returns metadata about a subnet.

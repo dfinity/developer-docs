@@ -789,6 +789,42 @@ A single metric entry is a record with the following fields:
 
 - `num_block_failures_total` (`nat64`): the number of failed block proposals by this node.
 
+### IC method `subnet_metrics` {#ic-subnet_metrics}
+
+This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+
+:::note
+
+The subnet metrics management canister API is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
+
+:::
+
+Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance.
+
+All fields except `block_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
+
+In the following, *the subnet* refers to the subnet identified by the `subnet_id` argument.
+
+Only `block_height` describes the block in whose execution the call is processed. The other four fields are aggregates that the subnet refreshes at block boundaries, so they describe the subnet as of an earlier block. They are not all refreshed at the same rate, so they need not be mutually consistent, and none of them should be read as a snapshot taken at `block_height`.
+
+The fields returned are:
+
+- `block_height` (`nat`): the current block height of the subnet, i.e., the height of the block in whose execution this call is processed.
+
+    Heights are consecutive numbers identifying the successive blocks of a subnet. This specification does not otherwise model block heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
+
+    The value is monotonically non-decreasing for a given subnet.
+
+- `num_canisters` (`nat`): the number of canisters on the subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
+
+- `canister_state_bytes` (`nat`): the total size in bytes of the state taken by canisters on the subnet. This is a current value, not a counter. Recomputing it is expensive, so it is refreshed only every 10 blocks, at heights that are multiples of 10, and can therefore be up to 10 blocks staler than the other fields. It reads 0 until the first refresh after the subnet was created.
+
+- `consumed_cycles_total` (`nat`): the total number of cycles removed from circulation on the subnet. Besides the cycles charged to the canisters currently on the subnet, this includes the cycles charged to canisters that have since been deleted, and the cycles consumed on behalf of the subnet itself rather than charged to any individual canister. Cycles that are charged in advance and later refunded are excluded once the refund is accounted for, so this value can also decrease.
+
+- `update_transactions_total` (`nat`): the total number of transactions processed on the subnet, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing for a given subnet.
+
+`consumed_cycles_total` and `update_transactions_total` cover the whole lifetime of the subnet, or the period since the respective metric was introduced for subnets that predate it.
+
 ### IC method `subnet_info` {#ic-subnet_info}
 
 This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.

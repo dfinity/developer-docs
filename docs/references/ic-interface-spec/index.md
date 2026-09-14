@@ -517,10 +517,10 @@ The state tree contains information about the topology of the Internet Computer.
 
      A collection of subnet-wide metrics related to this subnet's current resource usage and/or performance. The metrics are a CBOR map with the following fields:
 
-     - `num_canisters` (`nat`): The number of canisters on this subnet.
-     - `canister_state_bytes` (`nat`): The total size of the state in bytes taken by canisters on this subnet since this subnet was created.
-     - `consumed_cycles_total` (`map`): The total number of cycles consumed by all current and deleted canisters on this subnet. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
-     - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet since this subnet was created.
+     - `num_canisters` (`nat`): The number of canisters on this subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
+     - `canister_state_bytes` (`nat`): The total size of the state in bytes currently taken by canisters on this subnet. This is a current value, not a counter. Recomputing it is expensive, so it is refreshed only every 10 blocks, at heights that are multiples of 10, and reads 0 until the first refresh after this subnet was created.
+     - `consumed_cycles_total` (`map`): The total number of cycles removed from circulation on this subnet since this subnet was created. Besides the cycles charged to the canisters currently on this subnet, this includes the cycles charged to canisters that have since been deleted, and the cycles consumed on behalf of the subnet itself rather than charged to any individual canister. Cycles that are charged in advance and later refunded are excluded once the refund is accounted for, so this value can also decrease. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
+     - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet since this subnet was created, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing.
 
 
 :::note

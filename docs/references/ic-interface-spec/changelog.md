@@ -8,6 +8,13 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.68.0 (2026-09-14) {$0_68_0}
+* New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
+  given subnet: the current block height, the number of canisters, the total canister
+  state size, the total cycles consumed, and the total number of processed transactions.
+  All fields except the block height were previously only readable by external users via
+  the certified state tree path `/subnet/<subnet_id>/metrics`. The API is EXPERIMENTAL.
+
 ### 0.67.0 (2026-08-31) {$0_67_0}
 * New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`
   or a number between `4096` and `2097152` (`2 MiB`), inclusively, with the default value `4096`.
