@@ -245,6 +245,11 @@ cannot resolve at all: astro 7.2.10, for example, moved its
 `@astrojs/mdx` 8 satisfies, which only ships with Starlight 0.42. Grouping lets
 dependabot resolve the whole family in one pass.
 
+Grouping a security update coalesces only the family members that each carry an
+advisory, so an advisory against `astro` alone still arrives as a one-package PR
+that cannot resolve. The weekly version update is what keeps that rare, by
+leaving little room between the family's releases and what is committed.
+
 Grouping fixes the resolution, not the code. A Starlight minor is a breaking
 release, so a grouped PR still fails the build check whenever the new version
 needs source changes (0.39 changed the `autogenerate` sidebar shape; 0.42

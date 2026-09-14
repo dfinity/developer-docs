@@ -21,6 +21,10 @@ updates:
         patterns:
           - "astro"
           - "@astrojs/*"
+      # Only coalesces family members that each carry an advisory, so a single
+      # astro advisory still arrives as a one-package PR that cannot resolve.
+      # What keeps that rare is the weekly version update above; when one does
+      # show up, take it over by hand.
       astro-security:
         applies-to: security-updates
         patterns:
