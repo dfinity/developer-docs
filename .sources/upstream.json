@@ -55,7 +55,7 @@
   "watched": [
     {
       "repo": "dfinity/icp-cli",
-      "pinned": "v1.3.0",
+      "pinned": "v1.4.0",
       "track": "release",
       "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
       "verify": "docs/reference/cli.md",

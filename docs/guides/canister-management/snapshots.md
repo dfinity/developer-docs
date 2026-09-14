@@ -7,7 +7,7 @@ sidebar:
 
 Canister snapshots capture the full state of a canister (its compiled Wasm module, Wasm heap memory, stable memory, certified variables, and chunk store) at a specific point in time. You can restore a canister to a snapshot to roll back after a failed upgrade, recover from data corruption, or transfer state to another canister.
 
-Only controllers of a canister can create or restore snapshots. Up to 10 snapshots per canister can be stored on the network at a time.
+Only controllers of a canister can create or restore snapshots. Listing and reading them follows the [`snapshot_visibility`](settings.md#snapshot-visibility) setting, which is controller-only by default. Up to 10 snapshots per canister can be stored on the network at a time.
 
 ## When to use snapshots
 
@@ -181,6 +181,6 @@ icp canister status my-canister -e ic
 - [Canister lifecycle](lifecycle.md): Understand how snapshots fit into the upgrade workflow
 - [Canister migration](canister-migration.md): Complete guide for moving a canister to a different subnet using the snapshot transfer workflow
 - [Canister upgrades security](../security/canister-upgrades.md): Security considerations when using snapshot-based rollbacks
-- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/1.3/guides/canister-snapshots): Full command reference for all snapshot subcommands
+- [icp-cli canister snapshot reference](https://cli.internetcomputer.org/1.4/guides/canister-snapshots): Full command reference for all snapshot subcommands
 
 <!-- Upstream: informed by dfinity/icp-cli docs/guides/canister-snapshots.md; dfinity/portal docs/building-apps/canister-management/snapshots.mdx -->

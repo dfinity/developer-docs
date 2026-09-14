@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Every canister has settings that control its resource allocation, access control, and runtime behavior. Only a [controller](#controllers) of the canister can read or modify these settings.
+Every canister has settings that control its resource allocation, access control, and runtime behavior. Only a [controller](#controllers) of the canister can modify them. Reading them follows [status visibility](#status-visibility), which is controller-only by default.
 
 This guide covers how to view, configure, and update canister settings using icp-cli, `icp.yaml`, and programmatic calls to the management canister.
 
@@ -177,6 +177,7 @@ Controls who can fetch canister logs through the `fetch_canister_logs` managemen
 | Type | `controllers`, `public`, or `allowed_viewers` object |
 | Default | `controllers` |
 | icp.yaml key | `log_visibility` |
+| Maximum `allowed_viewers` | 10 principals |
 
 ```yaml
 # Only controllers
@@ -187,7 +188,7 @@ settings:
 settings:
   log_visibility: public
 
-# Specific principals (e.g. a monitoring service or auditor identity)
+# Specific principals, in addition to the controllers
 settings:
   log_visibility:
     allowed_viewers:
@@ -213,22 +214,65 @@ settings:
 
 ### Snapshot visibility
 
-Controls who can list and read canister snapshots through the management canister.
+Controls who can list and read canister snapshots through the management canister. Taking, restoring, and deleting snapshots stays controller-only whatever this is set to.
 
 | Property | Value |
 |----------|-------|
 | Type | `controllers`, `public`, or `allowed_viewers` object |
 | Default | `controllers` |
+| icp.yaml key | `snapshot_visibility` |
+| Maximum `allowed_viewers` | 10 principals |
 
-| Variant | Meaning |
-|---------|---------|
-| `controllers` (default) | Only controllers can list and read snapshots |
-| `public` | Anyone can list and read snapshots |
-| `allowed_viewers` | Specific principals can list and read snapshots |
+```yaml
+# Only controllers
+settings:
+  snapshot_visibility: controllers
 
-:::note
-Configuring `snapshot_visibility` via `icp.yaml` or CLI flags is not yet supported in icp-cli. Set it programmatically via the management canister: see [Updating settings programmatically](#updating-settings-programmatically).
+# Anyone
+settings:
+  snapshot_visibility: public
+
+# Specific principals, in addition to the controllers
+settings:
+  snapshot_visibility:
+    allowed_viewers:
+      - "<principal-of-backup-service>"
+```
+
+:::caution
+Reading a snapshot exposes the canister's full state: the Wasm module, Wasm memory, stable memory, certified variables, and the Wasm chunk store. Granting snapshot access is closer to handing out a state dump than to granting a read-only report.
 :::
+
+### Status visibility
+
+Controls who can read the canister's status through the management canister's `canister_status` endpoint: the running state, cycles balance, memory usage, and the settings themselves.
+
+| Property | Value |
+|----------|-------|
+| Type | `controllers`, `public`, or `allowed_viewers` object |
+| Default | `controllers` |
+| icp.yaml key | `status_visibility` |
+| Maximum `allowed_viewers` | 10 principals |
+
+```yaml
+# The canister's controllers (default)
+settings:
+  status_visibility: controllers
+
+# Anyone
+settings:
+  status_visibility: public
+
+# Specific principals, in addition to the controllers
+settings:
+  status_visibility:
+    allowed_viewers:
+      - "<principal-of-monitoring-service>"
+```
+
+Two callers are always allowed whatever this is set to: the canister itself, reading its own status, and the administrators of the subnet it runs on. For log and snapshot visibility, `controllers` is instead an exhaustive list.
+
+A caller that may not read the status still sees the canister's controllers and module hash, which the network publishes in the state tree and `icp canister status` falls back to. Granting status access grants no control over the canister.
 
 ### Environment variables
 
@@ -263,6 +307,8 @@ canisters:
       wasm_memory_threshold: 512mib
       log_visibility: controllers
       log_memory_limit: 2mib
+      snapshot_visibility: controllers
+      status_visibility: controllers
       environment_variables:
         ENV: "development"
 ```
@@ -315,6 +361,9 @@ icp canister settings update backend --wasm-memory-limit 3gib
 # Log visibility
 icp canister settings update backend --log-visibility public
 
+# Status visibility, granted to specific principals instead of a fixed policy
+icp canister settings update backend --set-status-viewer PRINCIPAL
+
 # Multiple settings at once
 icp canister settings update backend \
   --compute-allocation 10 \
@@ -328,9 +377,13 @@ For mainnet canisters, add `-e <env>` where `<env>` is the name of your mainnet 
 icp canister settings update backend -e ic --freezing-threshold 90d
 ```
 
+Each of the three visibility settings comes in two forms, where `<kind>` is `log`, `snapshot`, or `status`. A fixed policy is `--<kind>-visibility`, which takes `controllers` or `public`. A list of principals is `--add-<kind>-viewer`, `--set-<kind>-viewer`, or `--remove-<kind>-viewer`. One command cannot use both forms for the same setting.
+
+A viewer list is also relative to an existing one, so `--add-<kind>-viewer` and `--remove-<kind>-viewer` are rejected while that setting is `public`. To narrow a public setting, state the list outright with `--set-<kind>-viewer`, or revoke public access with `--<kind>-visibility controllers`.
+
 Additional flags: `--reserved-cycles-limit`, `--wasm-memory-threshold`, `--log-memory-limit`, `--add-environment-variable`. Run `icp canister settings update --help` for the full list.
 
-For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/1.3/reference/cli#icp-canister-settings-update).
+For the full list of CLI flags, see the [icp-cli reference](https://cli.internetcomputer.org/1.4/reference/cli#icp-canister-settings-update).
 
 ## Updating settings programmatically
 
@@ -361,6 +414,11 @@ persistent actor Self {
       #public;
       #allowed_viewers : [Principal];
     };  // controls who can list/read canister snapshots
+    status_visibility : ?{
+      #controllers;
+      #public;
+      #allowed_viewers : [Principal];
+    };  // controls who can read the canister status
     wasm_memory_limit : ?Nat;
     wasm_memory_threshold : ?Nat;
     environment_variables : ?[{name : Text; value : Text}];
@@ -387,6 +445,7 @@ persistent actor Self {
         reserved_cycles_limit = null;
         log_visibility = null;
         snapshot_visibility = null;
+        status_visibility = null;
         wasm_memory_limit = null;
         wasm_memory_threshold = null;
         environment_variables = null;
