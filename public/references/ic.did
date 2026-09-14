@@ -451,18 +451,31 @@ type subnet_metrics_args = record {
     subnet_id : principal;
 };
 
+// Only `block_height` describes the block in whose execution the call is
+// processed. The other four fields are aggregates refreshed at block
+// boundaries, so they describe the subnet as of an earlier block, and they are
+// not all refreshed at the same rate; see the individual fields.
 type subnet_metrics_result = record {
     // Current block height of the subnet, i.e. the height of the block in
-    // whose execution this call is processed.
+    // whose execution this call is processed. Monotonically non-decreasing for
+    // a given subnet; the heights of different subnets are unrelated.
     block_height : nat;
-    // Current number of canisters on the subnet.
+    // Number of canisters on the subnet. A current value, not a counter.
     num_canisters : nat;
-    // Current total size in bytes of the state taken by canisters on the subnet.
+    // Total size in bytes of the state taken by canisters on the subnet. A
+    // current value, not a counter. Recomputing it is expensive, so it is
+    // refreshed only every 10 blocks, at heights that are multiples of 10, and
+    // reads 0 until the first refresh after the subnet was created.
     canister_state_bytes : nat;
-    // Total cycles removed from circulation on the subnet by all current and
-    // deleted canisters.
+    // Total cycles removed from circulation on the subnet: the cycles charged
+    // to the canisters currently on the subnet, plus those charged to canisters
+    // that have since been deleted, plus those consumed on behalf of the subnet
+    // itself. Refunds of cycles charged in advance are netted out, so this
+    // value can also decrease.
     consumed_cycles_total : nat;
-    // Total number of transactions processed on the subnet.
+    // Total number of transactions processed on the subnet, i.e. the total
+    // number of messages executed in the replicated mode. Monotonically
+    // non-decreasing.
     update_transactions_total : nat;
 };
 
