@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "glob": "^11.0.1",
+    "glob": "^13.0.6",
     "gray-matter": "^4.0.3"
   }
 }
