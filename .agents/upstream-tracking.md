@@ -51,7 +51,7 @@ Read the file at the **pinned** ref, not at `main`:
 
 ```bash
 # The pinned ref for each repo is in .sources/upstream.json
-curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.4.0/docs/reference/cli.md
+curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.5.0/docs/reference/cli.md
 ```
 
 Use `raw.githubusercontent.com`, not `gh api .../contents/...`: the API returns
@@ -133,10 +133,10 @@ is not a ref git can resolve.
 
 ### `icp-cli`: link slug adaptation
 
-All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.4/...`).
+All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.5/...`).
 When `icp-cli` moves to a new minor:
 
-1. The slug is the `major.minor` of the release (`v1.4.0` → `1.4`). Confirm it is
+1. The slug is the `major.minor` of the release (`v1.5.0` → `1.5`). Confirm it is
    live in the published version list, where the entry marked `latest: true` is
    the slug the docs site serves at its root:
    ```bash
@@ -160,7 +160,7 @@ When `icp-cli` moves to a new minor:
 3. Replace the slug across all files (per-file loop, because GNU and BSD `sed`
    disagree on `-i`):
    ```bash
-   old=1.3; new=1.4
+   old=1.4; new=1.5
    grep -rl "cli.internetcomputer.org/${old}/" docs/ | while IFS= read -r f; do
      sed -i.bak "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g" "$f" && rm -f "$f.bak"
    done
