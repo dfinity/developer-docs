@@ -235,3 +235,41 @@ If a shallow clone cannot resolve a pinned commit:
 git -C .sources/<repo> fetch --unshallow
 git -C .sources/<repo> checkout <commit>
 ```
+
+## Build dependencies (npm)
+
+The packages in `package.json` are a separate axis: they decide whether the site
+builds, not whether its content is accurate. `.github/dependabot.yml` keeps them
+current with weekly version updates plus security updates.
+
+`astro` and `@astrojs/*` are grouped into a single PR because Astro releases them
+in lockstep and pins their peer ranges narrowly. A bump to one of them alone often
+cannot resolve at all: astro 7.2.10, for example, moved its
+`@astrojs/markdown-remark` peer from an exact pin to `^7.3.0`, which only
+`@astrojs/mdx` 8 satisfies, which only ships with Starlight 0.42. Grouping lets
+dependabot resolve the whole family in one pass.
+
+Grouping a security update coalesces only the family members that each carry an
+advisory, so an advisory against `astro` alone still arrives as a one-package PR
+that cannot resolve. The weekly version update is what keeps that rare, by
+leaving little room between the family's releases and what is committed.
+
+Grouping fixes the resolution, not the code. A Starlight minor is a breaking
+release, so a grouped PR still fails the build check whenever the new version
+needs source changes (0.39 changed the `autogenerate` sidebar shape; 0.42
+rewrote the mobile-menu markup). Take those over by hand on an `infra/` branch:
+`preview-deployment.yml` is skipped on dependabot PRs, whose token is read-only,
+so a bump with visual impact needs a maintainer branch to get a preview at all.
+
+Two things to check when taking one over:
+
+- Regenerating `package-lock.json` on macOS prunes what does not apply locally:
+  the `libc` fields on the Linux binding packages, and, when `node_modules` is
+  present, the top-level `@emnapi/*` packages that `npm ci` needs on Linux. Move
+  `node_modules` aside, regenerate with `npm install --package-lock-only`, copy
+  the `libc` fields back from the previous lockfile, then validate with `npm ci`,
+  which reads the lock without rewriting it.
+- `npm ci && npm run build` is the gate, but it exits 0 on rendering
+  regressions. Diff `dist/` against a `main` baseline: `llms.txt`,
+  `llms-full.txt`, `sitemap.xml` and the `.md` endpoints should be identical,
+  and every HTML difference should trace to a documented upstream change.
