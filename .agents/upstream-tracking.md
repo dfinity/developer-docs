@@ -254,9 +254,12 @@ so a bump with visual impact needs a maintainer branch to get a preview at all.
 
 Two things to check when taking one over:
 
-- Regenerating `package-lock.json` on macOS strips the `libc` fields from the
-  Linux binding packages. Restore them before pushing, and confirm with
-  `grep -c '"libc"' package-lock.json` against the previous lockfile.
+- Regenerating `package-lock.json` on macOS prunes what does not apply locally:
+  the `libc` fields on the Linux binding packages, and, when `node_modules` is
+  present, the top-level `@emnapi/*` packages that `npm ci` needs on Linux. Move
+  `node_modules` aside, regenerate with `npm install --package-lock-only`, copy
+  the `libc` fields back from the previous lockfile, then validate with `npm ci`,
+  which reads the lock without rewriting it.
 - `npm ci && npm run build` is the gate, but it exits 0 on rendering
   regressions. Diff `dist/` against a `main` baseline: `llms.txt`,
   `llms-full.txt`, `sitemap.xml` and the `.md` endpoints should be identical,
