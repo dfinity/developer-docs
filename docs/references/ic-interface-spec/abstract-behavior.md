@@ -130,6 +130,7 @@ The [WebAssembly System API](./canister-interface.md#system-api) is relatively l
       memory_usage_canister_history : Nat;
       memory_usage_chunk_store : Nat;
       memory_usage_snapshots : Nat;
+      memory_usage_log_memory_store : Nat;
       freezing_threshold : Nat;
       subnet_id : Principal;
       subnet_size : Nat;
@@ -519,8 +520,11 @@ S = {
   environment_variables: CanisterId ↦ (Text ↦ Text)
   on_low_wasm_memory_hook_status: CanisterId ↦ OnLowWasmMemoryHookStatus;
   certified_data: CanisterId ↦ Blob;
+  canister_creation_timestamp: CanisterId ↦ Timestamp;
+  last_install_timestamp: CanisterId ↦ Timestamp;
   canister_history: CanisterId ↦ CanisterHistory;
   canister_log_visibility: CanisterId ↦ CanisterLogVisibility;
+  canister_log_memory_limit: CanisterId ↦ Nat;
   canister_snapshot_visibility: CanisterId ↦ CanisterSnapshotVisibility;
   canister_status_visibility: CanisterId ↦ CanisterStatusVisibility;
   canister_logs: CanisterId ↦ [CanisterLog];
@@ -567,6 +571,8 @@ freezing_limit(compute_allocation, memory_allocation, freezing_threshold, memory
 ```
 
 The (unspecified) functions `memory_usage_wasm_state(wasm_state)`, `memory_usage_raw_module(raw_module)`, `memory_usage_canister_history(canister_history)`, `memory_usage_chunk_store(chunk_store)`, and `memory_usage_snapshots(snapshots)` determine the canister's memory usage in bytes consumed by its Wasm state, raw Wasm binary, canister history, chunk store, and snapshots, respectively.
+The (unspecified) function `memory_usage_log_memory_store(log_memory_limit)` determines the canister's memory usage in bytes consumed by the store holding its canister logs.
+This memory is reserved based on the value `log_memory_limit` in canister settings and thus does not depend on the canister logs actually stored (in particular, it is zero if and only if `log_memory_limit` is zero).
 
 The freezing limit of canister `A` in state `S` can be obtained as follows:
 ```
@@ -579,7 +585,8 @@ freezing_limit(S, A) =
       memory_usage_raw_module(S.canisters[A].raw_module) +
       memory_usage_canister_history(S.canister_history[A]) +
       memory_usage_chunk_store(S.chunk_store[A]) +
-      memory_usage_snapshots(S.snapshots[A]),
+      memory_usage_snapshots(S.snapshots[A]) +
+      memory_usage_log_memory_store(S.canister_log_memory_limit[A]),
     S.canister_subnet[A].subnet_size,
   )
 ```
@@ -601,7 +608,7 @@ liquid_balance(S, A) =
 
 The reasoning behind this is that resource payments first drain the reserved balance and only when the reserved balance gets to zero, they start draining the main balance.
 
-The amount of cycles that need to be reserved after operations that allocate resources is modeled with an unspecified function `cycles_to_reserve(S, CanisterId, compute_allocation, memory_allocation, snapshots, CanState)` that depends on the old IC state, the id of the canister, the new allocations of the canister, the snapshots of the canister, and the new state of the canister.
+The amount of cycles that need to be reserved after operations that allocate resources is modeled with an unspecified function `cycles_to_reserve(S, CanisterId, compute_allocation, memory_allocation, log_memory_limit, snapshots, CanState)` that depends on the old IC state, the id of the canister, the new allocations of the canister, the new log memory limit of the canister, the snapshots of the canister, and the new state of the canister.
 
 #### Initial state
 
@@ -630,8 +637,11 @@ The initial state of the IC is
   environment_variables = ();
   on_low_wasm_memory_hook_status = ();
   certified_data = ();
+  canister_creation_timestamp = ();
+  last_install_timestamp = ();
   canister_history = ();
   canister_log_visibility = ();
+  canister_log_memory_limit = ();
   canister_snapshot_visibility = ();
   canister_status_visibility = ();
   canister_logs = ();
@@ -846,6 +856,7 @@ liquid_balance(S, E.content.canister_id) ≥ 0
     memory_usage_canister_history = memory_usage_canister_history(S.canister_history[E.content.canister_id]);
     memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[E.content.canister_id]);
     memory_usage_snapshots = memory_usage_snapshots(S.snapshots[E.content.canister_id]);
+    memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[E.content.canister_id]);
     freezing_threshold = S.freezing_threshold[E.content.canister_id];
     subnet_id = S.canister_subnet[E.content.canister_id].subnet_id;
     subnet_size = S.canister_subnet[E.content.canister_id].subnet_size;
@@ -1317,6 +1328,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(S.canister_history[M.receiver]);
   memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[M.receiver]);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[M.receiver]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[M.receiver]);
   freezing_threshold = S.freezing_threshold[M.receiver];
   subnet_id = S.canister_subnet[M.receiver].subnet_id;
   subnet_size = S.canister_subnet[M.receiver].subnet_size;
@@ -1377,7 +1389,7 @@ if
   res.cycles_accepted ≤ Available
   (res.cycles_used + ∑ [ MAX_CYCLES_PER_RESPONSE + call.transferred_cycles | call ∈ res.new_calls ]) ≤
     (S.balances[M.receiver] + res.cycles_accepted + (if Is_response then MAX_CYCLES_PER_RESPONSE else MAX_CYCLES_PER_MESSAGE))
-  Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+  Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
   New_balance =
       (S.balances[M.receiver] + res.cycles_accepted + (if Is_response then MAX_CYCLES_PER_RESPONSE else MAX_CYCLES_PER_MESSAGE))
       - (res.cycles_used + ∑ [ MAX_CYCLES_PER_RESPONSE + call.transferred_cycles | call ∈ res.new_calls ])
@@ -1391,7 +1403,8 @@ if
       memory_usage_raw_module(S.canisters[M.receiver].raw_module) +
       memory_usage_canister_history(S.canister_history[M.receiver]) +
       memory_usage_chunk_store(S.chunk_store[M.receiver]) +
-      memory_usage_snapshots(S.snapshots[M.receiver]),
+      memory_usage_snapshots(S.snapshots[M.receiver]) +
+      memory_usage_log_memory_store(S.canister_log_memory_limit[M.receiver]),
     S.canister_subnet[M.receiver].subnet_size,
   )
   New_reserved_balance ≤ S.reserved_balance_limits[M.receiver]
@@ -1730,8 +1743,12 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = []
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
 
-Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, null, EmptyCanister.wasm_state)
+Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, null, EmptyCanister.wasm_state)
 New_balance = M.transferred_cycles - Cycles_reserved
 New_reserved_balance = Cycles_reserved
 New_reserved_balance <= New_reserved_balance_limit
@@ -1778,6 +1795,7 @@ S' = S with
     canisters[Canister_id] = EmptyCanister
     snapshots[A.canister_id] = null
     time[Canister_id] = CurrentTime
+    canister_creation_timestamp[Canister_id] = CurrentTime
     global_timer[Canister_id] = 0
     controllers[Canister_id] = New_controllers
     chunk_store[Canister_id] = ()
@@ -1796,6 +1814,7 @@ S' = S with
     query_stats[Canister_id] = []
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
+    canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
     canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
@@ -1833,6 +1852,9 @@ To avoid clashes with potential user ids or is derived from users or canisters, 
 #### IC Management Canister: Changing settings
 
 Only the controllers of the given canister can update the canister settings.
+
+Changing the value `log_memory_limit` resizes the store holding the canister logs, which consumes cycles.
+This cost is modeled by the (unspecified) variable `Cycles_used` that is zero unless the store is resized.
 
 Conditions  
 
@@ -1887,12 +1909,16 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = S.environment_variables[A.canister_id]
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = S.canister_log_memory_limit[A.canister_id]
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, New_compute_allocation, New_memory_allocation, S.snapshots[A.canister_id], S.canisters[A.canister_id].wasm_state)
-New_balance = S.balances[A.canister_id] - Cycles_reserved
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, S.snapshots[A.canister_id], S.canisters[A.canister_id].wasm_state)
+New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ New_reserved_balance_limit
-if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or Cycles_reserved > 0:
+if New_compute_allocation > S.compute_allocation[A.canister_id] or New_memory_allocation > S.memory_allocation[A.canister_id] or New_canister_log_memory_limit > S.canister_log_memory_limit[A.canister_id] or Cycles_used > 0 or Cycles_reserved > 0:
   liquid_balance(S', A.canister_id) ≥ 0
 
 S.canister_history[A.canister_id] = {
@@ -1938,6 +1964,7 @@ S' = S with
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
     if A.settings.log_visibility is not null:
       canister_log_visibility[A.canister_id] = A.settings.log_visibility
+    canister_log_memory_limit[A.canister_id] = New_canister_log_memory_limit
     if A.settings.snapshot_visibility is not null:
       canister_snapshot_visibility[A.canister_id] = A.settings.snapshot_visibility
     if A.settings.status_visibility is not null:
@@ -1970,6 +1997,10 @@ canister_status(S, Canister_id) =
         freezing_threshold = S.freezing_threshold[Canister_id];
         reserved_cycles_limit = S.reserved_balance_limit[Canister_id];
         minimum_incoming_canister_call_cycles = S.minimum_incoming_canister_call_cycles[Canister_id];
+        log_visibility = S.canister_log_visibility[Canister_id];
+        log_memory_limit = S.canister_log_memory_limit[Canister_id];
+        snapshot_visibility = S.canister_snapshot_visibility[Canister_id];
+        status_visibility = S.canister_status_visibility[Canister_id];
         wasm_memory_limit = S.wasm_memory_limit[Canister_id];
         wasm_memory_threshold = S.wasm_memory_threshold[Canister_id];
         environment_variables = S.environment_variables[Canister_id];
@@ -1989,7 +2020,8 @@ canister_status(S, Canister_id) =
           memory_usage_raw_module(S.canisters[Canister_id].raw_module) +
           memory_usage_canister_history(S.canister_history[Canister_id]) +
           memory_usage_chunk_store(S.chunk_store[Canister_id]) +
-          memory_usage_snapshots(S.snapshots[Canister_id]),
+          memory_usage_snapshots(S.snapshots[Canister_id]) +
+          memory_usage_log_memory_store(S.canister_log_memory_limit[Canister_id]),
         S.freezing_threshold[Canister_id],
         S.canister_subnet[Canister_id].subnet_size,
       );
@@ -2168,9 +2200,32 @@ verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // 
 ```
 
 
-#### IC Management Canister: Canister information
+#### IC Management Canister: Canister information {#ic-management-canister-canister-information}
 
-Every canister can retrieve the canister history, current module hash, and current controllers of every other canister (including itself).
+Every canister and every external user can retrieve the canister history, current module hash, and current controllers of every canister (including, for a canister caller, itself).
+This information is public: retrieving it is not subject to any access control.
+
+Given a state `S`, a `Canister_id`, and `Num_requested_changes`, we define
+
+```html
+
+canister_info(S, Canister_id, Num_requested_changes) =
+    let Recent_changes = S.canister_history[Canister_id].recent_changes
+    let From = if Num_requested_changes = null
+               then |Recent_changes|
+               else max(0, |Recent_changes| - Num_requested_changes)
+    let End = |Recent_changes| - 1
+    {
+      total_num_changes = S.canister_history[Canister_id].total_num_changes;
+      recent_changes = Recent_changes[From..End];
+      module_hash =
+        if S.canisters[Canister_id] = EmptyCanister
+        then null
+        else opt (SHA-256(S.canisters[Canister_id].raw_module));
+      controllers = S.controllers[Canister_id];
+    }
+
+```
 
 Conditions  
 
@@ -2181,9 +2236,7 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'canister_info'
 M.arg = candid(A)
-if A.num_requested_changes = null then From = |S.canister_history[A.canister_id].recent_changes|
-else From = max(0, |S.canister_history[A.canister_id].recent_changes| - A.num_requested_changes)
-End = |S.canister_history[A.canister_id].recent_changes| - 1
+A.canister_id ∈ dom(S.canisters)
 
 ```
 
@@ -2195,19 +2248,59 @@ S with
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin
-        response = candid({
-          total_num_changes = S.canister_history[A.canister_id].total_num_changes;
-          recent_changes = S.canister_history[A.canister_id].recent_changes[From..End];
-          module_hash =
-            if S.canisters[A.canister_id] = EmptyCanister
-            then null
-            else opt (SHA-256(S.canisters[A.canister_id].raw_module));
-          controllers = S.controllers[A.canister_id];
-        })
+        response = candid(canister_info(S, A.canister_id, A.num_requested_changes))
         refunded_cycles = M.transferred_cycles
       }
 
 ```
+
+The IC method `canister_info` can also be invoked via management canister query calls.
+They are calls to `/api/v3/canister/<ECID>/query`
+with CBOR content `Q` such that `Q.canister_id = ic_principal`.
+
+Submitted request to `/api/v3/canister/<ECID>/query`
+
+```html
+
+E : Envelope
+
+```
+
+Conditions
+
+```html
+
+E.content = CanisterQuery Q
+Q.canister_id = ic_principal
+Q.method_name = 'canister_info'
+|Q.nonce| <= 32
+is_effective_canister_id(E.content, ECID)
+S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
+Q.arg = candid(A)
+A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
+A.canister_id ∈ dom(S.canisters)
+
+```
+
+Query response `R`:
+
+```html
+
+{status: "replied"; reply: {arg: candid(canister_info(S, A.canister_id, A.num_requested_changes))}, signatures: Sigs}
+
+```
+
+where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
+
+```html
+
+verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
+
+```
+
+Like the other management canister methods that can be invoked via query calls, `canister_info`
+can also be called from composite query methods (see [Query call](#query-call)).
+Unlike them, it is not subject to any access control.
 
 #### IC Management Canister: Canister metadata
 
@@ -2378,6 +2471,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(New_canister_history);
   memory_usage_chunk_store = memory_usage_chunk_store(New_chunk_store);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[A.canister_id]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[A.canister_id]);
   freezing_threshold = S.freezing_threshold[A.canister_id];
   subnet_id = S.canister_subnet[A.canister_id].subnet_id;
   subnet_size = S.canister_subnet[A.canister_id].subnet_size;
@@ -2386,7 +2480,7 @@ Env = {
   canister_version = S.canister_version[A.canister_id] + 1;
 }
 Mod.init(A.canister_id, A.arg, M.caller, Env) = Return {new_state = New_state; new_certified_data = New_certified_data; new_global_timer = New_global_timer; cycles_used = Cycles_used;}
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -2434,6 +2528,7 @@ S' = S with
     else:
       global_timer[A.canister_id] = 0
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     balances[A.canister_id] = New_balance
     reserved_balances[A.canister_id] = New_reserved_balance
     canister_history[A.canister_id] = New_canister_history
@@ -2489,6 +2584,7 @@ Env = {
   memory_usage_canister_history = memory_usage_canister_history(S.canister_history[A.canister_id]);
   memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[A.canister_id]);
   memory_usage_snapshots = memory_usage_snapshots(S.snapshots[A.canister_id]);
+  memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[A.canister_id]);
   freezing_threshold = S.freezing_threshold[A.canister_id];
   subnet_id = S.canister_subnet[A.canister_id].subnet_id;
   subnet_size = S.canister_subnet[A.canister_id].subnet_size;
@@ -2550,7 +2646,7 @@ Env2 = Env with {
 
 Mod.post_upgrade(Persisted_state, A.arg, M.caller, Env2) = Return {new_state = New_state; new_certified_data = New_certified_data'; new_global_timer = New_global_timer; cycles_used = Cycles_used';}
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_used' - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -2600,6 +2696,7 @@ S' = S with
     else:
       global_timer[A.canister_id] = 0
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     balances[A.canister_id] = New_balance;
     reserved_balances[A.canister_id] = New_reserved_balance;
     canister_history[A.canister_id] = New_canister_history
@@ -2679,6 +2776,7 @@ State after
 
 S with
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -2969,6 +3067,8 @@ S with
     canister_version[A.canister_id] = (deleted)
     canister_subnet[A.canister_id] = (deleted)
     time[A.canister_id] = (deleted)
+    canister_creation_timestamp[A.canister_id] = (deleted)
+    last_install_timestamp[A.canister_id] = (deleted)
     global_timer[A.canister_id] = (deleted)
     balances[A.canister_id] = (deleted)
     reserved_balances[A.canister_id] = (deleted)
@@ -2976,11 +3076,13 @@ S with
     minimum_incoming_canister_call_cycles[A.canister_id] = (deleted)
     wasm_memory_limit[A.canister_id] = (deleted)
     wasm_memory_threshold[A.canister_id] = (deleted)
+    environment_variables[A.canister_id] = (deleted)
     on_low_wasm_memory_hook_status[A.canister_id] = (deleted)
     certified_data[A.canister_id] = (deleted)
     canister_history[A.canister_id] = (deleted)
     canister_log_visibility[A.canister_id] = (deleted)
-   canister_snapshot_visibility[A.canister_id] = (deleted)
+    canister_log_memory_limit[A.canister_id] = (deleted)
+    canister_snapshot_visibility[A.canister_id] = (deleted)
     canister_status_visibility[A.canister_id] = (deleted)
     canister_logs[A.canister_id] = (deleted)
     query_stats[A.canister_id] = (deleted)
@@ -3223,9 +3325,13 @@ if A.settings.environment_variables is not null:
   New_environment_variables = A.settings.environment_variables
 else:
   New_environment_variables = []
+if A.settings.log_memory_limit is not null:
+  New_canister_log_memory_limit = A.settings.log_memory_limit
+else:
+  New_canister_log_memory_limit = 4096
 
 
-Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, null, EmptyCanister.wasm_state)
+Cycles_reserved = cycles_to_reserve(S, Canister_id, New_compute_allocation, New_memory_allocation, New_canister_log_memory_limit, null, EmptyCanister.wasm_state)
 if A.amount is not null:
   New_balance = A.amount - Cycles_reserved
 else:
@@ -3275,6 +3381,7 @@ S' = S with
     canisters[Canister_id] = EmptyCanister
     snapshots[Canister_id] = null
     time[Canister_id] = CurrentTime
+    canister_creation_timestamp[Canister_id] = CurrentTime
     global_timer[Canister_id] = 0
     controllers[Canister_id] = New_controllers
     compute_allocation[Canister_id] = New_compute_allocation
@@ -3291,6 +3398,7 @@ S' = S with
     certified_data[Canister_id] = ""
     canister_history[Canister_id] = New_canister_history
     canister_log_visibility[Canister_id] = New_canister_log_visibility
+    canister_log_memory_limit[Canister_id] = New_canister_log_memory_limit
     canister_snapshot_visibility[Canister_id] = New_canister_snapshot_visibility
     canister_status_visibility[Canister_id] = New_canister_status_visibility
     canister_logs[Canister_id] = []
@@ -3374,7 +3482,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3439,7 +3547,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, EmptyCanister)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, EmptyCanister)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3457,6 +3565,7 @@ S' = S with
     reserved_balances[A.canister_id] = New_reserved_balance
 
     canisters[A.canister_id] = EmptyCanister
+    last_install_timestamp[A.canister_id] = (deleted)
     certified_data[A.canister_id] = ""
     chunk_store = ()
     canister_history[A.canister_id] = {
@@ -3564,7 +3673,7 @@ if Snapshot.source = MetadataUpload and Snapshot.on_low_wasm_memory_hook_status 
 else:
   New_on_low_wasm_memory_hook_status = S.on_low_wasm_memory_hook_status[A.canister_id]
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.snapshots[A.canister_id], New_state)
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], S.snapshots[A.canister_id], New_state)
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3611,6 +3720,7 @@ S' = S with
     reserved_balances[A.canister_id] = New_reserved_balance
     canister_history[A.canister_id] = New_canister_history
     canister_version[A.canister_id] = S.canister_version[A.canister_id] + 1
+    last_install_timestamp[A.canister_id] = S.time[A.canister_id]
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin;
@@ -3762,7 +3872,7 @@ New_snapshot = Snapshot {
 New_snapshots = S.snapshots[A.canister_id] with
   A.replace_snapshot = (undefined)
   Snapshot_id = New_snapshot
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3837,7 +3947,7 @@ else if A.kind = WasmChunk:
 New_snapshots = S.snapshots[A.canister_id] with
   Snapshot_id = New_snapshot
 
-Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], New_snapshots, S.canisters[A.canister_id])
+Cycles_reserved = cycles_to_reserve(S, A.canister_id, S.compute_allocation[A.canister_id], S.memory_allocation[A.canister_id], S.canister_log_memory_limit[A.canister_id], New_snapshots, S.canisters[A.canister_id])
 New_balance = S.balances[A.canister_id] - Cycles_used - Cycles_reserved
 New_reserved_balance = S.reserved_balances[A.canister_id] + Cycles_reserved
 New_reserved_balance ≤ S.reserved_balance_limits[A.canister_id]
@@ -3930,6 +4040,113 @@ S with
         response = Reply (candid());
         refunded_cycles = M.transferred_cycles
       }
+
+```
+
+#### IC Management Canister: Canister logs {#ic-mgmt-canister-fetch-canister-logs}
+
+Given a state `S`, `Canister_id`, `filter`, and `Sender`, we define
+
+```html
+
+canister_logs(S, Canister_id, filter) =
+  let Selected_logs = the sublist of S.canister_logs[Canister_id] (preserving order) such that
+    if filter = by_idx Range:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.idx ∧ Log.idx < Range.end
+    else if filter = by_timestamp_nanos Range:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id] ∧ Range.start <= Log.timestamp_nanos ∧ Log.timestamp_nanos < Range.end
+    else:
+      Log ∈ Selected_logs ⟺ Log ∈ S.canister_logs[Canister_id]
+  in
+    if filter = null:
+      the longest suffix Younger_logs of Selected_logs
+        such that canister_log_memory_usage(Younger_logs) ≤ max_response_size
+    else:
+      the longest prefix Older_logs of Selected_logs
+        such that canister_log_memory_usage(Older_logs) ≤ max_response_size
+max_response_size = <implementation-specific>
+is_sender_authorized(S, Canister_id, Sender) =
+  (S[Canister_id].canister_log_visibility = Public)
+  or
+  (S[Canister_id].canister_log_visibility = Controllers and Sender in S[Canister_id].controllers)
+  or
+  (S[Canister_id].canister_log_visibility = AllowedViewers Principals and (Sender in S[Canister_id].controllers or Sender in Principals))
+
+```
+
+When the selected logs do not all fit within a single response, they are trimmed to fit and the direction of trimming depends on whether a filter is provided.
+An unfiltered read trims the oldest log records (keeps the longest suffix), so the response ends with the newest log record.
+A filtered read trims the newest log records (keeps the longest prefix), so the response starts with the oldest log record satisfying the filter.
+Thus an unfiltered read surfaces the most recent activity, while a filtered read can page forward through logs starting from the beginning of the requested range.
+
+Conditions
+
+```html
+
+S.messages = Older_messages · CallMessage M · Younger_messages
+(M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
+M.callee = ic_principal
+M.method_name = 'fetch_canister_logs'
+M.arg = candid(A)
+is_sender_authorized(S, A.canister_id, M.caller)
+
+```
+
+State after
+
+```html
+
+S with
+    messages = Older_messages · Younger_messages ·
+      ResponseMessage {
+        origin = M.origin
+        response = candid(canister_logs(S, A.canister_id, A.filter))
+        refunded_cycles = M.transferred_cycles
+      }
+
+```
+
+The IC method `fetch_canister_logs` can also be invoked via management canister query calls.
+They are calls to `/api/v3/canister/<ECID>/query`
+with CBOR content `Q` such that `Q.canister_id = ic_principal`.
+
+Submitted request to `/api/v3/canister/<ECID>/query`
+
+```html
+
+E : Envelope
+
+```
+
+Conditions
+
+```html
+
+E.content = CanisterQuery Q
+Q.canister_id = ic_principal
+Q.method_name = 'fetch_canister_logs'
+|Q.nonce| <= 32
+is_effective_canister_id(E.content, ECID)
+S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
+Q.arg = candid(A)
+A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
+is_sender_authorized(S, A.canister_id, Q.sender)
+
+```
+
+Query response `R`:
+
+```html
+
+{status: "replied"; reply: {arg: candid(canister_logs(S, A.canister_id, A.filter))}, signatures: Sigs}
+
+```
+
+where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
+
+```html
+
+verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
 
 ```
 
@@ -4118,7 +4335,7 @@ S with
 
 #### Canister out of cycles
 
-Once a canister runs out of cycles, its code is uninstalled (cf. [IC Management Canister: Code uninstallation](#rule-uninstall)), the canister changes in the canister history are dropped (their total number is preserved), and the allocations are set to zero:
+Once a canister runs out of cycles, its code is uninstalled (cf. [IC Management Canister: Code uninstallation](#rule-uninstall)), the canister changes in the canister history are dropped (their total number is preserved), and the allocations and the canister log memory limit are set to zero:
 
 Conditions  
 
@@ -4139,6 +4356,7 @@ State after
 
 S with
     canisters[CanisterId] = EmptyCanister
+    last_install_timestamp[Canister_id] = (deleted)
     snapshots[CanisterId] = null
     certified_data[CanisterId] = ""
     canister_history[CanisterId] = {
@@ -4150,6 +4368,7 @@ S with
     global_timer[CanisterId] = 0
     compute_allocation[Canister_id] = 0
     memory_allocation[Canister_id] = 0
+    canister_log_memory_limit[Canister_id] = 0
 
     messages = S.messages ·
       [ ResponseMessage {
@@ -4231,6 +4450,10 @@ State after
 S with
   canisters[New_canister_id] = S.canisters[Canister_id]
   canisters[Canister_id] = (deleted)
+  canister_creation_timestamp[New_canister_id] = S.canister_creation_timestamp[Canister_id]
+  canister_creation_timestamp[Canister_id] = (deleted)
+  last_install_timestamp[New_canister_id] = S.last_install_timestamp[Canister_id]
+  last_install_timestamp[Canister_id] = (deleted)
   snapshots[New_canister_id] = {}
   snapshots[Canister_id] = (deleted)
   controllers[New_canister_id] = S.controllers[Canister_id]
@@ -4273,6 +4496,8 @@ S with
   canister_history[Canister_id] = (deleted)
   canister_log_visibility[New_canister_id] = S.canister_log_visibility[Canister_id]
   canister_log_visibility[Canister_id] = (deleted)
+  canister_log_memory_limit[New_canister_id] = S.canister_log_memory_limit[Canister_id]
+  canister_log_memory_limit[Canister_id] = (deleted)
   canister_snapshot_visibility[New_canister_id] = S.canister_snapshot_visibility[Canister_id]
   canister_snapshot_visibility[Canister_id] = (deleted)
   canister_status_visibility[New_canister_id] = S.canister_status_visibility[Canister_id]
@@ -4438,16 +4663,19 @@ S with
 
 ```
 
-#### Trimming canister logs
+#### Purging canister logs
 
-Canister logs can be trimmed if their total length exceeds 4KiB.
+Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
+
+The (unspecified) function `canister_log_memory_usage(logs)` models the total memory used by `logs`.
 
 Conditions
 
 ```html
 
 S.canister_logs[CanisterId] = Older_logs · Newer_logs
-SUM { |l| | l <- Older_logs } > 4KiB
+canister_log_memory_usage(Older_logs · Newer_logs) > S.canister_log_memory_limit[CanisterId]
+canister_log_memory_usage(Newer_logs) ≤ S.canister_log_memory_limit[CanisterId]
 
 ```
 
@@ -4457,60 +4685,6 @@ State after
 
 S with
     canister_logs[CanisterId] = Newer_logs
-
-```
-
-#### IC Management Canister: Canister logs (query call) {#ic-mgmt-canister-fetch-canister-logs}
-
-This section specifies management canister query calls.
-They are calls to `/api/v3/canister/<ECID>/query`
-with CBOR content `Q` such that `Q.canister_id = ic_principal`.
-
-The management canister offers the method `fetch_canister_logs`
-that can be called as a query call and
-returns logs of a requested canister.
-
-Submitted request to `/api/v3/canister/<ECID>/query`
-
-```html
-
-E : Envelope
-
-```
-
-Conditions
-
-```html
-
-E.content = CanisterQuery Q
-Q.canister_id = ic_principal
-Q.method_name = 'fetch_canister_logs'
-|Q.nonce| <= 32
-is_effective_canister_id(E.content, ECID)
-S.system_time <= Q.ingress_expiry or Q.sender = anonymous_id
-Q.arg = candid(A)
-A.canister_id ∈ verify_envelope(E, Q.sender, S.system_time)
-(S[A.canister_id].canister_log_visibility = Public)
-  or
-  (S[A.canister_id].canister_log_visibility = Controllers and Q.sender in S[A.canister_id].controllers)
-  or
-  (S[A.canister_id].canister_log_visibility = AllowedViewers Principals and (Q.sender in S[A.canister_id].controllers or Q.sender in Principals))
-
-```
-
-Query response `R`:
-
-```html
-
-{status: "replied"; reply: {arg: candid(S.canister_logs[A.canister_id])}, signatures: Sigs}
-
-```
-
-where the query `Q`, the response `R`, and a certificate `Cert` that is obtained by requesting the path `/subnet` in a **separate** read state request to `/api/v3/canister/<ECID>/read_state` satisfy the following:
-
-```html
-
-verify_response(Q, R, Cert) ∧ lookup(["time"], Cert) = Found S.system_time // or "recent enough"
 
 ```
 
@@ -4593,13 +4767,57 @@ for calls to `/api/v3/subnet/<ESID>/read_state`.
 
 #### Query call {#query-call}
 
-This section specifies query calls `Q` whose `Q.canister_id` is a non-empty canister `S.canisters[Q.canister_id]`. Query calls to the management canister, i.e., `Q.canister_id = ic_principal`, are specified in Sections [Canister status](#ic-management-canister-canister-status), [Canister logs](#ic-mgmt-canister-fetch-canister-logs), and [List canisters](#ic-mgmt-canister-list-canisters).
+This section specifies query calls `Q` whose `Q.canister_id` is a non-empty canister `S.canisters[Q.canister_id]`. Query calls to the management canister, i.e., `Q.canister_id = ic_principal`, are specified in Sections [Canister status](#ic-management-canister-canister-status), [Canister metrics](#ic-management-canister-canister-metrics), [Canister information](#ic-management-canister-canister-information), [Canister logs](#ic-mgmt-canister-fetch-canister-logs), and [List canisters](#ic-mgmt-canister-list-canisters).
 
 Canister query calls to `/api/v3/canister/<ECID>/query` can be executed directly. They can only be executed against non-empty canisters which have a status of `Running` and are also not frozen.
 
 In query and composite query methods evaluated on the target canister of the query call, a certificate is provided to the canister that is valid, contains a current state tree (or "recent enough"; the specification is currently vague about how old the certificate may be), and reveals the canister's [Certified Data](./canister-interface.md#system-api-certified-data).
 
 Composite query methods can call query methods and composite query methods up to a maximum depth `MAX_CALL_DEPTH_COMPOSITE_QUERY` of the call graph. The total amount of cycles consumed by executing a (composite) query method and all (transitive) calls it makes must be at most `MAX_CYCLES_PER_QUERY`. This limit applies in addition to the limit `MAX_CYCLES_PER_MESSAGE` for executing a single (composite) query method and `MAX_CYCLES_PER_RESPONSE` for executing a single callback of a (composite) query method.
+
+Composite query methods and their callbacks can also call the management canister query methods `canister_status`, `canister_metrics`, `canister_info`, `fetch_canister_logs`, and `list_canisters`. Unlike calls to the management canister in replicated mode, such a call is not routed based on the method name and the argument: it is always executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet. Who is allowed to call these methods is determined in the same way as for the corresponding query call submitted by a user, with the calling canister as the caller. Calls to all other management canister methods are rejected. Calls to the management canister do not contribute to the depth of the call graph, but the cycles consumed while producing their responses count towards `MAX_CYCLES_PER_QUERY`.
+
+We define an auxiliary function that handles calls from composite query methods to the management canister. It returns the response to the call and the amount of cycles consumed while producing that response. The reject code and reject message of a reject response are implementation-specific.
+```
+management_canister_query(S, Caller, Method_name, Arg) =
+  let Cycles_used = <implementation-specific>
+  if Method_name = 'canister_status' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     ((Caller = A.canister_id)
+       or
+       (Caller ∈ S.subnet_admins[S.canister_subnet[A.canister_id]])
+       or
+       (S.canister_status_visibility[A.canister_id] = Public)
+       or
+       (S.canister_status_visibility[A.canister_id] = Controllers and Caller ∈ S.controllers[A.canister_id])
+       or
+       (S.canister_status_visibility[A.canister_id] = AllowedViewers Principals and (Caller ∈ S.controllers[A.canister_id] or Caller ∈ Principals)))
+  then
+     Return (Reply (candid(canister_status(S, A.canister_id))), Cycles_used)
+  if Method_name = 'canister_metrics' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     Caller ∈ S.controllers[A.canister_id] ∪ S.subnet_admins[S.canister_subnet[A.canister_id]]
+  then
+     Return (Reply (candid(<implementation-specific>)), Cycles_used)
+  if Method_name = 'canister_info' and Arg = candid(A) and
+     A.canister_id ∈ dom(S.canisters) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id
+  then
+     // retrieving canister information is not subject to any access control
+     Return (Reply (candid(canister_info(S, A.canister_id, A.num_requested_changes))), Cycles_used)
+  if Method_name = 'fetch_canister_logs' and Arg = candid(A) and
+     S.canister_subnet[A.canister_id].subnet_id = S.canister_subnet[Caller].subnet_id and
+     is_sender_authorized(S, A.canister_id, Caller)
+  then
+     Return (Reply (candid(canister_logs(S, A.canister_id, A.filter))), Cycles_used)
+  if Method_name = 'list_canisters' and
+     Caller ∈ S.subnet_admins[S.canister_subnet[Caller]]
+  then
+     // CanisterIdRanges is the list of all canister IDs on the subnet S.canister_subnet[Caller]
+     // encoded as consecutive canister ID ranges (excluding deleted canisters)
+     Return (Reply (candid({canisters: CanisterIdRanges})), Cycles_used)
+  Return (Reject (<implementation-specific>, <implementation-specific>), Cycles_used)
+```
 
 We define an auxiliary method that handles calls from composite query methods by performing a call graph traversal. It can also be (trivially) invoked for query methods that do not make further calls.
 ```
@@ -4624,6 +4842,7 @@ composite_query_helper(S, Cycles, Depth, Root_canister_id, Caller, Caller_info_d
               memory_usage_canister_history = memory_usage_canister_history(S.canister_history[Canister_id]);
               memory_usage_chunk_store = memory_usage_chunk_store(S.chunk_store[Canister_id]);
               memory_usage_snapshots = memory_usage_snapshots(S.snapshots[Canister_id]);
+              memory_usage_log_memory_store = memory_usage_log_memory_store(S.canister_log_memory_limit[Canister_id]);
               freezing_threshold = S.freezing_threshold[Canister_id];
               subnet_id = S.canister_subnet[Canister_id].subnet_id;
               subnet_size = S.canister_subnet[Canister_id].subnet_size;
@@ -4660,12 +4879,17 @@ composite_query_helper(S, Cycles, Depth, Root_canister_id, Caller, Caller_info_d
                  Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // max call graph depth exceeded
               let Calls' · Call · Calls''  = Calls
               Calls := Calls' · Calls''
-              if S.canister_subnet[Canister_id].subnet_id ≠ S.canister_subnet[Call.callee].subnet_id
+              if Call.callee = ic_principal
               then
-                 Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // calling to another subnet
-              let (Response', Cycles', S') = composite_query_helper(S, Cycles, Depth + 1, Root_canister_id, Canister_id, "", "", Call.callee, Call.method_name, Call.arg)
-              Cycles := Cycles'
-              S := S'
+                 let (Response', Cycles_used') = management_canister_query(S, Canister_id, Call.method_name, Call.arg)
+                 Cycles := Cycles - Cycles_used'
+              else
+                 if S.canister_subnet[Canister_id].subnet_id ≠ S.canister_subnet[Call.callee].subnet_id
+                 then
+                    Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // calling to another subnet
+                 let (Response', Cycles', S') = composite_query_helper(S, Cycles, Depth + 1, Root_canister_id, Canister_id, "", "", Call.callee, Call.method_name, Call.arg)
+                 Cycles := Cycles'
+                 S := S'
               if Cycles < MAX_CYCLES_PER_RESPONSE
               then
                  Return (Reject (CANISTER_ERROR, <implementation-specific>), Cycles, S) // composite query out of cycles
@@ -4818,6 +5042,8 @@ may_read_path_for_canister(S, _, ["request_status", Rid, "error_code"]) =
   ∀ (R ↦ (_, ECID')) ∈ dom(S.requests). hash_of_map(R) = Rid => RS.sender == R.sender ∧ ECID == ECID'
 may_read_path_for_canister(S, _, ["canister", cid, "module_hash"]) = cid == ECID
 may_read_path_for_canister(S, _, ["canister", cid, "controllers"]) = cid == ECID
+may_read_path_for_canister(S, _, ["canister", cid, "canister_creation_timestamp"]) = cid == ECID
+may_read_path_for_canister(S, _, ["canister", cid, "last_install_timestamp"]) = cid == ECID
 may_read_path_for_canister(S, _, ["canister", cid, "metadata", name]) = cid == ECID ∧ UTF8(name) ∧
   (cid ∉ dom(S.canisters[cid]) ∨
    S.canisters[cid] = EmptyCanister ∨
@@ -4895,6 +5121,8 @@ state_tree(S) = {
     { canister_id :
         { "module_hash" : SHA256(C.raw_module) | if C ≠ EmptyCanister } ∪
         { "controllers" : CBOR(S.controllers[canister_id]) } ∪
+        { "canister_creation_timestamp" : S.canister_creation_timestamp[canister_id] } ∪
+        { "last_install_timestamp" : S.last_install_timestamp[canister_id] | if C ≠ EmptyCanister } ∪
         { "metadata": { name: blob | (name, blob) ∈ S.canisters[canister_id].public_custom_sections ∪ S.canisters[canister_id].private_custom_sections } }
     | (canister_id, C) ∈ S.canisters };
 }
@@ -4983,7 +5211,8 @@ liquid_balance(es) =
         es.params.sysenv.memory_usage_raw_module +
         es.params.sysenv.memory_usage_canister_history +
         es.params.sysenv.memory_usage_chunk_store +
-        es.params.sysenv.memory_usage_snapshots,
+        es.params.sysenv.memory_usage_snapshots +
+        es.params.sysenv.memory_usage_log_memory_store,
       es.params.sysenv.subnet_size,
     )
   )

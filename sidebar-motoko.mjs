@@ -218,16 +218,26 @@ export const motokoSidebar = {
     {
       label: "ICP features",
       collapsed: true,
-      autogenerate: {
-        directory: "languages/motoko/icp-features",
-      },
+      items: [
+        {
+          autogenerate: {
+            directory: "languages/motoko/icp-features",
+            collapsed: true,
+          },
+        },
+      ],
     },
     {
       label: "Reference",
       collapsed: true,
-      autogenerate: {
-        directory: "languages/motoko/reference",
-      },
+      items: [
+        {
+          autogenerate: {
+            directory: "languages/motoko/reference",
+            collapsed: true,
+          },
+        },
+      ],
     },
   ],
 };

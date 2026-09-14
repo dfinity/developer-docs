@@ -330,7 +330,7 @@ icp network status docker-test --json
 
 For the full containerized network configuration reference: including environment variables, volume mounts, and
 custom images: see the
-[icp-cli containerized networks guide](https://cli.internetcomputer.org/1.1/guides/containerized-networks).
+[icp-cli containerized networks guide](https://cli.internetcomputer.org/1.3/guides/containerized-networks).
 
 ## Choosing the right approach
 

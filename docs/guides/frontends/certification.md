@@ -2,7 +2,7 @@
 title: "Response certification"
 description: "Verify that frontend responses are authentic and untampered using IC certificates"
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) ([boundary nodes](../../concepts/edge-infrastructure.md#api-boundary-nodes)) verify every response automatically, so users are protected without any extra client-side code: as long as the canister certifies its responses.

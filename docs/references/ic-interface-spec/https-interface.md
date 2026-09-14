@@ -314,6 +314,10 @@ All requested paths must have the following form:
 
 -   `/canister/<canister_id>/controllers`. Can be requested if `<canister_id>` matches `<effective_canister_id>`. The order of controllers in the value at this path may vary depending on the implementation.
 
+-   `/canister/<canister_id>/canister_creation_timestamp`. Can be requested if `<canister_id>` matches `<effective_canister_id>`.
+
+-   `/canister/<canister_id>/last_install_timestamp`. Can be requested if `<canister_id>` matches `<effective_canister_id>`.
+
 -   `/canister/<canister_id>/metadata/<name>`. Can be requested if `<canister_id>` matches `<effective_canister_id>`, `<name>` is encoded in UTF-8, and
 
     -   canister with canister id `<canister_id>` does not exist or
@@ -343,6 +347,7 @@ See [The system state tree](./index.md#state-tree) for details on the state tree
 A query call is a fast, but less secure way to call canister methods that do not change the canister state.
 Only methods that are explicitly marked as "query methods" and "composite query methods" by the canister can be called this way.
 In contrast to a query method, a composite query method can make further calls to query and composite query methods of canisters on the same subnet.
+A composite query method can also call the query methods `canister_status`, `canister_metrics`, `canister_info`, `fetch_canister_logs`, and `list_canisters` of the Management Canister (`aaaaa-aa`); such a call is always answered by the calling canister's own subnet and no other Management Canister method can be called this way.
 
 The following limits apply to the evaluation of a query call:
 

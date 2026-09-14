@@ -102,6 +102,8 @@ icp canister logs <canister-name> -e ic --since-index 100 --until-index 200
 
 Timestamp and index filters cannot be combined with `--follow`.
 
+Filtering also changes which records are dropped when the selected logs exceed the response size. An unfiltered read trims the oldest records, so it returns the most recent logs (the output ends with the newest record). A filtered read trims the newest records instead, so it returns the oldest records that match the filter (the output starts with the oldest matching record), which lets you page forward through a range by advancing the start of the filter.
+
 To output logs as JSON for programmatic processing:
 
 ```bash
@@ -155,7 +157,7 @@ You can configure log visibility per canister in `icp.yaml` so it is applied on 
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.3.0"
+      type: "@dfinity/rust@v3.4.0"
     settings:
       log_visibility: controllers   # "controllers" | "public" | allowed_viewers object
 ```
@@ -177,6 +179,8 @@ The default log buffer size is 4096 bytes. When the buffer fills up, older log e
 ```bash
 icp canister settings update <canister-name> -e ic --log-memory-limit 2mib
 ```
+
+The limit must be either 0 (no memory for logs) or at least 4096 bytes: values between 1 and 4095 are rejected.
 
 Supported suffixes: `kb` (1,000 bytes), `kib` (1,024 bytes), `mb` (1,000,000 bytes), `mib` (1,048,576 bytes). In `icp.yaml`:
 
@@ -403,7 +407,7 @@ async fn main() -> Result<()> {
 
 - [Canister lifecycle](lifecycle.md): configure log visibility and memory limits when creating or deploying a canister
 - [Testing strategies](../testing/strategies.md): use canister logs as part of your debugging workflow
-- [CLI reference: `icp canister logs`](https://cli.internetcomputer.org/1.1/reference/cli#icp-canister-logs): full command flags and options
-- [CLI reference: `icp canister settings update`](https://cli.internetcomputer.org/1.1/reference/cli#icp-canister-settings-update): full command flags and options
+- [CLI reference: `icp canister logs`](https://cli.internetcomputer.org/1.3/reference/cli#icp-canister-logs): full command flags and options
+- [CLI reference: `icp canister settings update`](https://cli.internetcomputer.org/1.3/reference/cli#icp-canister-settings-update): full command flags and options
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/canister-management/logs.mdx, docs/building-apps/canister-management/backtraces.mdx, docs/building-apps/advanced/canister-access-logs.mdx; dfinity/examples — rust/canister_logs, motoko/canister_logs, rust/query_stats, motoko/query_stats; dfinity/cdk-rs — ic-cdk/src/api.rs, ic-cdk/src/management_canister.rs, ic-management-canister-types/src/lib.rs; dfinity/icp-cli — docs/reference/cli.md, docs/reference/canister-settings.md -->

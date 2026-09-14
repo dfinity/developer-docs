@@ -26,7 +26,7 @@ This guide covers the main tools and techniques available:
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/rust@v3.3.0"
+      type: "@dfinity/rust@v3.4.0"
       configuration:
         shrink: true
 ```

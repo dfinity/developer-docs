@@ -16,7 +16,7 @@ import { motokoSidebar } from "./sidebar-motoko.mjs";
 export const sidebar = [
   {
     label: "Getting started",
-    autogenerate: { directory: "getting-started" },
+    items: [{ autogenerate: { directory: "getting-started" } }],
   },
   {
     label: "Guides",
@@ -26,54 +26,54 @@ export const sidebar = [
       {
         label: "Backends",
         collapsed: true,
-        autogenerate: { directory: "guides/backends" },
+        items: [{ autogenerate: { directory: "guides/backends", collapsed: true } }],
       },
       {
         label: "Canister calls",
         collapsed: true,
-        autogenerate: { directory: "guides/canister-calls" },
+        items: [{ autogenerate: { directory: "guides/canister-calls", collapsed: true } }],
       },
       {
         label: "Frontends",
         collapsed: true,
-        autogenerate: { directory: "guides/frontends" },
+        items: [{ autogenerate: { directory: "guides/frontends", collapsed: true } }],
       },
       {
         label: "Authentication",
         collapsed: true,
-        autogenerate: { directory: "guides/authentication" },
+        items: [{ autogenerate: { directory: "guides/authentication", collapsed: true } }],
       },
       // Quality & shipping
       {
         label: "Testing",
         collapsed: true,
-        autogenerate: { directory: "guides/testing" },
+        items: [{ autogenerate: { directory: "guides/testing", collapsed: true } }],
       },
       {
         label: "Canister management",
         collapsed: true,
-        autogenerate: { directory: "guides/canister-management" },
+        items: [{ autogenerate: { directory: "guides/canister-management", collapsed: true } }],
       },
       {
         label: "Security",
         collapsed: true,
-        autogenerate: { directory: "guides/security" },
+        items: [{ autogenerate: { directory: "guides/security", collapsed: true } }],
       },
       // Advanced features
       {
         label: "Digital assets",
         collapsed: true,
-        autogenerate: { directory: "guides/digital-assets" },
+        items: [{ autogenerate: { directory: "guides/digital-assets", collapsed: true } }],
       },
       {
         label: "Chain Fusion",
         collapsed: true,
-        autogenerate: { directory: "guides/chain-fusion" },
+        items: [{ autogenerate: { directory: "guides/chain-fusion", collapsed: true } }],
       },
       {
         label: "Governance",
         collapsed: true,
-        autogenerate: { directory: "guides/governance" },
+        items: [{ autogenerate: { directory: "guides/governance", collapsed: true } }],
       },
     ],
   },
@@ -166,7 +166,7 @@ export const sidebar = [
       {
         label: "Rust",
         collapsed: true,
-        autogenerate: { directory: "languages/rust" },
+        items: [{ autogenerate: { directory: "languages/rust", collapsed: true } }],
       },
     ],
   },
@@ -221,7 +221,7 @@ export const sidebar = [
       {
         label: "IC interface spec",
         collapsed: true,
-        autogenerate: { directory: "references/ic-interface-spec" },
+        items: [{ autogenerate: { directory: "references/ic-interface-spec", collapsed: true } }],
       },
       { slug: "references/message-execution-properties" },
       { slug: "references/http-gateway-protocol-spec" },
