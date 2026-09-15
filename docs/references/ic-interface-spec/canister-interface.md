@@ -927,7 +927,7 @@ These system calls return costs in Cycles, represented by 128 bits, which will b
 -   `ic0.cost_vetkd_derive_key(src : I, size : I, vetkd_curve: i32, dst : I) -> i32`; `I ∈ {i32, i64}`
 
     These system calls accept a key name via a textual representation for the specific signing scheme / key of a given size stored in the heap memory starting at offset `src`. They also accept an `i32` with the following interpretations:
-    - `ecdsa_curve: 0 → secp256k1`
+    - `ecdsa_curve: 0 → secp256k1, 1 → secp256r1`
     - `algorithm: 0 → bip340secp256k1, 1 → ed25519`
     - `vetkd_curve: 0 → bls12_381`
 
