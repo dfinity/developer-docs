@@ -8,6 +8,28 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.68.0 (2026-09-14) {$0_68_0}
+* New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
+  of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus
+  on a single response. The optional `replication` argument sizes the committee (`total_requests`) and
+  bounds how many responses the outcall requires (`min_responses`) and the caller will accept
+  (`max_responses`); it defaults to `floor(2 / 3 * N) + 1`, `N`, and `N` on a subnet of `N` nodes.
+  The result is a variant whose `err` arm reports why the requested replication could not be met and
+  what the individual nodes did; both arms are delivered as a reply rather than as a reject.
+* New optional `pricing_version` field of `http_request` selecting the pricing mechanism for the outcall:
+  `1` ("legacy"), which prices the call by `max_response_bytes`, or `2` ("pay-as-you-go"), which prices
+  the resources the call actually consumes and makes the attached cycles bound what it may consume.
+  The default is `1` and an unrecognized value is treated as `1`. Pricing version `1` is deprecated:
+  version `2` is to become the default, after which version `1` will be removed and the field will no
+  longer have an effect. Flexible outcalls have no `pricing_version` and are always priced with version `2`.
+* New canister System API `ic0.cost_http_request_v2` returning the cycles to attach to an HTTP outcall
+  priced with pricing version `2`, for a fully replicated, non-replicated, or flexible outcall.
+  The System API `ic0.cost_http_request` is deprecated along with the pricing version it prices.
+* New canister System API `ic0.subnet_self_node_count` returning the number of nodes on the subnet
+  the canister is running on.
+* The non-replicated mode of `http_request`, selected by the `is_replicated` field, is no longer
+  considered experimental.
+
 ### 0.67.0 (2026-08-31) {$0_67_0}
 * New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`
   or a number between `4096` and `2097152` (`2 MiB`), inclusively, with the default value `4096`.

@@ -10,7 +10,7 @@ import CodeExample from '../../../src/components/CodeExample.astro';
 
 [Canisters](../../concepts/canisters.md) can make HTTP requests to external web services using HTTPS outcalls. This lets your canister call REST APIs or send notifications: all from canister code.
 
-HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`) via the `http_request` method. The `GET`, `HEAD`, and `POST` methods are supported. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
+HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`) via the `http_request` method, and via `flexible_http_request` for the flexible mode described below. `GET`, `HEAD`, and `POST` are supported in every mode. `PUT`, `DELETE`, and `PATCH` are only supported where the number of requests and responses is fixed and known, i.e. non-replicated outcalls and flexible outcalls where the number of total requests, min responses, and max responses are equal. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
 
 For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md).
 
@@ -18,21 +18,23 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the exact amount and attaches it: `ic_cdk::management_canister::http_request` in Rust, and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
-- The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1–2 KB of headers before any body. Requests exceeding this limit fail. Always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. For `http_request` under the default pricing, both languages provide a wrapper that computes the exact amount and attaches it: `ic_cdk_management_canister::http_request` in Rust (the `ic-cdk-management-canister` crate), and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
+- The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1 to 2 KB of headers before any body. Requests exceeding this limit fail. Under legacy pricing (version 1), always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly. In flexible mode the same 2MB cap applies to each node's response, and the responses delivered together (at least `min_responses` many) must additionally fit a **2 MiB total** (2,097,152 bytes).
 
-In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated mode (`is_replicated = false`), a transform is unnecessary because only one node makes the request. See [Replicated vs non-replicated mode](#replicated-vs-non-replicated-mode) below.
+In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated (`is_replicated = false`) and flexible mode it is optional, because the nodes' individual responses are returned rather than reconciled. See [Outcall modes](#outcall-modes) below.
 
-## Replicated vs non-replicated mode
+## Outcall modes
 
-HTTPS outcalls have two modes, controlled by the `is_replicated` field:
+HTTPS outcalls have three modes. Replicated and non-replicated are selected by the `is_replicated` field of `http_request`; flexible is a separate management canister method, `flexible_http_request`.
 
-| | Replicated (default) | Non-replicated (`is_replicated = false`) |
-|---|---|---|
-| Who sends the request | All N nodes on the subnet | One node |
-| Consensus on response | Yes | No |
-| Transform needed | Strongly recommended | No |
-| Risk | API rate limits (N simultaneous requests) | Response could be tampered with |
+| | Replicated (default) | Non-replicated (`is_replicated = false`) | Flexible (`flexible_http_request`) |
+|---|---|---|---|
+| Who sends the request | All N nodes on the subnet | One node | A committee of `total_requests` nodes |
+| What the canister gets | One agreed response | The one node's response | Between `min_responses` and `max_responses` individual responses |
+| Consensus on response | Yes | No | No: consensus is on which responses to deliver |
+| Transform needed | Strongly recommended | Optional | Optional |
+| Pricing | Version 1 (deprecated) or 2 | Version 1 (deprecated) or 2 | Always version 2 |
+| Risk | API rate limits (N simultaneous requests) | Response could be tampered with | Reconciling the responses is your canister's job |
 
 **Rate limit risk in replicated mode:** On a 13-node subnet, 13 identical requests hit the external API within milliseconds. Many APIs enforce per-second or per-IP rate limits that this will trigger. If the API you're calling has rate limits, prefer `is_replicated = false`.
 
@@ -41,6 +43,8 @@ HTTPS outcalls have two modes, controlled by the `is_replicated` field:
 **Use non-replicated mode** when calling APIs with rate limits, when the endpoint is idempotent and you trust the result, or for POST requests where duplicate submission is undesirable.
 
 The tradeoff with non-replicated mode: the single node that makes the request could theoretically observe and modify the response before returning it to the canister.
+
+**Use flexible mode** when the data changes too fast for replicas to ever agree, so replicated mode would fail consensus, and you would rather compare several independent answers than trust one. The tradeoff is between cost and trust: a committee of three costs less than one of 13 and is correspondingly easier for a single node to skew. Your canister must handle any count between `min_responses` and `max_responses`, including responses that disagree with each other. See [`flexible_http_request`](../../references/ic-interface-spec/management-canister.md#ic-flexible_http_request) in the interface specification for the argument and result types.
 
 ## GET request
 
@@ -124,9 +128,17 @@ POST requests work the same way, with two additional considerations:
 </TabItem>
 </Tabs>
 
+## Flexible request
+
+Flexible outcalls go through the `flexible_http_request` management canister method, which hands the canister each node's own response instead of one the subnet agreed on.
+
+Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
+
+**The delivered responses must fit 2 MiB between them.** The limit applies to the combined encoded size of every response returned after the transform, and not to each response on its own. When they do not all fit, fewer are returned, down to `min_responses`. The call fails only when even the smallest `min_responses` responses exceed the limit together.
+
 ## Transform functions
 
-In replicated mode, a transform function is strongly recommended (without one, responses across nodes will likely differ and consensus will fail. In non-replicated mode it is unnecessary. The transform runs on each replica before consensus and must be a `query` method. At minimum, strip all HTTP response headers) they contain non-deterministic fields like `Date`, `Set-Cookie`, and tracking IDs:
+In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated and flexible mode it is optional; each node runs it on its own response. The transform runs on each replica before consensus and must be a `query` method. At minimum, strip all HTTP response headers, which carry non-deterministic fields like `Date`, `Set-Cookie`, and tracking IDs:
 
 - In Motoko: `{ response with headers = [] }`
 - In Rust: `HttpRequestResult { headers: vec![], ..raw.response }`
@@ -139,16 +151,41 @@ If the response body also contains dynamic fields (timestamps, per-request IDs, 
 
 ## Cycle costs
 
-HTTPS outcall costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
+HTTPS outcalls are not free, and there are two pricing versions, chosen per call by the `pricing_version` field of `http_request`. Flexible outcalls have no such field and are always priced with version 2.
 
-In Rust, `ic_cdk::management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, `Call.httpRequest` from the `ic` package does the same. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
+:::caution[Version 1 is deprecated]
+
+Version 1 is still the default, so a call that does not set `pricing_version` gets it. Version 2 is to become the default, after which version 1 will be removed.
+
+:::
+
+| | Version 1 (default, deprecated) | Version 2 (pay-as-you-go) |
+|---|---|---|
+| Charged for | `max_response_bytes`, whether you use it or not | the bytes that arrive, the round-trip time, the transform instructions |
+| Role of `max_response_bytes` | sets both the limit and the price | sets the limit and affects the cycles reservation, not the price |
+| Amount to attach | the exact charge, computable from the request | a cycles budget, based on expected resource consumption |
+| Cost system API | `ic0.cost_http_request` | `ic0.cost_http_request_v2` |
+| Attaching too little | rejected up front | rejected up front if it misses the base fee; otherwise runs with tighter per-node limits and may fail partway |
+| Flexible outcalls | not available | required |
+
+### Version 1
+
+Costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
+
+In Rust, `ic_cdk_management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, `Call.httpRequest` from the `ic` package does the same. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 For reference, on a 13-node subnet:
 - Base cost: ~49 million cycles
 - Per request byte: 5,200 cycles
 - Per `max_response_bytes` byte: 10,400 cycles
 
-See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing table.
+### Version 2
+
+Setting `pricing_version = 2` prices the resources the call actually consumes: the bytes that arrive, the time the request takes, and the instructions the transform runs. A conservative `max_response_bytes` therefore costs nothing extra. It still bounds the response, and it still affects how many cycles are held while the call runs, but it no longer sets the price.
+
+Compute the recommended cycles amount to attach with `ic0.cost_http_request_v2`, passing the resources you expect the call to use. Passing the maximum of each instead gives you an amount the call cannot exhaust, but reserves far more for the duration of the call, since the maxima include a 60-second round trip and the full query instruction limit for the transform.
+
+See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing formulas for both versions.
 
 ## Limitations and pitfalls
 
@@ -166,6 +203,7 @@ Use the "Full example in ICP Ninja" links above to deploy and test directly in t
 
 - [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md): how consensus works for outcalls
 - [Management canister reference](../../references/management-canister.md#http_request): full `http_request` parameter reference including all fields
+- [`flexible_http_request` reference](../../references/management-canister.md#flexible_http_request): arguments, results, and errors of the flexible mode
 - [Exchange Rate Canister (XRC)](https://github.com/dfinity/exchange-rate-canister): a production service powered by HTTPS outcalls that fetches digital asset and fiat exchange rates
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md): the EVM RPC canister uses HTTPS outcalls under the hood
 - [Cycles costs](../../references/cycle-costs.md#https-outcalls): outcall pricing details

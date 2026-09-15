@@ -112,11 +112,21 @@ If the canister may be blackholed or called by other canisters, send more cycles
 
 ## External integrations
 
-These features involve outbound calls to external networks. Every node on the relevant subnet participates in each call, which is the primary driver of the additional cost. The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
+These features involve outbound calls to external networks. How many nodes take part in each call is the primary driver of the additional cost: the whole subnet for a fully replicated outcall, and fewer for the modes that reduce replication (see HTTPS outcalls below). The subsections below are ordered by pricing mechanism: HTTPS outcalls first as the base primitive, then the two RPC canisters that build on it, then the native chain integrations that use a two-tier pricing model.
 
 ### HTTPS outcalls
 
-HTTPS outcall costs scale with subnet size (`n` = number of nodes):
+Outcalls have two pricing versions, chosen per call by the `pricing_version` field of `http_request`. Version `1` prices the request and response bytes that a call reserves. Version `2` prices the resources a call actually consumes, and is also the only pricing available to [`flexible_http_request`](ic-interface-spec/management-canister.md#ic-flexible_http_request), which has no `pricing_version` field.
+
+:::caution[Version 1 is deprecated]
+
+Version `1` is still the default, but it is deprecated. Version `2` is to become the default, after which version `1` will be removed. Callers are advised to migrate to version `2`.
+
+:::
+
+Rather than hard-coding either formula, read the cost at runtime: `ic0.cost_http_request` for version `1`, `ic0.cost_http_request_v2` for version `2`.
+
+**Version 1 (default, deprecated).** Costs scale with subnet size (`n` = number of nodes):
 
 ```
 total_fee  = base_fee + size_fee
@@ -131,6 +141,48 @@ size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 | Per call (base) | 49_140_000 | ~$0.0000671 | 171_360_000 | ~$0.000234 |
 | Per request byte | 5_200 | ~$0.0000000071 | 13_600 | ~$0.0000000186 |
 | Per reserved response byte | 10_400 | ~$0.0000000142 | 27_200 | ~$0.0000000372 |
+
+**Version 2 (pay-as-you-go).** The price has three parts: a base fee charged when the call is accepted, a usage fee charged for each node that performs the outcall, and a delivery fee for putting the result into a block. `max_response_bytes` appears in none of them. It still caps the response, and it affects how much of the payment is withheld while the call is in flight, but it no longer sets the price.
+
+What a call is **charged**, once it settles:
+
+```
+n = subnet size.  K = responses delivered (1 unless flexible).
+
+base_fee     = (1_000_000 + 50 * request_bytes + replication_term) * n
+  replication_term = 140_000 * n + 800 * n * n                       fully replicated
+                   = 90_000 * n + (2_000 * n + 100_000) * min_responses   otherwise
+
+usage_fee    = 50 * raw_response_bytes + 300 * roundtrip_ms
+                 + transform_instructions / 13
+                 (+ 50 * n * response_bytes      non-replicated and flexible only)
+
+delivery_fee = n * (10 * n + 600) * response_bytes
+                 (+ (2_000 * n + 100_000) * n * (K - min_responses)   flexible only)
+```
+
+`usage_fee` is charged for each node that performs the outcall: all `n` of them for a fully replicated call, one for a non-replicated call, `total_requests` for a flexible one. `response_bytes` is the size after the transform. A non-replicated call (`is_replicated = false`) takes the `otherwise` branch with `min_responses = 1`. A flexible call that does not set `replication` defaults `min_responses` to `floor(2 / 3 * n) + 1`.
+
+| Component | 13-node cycles | ~USD | 34-node cycles | ~USD |
+|-----------|----------------|------|----------------|------|
+| Per fully replicated call (base) | 38_417_600 | ~$0.0000525 | 227_283_200 | ~$0.000311 |
+| Per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
+| Per delivered response byte, charged | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
+
+**What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the quote reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
+
+Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
+
+| Parameter | Maximum |
+|-----------|---------|
+| `http_roundtrip_time_ms` | `60_000`, the longest the system waits for a response |
+| `raw_response_bytes` | `max_response_bytes`, or `2_000_000` if it is unset |
+| `transformed_response_bytes` | the same as `raw_response_bytes`, plus `1_024` bytes reserved for the Candid encoding of the response |
+| `transform_instructions` | `5_000_000_000` (5 billion), the instruction limit of a query call |
+
+`request_bytes` and `outcall_type` follow from the request itself.
+
+Either way, any attached surplus is refunded, so the charge follows the resources actually consumed. Those refunds arrive asynchronously: a node that never reported has its whole budget returned when the request is discarded, one minute after the response was delivered. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as further refunds arrive.
 
 ### EVM RPC canister
 
