@@ -93,16 +93,17 @@ Internet Identity issues a session with an expiry time, and the auth client asks
 
 See the [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-expiration). A timeout of 30 minutes should be set for security-sensitive applications.
 
-Pass the bounds to `signIn()`: `maxTimeToIdle` ends a session nobody has used, and `maxTimeToLive` is the ceiling it cannot outlive. Both are in nanoseconds, and Internet Identity enforces them, so they hold across every tab and for as long as the device is away.
+How long a sign-in lasts is Internet Identity's policy, narrowed by what the user agrees to at consent and by any cap their organization sets. The auth client names no bounds of its own, so leaving `signIn()` unbounded gets that policy, which is the right default for most applications.
+
+An application with a stricter rule of its own can narrow it further, never widen it. `maxTimeToIdle` ends a session nobody has used and `maxTimeToLive` is the ceiling it cannot outlive; both are in nanoseconds, and Internet Identity enforces them, so they hold across every tab and for as long as the device is away.
 
 ```javascript
 await authClient.signIn({
   maxTimeToIdle: 30n * 60n * 1_000_000_000n, // 30 minutes of inactivity
-  maxTimeToLive: 8n * 60n * 60n * 1_000_000_000n, // 8 hours in total
 });
 ```
 
-Unset, the provider applies its own defaults (currently seven days of idleness and thirty days in total), which is too long for an application handling sensitive data. The delegation the frontend signs with is short-lived and replaced automatically regardless, so these bounds are about the session, not about key material sitting in the browser.
+Note what this is not about: the delegation the frontend signs calls with is short-lived and replaced automatically whatever you pass here, so no key sits in the browser for the length of the session.
 
 ## Don't use fetchRootKey in the ICP JavaScript agent in production
 
