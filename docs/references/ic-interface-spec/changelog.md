@@ -32,6 +32,11 @@ sidebar:
   by external users and from composite query methods (it remains callable by canisters via inter-canister
   calls and remains rejected for ingress messages). Retrieving canister information is not subject to any
   access control, so any principal, including the anonymous one, can call it.
+* New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
+  `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as
+  for `secp256k1`, the concatenation of the 32-byte big-endian encodings of r and s. The `ecdsa_curve`
+  argument of `ic0.cost_sign_with_ecdsa` accepts `1` for the new curve. As for any curve, the
+  availability of a particular `key_id` depends on the implementation.
 
 ### 0.66.0 (2026-08-17) {$0_66_0}
 * Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`
