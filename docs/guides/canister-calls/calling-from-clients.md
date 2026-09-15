@@ -307,7 +307,7 @@ import { HttpAgent } from "@icp-sdk/core/agent";
 // identity obtained from Internet Identity delegation
 const agent = await HttpAgent.create({
   host: "https://icp-api.io",
-  identity, // DelegationIdentity from @icp-sdk/auth
+  identity, // the Identity returned by AuthClient.getIdentity()
 });
 ```
 

@@ -87,13 +87,22 @@ Implementing user authentication and canister calls yourself in your web app is 
 
 ### Security concern
 
-Currently, Internet Identity issues delegations with an expiry time. This expiry time can be set in the auth-client. After a delegation expires, the user has to re-authenticate. Setting a good value is a trade-off between security and usability.
+Internet Identity issues a session with an expiry time, and the auth client asks for its bounds at sign-in. Once a session ends the user has to re-authenticate. Setting a good value is a trade-off between security and usability.
 
 ### Recommendation
 
 See the [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-expiration). A timeout of 30 minutes should be set for security-sensitive applications.
 
-The auth-client supports [idle timeouts](https://js.icp.build/auth/latest/api/client/classes/idlemanager).
+Pass the bounds to `signIn()`: `maxTimeToIdle` ends a session nobody has used, and `maxTimeToLive` is the ceiling it cannot outlive. Both are in nanoseconds, and Internet Identity enforces them, so they hold across every tab and for as long as the device is away.
+
+```javascript
+await authClient.signIn({
+  maxTimeToIdle: 30n * 60n * 1_000_000_000n, // 30 minutes of inactivity
+  maxTimeToLive: 8n * 60n * 60n * 1_000_000_000n, // 8 hours in total
+});
+```
+
+Unset, the provider applies its own defaults (currently seven days of idleness and thirty days in total), which is too long for an application handling sensitive data. The delegation the frontend signs with is short-lived and replaced automatically regardless, so these bounds are about the session, not about key material sitting in the browser.
 
 ## Don't use fetchRootKey in the ICP JavaScript agent in production
 
