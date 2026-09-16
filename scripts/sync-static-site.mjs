@@ -85,11 +85,14 @@ const PROSE_RULES = [
 
 // `dfx` is banned in this repo (AGENTS.md "Never"), and a command reaches a
 // reader from inside a fence, where the prose rules deliberately do not go. Only
-// this exact shape is rewritten, verified equivalent against `icp canister call`
-// in icp-cli v1.5.0: <CANISTER> accepts a principal, and `-e` selects the
-// network. Any other `dfx` occurrence fails the sync rather than being guessed at.
+// this exact shape is rewritten, checked against `icp canister call` in icp-cli
+// v1.5.0: <CANISTER> accepts a principal, `-e` selects the network, and the
+// argument has to be written out, because `icp canister call` with no argument
+// opens an interactive prompt instead of sending an empty one. dfx infers `()`;
+// icp does not, so the rewrite adds it. Any other `dfx` occurrence fails the
+// sync rather than being guessed at.
 const DFX_CALL = /^(\s*)dfx canister call (\S+) (\S+) --network ic[ \t]*$/gm;
-const rewriteDfx = (text) => text.replace(DFX_CALL, '$1icp canister call $2 $3 -e ic');
+const rewriteDfx = (text) => text.replace(DFX_CALL, "$1icp canister call $2 $3 '()' -e ic");
 
 // Prose means prose: not a fenced block, not the frontmatter, and within a line,
 // not an inline code span and not a link destination. A rule that reached into
@@ -381,8 +384,16 @@ async function main() {
     writeFileSync(path.join(staging, file), content);
     written.push(file);
   }
-  if (existsSync(TARGET_DIR)) renameSync(TARGET_DIR, previous);
-  renameSync(staging, TARGET_DIR);
+  const hadTarget = existsSync(TARGET_DIR);
+  if (hadTarget) renameSync(TARGET_DIR, previous);
+  try {
+    renameSync(staging, TARGET_DIR);
+  } catch (err) {
+    // Put the old tree back rather than leaving the target missing, which would
+    // fail every build until someone reran the sync.
+    if (hadTarget) renameSync(previous, TARGET_DIR);
+    throw err;
+  }
   rmSync(previous, { recursive: true, force: true });
   rmSync('.sync-staging', { recursive: true, force: true });
 

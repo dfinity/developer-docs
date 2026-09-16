@@ -65,7 +65,7 @@ that produce the served directory).
    an *update* call, so the reply is consensus-backed and trustworthy:
 
    ```sh
-   icp canister call <canister-id> state_hash -e ic
+   icp canister call <canister-id> state_hash '()' -e ic
    # (blob "\81\50\a6\5e…")
    ```
 

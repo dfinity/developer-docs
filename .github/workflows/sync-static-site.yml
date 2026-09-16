@@ -35,7 +35,10 @@ jobs:
           PIN=$(node -p "require('./.sources/upstream.json').synced.find(e => e.repo === 'dfinity/certified-assets').pinned")
           echo "pin=$PIN" >> $GITHUB_OUTPUT
 
-          TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname | grep '^v[0-9]' | head -1)
+          # Stable releases only, the same pattern the upstream.json watcher uses.
+          # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
+          TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           echo "Pinned: $PIN. Latest release: $TAG."
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 

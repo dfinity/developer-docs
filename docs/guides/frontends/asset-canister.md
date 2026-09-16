@@ -343,7 +343,7 @@ Everything else should migrate.
 The two canisters have unrelated Candid interfaces, so repointing the recipe and running a plain `icp deploy` stops at the pre-install compatibility check with `Candid interface compatibility check failed`. Nothing is installed and the running canister is untouched. Two ways forward:
 
 - **A new canister.** Add a new entry with the `@dfinity/static-site` recipe and deploy it. You get a new canister ID, so any custom domain registration and hardcoded ID has to be updated.
-- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at `@dfinity/static-site` and run `icp deploy --mode reinstall frontend`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
+- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at `@dfinity/static-site` and run `icp deploy --mode reinstall frontend -e ic`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
 
 Do not force the upgrade through with `--yes`. That skips the compatibility check and installs onto stable memory the certified-assets canister cannot read, which leaves a live canister serving nothing.
 
@@ -360,18 +360,18 @@ Delete `.ic-assets.json5` and split its concerns into `_headers` and `_redirects
 | `{ match: ".well-known", ignore: false }` | not needed, `.well-known/` is uploaded automatically |
 | `**` and `?` glob patterns | a single `*` wildcard, trailing `/*` for a subtree |
 
-Also drop any `configuration.version` field: with static-site the recipe version is the canister version.
+Also drop any `configuration.version` field: with `@dfinity/static-site` the recipe version is the canister version.
 
 ### Uploads and permissions change shape
 
 `AssetManager` from `@icp-sdk/canisters/assets` targets this canister only and stops working. certified-assets has no per-file write endpoint: uploads happen in one exclusive sync session, and the final call recomputes the site's state hash, which is what makes a build provable. Runtime writes would make that hash drift from any published build, so the two goals are incompatible rather than merely unimplemented.
 
-If your app stores user-generated content, keep serving the frontend from static-site and store uploads in a separate canister that the frontend calls. Mixing a mutable file store into your deploy target means every user upload changes what your site is.
+If your app stores user-generated content, keep serving the frontend as a static site and store uploads in a separate canister that the frontend calls. Mixing a mutable file store into your deploy target means every user upload changes what your site is.
 
 The three upload roles (Prepare, Commit, ManagePermissions) collapse to controllers plus a flat set of authorized syncers, so re-grant any CI principal after migrating:
 
 ```bash
-icp canister call frontend authorize '(principal "<principal-id>")'
+icp canister call frontend authorize '(principal "<principal-id>")' -e ic
 ```
 
 ### What stays the same
