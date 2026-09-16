@@ -83,7 +83,7 @@ Version 1 is still the default, and is what a call gets unless it asks for versi
 
 :::
 
-Both the Motoko `ic` mops package and the Rust `ic-cdk-management-canister` crate provide wrappers that automatically compute and attach the required amount using the `ic0.cost_http_request` system API (version 1). Neither exposes `pricing_version` or `flexible_http_request` yet, so a canister that wants version 2 or flexible mode must build the management canister call itself.
+Both the Motoko `ic` mops package and the Rust `ic-cdk-management-canister` crate provide wrappers that compute and attach the required amount. In Rust, the `HttpRequest` and `FlexibleHttpRequest` builders always price with version `2`, using the `ic0.cost_http_request_v2` system API. In Motoko, `Call.httpRequest` prices with version `1` using `ic0.cost_http_request`, so a canister that wants version `2` or flexible mode from Motoko has to build the management canister call itself for now.
 
 **Version 1** charges for the number of bytes you reserve. The cost depends on two factors:
 

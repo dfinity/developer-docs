@@ -73,11 +73,20 @@
     },
     {
       "repo": "dfinity/cdk-rs",
-      "pinned": "0.20.2",
+      "pinned": "0.20.3",
       "track": "crate",
       "crate": "ic-cdk",
       "affects": "`ic-cdk` APIs in Rust code blocks. The repo stopped tagging releases (its newest bare-semver tag is two minors behind the published crate), so the crate version on crates.io is the release identity. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk/CHANGELOG.md, then grep docs/ for the symbols they name. `ic-cdk-timers` and `ic-cdk-executor` version separately; check whether they moved too.",
       "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
+    },
+    {
+      "repo": "dfinity/cdk-rs",
+      "name": "ic-cdk-management-canister",
+      "pinned": "0.2.0",
+      "track": "crate",
+      "crate": "ic-cdk-management-canister",
+      "affects": "The HTTPS outcall APIs in guides/backends/https-outcalls.mdx, concepts/https-outcalls.md and references/cycle-costs.md, and the Rust snippets in the send_http_get, send_http_post and daily_planner examples. This crate versions independently of `ic-cdk` in the same repo, so it gets its own entry: 0.2.0 replaced the free `http_request` with the `HttpRequest` and `FlexibleHttpRequest` builders and moved pricing to version 2. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk-management-canister/CHANGELOG.md.",
+      "reference": "https://docs.rs/ic-cdk-management-canister/latest/ic_cdk_management_canister/"
     },
     {
       "repo": "dfinity/icp-js-core",

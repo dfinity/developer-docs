@@ -18,7 +18,7 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. For `http_request` under the default pricing, both languages provide a wrapper that computes the exact amount and attaches it: `ic_cdk_management_canister::http_request` in Rust (the `ic-cdk-management-canister` crate), and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the amount and attaches it: the `HttpRequest` builder in Rust (the `ic-cdk-management-canister` crate, from 0.2.0), and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
 - The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1 to 2 KB of headers before any body. Requests exceeding this limit fail. Under legacy pricing (version 1), always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly. In flexible mode the same 2MB cap applies to each node's response, and the responses delivered together (at least `min_responses` many) must additionally fit a **2 MiB total** (2,097,152 bytes).
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated (`is_replicated = false`) and flexible mode it is optional, because the nodes' individual responses are returned rather than reconciled. See [Outcall modes](#outcall-modes) below.
@@ -168,11 +168,11 @@ Version 1 is still the default, so a call that does not set `pricing_version` ge
 | Attaching too little | rejected up front | rejected up front if it misses the base fee; otherwise runs with tighter per-node limits and may fail partway |
 | Flexible outcalls | not available | required |
 
+Which version a call gets depends on the CDK, and both compute the amount to attach for you. In Rust, the `HttpRequest` builder always selects version `2` and prices the call with `ic0.cost_http_request_v2`; `with_expected_*` narrows the reservation from the worst case to what the call is expected to consume. In Motoko, `Call.httpRequest` from the `ic` package attaches the version `1` cost using `ic0.cost_http_request`. The Rust examples above are therefore priced with version `2`, and the Motoko ones with version `1`. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
+
 ### Version 1
 
 Costs are based on `max_response_bytes`, not the actual response size. If you omit `max_response_bytes`, the system assumes 2MB and charges approximately **20.85 billion cycles**: even for a 1KB response. Always set a tight upper bound. Unused cycles are refunded, but you still pay for the declared maximum.
-
-In Rust, `ic_cdk_management_canister::http_request` computes and attaches the exact cost automatically using the `ic0.cost_http_request` system API. In Motoko, `Call.httpRequest` from the `ic` package does the same. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 For reference, on a 13-node subnet:
 - Base cost: ~49 million cycles
