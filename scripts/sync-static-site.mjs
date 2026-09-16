@@ -4,7 +4,9 @@
 //
 // That repo is the single source of truth for how the canister behaves. Its
 // docs/ pages carry Starlight frontmatter and page order upstream, so this
-// script copies rather than authors: no headings are added, no prose rewritten.
+// script copies rather than authors: no headings are added, and nothing is
+// rewritten beyond the mechanical transformations listed below, each of which
+// exists because this site enforces a rule the source repo does not.
 //
 // Unlike the motoko and internet-identity syncs, nothing here is a submodule.
 // The build resolves no file from certified-assets, only markdown links, so the
@@ -203,7 +205,7 @@ function brokenLinks(text, file, prepared) {
       continue;
     }
     if (fragment && !anchors.has(fragment)) {
-      broken.push(`${href} (no heading slugs to "${fragment}")`);
+      broken.push(`${href} (the target has no heading with slug "${fragment}")`);
     }
   }
   return broken;
@@ -219,7 +221,11 @@ function parseFrontmatter(text, file) {
   const missing = [];
   if (!/^title:/m.test(block)) missing.push('title');
   if (!/^description:/m.test(block)) missing.push('description');
-  if (!/^\s+order:/m.test(block)) missing.push('sidebar.order');
+  // Scoped to the `sidebar` mapping: a bare `order:` under some other key would
+  // satisfy a looser check and still sort the page arbitrarily.
+  if (!/^sidebar:\n(?:[ \t]+.*\n)*?[ \t]+order:/m.test(`${block}\n`)) {
+    missing.push('sidebar.order');
+  }
   if (missing.length) {
     throw new Error(
       `${file}: frontmatter is missing ${missing.join(', ')}. ` +
@@ -245,6 +251,17 @@ async function sourcePages(ref) {
     'application/vnd.github+json'
   );
   const entries = await res.json();
+  // This endpoint returns a whole directory in one response (verified: 73
+  // entries, no Link header) but caps at 1000 entries, above which GitHub
+  // documents the Git Trees API instead. Refuse to publish a listing that may
+  // be truncated rather than dropping pages silently.
+  if (entries.length >= 1000) {
+    throw new Error(
+      `${REPO} ${SOURCE_DIR}/ returned ${entries.length} entries at ${ref}, at or past ` +
+        `the contents API limit, so the listing may be truncated. Switch sourcePages() ` +
+        `to the Git Trees API.`
+    );
+  }
   // A nested page would need a placement decision here (a sidebar subgroup, and
   // an order relative to its siblings), so it stops the sync rather than being
   // dropped silently while the release check keeps reporting the range as synced.
@@ -293,8 +310,6 @@ async function main() {
   const pages = await sourcePages(ref);
   const written = [];
   const normalized = [];
-
-  mkdirSync(TARGET_DIR, { recursive: true });
 
   // Transform every page before writing any of them. A page that violates the
   // contract then leaves the tree exactly as it was, rather than a mix of two

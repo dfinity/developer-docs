@@ -29,6 +29,8 @@ jobs:
 
       - name: Resolve the ref to sync
         id: check
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           PIN=$(node -p "require('./.sources/upstream.json').synced.find(e => e.repo === 'dfinity/certified-assets').pinned")
           echo "pin=$PIN" >> $GITHUB_OUTPUT
@@ -46,11 +48,21 @@ jobs:
             exit 0
           fi
 
+          # Skip only when a PR is actually open. A branch on its own proves
+          # nothing: if a previous run pushed and then failed at `gh pr create`,
+          # treating the branch as a PR would strand that release forever, with
+          # nothing to review and no further attempts.
           BRANCH="infra/sync-static-site-${TAG}"
-          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" > /dev/null 2>&1; then
-            echo "Branch $BRANCH already exists, so a PR is likely open. Skipping."
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          if [ -n "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            echo "A PR for $BRANCH is already open. Skipping."
             echo "needed=false" >> $GITHUB_OUTPUT
             exit 0
+          fi
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" > /dev/null 2>&1; then
+            echo "Branch $BRANCH exists with no open PR (an earlier run stopped"
+            echo "between push and PR creation). Deleting it so this run can retry."
+            git push origin --delete "$BRANCH"
           fi
 
           # A release that ships canister changes without touching docs/ leaves

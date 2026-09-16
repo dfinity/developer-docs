@@ -97,7 +97,7 @@ function checkInternalLinks(file, content) {
     if (href.startsWith('#')) {
       const fragment = href.slice(1);
       if (fragment && !anchorsOfFile(file).has(fragment)) {
-        errors.push(`broken anchor: ${href} (no heading in this page slugs to "${fragment}")`);
+        errors.push(`broken anchor: ${href} (this page has no heading with slug "${fragment}")`);
       }
       continue;
     }
@@ -118,7 +118,7 @@ function checkInternalLinks(file, content) {
     // a page someone else edited, otherwise drops the reader at the top of a
     // long page with no sign that anything went wrong.
     if (fragment && !anchorsOfFile(target).has(fragment)) {
-      errors.push(`broken anchor: ${href} (no heading in ${path.relative(ROOT, target)} slugs to "${fragment}")`);
+      errors.push(`broken anchor: ${href} (${path.relative(ROOT, target)} has no heading with slug "${fragment}")`);
     }
   }
   return errors;

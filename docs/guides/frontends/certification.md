@@ -42,7 +42,7 @@ The browser receives only responses that have passed this check. Because verific
 
 ## Certified vs uncertified access
 
-Any canister that serves HTTP is reachable through two kinds of hostname: one where the gateway verifies the response certificate before forwarding it, and a `raw` one where it forwards the response without checking:
+Through the standard ICP gateway, a canister that serves HTTP is reachable on two kinds of hostname: one where the gateway verifies the response certificate before forwarding it, and a `raw` one where it forwards the response without checking. Which hostnames a gateway exposes, and which of them verify, is a property of how that gateway is deployed rather than of the canister:
 
 | Domain | Certification | Notes |
 |--------|--------------|-------|

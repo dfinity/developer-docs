@@ -102,13 +102,14 @@ The build generates `/llms.txt` and per-page `.md` endpoints from your content. 
 
 ## Source material
 
-Upstream repos are tracked three ways, because most of them are only ever read to check a fact.
+Upstream repos are tracked four ways, because most of them are only ever read to check a fact.
 
-- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`) — three repos whose content is resolved during the build. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
-- **Synced without a submodule** — a repo whose own pages are published here, pinned under `synced` in [`.sources/upstream.json`](.sources/upstream.json). Nothing is resolved at build time, so there is no submodule to hold the pin. Its own weekly workflow opens the bump PR.
-- **Watched, not vendored** — everything else, listed in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
+- **Vendored as submodules** (`.sources/motoko`, `internetidentity`, `examples`): three repos whose content is resolved during the build. **Do not edit files in `.sources/` directly**; they are read-only, and changes go to the upstream repo. Pins are in [`.sources/VERSIONS`](.sources/VERSIONS).
+- **Synced without a submodule**: a repo whose own pages are published here, pinned under `synced` in [`.sources/upstream.json`](.sources/upstream.json). Nothing is resolved at build time, so there is no submodule to hold the pin. Its own weekly workflow opens the bump PR.
+- **Watched**: repos where a release can invalidate a lot of published content, listed under `watched` in [`.sources/upstream.json`](.sources/upstream.json) with the ref the docs are verified against. A weekly workflow opens an issue when one of them ships something newer.
+- **Reference**: repos the docs draw on too lightly to be worth a weekly issue, listed under `reference`. They carry no pin, so verify against the latest release when you touch a page that relies on one.
 
-Bumping either is a maintainer task — follow [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for the procedure.
+Each group has its own procedure, and all of them are maintainer tasks: see [`.agents/upstream-tracking.md`](.agents/upstream-tracking.md) for bumping a submodule, moving a synced pin, and closing a release issue.
 
 ## Synced content
 
@@ -117,7 +118,7 @@ Some files are auto-synced from other repositories.
 
 Currently synced:
 - `docs/languages/motoko/` — from `caffeinelabs/motoko`
-- `docs/guides/frontends/static-site/` — from `dfinity/certified-assets`
+- `docs/guides/frontends/static-site/` (from `dfinity/certified-assets`)
 - `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — from `dfinity/internet-identity`
 - `.claude/skills/` (except `icp-brand-design`, `icp-brand-voice`, and `technical-documentation`) — from [skills.internetcomputer.org](https://skills.internetcomputer.org), refreshed on session start and not committed. See AGENTS.md "Skills" for how to consume them outside Claude Code.
 
