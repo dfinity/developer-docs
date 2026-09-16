@@ -205,7 +205,7 @@ See the [frontend-environment-variables example](https://github.com/dfinity/icp-
 
 ## Programmatic uploads with @icp-sdk/canisters
 
-Uploading assets from application code is not a recommended pattern, and it exists only on this canister: certified-assets has no per-asset write endpoint and will not grow one, because finalizing a sync recomputes the state hash that makes a build provable. An app that stores user-generated content should keep it in a canister of its own and leave its frontend a published build.
+Uploading assets from application code is not a recommended pattern, and it exists only on this canister: [certified-assets](https://github.com/dfinity/certified-assets) has no per-asset write endpoint and will not grow one, because finalizing a sync recomputes the state hash that makes a build provable. An app that stores user-generated content should keep it in a canister of its own and leave its frontend a published build.
 
 It is documented here for projects already doing it. The `AssetManager` from `@icp-sdk/canisters` uploads files from code rather than through `icp deploy`:
 
@@ -330,13 +330,13 @@ icp canister call frontend http_request '(record {
 
 One case still requires the asset canister: **a frontend whose updates are governed by an SNS.** That workflow depends on staging a batch and having the governance canister commit it after a vote (`propose_commit_batch`, an `ExecuteGenericNervousSystemFunction` proposal, then `commit_proposed_batch`), and on the `Prepare`/`Commit` permission split that keeps developers from committing directly.
 
-certified-assets has no equivalent. Its interface has no proposal-gated commit and no staged-batch evidence to vote on, and its authorization model is controllers plus a flat set of authorized syncers, all of whom can sync at will. An SNS could hold the controller, but there would be nothing for token holders to approve. So if community-governed frontend updates are a requirement, keep the frontend here for now and see [Asset canister updates](../governance/managing.md#asset-canister-updates).
+[certified-assets](https://github.com/dfinity/certified-assets) has no equivalent. Its interface has no proposal-gated commit and no staged-batch evidence to vote on, and its authorization model is controllers plus a flat set of authorized syncers, all of whom can sync at will. An SNS could hold the controller, but there would be nothing for token holders to approve. So if community-governed frontend updates are a requirement, keep the frontend here for now and see [Asset canister updates](../governance/managing.md#asset-canister-updates).
 
 Everything else should migrate.
 
 ## Migrate to a static site
 
-[Hosting a static site](static-site/overview.md) means deploying a different canister, certified-assets, with its own configuration format. The `@dfinity/static-site` recipe replaces `@dfinity/asset-canister` in your configuration. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
+[Hosting a static site](static-site/overview.md) means deploying a different canister, [certified-assets](https://github.com/dfinity/certified-assets), with its own configuration format. The `@dfinity/static-site` recipe replaces `@dfinity/asset-canister` in your configuration. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
 
 ### You cannot upgrade in place
 
