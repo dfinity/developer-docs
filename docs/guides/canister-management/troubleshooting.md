@@ -141,7 +141,7 @@ The `standard` policy applies a default Content Security Policy and security hea
 ]
 ```
 
-See [Asset canister (legacy)](../frontends/asset-canister.md#ic-assets-json5) for the full `.ic-assets.json5` reference, and [Custom headers](../frontends/static-site/headers.md) for the static site equivalent.
+See [Asset canister (legacy)](../frontends/asset-canister.md#ic-assetsjson5) for the full `.ic-assets.json5` reference, and [Custom headers](../frontends/static-site/headers.md) for the static site equivalent.
 
 ## Problem: Rust canister fails to install with "invalid import section"
 

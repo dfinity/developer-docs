@@ -220,72 +220,90 @@ function pin() {
   }
   return entry.pinned;
 }
-
-const refArg = process.argv.indexOf('--ref');
-const ref = refArg === -1 ? pin() : process.argv[refArg + 1];
-if (!ref) {
-  console.error('Usage: node scripts/sync-static-site.mjs [--ref <git-ref>]');
-  process.exit(1);
-}
-
-console.log(`Syncing ${REPO} ${SOURCE_DIR}/ at ${ref}`);
-
-const pages = await sourcePages(ref);
-const written = [];
-const normalized = [];
-
-mkdirSync(TARGET_DIR, { recursive: true });
-
-for (const file of pages) {
-  const source = await fetchPage(ref, file);
-  parseFrontmatter(source, file);
-
-  const { out: linked, unmapped } = rewriteSiteLinks(source);
-  if (unmapped.length) {
-    console.error(
-      `\nERROR: ${file} links to this site with no LINK_MAP entry:\n` +
-        unmapped.map((u) => `  ${u}`).join('\n') +
-        `\n\nAdd the canonical path to LINK_MAP in scripts/sync-static-site.mjs.`
-    );
+async function main() {
+  const refArg = process.argv.indexOf('--ref');
+  const ref = refArg === -1 ? pin() : process.argv[refArg + 1];
+  if (!ref) {
+    console.error('Usage: node scripts/sync-static-site.mjs [--ref <git-ref>]');
     process.exit(1);
   }
 
-  const { out: clean, applied } = normalizeProse(linked);
-  if (applied.length) normalized.push(`${file}: ${applied.join(', ')}`);
+  console.log(`Syncing ${REPO} ${SOURCE_DIR}/ at ${ref}`);
 
-  const content = stampProvenance(clean, file, ref) + marker(file, ref);
-  writeFileSync(path.join(TARGET_DIR, file), content);
-  written.push(file);
+  const pages = await sourcePages(ref);
+  const written = [];
+  const normalized = [];
+
+  mkdirSync(TARGET_DIR, { recursive: true });
+
+  // Transform every page before writing any of them. A page that violates the
+  // contract then leaves the tree exactly as it was, rather than a mix of two
+  // refs that still builds and still validates.
+  const prepared = new Map();
+
+  for (const file of pages) {
+    const source = await fetchPage(ref, file);
+    parseFrontmatter(source, file);
+
+    const { out: linked, unmapped } = rewriteSiteLinks(source);
+    if (unmapped.length) {
+      throw new Error(
+        `${file} links to this site with no LINK_MAP entry:\n` +
+          unmapped.map((u) => `  ${u}`).join('\n') +
+          `\nAdd the canonical path to LINK_MAP in scripts/sync-static-site.mjs.`
+      );
+    }
+
+    const { out: clean, applied } = normalizeProse(linked);
+    if (applied.length) normalized.push(`${file}: ${applied.join(', ')}`);
+
+    prepared.set(file, stampProvenance(clean, file, ref) + marker(file, ref));
+  }
+
+  for (const [file, content] of prepared) {
+    writeFileSync(path.join(TARGET_DIR, file), content);
+    written.push(file);
+  }
+
+  // A page removed upstream has to disappear here too, or the sidebar keeps
+  // serving something nobody maintains any more.
+  const stale = readdirSync(TARGET_DIR).filter((f) => f.endsWith('.md') && !pages.includes(f));
+  for (const file of stale) rmSync(path.join(TARGET_DIR, file));
+
+  // Link checking runs after every page is on disk, so intra-tree links to a
+  // page later in the alphabet resolve.
+  let broken = 0;
+  for (const file of written) {
+    const content = readFileSync(path.join(TARGET_DIR, file), 'utf8');
+    for (const href of brokenLinks(content, file)) {
+      console.error(`ERROR: ${file}: broken link ${href}`);
+      broken++;
+    }
+    if (/—|\s–\s/.test(content)) {
+      console.error(`ERROR: ${file}: a banned character survived normalization`);
+      broken++;
+    }
+  }
+  if (broken > 0) {
+    console.error(`\n${broken} problem(s) found. Nothing was committed.`);
+    process.exit(1);
+  }
+
+  console.log(`\nWrote ${written.length} page(s) to ${TARGET_DIR}/:`);
+  for (const file of written) console.log(`  ${file}`);
+  if (stale.length) console.log(`Removed ${stale.length} page(s) gone upstream: ${stale.join(', ')}`);
+  if (normalized.length) {
+    console.log('\nNormalized (report upstream so these become no-ops):');
+    for (const line of normalized) console.log(`  ${line}`);
+  }
 }
 
-// A page removed upstream has to disappear here too, or the sidebar keeps
-// serving something nobody maintains any more.
-const stale = readdirSync(TARGET_DIR).filter((f) => f.endsWith('.md') && !pages.includes(f));
-for (const file of stale) rmSync(path.join(TARGET_DIR, file));
-
-// Link checking runs after every page is on disk, so intra-tree links to a
-// page later in the alphabet resolve.
-let broken = 0;
-for (const file of written) {
-  const content = readFileSync(path.join(TARGET_DIR, file), 'utf8');
-  for (const href of brokenLinks(content, file)) {
-    console.error(`ERROR: ${file}: broken link ${href}`);
-    broken++;
-  }
-  if (/—|\s–\s/.test(content)) {
-    console.error(`ERROR: ${file}: a banned character survived normalization`);
-    broken++;
-  }
-}
-if (broken > 0) {
-  console.error(`\n${broken} problem(s) found. Nothing was committed.`);
+// Every failure path is a contract violation with something specific to fix, so
+// report it as one line rather than a stack trace, and exit non-zero so the
+// sync workflow opens no PR.
+try {
+  await main();
+} catch (err) {
+  console.error(`\nERROR: ${err.message}\n`);
   process.exit(1);
-}
-
-console.log(`\nWrote ${written.length} page(s) to ${TARGET_DIR}/:`);
-for (const file of written) console.log(`  ${file}`);
-if (stale.length) console.log(`Removed ${stale.length} page(s) gone upstream: ${stale.join(', ')}`);
-if (normalized.length) {
-  console.log('\nNormalized (report upstream so these become no-ops):');
-  for (const line of normalized) console.log(`  ${line}`);
 }
