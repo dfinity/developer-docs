@@ -316,6 +316,6 @@ const agent = await HttpAgent.create({
 - [Candid and binding generation](candid.md): generate typed clients from `.did` files
 - [Inter-canister calls](inter-canister-calls.md): canister-to-canister calls from within the IC
 - [Internet Identity](../authentication/internet-identity.md): adding user authentication to offchain calls
-- [Asset canister](../frontends/asset-canister.md): deploying the frontend that makes these calls
+- [Hosting a static site](../frontends/static-site/overview.md): deploying the frontend that makes these calls
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/interact-with-canisters/agents/overview.mdx, docs/building-apps/interact-with-canisters/agents/javascript-agent.mdx, docs/building-apps/interact-with-canisters/agents/rust-agent.mdx; dfinity/icp-cli — docs/concepts/canister-discovery.md; dfinity/icp-cli-templates — hello-world/frontend/app/src/App.tsx, hello-world/frontend/app/vite.config.ts; dfinity/icp-js-sdk-docs — @icp-sdk/core/agent, @icp-sdk/core/agent/canister-env, @icp-sdk/bindgen -->

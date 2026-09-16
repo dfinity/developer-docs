@@ -227,7 +227,7 @@ The asset canister Wasm version determines which features are available. Key ver
 
 Downgrading the Wasm version may fail if the stable memory format changed between versions. If a downgrade is necessary, use `icp deploy --mode reinstall` (wipes all stored assets).
 
-For version history, upgrade guidance, and deployment pitfalls, see the [Asset canister guide](../guides/frontends/asset-canister.md).
+For version history, upgrade guidance, and deployment pitfalls, see [Asset canister (legacy)](../guides/frontends/asset-canister.md).
 
 ---
 
