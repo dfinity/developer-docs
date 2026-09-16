@@ -80,7 +80,9 @@ jobs:
             const entry = config.synced.find((e) => e.repo === "dfinity/certified-assets");
             entry.pinned = process.argv[1];
             fs.writeFileSync(file, JSON.stringify(config, null, 2) + "\n");
-          ' "${{ steps.check.outputs.tag }}"
+          ' "$TAG"
+        env:
+          TAG: ${{ steps.check.outputs.tag }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: steps.check.outputs.needed == 'true'
@@ -119,19 +121,18 @@ jobs:
           git config user.name "pr-automation-bot-public[bot]"
           git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
 
-          BRANCH="infra/sync-static-site-${{ steps.check.outputs.tag }}"
+          BRANCH="infra/sync-static-site-${TAG}"
           git checkout -b "$BRANCH"
           git add .sources/upstream.json docs/guides/frontends/static-site
-          git commit -m "chore: sync static-site docs to dfinity/certified-assets ${{ steps.check.outputs.tag }}"
+          git commit -m "chore: sync static-site docs to dfinity/certified-assets ${TAG}"
           git push -u origin "$BRANCH"
 
-          CHANGED="${{ steps.check.outputs.changed_files }}"
           {
             echo "## Summary"
             echo ""
-            echo "Automated sync of the static-site (certified-assets) user docs."
+            echo "Automated sync of the certified-assets user docs."
             echo ""
-            echo "**Release:** \`${{ steps.check.outputs.tag }}\` (pinned from \`${{ steps.check.outputs.pin }}\`)"
+            echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
             echo ""
             echo "**Changed upstream files:**"
             while IFS= read -r f; do
@@ -149,7 +150,13 @@ jobs:
           } > /tmp/pr-body.md
 
           gh pr create \
-            --title "chore: sync static-site docs to dfinity/certified-assets ${{ steps.check.outputs.tag }}" \
+            --title "chore: sync static-site docs to dfinity/certified-assets ${TAG}" \
             --body-file /tmp/pr-body.md
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # Values from the upstream repo reach the shell as data, never as
+          # script: a filename containing shell metacharacters would otherwise
+          # be interpolated into this step's source.
+          TAG: ${{ steps.check.outputs.tag }}
+          PIN: ${{ steps.check.outputs.pin }}
+          CHANGED: ${{ steps.check.outputs.changed_files }}

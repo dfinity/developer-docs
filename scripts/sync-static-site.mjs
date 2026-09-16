@@ -41,6 +41,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { anchorsOfText, anchorsOfFile } from './lib/anchors.mjs';
 
 const UPSTREAM_JSON = '.sources/upstream.json';
 const REPO = 'dfinity/certified-assets';
@@ -75,23 +76,43 @@ function canonicalize(url) {
 // (banned_characters, one_word_spellings). Prose only: a fence can hold a
 // hyphenated identifier or a range that is none of our business.
 const PROSE_RULES = [
-  { re: /—/g, to: ': ', what: 'em dash' },
+  { re: /\s*—\s*/g, to: ': ', what: 'em dash' },
   { re: /\s–\s/g, to: ', ', what: 'en dash as separator' },
   { re: /tamper[- ]proof/gi, to: 'tamperproof', what: 'hyphenated tamperproof' },
 ];
 
+// `dfx` is banned in this repo (AGENTS.md "Never"), and a command reaches a
+// reader from inside a fence, where the prose rules deliberately do not go. Only
+// this exact shape is rewritten, verified equivalent against `icp canister call`
+// in icp-cli v1.5.0: <CANISTER> accepts a principal, and `-e` selects the
+// network. Any other `dfx` occurrence fails the sync rather than being guessed at.
+const DFX_CALL = /\bdfx canister call (\S+) (\S+)(?: --network ic)?/g;
+const rewriteDfx = (text) => text.replace(DFX_CALL, 'icp canister call $1 $2 -e ic');
+
+// Prose means prose: not a fenced block, not the frontmatter, and within a line,
+// not an inline code span and not a link destination. A rule that reached into
+// those could silently break an identifier or a URL containing the pattern.
 function mapProse(text, fn) {
+  const cut = text.startsWith('---\n') ? text.indexOf('\n---', 4) + 4 : 0;
   let inFence = false;
-  return text
+  const body = text
+    .slice(cut)
     .split('\n')
     .map((line) => {
       if (/^\s*```/.test(line)) {
         inFence = !inFence;
         return line;
       }
-      return inFence ? line : fn(line);
+      if (inFence) return line;
+      // Odd-indexed parts are the protected regions, so only the rest is passed
+      // to fn.
+      return line
+        .split(/(`[^`]*`|\]\([^)]*\))/g)
+        .map((part, i) => (i % 2 === 1 ? part : fn(part)))
+        .join('');
     })
     .join('\n');
+  return text.slice(0, cut) + body;
 }
 
 function normalizeProse(text) {
@@ -143,19 +164,40 @@ function marker(file, ref) {
   );
 }
 
-// Every relative .md link must resolve, in the synced tree and out of it. The
-// build does not check markdown links, and the pages are the one part of this
-// repo nobody hand-edits, so a link that silently rots has nothing else to
-// catch it.
-function brokenLinks(text, file) {
+// Every link must resolve, in the synced tree and out of it, and a link to a
+// section has to land on one: upstream renames headings freely, and a renamed
+// heading would otherwise drop readers at the top of a long page with a clean
+// build. Sibling targets are resolved against `prepared`, the pages about to be
+// written, so this runs before anything touches the tree.
+function brokenLinks(text, file, prepared) {
   const broken = [];
-  for (const [, href] of text.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
-    if (/^(https?:|#|\/)/.test(href)) continue;
+  const anchorsIn = (href) => {
+    if (href.startsWith('#')) return anchorsOfText(text);
     const [linkPath] = href.split('#');
-    if (!linkPath?.endsWith('.md')) continue;
+    const sibling = prepared.get(path.basename(linkPath));
+    if (sibling && path.resolve(TARGET_DIR, linkPath) === path.join(path.resolve(TARGET_DIR), path.basename(linkPath))) {
+      return anchorsOfText(sibling);
+    }
     const resolved = path.resolve(TARGET_DIR, linkPath);
-    if (!existsSync(resolved) && !existsSync(resolved.replace(/\.md$/, '.mdx'))) {
-      broken.push(href);
+    const target = existsSync(resolved)
+      ? resolved
+      : existsSync(resolved.replace(/\.md$/, '.mdx'))
+        ? resolved.replace(/\.md$/, '.mdx')
+        : null;
+    return target ? anchorsOfFile(target) : null;
+  };
+
+  for (const [, href] of text.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+    if (/^(https?:|\/)/.test(href)) continue;
+    const [linkPath, fragment] = href.split('#');
+    if (linkPath && !linkPath.endsWith('.md')) continue;
+    const anchors = anchorsIn(href);
+    if (!anchors) {
+      broken.push(`${href} (no such page)`);
+      continue;
+    }
+    if (fragment && !anchors.has(fragment)) {
+      broken.push(`${href} (no heading slugs to "${fragment}")`);
     }
   }
   return broken;
@@ -254,10 +296,37 @@ async function main() {
       );
     }
 
-    const { out: clean, applied } = normalizeProse(linked);
+    const deDfxed = rewriteDfx(linked);
+    const { out: clean, applied } = normalizeProse(deDfxed);
+    if (deDfxed !== linked) applied.push('dfx command rewritten to icp');
     if (applied.length) normalized.push(`${file}: ${applied.join(', ')}`);
 
     prepared.set(file, stampProvenance(clean, file, ref) + marker(file, ref));
+  }
+
+  // Check everything while it is still only in memory, so a failure leaves the
+  // tree exactly as it was rather than half-written.
+  const problems = [];
+  for (const [file, content] of prepared) {
+    for (const href of brokenLinks(content, file, prepared)) {
+      problems.push(`${file}: broken link ${href}`);
+    }
+    if (/—|\s–\s/.test(content)) {
+      problems.push(`${file}: a banned character survived normalization`);
+    }
+    if (/\bdfx\b/.test(content)) {
+      problems.push(
+        `${file}: publishes a \`dfx\` command this script does not know how to ` +
+          `rewrite. dfx is banned here (AGENTS.md "Never"), so fix it upstream, ` +
+          `or extend DFX_CALL if the shape is safe to translate.`
+      );
+    }
+  }
+  if (problems.length) {
+    throw new Error(
+      `${problems.length} problem(s) found, nothing written:\n` +
+        problems.map((p) => `  ${p}`).join('\n')
+    );
   }
 
   for (const [file, content] of prepared) {
@@ -269,25 +338,6 @@ async function main() {
   // serving something nobody maintains any more.
   const stale = readdirSync(TARGET_DIR).filter((f) => f.endsWith('.md') && !pages.includes(f));
   for (const file of stale) rmSync(path.join(TARGET_DIR, file));
-
-  // Link checking runs after every page is on disk, so intra-tree links to a
-  // page later in the alphabet resolve.
-  let broken = 0;
-  for (const file of written) {
-    const content = readFileSync(path.join(TARGET_DIR, file), 'utf8');
-    for (const href of brokenLinks(content, file)) {
-      console.error(`ERROR: ${file}: broken link ${href}`);
-      broken++;
-    }
-    if (/—|\s–\s/.test(content)) {
-      console.error(`ERROR: ${file}: a banned character survived normalization`);
-      broken++;
-    }
-  }
-  if (broken > 0) {
-    console.error(`\n${broken} problem(s) found. Nothing was committed.`);
-    process.exit(1);
-  }
 
   console.log(`\nWrote ${written.length} page(s) to ${TARGET_DIR}/:`);
   for (const file of written) console.log(`  ${file}`);

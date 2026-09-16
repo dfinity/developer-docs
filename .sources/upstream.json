@@ -58,13 +58,12 @@
       "script": "scripts/sync-static-site.mjs",
       "affects": "The synced pages are regenerated wholesale, so review the diff rather than the pages. Behavior changes also reach our own Frontends pages: certification.md describes what this canister certifies, and asset-canister.md contrasts the two recipes. The recipe version readers type is tracked separately as the `static-site` entry under `watched`, and the two move in lockstep.",
       "$comment": [
-        "Pinned to a commit, not a release tag, and past the latest release.",
-        ".sources/VERSIONS forbids pinning past a release so that docs cannot",
-        "describe unshipped behavior; this is the case that rule is not aimed at.",
-        "Every commit past v0.3.3 is docs-only (certified-assets#125, #126, #128),",
-        "and the tag predates the frontmatter contract this sync requires",
-        "(certified-assets#124), so v0.3.3 cannot be synced at all.",
-        "Move the pin to a release tag at the next certified-assets release."
+        "This entry may pin a commit rather than a release tag. .sources/VERSIONS",
+        "forbids that for submodules so docs cannot describe unshipped behavior, and",
+        "docs-only commits are not that case: check what the range contains before",
+        "pinning past a tag, and prefer a tag whenever one carries the pages.",
+        "Bootstrapped at d9cb7df (certified-assets#124 landed the frontmatter",
+        "contract after the v0.3.3 tag, so that tag cannot be synced at all)."
       ]
     }
   ],

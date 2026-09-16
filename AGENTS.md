@@ -217,7 +217,7 @@ docs/
 
 ## Source material
 
-Upstream repos are tracked three ways. Which one decides where you read from.
+Upstream repos are tracked four ways. Which one decides where you read from.
 
 **Vendored as submodules** — three repos, because the build opens their files.
 Read them from disk; do not edit them.
@@ -245,7 +245,7 @@ and the sync script fetches the pages at that ref.
 
 | Topic | Repo | Synced tree |
 |-------|------|-------------|
-| static-site (certified-assets) canister behavior | `dfinity/certified-assets` | `docs/guides/frontends/static-site/` |
+| certified-assets canister behavior | `dfinity/certified-assets` | `docs/guides/frontends/static-site/` |
 
 Rules for every synced tree, this one included:
 

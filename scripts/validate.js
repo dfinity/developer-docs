@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { globSync } from 'glob';
 import matter from 'gray-matter';
-import GithubSlugger from 'github-slugger';
+import { anchorsOfFile } from './lib/anchors.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -82,37 +82,6 @@ function checkForbiddenPatterns(file, content) {
   return errors;
 }
 
-// Heading ids as the site generates them: Starlight slugs the *rendered* text,
-// so inline markdown is stripped first, and an explicit `{#id}` wins. Cached
-// because a hub page can link the same target many times.
-const anchorCache = new Map();
-
-function renderedText(heading) {
-  return heading
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .trim();
-}
-
-function anchorsOf(file) {
-  if (anchorCache.has(file)) return anchorCache.get(file);
-  const slugger = new GithubSlugger();
-  const anchors = new Set();
-  let inFence = false;
-  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
-    if (/^\s*```/.test(line.trimStart())) { inFence = !inFence; continue; }
-    if (inFence) continue;
-    const m = /^#{1,6}\s+(.*)$/.exec(line);
-    if (!m) continue;
-    const explicit = /\{#([^}]+)\}\s*$/.exec(m[1]);
-    anchors.add(explicit ? explicit[1] : slugger.slug(renderedText(m[1])));
-  }
-  anchorCache.set(file, anchors);
-  return anchors;
-}
-
 function checkInternalLinks(file, content) {
   if (isSynced(file)) return [];
   const errors = [];
@@ -121,7 +90,15 @@ function checkInternalLinks(file, content) {
   let m;
   while ((m = re.exec(content)) !== null) {
     const href = m[1];
-    if (href.startsWith('http') || href.startsWith('#') || href.startsWith('/')) continue;
+    if (href.startsWith('http') || href.startsWith('/')) continue;
+    // A same-page link is checked against this file's own headings.
+    if (href.startsWith('#')) {
+      const fragment = href.slice(1);
+      if (fragment && !anchorsOfFile(file).has(fragment)) {
+        errors.push(`broken anchor: ${href} (no heading in this page slugs to "${fragment}")`);
+      }
+      continue;
+    }
     const [linkPath, fragment] = href.split('#');
     if (!linkPath?.endsWith('.md')) continue;
     const resolved = path.resolve(dir, linkPath);
@@ -138,7 +115,7 @@ function checkInternalLinks(file, content) {
     // A link to a section has to land on one. A renamed heading upstream, or on
     // a page someone else edited, otherwise drops the reader at the top of a
     // long page with no sign that anything went wrong.
-    if (fragment && !anchorsOf(target).has(fragment)) {
+    if (fragment && !anchorsOfFile(target).has(fragment)) {
       errors.push(`broken anchor: ${href} (no heading in ${path.relative(ROOT, target)} slugs to "${fragment}")`);
     }
   }
