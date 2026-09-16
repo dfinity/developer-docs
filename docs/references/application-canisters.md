@@ -187,7 +187,7 @@ Create `.ic-assets.json5` in your `dir` directory (or `public/`/`static/` so you
 
 ### Programmatic uploads
 
-Use `@icp-sdk/canisters` (>= 3.5.0) to upload assets from code:
+Specific to this canister, and not a recommended pattern: see [Asset canister (legacy)](../guides/frontends/asset-canister.md#programmatic-uploads-with-icp-sdkcanisters). `@icp-sdk/canisters` (>= 3.5.0) uploads assets from code:
 
 ```javascript
 import { AssetManager } from "@icp-sdk/canisters/assets";

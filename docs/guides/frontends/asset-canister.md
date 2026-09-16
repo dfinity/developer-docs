@@ -203,7 +203,9 @@ See the [frontend-environment-variables example](https://github.com/dfinity/icp-
 
 ## Programmatic uploads with @icp-sdk/canisters
 
-For uploading files from code rather than through `icp deploy`, use the `AssetManager` from `@icp-sdk/canisters`:
+Uploading assets from application code is not a recommended pattern, and it exists only on this canister: certified-assets has no per-asset write endpoint and will not grow one, because finalizing a sync recomputes the state hash that makes a build provable. An app that stores user-generated content should keep it in a canister of its own and leave its frontend a published build.
+
+It is documented here for projects already doing it. The `AssetManager` from `@icp-sdk/canisters` uploads files from code rather than through `icp deploy`:
 
 ```javascript
 import { AssetManager } from "@icp-sdk/canisters/assets";
@@ -369,10 +371,9 @@ The `ic_env` cookie is served on HTML responses by both canisters, so frontend c
 ## Next steps
 
 - [Hosting a static site](static-site/overview.md): the recommended path for new frontends
-- [Framework integration](frameworks.md): set up React, Svelte, or Vue with the asset canister
+- [Framework integration](frameworks.md): set up React, Svelte, or Vue with your frontend canister
 - [Custom domains](custom-domains.md): serve your frontend from your own domain
-- [Response certification](certification.md): verify that asset canister responses are authentic
+- [Response certification](certification.md): verify that responses are authentic
 - [Authentication with Internet Identity](../authentication/internet-identity.md): add user login to your frontend
-- [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage): programmatic uploads with AssetManager
 
 <!-- Upstream: informed by dfinity/icskills — skills/static-site/SKILL.md, skills/static-site/references/migrating-from-asset-canister.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
