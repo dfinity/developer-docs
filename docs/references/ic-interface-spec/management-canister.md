@@ -767,7 +767,7 @@ The Internet Computer mainnet supports requests to both IPv6 and IPv4 destinatio
 
 :::warning
 
-With pricing version `1`, if you do not specify the `max_response_bytes` parameter, the maximum of a `2MB` response will be charged for, which is expensive in terms of cycles. Always set the parameter to a reasonable upper bound of the expected (network and transformed) response size to not incur unnecessary cycles costs for your request.
+With pricing version `1`, if you do not specify the `max_response_bytes` parameter, the maximum of a `2MB` response will be charged for, which is expensive in terms of cycles. Always set the parameter to a reasonable upper bound of the expected response size to not incur unnecessary cycles costs for your request.
 
 :::
 
@@ -807,7 +807,7 @@ The response from the remote server must not exceed `max_response_bytes`, if pro
 
 Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). As for `http_request` with pricing version `2`, a base fee is charged when the call is accepted and the remaining attached cycles bound what the nodes may spend on the outcall; the unused cycles are then refunded to the caller. That budget is split between the `total_requests` nodes performing the outcall rather than across the whole subnet, and a node that exhausts its share rejects, counting towards `too_many_rejects` below.
 
-The result of the call is a variant with an `ok` and an `err` arm, and both arms are delivered as a reply rather than as a reject: an outcall that cannot meet the requested replication requirements, including one that times out, replies with an `err` of the `flexible_http_request_err` type. That error includes a textual error message, an optional global error code, and a vector of per-node details. Failures detected before the requests are issued, such as invalid arguments, invalid `replication` counts, too few attached cycles, or the method not being available on the subnet, are delivered as a reject instead.
+The result of the call is a variant with an `ok` and an `err` arm, and both arms are delivered as a reply rather than as a reject: an outcall that cannot meet the requested replication requirements, including one that times out, replies with an `err` of the `flexible_http_request_err` type. That error includes a textual error message, an optional global error code, and a vector of per-node details. Failures detected before the requests are issued, such as invalid arguments, invalid `replication` counts, or too few attached cycles, are delivered as a reject instead.
 
 The `global_error` field describes why the aggregate call failed to meet the requirements:
 
@@ -819,7 +819,7 @@ The `global_error` field describes why the aggregate call failed to meet the req
 
 - `too_many_rejects`: more than `total_requests - min_responses` nodes returned reject responses, so at least `min_responses` successful responses can never be collected. A response, or a transform output, that exceeds the size limit a node enforces is rejected by that node, so exceeding that limit surfaces as `too_many_rejects` rather than as `responses_too_large`.
 
-The `node_details` vector provides visibility into the execution on specific nodes; it may be empty, and it is not guaranteed to list every node the outcall was issued to. A `timeout` carries no entries; `too_many_rejects` lists at least `total_requests - min_responses + 1` of the rejecting nodes; `responses_too_large` and `out_of_cycles` list nodes whose responses the system has seen, whether those responses succeeded or were rejected. Each node appears at most once, and a successful outcall carries no per-node details at all. Each entry contains:
+The `node_details` vector provides visibility into the execution on specific nodes; it may be empty, and it is not guaranteed to list every node the outcall was issued to. A `timeout` carries no entries; `too_many_rejects` lists at least `total_requests - min_responses + 1` of the rejecting nodes; `responses_too_large` and `out_of_cycles` list nodes whose responses the system has seen, independently of whether those responses succeeded or were rejected. Each node appears at most once, and a successful outcall carries no per-node details at all. Each entry contains:
 
 - `node_id`.
 

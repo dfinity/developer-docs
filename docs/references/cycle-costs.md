@@ -185,7 +185,7 @@ Pass what you expect and you get a small reservation, at the cost of the outcall
 
 The four values size one budget per node; they are not four independent limits. The response size cap and the response timeout each node runs under are derived from whatever is left of that budget, so a low expectation on one input also tightens the others. Delivery of the result is paid out of what the nodes leave unspent, which means an expectation set below what the call needs can fail at delivery, after the request has already been made.
 
-Either way, any attached surplus is refunded, so the charge follows the resources actually consumed. Those refunds arrive asynchronously: a node that never reported has its whole budget returned when the request is discarded, one minute after the response was delivered. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as further refunds arrive.
+Either way, any attached surplus is refunded, so the charge follows the resources actually consumed. Those refunds arrive asynchronously: a node that never reported has its whole budget returned when the request times out, one minute after the response was delivered. A canister that reads its own balance right after an outcall will see it keep settling for a while afterwards, as further refunds arrive.
 
 ### EVM RPC canister
 
