@@ -109,7 +109,7 @@ The hello-world template deploys two [canisters](../concepts/canisters.md) that 
 
 1. **Backend canister**: Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](../references/candid-spec.md) interface, making it callable from any client.
 
-2. **Frontend canister**: A static site canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
+2. **Frontend canister**: A static site that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
 
 The `icp.yaml` file ties everything together:
 

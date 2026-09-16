@@ -100,7 +100,7 @@ Refused to connect to 'https://ic0.app/api/v2/canister/<canister-id>/read_state'
 because it violates the document's Content Security Policy.
 ```
 
-**On the [static-site recipe](../frontends/static-site/overview.md)** the canister sets no headers of its own, so a CSP error means your own policy is missing or not matching. `_headers` patterns match the file that was served, not the URL the visitor asked for, so a rule written against a client route (`/dashboard/*`) matches nothing. Write it against the file instead (`/index.html` or `/*.html`), redeploy, and check the response:
+**On a [static site](../frontends/static-site/overview.md)** the canister sets no headers of its own, so a CSP error means your own policy is missing or not matching. `_headers` patterns match the file that was served, not the URL the visitor asked for, so a rule written against a client route (`/dashboard/*`) matches nothing. Write it against the file instead (`/index.html` or `/*.html`), redeploy, and check the response:
 
 ```bash
 curl -sI https://<canister-id>.icp.net/ | grep -i content-security-policy
@@ -114,7 +114,7 @@ icp deploy <frontend-canister-name> --mode reinstall -e ic
 
 ## Problem: Security policy warning "This project does not define a security policy for some assets"
 
-This warning comes from the legacy asset canister when `.ic-assets.json5` does not define a security policy. The static-site recipe does not warn, because it never adds headers for you: whatever you declare in `_headers` is what gets served.
+This warning comes from the legacy asset canister when `.ic-assets.json5` does not define a security policy. A static site does not warn, because the canister never adds headers for you: whatever you declare in `_headers` is what gets served.
 
 **Fix:** add a security policy to `.ic-assets.json5` in your frontend asset directory:
 
@@ -141,7 +141,7 @@ The `standard` policy applies a default Content Security Policy and security hea
 ]
 ```
 
-See [Asset canister (legacy)](../frontends/asset-canister.md#ic-assets-json5) for the full `.ic-assets.json5` reference, and [Custom headers](../frontends/static-site/headers.md) for the static-site equivalent.
+See [Asset canister (legacy)](../frontends/asset-canister.md#ic-assets-json5) for the full `.ic-assets.json5` reference, and [Custom headers](../frontends/static-site/headers.md) for the static site equivalent.
 
 ## Problem: Rust canister fails to install with "invalid import section"
 

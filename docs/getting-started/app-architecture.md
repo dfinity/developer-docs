@@ -99,7 +99,7 @@ For small to medium datasets, stable memory is straightforward. For applications
 
 Not every ICP application needs a frontend canister. Your options:
 
-- **Static site canister**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to a canister that serves it over HTTP with every response certified. See [Static site overview](../guides/frontends/static-site/overview.md). Existing projects on the older recipe are covered by [Asset canister (legacy)](../guides/frontends/asset-canister.md).
+- **Static site**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to a canister that serves it over HTTP with every response certified. See [Hosting a static site](../guides/frontends/static-site/overview.md). Existing projects on the older recipe are covered by [Asset canister (legacy)](../guides/frontends/asset-canister.md).
 - **Framework-specific canister**: use a framework like Juno that provides a more opinionated hosting solution on ICP.
 - **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent). Useful during migration or when you need features a static file host cannot provide, such as server-side rendering.
 - **No frontend**: backend-only canisters that expose a Candid API for other canisters or CLI tools to call.

@@ -1,19 +1,19 @@
 ---
 title: "Frontend frameworks"
-description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using the static-site recipe and icp-cli"
+description: "Integrate React, Vue, Svelte, Next.js, and game engines with ICP canisters using icp-cli"
 sidebar:
-  order: 3
+  order: 2
 ---
 
 ICP hosts frontend applications in [canisters](../../concepts/canisters.md): static files (HTML, CSS, JavaScript) deployed to the network and served with certified responses. Any framework that can produce a static build output works: React, Vue, Svelte, Next.js, and even game engines like Unity WebGL and Godot.
 
-This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy with the [static-site recipe](static-site/overview.md).
+This guide shows you how to configure your framework's build pipeline, wire up the ICP JavaScript SDK, and deploy it as a [static site](static-site/overview.md).
 
 ## Prerequisites
 
 - [icp-cli](https://cli.internetcomputer.org/1.5/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
 - A backend canister deployed (or a static-only site with no backend)
-- Familiarity with the [static-site recipe](static-site/overview.md)
+- Familiarity with [hosting a static site](static-site/overview.md)
 
 ## The deployment model
 
@@ -372,7 +372,7 @@ icp canister settings show frontend -i
 
 ## Next steps
 
-- [Static site overview](static-site/overview.md): the recipe reference, including headers, redirects, and clean URLs
+- [Hosting a static site](static-site/overview.md): headers, redirects, clean URLs, and access protection
 - [Internet Identity](../authentication/internet-identity.md): add authentication to your frontend
 - [Project structure](../../getting-started/project-structure.md): explore the hello-world template with React, Vite, and a Motoko backend
 

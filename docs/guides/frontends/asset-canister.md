@@ -1,6 +1,6 @@
 ---
 title: "Asset canister (legacy)"
-description: "Maintain a frontend on the legacy @dfinity/asset-canister recipe, and migrate it to static-site"
+description: "Maintain a frontend on the legacy @dfinity/asset-canister recipe, and migrate it to a static site"
 sidebar:
   order: 6
 ---
@@ -8,7 +8,7 @@ sidebar:
 The asset [canister](../../concepts/canisters.md) hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
 
 :::caution[This is the legacy path]
-New projects should use the [static-site recipe](static-site/overview.md), which deploys the certified-assets canister. It is a different canister with a different configuration format, and it is what the project templates ship. This page is for projects already running `@dfinity/asset-canister`; to move one over, see [Migrate to static-site](#migrate-to-static-site).
+New projects should [host a static site](static-site/overview.md) instead. That is a different canister with a different configuration format, and it is what the project templates ship. This page is for projects already running the `@dfinity/asset-canister` recipe; to move one over, see [Migrate to a static site](#migrate-to-a-static-site).
 :::
 
 This guide covers configuring the asset canister recipe in `icp.yaml`, deploying frontends, configuring SPA routing with `.ic-assets.json5`, connecting frontends to backend canisters, and uploading assets programmatically.
@@ -322,16 +322,16 @@ icp canister call frontend http_request '(record {
 
 **Content types are wrong for programmatic uploads.** The asset canister infers content types from file extensions for files uploaded via `icp deploy`. When uploading programmatically with `AssetManager`, pass the `contentType` option explicitly.
 
-## Migrate to static-site
+## Migrate to a static site
 
-The [static-site recipe](static-site/overview.md) deploys a different canister, certified-assets, with its own configuration format. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
+[Hosting a static site](static-site/overview.md) means deploying a different canister, certified-assets, with its own configuration format. The `@dfinity/static-site` recipe replaces `@dfinity/asset-canister` in your configuration. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
 
 ### You cannot upgrade in place
 
 The two canisters have unrelated Candid interfaces, so repointing the recipe and running a plain `icp deploy` stops at the pre-install compatibility check with `Candid interface compatibility check failed`. Nothing is installed and the running canister is untouched. Two ways forward:
 
-- **A new canister.** Add a new entry with the static-site recipe and deploy it. You get a new canister ID, so any custom domain registration and hardcoded ID has to be updated.
-- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at static-site and run `icp deploy --mode reinstall frontend`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
+- **A new canister.** Add a new entry with the `@dfinity/static-site` recipe and deploy it. You get a new canister ID, so any custom domain registration and hardcoded ID has to be updated.
+- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at `@dfinity/static-site` and run `icp deploy --mode reinstall frontend`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
 
 Do not force the upgrade through with `--yes`. That skips the compatibility check and installs onto stable memory the certified-assets canister cannot read, which leaves a live canister serving nothing.
 
@@ -368,7 +368,7 @@ The `ic_env` cookie is served on HTML responses by both canisters, so frontend c
 
 ## Next steps
 
-- [Static site overview](static-site/overview.md): the recommended recipe for new frontends
+- [Hosting a static site](static-site/overview.md): the recommended path for new frontends
 - [Framework integration](frameworks.md): set up React, Svelte, or Vue with the asset canister
 - [Custom domains](custom-domains.md): serve your frontend from your own domain
 - [Response certification](certification.md): verify that asset canister responses are authentic

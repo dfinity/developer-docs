@@ -51,7 +51,7 @@ Any canister that serves HTTP is reachable through two kinds of hostname: one wh
 
 What you can do about the raw host depends on which canister you deployed.
 
-**static-site (certified-assets).** The canister certifies every response and accepts only version 2 of the certification protocol, so nothing it serves is uncertified. There is deliberately no raw-access switch: the canister's only clue about the hostname is the `Host` header, which the client supplies and nothing authenticates, and which hostnames verify is a property of how a given gateway is deployed rather than anything the gateway protocol defines. Verification is the gateway's job, so picking the gateway is the trust decision. Link to a verifying host, and treat a raw URL as a debugging tool rather than a way to serve or visit a site. See [Who verifies the certificate](static-site/how-it-works.md#who-verifies-the-certificate).
+**Static site.** The canister certifies every response and accepts only version 2 of the certification protocol, so nothing it serves is uncertified. There is deliberately no raw-access switch: the canister's only clue about the hostname is the `Host` header, which the client supplies and nothing authenticates, and which hostnames verify is a property of how a given gateway is deployed rather than anything the gateway protocol defines. Verification is the gateway's job, so picking the gateway is the trust decision. Link to a verifying host, and treat a raw URL as a debugging tool rather than a way to serve or visit a site. See [Who verifies the certificate](static-site/how-it-works.md#who-verifies-the-certificate).
 
 **Asset canister (legacy).** Raw access is enabled by default, and the canister can refuse it. Disable it in `.ic-assets.json5` for any assets that must not be served unverified:
 
@@ -70,7 +70,7 @@ With `allow_raw_access` set to `false`, requests to the `raw.icp.net` domain are
 
 Neither recipe needs certification code from you. What differs is how much of the response is covered.
 
-**static-site (certified-assets)** certifies every response it serves, including status code, body, and the headers you declare in [`_headers`](static-site/headers.md). There is no way to turn certification off and no uncertified header path, which is why redirects and headers are limited to what can be enumerated ahead of time, and why the sync plugin rejects [reserved headers](static-site/headers.md#reserved-headers) at deploy time instead of serving a value it cannot certify. Note that it adds no default headers at all: no `Cache-Control`, no CSP. Anything you want certified, you declare.
+**Static site.** Certifies every response it serves, including status code, body, and the headers you declare in [`_headers`](static-site/headers.md). There is no way to turn certification off and no uncertified header path, which is why redirects and headers are limited to what can be enumerated ahead of time, and why the sync plugin rejects [reserved headers](static-site/headers.md#reserved-headers) at deploy time instead of serving a value it cannot certify. Note that it adds no default headers at all: no `Cache-Control`, no CSP. Anything you want certified, you declare.
 
 **The asset canister** inserts every uploaded file into the HTTP certification tree, sets the certified root hash after each sync, returns the `IC-Certificate` and `IC-Certificate-Expression` headers on every `http_request` query, and re-certifies on subsequent deploys. It certifies `Content-Type` plus the headers you list in `.ic-assets.json5`.
 
@@ -85,7 +85,7 @@ Always certify headers that affect browser behavior. In particular:
 
 The `security_policy: "standard"` option in `.ic-assets.json5` certifies a baseline set of security headers. For custom headers, list them explicitly in `headers`: the asset canister certifies everything in that object.
 
-This whole class of mistake does not exist on static-site, which certifies the full response.
+This whole class of mistake does not exist on a static site, which certifies the full response.
 
 ## Custom HTTP canisters
 
@@ -99,7 +99,7 @@ Use custom HTTP certification when:
 - You need to certify dynamic responses (generated per request, not pre-uploaded assets)
 - You are building a canister that functions as its own frontend without using one of the frontend recipes
 
-For static assets (HTML, CSS, JS, images), use the [static-site recipe](static-site/overview.md) instead: it handles all certification automatically and is more efficient.
+For static assets (HTML, CSS, JS, images), [host a static site](static-site/overview.md) instead: certification is handled for you and is more efficient.
 
 ### Using ic-asset-certification
 

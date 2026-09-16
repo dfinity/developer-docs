@@ -118,7 +118,7 @@ The `package` parameter (the Cargo package to build) defaults to the canister `n
 
 ### Frontend canister
 
-The frontend uses the `@dfinity/static-site` recipe, which builds the frontend app and uploads the output to a certified-assets canister:
+The frontend uses the `@dfinity/static-site` recipe, which builds the frontend app and uploads the output to a canister that serves it with response certification:
 
 ```yaml
 name: frontend
@@ -134,7 +134,7 @@ recipe:
 
 The `build` commands run in order: install dependencies, generate TypeScript bindings from the backend's Candid file, then build the Vite app. The `dir` field tells the recipe which directory to upload.
 
-The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version. See [Static site overview](../guides/frontends/static-site/overview.md) for the configuration fields, and [Asset canister (legacy)](../guides/frontends/asset-canister.md) for the older `@dfinity/asset-canister` recipe that existing projects may still use.
+The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version. See [Hosting a static site](../guides/frontends/static-site/overview.md) for the configuration fields, and [Asset canister (legacy)](../guides/frontends/asset-canister.md) for the older `@dfinity/asset-canister` recipe that existing projects may still use.
 
 ## Recipes
 

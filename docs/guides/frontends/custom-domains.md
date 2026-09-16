@@ -2,7 +2,7 @@
 title: "Custom domains"
 description: "Point a custom domain to your ICP-hosted frontend with DNS and boundary node configuration"
 sidebar:
-  order: 2
+  order: 3
 ---
 
 By default, every canister on ICP is accessible at `https://<canister-id>.icp.net`. To serve your frontend under your own domain (e.g., `app.example.com`), you register it with the HTTP gateway custom domain service.
@@ -13,7 +13,7 @@ The service handles TLS certificate provisioning, renewal, and routing automatic
 
 - A registered domain from any registrar (Namecheap, GoDaddy, Cloudflare, Route 53, etc.)
 - Access to edit DNS records for that domain
-- A deployed frontend canister (see [Static site overview](static-site/overview.md))
+- A deployed frontend canister (see [Hosting a static site](static-site/overview.md))
 - `curl` for the registration API calls
 
 ## Overview
@@ -66,7 +66,7 @@ public/
     └── ic-domains
 ```
 
-With the [static-site recipe](static-site/overview.md) that is all it takes. Dotfiles are skipped on upload, but `.well-known/` is the documented exception and is traversed normally, so the file is served at `/.well-known/ic-domains` with no configuration.
+On a [static site](static-site/overview.md) that is all it takes. Dotfiles are skipped on upload, but `.well-known/` is the documented exception and is traversed normally, so the file is served at `/.well-known/ic-domains` with no configuration.
 
 On the [legacy asset canister](asset-canister.md), hidden directories are excluded unless you un-ignore them. Add a rule to `.ic-assets.json5` in the same directory, or to the existing array if you already have one:
 

@@ -573,7 +573,7 @@ To keep principals consistent across your own custom domains, configure **altern
 
 2. **Serve it with the right content type and CORS headers.** II reads the file cross-origin, and nothing is set for you.
 
-   On the [static-site recipe](../frontends/static-site/overview.md), `.well-known/` is uploaded automatically; declare the two headers in a `_headers` file at the root of your build directory:
+   On a [static site](../frontends/static-site/overview.md), `.well-known/` is uploaded automatically; declare the two headers in a `_headers` file at the root of your build directory:
 
    ```text
    /.well-known/ii-alternative-origins

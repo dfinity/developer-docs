@@ -7,11 +7,11 @@ sidebar:
 
 Application canisters are well-known canisters at the application layer of the Internet Computer that developers commonly integrate into their projects. Unlike [system canisters](system-canisters.md) (which govern the network) or [protocol canisters](protocol-canisters.md) (which provide platform infrastructure), application canisters implement higher-level functionality: hosting web frontends, governing apps via DAO, and running AI inference.
 
-## Static site canister (certified-assets)
+## Certified-assets canister
 
-The certified-assets canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. It is the canister the `@dfinity/static-site` recipe deploys, and the recommended way to host a frontend on ICP. Every response it serves is certified, and it accepts only version 2 of the certification protocol, so there is no uncertified serving path.
+The certified-assets canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. The `@dfinity/static-site` recipe deploys it, and it is the recommended way to host a frontend on ICP. Every response it serves is certified, and it accepts only version 2 of the certification protocol, so there is no uncertified serving path.
 
-Static site canisters are deployed per-project. There is no global canister ID: each project creates its own.
+These canisters are deployed per-project. There is no global canister ID: each project creates its own.
 
 ### Recipe (icp.yaml)
 
@@ -27,7 +27,7 @@ canisters:
           - npm run build
 ```
 
-The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version: there is no separate `configuration.version` field. See [Static site overview](../guides/frontends/static-site/overview.md) for the remaining configuration fields.
+The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version: there is no separate `configuration.version` field. See [Hosting a static site](../guides/frontends/static-site/overview.md) for the remaining configuration fields.
 
 ### Interface
 
@@ -402,7 +402,7 @@ For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 | Canister | Canister ID | Purpose |
 |---|---|---|
-| Static site (certified-assets) | Per-project | Static web asset hosting, every response certified |
+| Certified-assets | Per-project | Static web asset hosting, every response certified |
 | Asset canister (legacy) | Per-project | Static web asset hosting with HTTP certification |
 | SNS governance | Per-app | DAO governance for a specific app |
 | SNS ledger | Per-app | ICRC-1/ICRC-2/ICRC-3 token ledger for a specific SNS |
@@ -412,7 +412,7 @@ For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 ## Next steps
 
-- [Static site overview](../guides/frontends/static-site/overview.md): deploying and configuring a frontend canister for your project
+- [Hosting a static site](../guides/frontends/static-site/overview.md): deploying and configuring a frontend canister for your project
 - [Asset canister (legacy)](../guides/frontends/asset-canister.md): the older recipe, and how to migrate off it
 - [Launching an SNS](../guides/governance/launching.md): how to decentralize an app with SNS
 - [AI inference](../guides/backends/ai-inference.md): building AI-powered canisters with the LLM canister
