@@ -709,6 +709,19 @@ It rests on the section above. Every app has to derive from one shared derivatio
 
    `/reauth` passes that `next` as `returnTo`, so the user lands back where they were asking to go, signed in, having seen nothing. This is what makes the sharing automatic rather than something the user has to click.
 
+4. **Jump on load, ask afterwards.** Step 3 redirects because the page has only just started. Once a page is open the status can still turn `signed-in-elsewhere`, when someone signs in on a sibling in another tab, and redirecting a page the user is working on would throw away what they are doing. So subscribe, and offer the same redirect behind a button:
+
+   ```javascript
+   authClient.subscribe(() => {
+     if (authClient.getStatus().state === "signed-in-elsewhere") {
+       // A banner or dialog whose button runs the same redirect as step 3.
+       showResumeDialog(() =>
+         location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`),
+       );
+     }
+   });
+   ```
+
 The full walkthrough is in the client's [shared sessions guide](https://js.icp.build/auth/latest/shared-sessions/).
 
 ## App metadata
