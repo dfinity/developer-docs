@@ -162,7 +162,7 @@ EOF
 - Removing existing pages
 - Changing the frontmatter schema
 - Modifying sidebar configuration (`astro.config.mjs`)
-- Adding a new `.sources/` submodule
+- Adding a new `.sources/` submodule or a new synced tree
 
 ## Never
 
@@ -170,7 +170,7 @@ EOF
 - Use `mo:base` — use `mo:core` instead. Critical replacements: `Buffer` → `List`, `HashMap`/`TrieMap`/`Trie`/`RBTree` → `Map`, `Deque` → `Queue`, `OrderedMap` → `pure/Map`, `OrderedSet` → `pure/Set`
 - Create `.mdx` without a clear need for interactive components
 - Duplicate content that lives in external docs (icp-cli site, JS SDK docs, the IC skills)
-- Edit synced files directly (`docs/languages/motoko/`, `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md`)
+- Edit synced files directly (`docs/languages/motoko/`, `docs/guides/frontends/static-site/`, `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md`)
 - Nest sidebar items more than 3 levels deep
 - Add `Co-Authored-By` or any AI attribution to commits or PR descriptions
 - Link to `internetcomputer.org/docs/` (retired) or `learn.internetcomputer.org` (content is now in this repo under `docs/concepts/`)
@@ -187,8 +187,9 @@ EOF
 
 - `docs/` — All documentation (`.md` by default). `src/content/docs/` symlinks here.
 - `docs/languages/motoko/` — Auto-synced from `caffeinelabs/motoko` (do not edit directly)
+- `docs/guides/frontends/static-site/` (synced from `dfinity/certified-assets`, do not edit directly)
 - `docs/references/internet-identity-spec.md`, `docs/references/verifiable-credentials-spec.md` — Synced from `dfinity/internet-identity` (do not edit directly)
-- `.sources/` — Vendored submodules, read-only, plus `upstream.json` (watched repos) and `VERSIONS` (submodule pins)
+- `.sources/` — Vendored submodules, read-only, plus `upstream.json` (watched and synced repos) and `VERSIONS` (submodule pins)
 - `.claude/skills/` — Skills. IC skills are mirrored by `.claude/sync-ic-skills.sh` and not committed; `icp-brand-design`, `icp-brand-voice`, and `technical-documentation` are maintained here
 - `.agents/upstream-tracking.md` — How upstreams are tracked and bumped (maintainer use)
 
@@ -215,7 +216,7 @@ docs/
 
 ## Source material
 
-Upstream repos are tracked two ways. Which one decides where you read from.
+Upstream repos are tracked three ways. Which one decides where you read from.
 
 **Vendored as submodules** — three repos, because the build opens their files.
 Read them from disk; do not edit them.
@@ -235,6 +236,32 @@ Pinned versions: [`.sources/VERSIONS`](.sources/VERSIONS). `motoko` and
 `examples` is checked weekly, but reports only when a commit touches a file a
 `snippet=` quotes; the build already fails if such a path or `#region` marker
 stops resolving. Canister IDs and code patterns are in the skills (see "Skills").
+
+**Synced without a submodule** is for a repo whose own pages are published here
+as-is. Nothing about them is resolved at build time, only markdown links, so the
+pin is a ref in [`.sources/upstream.json`](.sources/upstream.json) under `synced`
+and the sync script fetches the pages at that ref.
+
+| Topic | Repo | Synced tree |
+|-------|------|-------------|
+| static-site (certified-assets) canister behavior | `dfinity/certified-assets` | `docs/guides/frontends/static-site/` |
+
+Rules for every synced tree, this one included:
+
+- **Never hand-edit a page in it.** Content changes belong upstream, and the next
+  sync overwrites anything else. The pages carry a do-not-edit marker and record
+  `source_repo` / `source_ref` in their frontmatter.
+- **They are exempt from the directory-based Diataxis rule and from
+  `## Next steps`.** Upstream owns one flat set of pages that mixes how-to,
+  reference, and explanation, and filing them by type would scatter one source of
+  truth across three directories. No synced page in this repo carries
+  `## Next steps`. Our own pages around the tree still follow both rules.
+- **They are not exempt from the validator.** Only `docs/languages/motoko/` is,
+  for historical reasons. A sync script normalizes and rewrites so that its
+  output passes the same checks as a hand-written page, and it exits non-zero
+  instead of publishing something that does not.
+- Sidebar placement comes from the sync target directory plus upstream's
+  `sidebar.order`, so adding a page upstream needs no change here.
 
 **Watched** are the repos where a release can silently invalidate a lot of what
 is published, so [`.sources/upstream.json`](.sources/upstream.json) records the
@@ -370,6 +397,7 @@ For design work (CSS, UI, marketing copy), also load `icp-brand-design`.
   - `guides/` — task-oriented how-to
   - `references/` — precise lookups, no tutorials
 - End every page with a `## Next steps` section.
+- Synced trees are exempt from the two rules above; see "Source material".
 
 ## Linking rules
 

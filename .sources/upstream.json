@@ -1,10 +1,16 @@
 {
   "$comment": [
-    "Every upstream this repo tracks, in three groups.",
+    "Every upstream this repo tracks, in four groups.",
     "",
     "`watched` are repos where a release can silently invalidate a lot of published",
     "content, so they get a pinned ref and a weekly issue when they move. Verify",
     "claims against the pinned ref, not against main, so a review is reproducible.",
+    "",
+    "`synced` are repos whose own pages are copied into docs/ by a sync script. The",
+    "pin is recorded here because there is no gitlink to hold it: the build resolves",
+    "no file from them, so they are not submodules. Their sync workflow does its own",
+    "release check and opens the bump PR, the way sync-motoko.yml and sync-ii-spec.yml",
+    "do, so check-upstream-releases.mjs ignores this group.",
     "",
     "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
     "is the gitlink, so git stays the single source of truth. `motoko` and",
@@ -39,7 +45,28 @@
     "",
     "Fields (vendored): path, repo, track 'branch', branch, affects, and an optional",
     "pathFilter. 'snippets' reports only when the range touched a file quoted by a",
-    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent."
+    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent.",
+    "",
+    "Fields (synced): repo, pinned, source, target, script, and affects."
+  ],
+  "synced": [
+    {
+      "repo": "dfinity/certified-assets",
+      "pinned": "d9cb7df",
+      "source": "docs/",
+      "target": "docs/guides/frontends/static-site/",
+      "script": "scripts/sync-static-site.mjs",
+      "affects": "The synced pages are regenerated wholesale, so review the diff rather than the pages. Behavior changes also reach our own Frontends pages: certification.md describes what this canister certifies, and asset-canister.md contrasts the two recipes. The recipe version readers type is tracked separately as the `static-site` entry under `watched`, and the two move in lockstep.",
+      "$comment": [
+        "Pinned to a commit, not the v0.3.3 tag, and one commit past the latest",
+        "release. .sources/VERSIONS forbids pinning past a release so that docs",
+        "cannot describe unshipped behavior; this is the case that rule is not",
+        "aimed at. The only commits past v0.3.3 are certified-assets#125 and #126,",
+        "both docs-only, and the tag predates the frontmatter contract this sync",
+        "requires (certified-assets#124), so v0.3.3 cannot be synced at all.",
+        "Move the pin to a release tag at the next certified-assets release."
+      ]
+    }
   ],
   "vendored": [
     {

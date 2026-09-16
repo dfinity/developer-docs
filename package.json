@@ -13,6 +13,7 @@
     "validate": "node scripts/validate.js --all",
     "sync:motoko": "./scripts/sync-motoko.sh",
     "sync:ii-spec": "./scripts/sync-ii-spec.mjs",
+    "sync:static-site": "node scripts/sync-static-site.mjs",
     "check:upstream": "node scripts/check-upstream-releases.mjs"
   },
   "dependencies": {

@@ -1,0 +1,155 @@
+name: Sync static-site docs
+
+on:
+  schedule:
+    - cron: '0 9 * * 3' # Weekly on Wednesday
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          client-id: ${{ vars.PR_AUTOMATION_BOT_PUBLIC_CLIENT_ID }}
+          private-key: ${{ secrets.PR_AUTOMATION_BOT_PUBLIC_PRIVATE_KEY }}
+
+      # certified-assets is not a submodule: the build resolves no file from it.
+      # A blobless clone is only needed to reason about refs (is the latest
+      # release already contained in the pin, did docs/ change), which the
+      # contents API cannot answer.
+      - name: Clone certified-assets
+        run: git clone --filter=blob:none --no-checkout https://github.com/dfinity/certified-assets.git /tmp/certified-assets
+
+      - name: Resolve the ref to sync
+        id: check
+        run: |
+          PIN=$(node -p "require('./.sources/upstream.json').synced.find(e => e.repo === 'dfinity/certified-assets').pinned")
+          echo "pin=$PIN" >> $GITHUB_OUTPUT
+
+          TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname | grep '^v[0-9]' | head -1)
+          echo "Pinned: $PIN. Latest release: $TAG."
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+          # The pin is allowed to sit ahead of the latest release while a docs
+          # fix has shipped but a release has not (the state this sync started
+          # in). Syncing the tag then would publish older prose.
+          if git -C /tmp/certified-assets merge-base --is-ancestor "$TAG" "$PIN"; then
+            echo "Pin already contains $TAG. Nothing to sync."
+            echo "needed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          BRANCH="infra/sync-static-site-${TAG}"
+          if git ls-remote --exit-code origin "refs/heads/${BRANCH}" > /dev/null 2>&1; then
+            echo "Branch $BRANCH already exists, so a PR is likely open. Skipping."
+            echo "needed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # A release that ships canister changes without touching docs/ leaves
+          # the synced pages byte-identical. The recipe version readers type is
+          # covered by the `static-site` entry under `watched`, which opens its
+          # own issue, so there is nothing to review here.
+          CHANGED=$(git -C /tmp/certified-assets diff --name-only "${PIN}..${TAG}" -- docs/)
+          if [ -z "$CHANGED" ]; then
+            echo "No docs/ changes between $PIN and $TAG. Skipping."
+            echo "needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changed upstream pages:"
+            echo "$CHANGED"
+            echo "needed=true" >> $GITHUB_OUTPUT
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Move the pin to the release tag
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          node -e '
+            const fs = require("fs");
+            const file = ".sources/upstream.json";
+            const config = JSON.parse(fs.readFileSync(file, "utf8"));
+            const entry = config.synced.find((e) => e.repo === "dfinity/certified-assets");
+            entry.pinned = process.argv[1];
+            fs.writeFileSync(file, JSON.stringify(config, null, 2) + "\n");
+          ' "${{ steps.check.outputs.tag }}"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.check.outputs.needed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.check.outputs.needed == 'true'
+        run: npm ci
+
+      - name: Run static-site docs sync
+        if: steps.check.outputs.needed == 'true'
+        run: npm run sync:static-site
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      # The synced tree is deliberately not in the validator's SYNCED allowlist:
+      # the sync normalizes and rewrites so that the pages pass the same checks
+      # as a hand-written page, and an exemption would hide the day they stop.
+      - name: Validate
+        if: steps.check.outputs.needed == 'true'
+        run: npm run validate
+
+      - name: Initialize examples submodule (required for build)
+        if: steps.check.outputs.needed == 'true'
+        run: git submodule update --init --depth 1 .sources/examples
+
+      - name: Build check
+        if: steps.check.outputs.needed == 'true'
+        run: npm run build
+
+      - name: Create PR
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          git config user.name "pr-automation-bot-public[bot]"
+          git config user.email "pr-automation-bot-public[bot]@users.noreply.github.com"
+
+          BRANCH="infra/sync-static-site-${{ steps.check.outputs.tag }}"
+          git checkout -b "$BRANCH"
+          git add .sources/upstream.json docs/guides/frontends/static-site
+          git commit -m "chore: sync static-site docs to dfinity/certified-assets ${{ steps.check.outputs.tag }}"
+          git push -u origin "$BRANCH"
+
+          CHANGED="${{ steps.check.outputs.changed_files }}"
+          {
+            echo "## Summary"
+            echo ""
+            echo "Automated sync of the static-site (certified-assets) user docs."
+            echo ""
+            echo "**Release:** \`${{ steps.check.outputs.tag }}\` (pinned from \`${{ steps.check.outputs.pin }}\`)"
+            echo ""
+            echo "**Changed upstream files:**"
+            while IFS= read -r f; do
+              [ -n "$f" ] && echo "- \`$f\`"
+            done <<< "$CHANGED"
+            echo ""
+            echo "- Ran \`npm run sync:static-site\`, regenerating \`docs/guides/frontends/static-site/\`"
+            echo "- Validator and build passed"
+            echo ""
+            echo "## Checklist"
+            echo ""
+            echo "- [ ] Review the page diffs for content changes"
+            echo "- [ ] Check whether a behavior change contradicts our own Frontends pages (\`certification.md\`, \`asset-canister.md\`)"
+            echo "- [ ] Check whether the recipe version named in \`icp.yaml\` examples needs bumping with it"
+          } > /tmp/pr-body.md
+
+          gh pr create \
+            --title "chore: sync static-site docs to dfinity/certified-assets ${{ steps.check.outputs.tag }}" \
+            --body-file /tmp/pr-body.md
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
