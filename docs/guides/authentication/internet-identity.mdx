@@ -687,9 +687,14 @@ It rests on the section above. Every app has to derive from one shared derivatio
 
    ```javascript
    // /reauth
-   const status = new AuthClient(clientOptions).getStatus();
+   async function reauth() {
+     const status = new AuthClient(clientOptions).getStatus();
 
-   if (status.state === "signed-in-elsewhere") {
+     if (status.state !== "signed-in-elsewhere") {
+       location.replace("/");
+       return;
+     }
+
      const authClient = new AuthClient({
        ...clientOptions,
        transport: "redirect",
@@ -707,9 +712,9 @@ It rests on the section above. Every app has to derive from one shared derivatio
        }
        location.replace("/");
      }
-   } else {
-     location.replace("/");
    }
+
+   reauth();
    ```
 
    Without `hint`, a provider holding more than one session refuses rather than guessing, with `InteractionRequiredError` and a `reason` of `account_selection_required`: what you lose is the resume, not the user's identity, since a mint for an unexpected account is rejected as `AccountMismatchError`. An `InteractionRequiredError` also means there may be nothing to resume, so the sign-in is stale: sign out to clear it, or every app on the domain keeps sending the user back.
