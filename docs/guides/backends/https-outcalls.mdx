@@ -73,6 +73,8 @@ A minimal example that sends a GET request to an echo service. The response body
 </TabItem>
 </Tabs>
 
+The two `with_expected_*` calls size the cycles reservation, not the price. They are Rust only: the Motoko wrapper prices with version `1`, which has no equivalent. [Cycle costs](#cycle-costs) below explains what they do.
+
 Because these examples use replicated mode, they include a transform function to strip non-deterministic HTTP response headers before consensus:
 
 <Tabs syncKey="lang">
@@ -184,6 +186,12 @@ For reference, on a 13-node subnet:
 Setting `pricing_version = 2` prices the resources the call actually consumes: the bytes that arrive, the time the request takes, and the instructions the transform runs. A conservative `max_response_bytes` therefore costs nothing extra. It still bounds the response, and it still affects how many cycles are held while the call runs, but it no longer sets the price.
 
 Compute the recommended cycles amount to attach with `ic0.cost_http_request_v2`, passing the resources you expect the call to use. Passing the maximum of each instead gives you an amount the call cannot exhaust, but reserves far more for the duration of the call, since the maxima include a 60-second round trip and the full query instruction limit for the transform.
+
+In Rust, each `with_expected_*` on the builder replaces one of those maxima. The GET example above declares a 10-second round trip and 1 million transform instructions. On a 13-node subnet that takes the reservation from about 5.33 billion cycles down to about 136 million. What the call is charged does not change, because only the resources it consumes are billed.
+
+The four expectations are not four separate limits. They size a single per-node budget, and the response size cap and response timeout the nodes run under are derived from whatever is left of it. Expecting less therefore also narrows what the call is allowed to do.
+
+The round trip and the transform instructions are the safe two to narrow, and they carry most of the saving. Their maxima are 60 seconds and the full query instruction limit, both far above what a normal call uses, and the budget a modest figure leaves still affords the nodes much more than that figure. The two byte expectations are the ones to leave at their default, which is `max_response_bytes`. Declaring less is a bet on the server: a larger response is still downloaded, but the nodes may then be unable to fund delivering it, and the call fails at delivery, after the request has already been made.
 
 See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing formulas for both versions.
 
