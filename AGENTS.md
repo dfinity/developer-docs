@@ -262,6 +262,11 @@ Rules for every synced tree, this one included:
   instead of publishing something that does not.
 - Sidebar placement comes from the sync target directory plus upstream's
   `sidebar.order`, so adding a page upstream needs no change here.
+- A synced page may carry a bare `https://cli.internetcomputer.org` root even
+  though the "Never" section bans it in our own pages. That root meta-refreshes
+  to the newest version, which is what upstream wants for a page also read on
+  GitHub, and rewriting it would publish text that differs from the source repo.
+  Leave it.
 
 **Watched** are the repos where a release can silently invalidate a lot of what
 is published, so [`.sources/upstream.json`](.sources/upstream.json) records the

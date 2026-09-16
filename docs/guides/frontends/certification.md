@@ -319,7 +319,7 @@ For the full working example including a backend canister, see the [certified-co
 
 ## Next steps
 
-- [Static site overview](static-site/overview.md): deploy a frontend whose every response is certified
+- [Hosting a static site](static-site/overview.md): deploy a frontend whose every response is certified
 - [Asset canister (legacy)](asset-canister.md): certification on the older recipe, and how to migrate
 - [Certified variables](../backends/certified-variables.md): certify Candid query responses from backend canisters
 - [Security concepts](../../concepts/security.md): why query integrity matters

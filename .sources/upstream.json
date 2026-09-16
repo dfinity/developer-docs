@@ -52,18 +52,18 @@
   "synced": [
     {
       "repo": "dfinity/certified-assets",
-      "pinned": "d9cb7df",
+      "pinned": "65c0f32",
       "source": "docs/",
       "target": "docs/guides/frontends/static-site/",
       "script": "scripts/sync-static-site.mjs",
       "affects": "The synced pages are regenerated wholesale, so review the diff rather than the pages. Behavior changes also reach our own Frontends pages: certification.md describes what this canister certifies, and asset-canister.md contrasts the two recipes. The recipe version readers type is tracked separately as the `static-site` entry under `watched`, and the two move in lockstep.",
       "$comment": [
-        "Pinned to a commit, not the v0.3.3 tag, and one commit past the latest",
-        "release. .sources/VERSIONS forbids pinning past a release so that docs",
-        "cannot describe unshipped behavior; this is the case that rule is not",
-        "aimed at. The only commits past v0.3.3 are certified-assets#125 and #126,",
-        "both docs-only, and the tag predates the frontmatter contract this sync",
-        "requires (certified-assets#124), so v0.3.3 cannot be synced at all.",
+        "Pinned to a commit, not a release tag, and past the latest release.",
+        ".sources/VERSIONS forbids pinning past a release so that docs cannot",
+        "describe unshipped behavior; this is the case that rule is not aimed at.",
+        "Every commit past v0.3.3 is docs-only (certified-assets#125, #126, #128),",
+        "and the tag predates the frontmatter contract this sync requires",
+        "(certified-assets#124), so v0.3.3 cannot be synced at all.",
         "Move the pin to a release tag at the next certified-assets release."
       ]
     }
