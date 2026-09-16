@@ -177,7 +177,7 @@ Pass what you expect and you get a small reservation, at the cost of the outcall
 |-----------|---------|
 | `http_roundtrip_time_ms` | `60_000`, the longest the system waits for a response |
 | `raw_response_bytes` | `max_response_bytes`, or `2_000_000` if it is unset |
-| `transformed_response_bytes` | the same as `raw_response_bytes`, plus `1_024` bytes reserved for the Candid encoding of the response |
+| `transformed_response_bytes` | the same as `raw_response_bytes`, plus `1_024` bytes: the Candid encoding of a response delivered without a transform, the largest content a node can deliver. A transformed response itself is capped at `max_response_bytes` |
 | `transform_instructions` | `5_000_000_000` (5 billion), the instruction limit of a query call |
 
 `request_bytes` and `outcall_type` follow from the request itself.
