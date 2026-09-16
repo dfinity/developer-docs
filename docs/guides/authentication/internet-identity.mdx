@@ -41,8 +41,14 @@ networks:
 ### Install frontend packages
 
 ```bash
-npm install @icp-sdk/auth @icp-sdk/core
+npm install @icp-sdk/auth@9 @icp-sdk/core@5
 ```
+
+Both majors are pinned because this page documents that pair: `@icp-sdk/auth` v9 with
+`@icp-sdk/core` v5, which is the peer range v9 declares. On v8 of the client the
+`identityProvider` option below throws a `TypeError`, so see
+[Upgrading to v9](https://js.icp.build/auth/latest/upgrading/v9/) if you are moving an
+existing app.
 
 ## Frontend integration
 
@@ -50,7 +56,7 @@ The `AuthClient` from `@icp-sdk/auth` handles the full sign-in flow: opening the
 
 ### Environment detection
 
-Internet Identity is two things to the client: the page a sign-in is rendered at, served by II's frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`), and the canister that mints delegations, which is II's backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`). Both are named together, because neither is derived from the other. Only the page differs between local development and mainnet, since [system canisters run at their mainnet canister IDs locally](../../references/system-canisters.md):
+Internet Identity is two things to the client: the page a sign-in is rendered at, served by II's frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`), and the canister that mints delegations, which is II's backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`). Only the page differs between local development and mainnet, since [system canisters run at their mainnet canister IDs locally](../../references/system-canisters.md#using-system-canisters-in-local-development):
 
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
@@ -81,7 +87,7 @@ function getIdentityProvider() {
 
 ### Sign in, sign out, and session check
 
-Where the sign-in is kept is the client's storage rather than the instance, so a client is cheap: construct one where you need it, and call `dispose()` when that page or component goes away. Several clients on one page read the same sign-in. The identity provider is passed at construction time, not on each sign-in:
+The sign-in is kept in the client's storage rather than the instance, so a client is cheap: construct one where you need it, and call `dispose()` when that page or component goes away. Several clients on one page read the same sign-in and write to the same storage. The identity provider is passed at construction time, not on each sign-in:
 
 ```javascript
 const authClient = new AuthClient({
@@ -122,7 +128,7 @@ function teardown() {
 
 `signIn()` returns the new `Identity` directly. It rejects if the user closes the popup or authentication fails, so wrap the call in `try`/`catch` instead of relying on success/error callbacks.
 
-### Render on the status, not on a boolean
+### Render
 
 `isAuthenticated()` answers whether this page can act as the user. `getStatus()` answers in more detail, and `subscribe()` tells you when to ask again, including when the answer changed in another tab, so a sign-out in one tab reaches the others without a reload:
 
@@ -138,7 +144,9 @@ function render(status) {
       // rather than a bare signed-out one.
       return showSessionEnded(status.principal);
     case "signed-in-elsewhere":
-      // Only reachable when the sign-in is shared across sibling subdomains.
+      // Someone is signed in on this domain and this origin holds no credential
+      // for them yet, so getIdentity() throws SessionNotHeldError until it does.
+      // Only reachable once the sign-in is shared across sibling subdomains.
       return showResume(status.principal);
     case "signed-out":
       return showSignInButton();
@@ -164,7 +172,17 @@ For an organization's own SSO rather than a public provider, pass `ssoDomain` in
 ```javascript
 import { AuthClient, isValidSsoDomain } from "@icp-sdk/auth/client";
 
-if (await isValidSsoDomain(domain, AbortSignal.timeout(5_000))) {
+async function signInWithSso(domain) {
+  try {
+    if (!(await isValidSsoDomain(domain, AbortSignal.timeout(5_000)))) {
+      return showNoSsoConfiguration(domain); // the domain publishes nothing
+    }
+  } catch {
+    // An abandoned check is not a verdict: the organization's server was too
+    // slow, which is not the same as the domain being unusable.
+    return showCheckTimedOut(domain);
+  }
+
   const authClient = new AuthClient({
     identityProvider: getIdentityProvider(),
     ssoDomain: domain, // e.g. "acme.com"
@@ -215,7 +233,7 @@ async function signInWithAttributes(authClient, canisterId, idl) {
   const anonymousActor = Actor.createActor(idl, { agent: anonymousAgent, canisterId });
 
   // Mint the nonce, sign in, and request attributes in parallel. `nonce` is the
-  // function that fetches it, which the client calls when it needs the value —
+  // function that fetches it, which the client calls when it needs the value,
   // so the request is already in flight while the Internet Identity window
   // opens, and the user still sees a single interaction.
   const signInPromise = authClient.signIn();

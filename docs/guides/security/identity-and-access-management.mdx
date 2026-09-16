@@ -103,6 +103,8 @@ await authClient.signIn({
 });
 ```
 
+Unset, Internet Identity applies its own: seven days of idleness, and thirty days in total, which is also its ceiling. Both bounds are clamped with a ten-minute floor, so the thirty minutes above sits comfortably inside what it accepts.
+
 Note what this is not about: the delegation the frontend signs calls with is short-lived and replaced automatically whatever you pass here, so no key sits in the browser for the length of the session.
 
 ## Don't use fetchRootKey in the ICP JavaScript agent in production
