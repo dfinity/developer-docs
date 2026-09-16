@@ -141,7 +141,7 @@ Flexible outcalls go through the `flexible_http_request` management canister met
 
 </CodeExample>
 
-The committee size comes from `subnet_self_node_count()`, because `total_requests` cannot exceed the number of nodes on the subnet. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes. The Motoko `ic` package has no equivalent for flexible outcalls yet, so this is Rust only.
+The committee is five nodes, or the whole subnet if it is smaller: `total_requests` cannot exceed the number of nodes, which `subnet_self_node_count()` reports. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes. The Motoko `ic` package has no equivalent for flexible outcalls yet, so this is Rust only.
 
 Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
 
@@ -209,7 +209,7 @@ In Rust, each `with_expected_*` on the builder replaces one of those maxima. The
 
 The four expectations are not four separate limits. They size a single per-node budget, and the response size cap and response timeout the nodes run under are derived from whatever is left of it. Expecting less therefore also narrows what the call is allowed to do.
 
-The round trip and the transform instructions are the safe two to narrow, and they carry most of the saving. Their maxima are 60 seconds and the full query instruction limit, both far above what a normal call uses, and the budget a modest figure leaves still affords the nodes much more than that figure. The two byte expectations are the ones to leave at their default, which is `max_response_bytes`. Declaring less is a bet on the server: a larger response is still downloaded, but the nodes may then be unable to fund delivering it, and the call fails at delivery, after the request has already been made.
+The round trip and the transform instructions are the safe two to narrow, and they carry most of the saving. Their maxima are 60 seconds and the full query instruction limit, both far above what a normal call uses, and the budget a modest figure leaves still affords the nodes much more than that figure. The two byte expectations are the ones to leave at their defaults: `max_response_bytes` for the raw response, and `max_response_bytes` plus 1 KiB of Candid overhead for the transformed one. Declaring less is a bet on the server. The download cap each node applies follows its remaining budget rather than the byte expectation, so a larger response may still be downloaded, and the nodes may then be unable to fund delivering it. The call then fails at delivery, after the request has already been made. Without a transform there is no instruction expectation to narrow: the builder reserves zero for it.
 
 See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing formulas for both versions.
 
