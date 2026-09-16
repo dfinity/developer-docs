@@ -170,7 +170,7 @@ delivery_fee = n * (10 * n + 600) * response_bytes
 | Per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
 | Per delivered response byte, charged | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
 
-**What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the quote reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
+**What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the amount it returns reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
 
 Pass what you expect and you get a small reservation, at the cost of the outcall running within correspondingly tighter per-node limits. Pass the maxima a run could consume and you get the figure that cannot run short, which is also the most the system withholds:
 
