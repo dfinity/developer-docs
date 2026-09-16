@@ -134,7 +134,25 @@ POST requests work the same way, with two additional considerations:
 
 Flexible outcalls go through the `flexible_http_request` management canister method, which hands the canister each node's own response instead of one the subnet agreed on.
 
+<CodeExample example="send_http_flexible" lang="rust">
+
+```rust snippet="send_http_flexible/backend/src/lib.rs#flexible_request"
+```
+
+</CodeExample>
+
+The committee size comes from `subnet_self_node_count()`, because `total_requests` cannot exceed the number of nodes on the subnet. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes. The Motoko `ic` package has no equivalent for flexible outcalls yet, so this is Rust only.
+
 Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
+
+Reconciling the responses is what the canister has to do with them. This example tallies the distinct bodies and reports the most common first, checking each response's status on its own, because no node had to agree with any other:
+
+<CodeExample example="send_http_flexible" lang="rust">
+
+```rust snippet="send_http_flexible/backend/src/lib.rs#reconcile"
+```
+
+</CodeExample>
 
 **The delivered responses must fit 2 MiB between them.** The limit applies to the combined encoded size of every response returned after the transform, and not to each response on its own. When they do not all fit, fewer are returned, down to `min_responses`. The call fails only when even the smallest `min_responses` responses exceed the limit together.
 
