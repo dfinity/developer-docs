@@ -253,10 +253,17 @@ markdown links, which is why there is no submodule to hold the pin.
 
 ### How the pin moves
 
-The workflow runs weekly, resolves the latest release tag, and opens the bump PR
-only when `docs/` actually changed in that range. A release that ships canister
-changes without touching `docs/` produces nothing here; the recipe version
-readers type is covered separately by the `static-site` entry under `watched`.
+The workflow runs weekly, resolves the latest release tag, and opens a bump PR
+for every release the pin does not already contain. Two shapes come out of it:
+
+- **Pages changed.** The usual case: review the diff.
+- **Nothing under `docs/` changed.** The pages are byte-identical and the only
+  diff is `source_ref` on each of them, but the PR still opens, because that is
+  what moves the pin off a commit and onto a release tag. Skipping these would
+  strand a temporary commit pin for good.
+
+The PR body says which of the two it is. The recipe version readers type is a
+separate axis, covered by the `static-site` entry under `watched`.
 
 To sync by hand, or to trial a ref before pinning it:
 

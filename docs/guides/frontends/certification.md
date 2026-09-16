@@ -202,7 +202,7 @@ For more control (certifying dynamic responses, certifying only specific headers
 
 ## Client-side certificate verification
 
-For standard asset serving through either frontend recipe, verification is transparent: the boundary node verifies every response before forwarding it to the browser, and you do not need any JavaScript verification code.
+For standard asset serving through either frontend recipe, verification is transparent on a verifying hostname: the boundary node checks every response before forwarding it to the browser, and you do not need any JavaScript verification code. On a `raw` hostname nothing checks it, which is why a raw URL is a debugging tool rather than a way to serve a site.
 
 For custom canisters returning certified data over the Candid interface (not HTTP), you may need to verify the certificate in JavaScript. This is the pattern covered in [Certified variables](../backends/certified-variables.md): the canister returns `(data, certificate, witness)` as Candid values, and the frontend verifies them with `@dfinity/certificate-verification`.
 

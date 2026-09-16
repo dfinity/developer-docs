@@ -11,6 +11,7 @@
 
 import fs from 'fs';
 import GithubSlugger from 'github-slugger';
+import { HEADING_ID } from '../../plugins/remark-heading-id.mjs';
 
 function renderedText(heading) {
   return heading
@@ -33,7 +34,8 @@ export function anchorsOfText(text) {
     if (inFence) continue;
     const m = /^#{1,6}\s+(.*)$/.exec(line);
     if (!m) continue;
-    const explicit = /\{#([^}]+)\}\s*$/.exec(m[1]);
+    // `{#id}` and `{$id}` both set an explicit id; the plugin accepts both.
+    const explicit = HEADING_ID.exec(m[1]);
     anchors.add(explicit ? explicit[1] : slugger.slug(renderedText(m[1])));
   }
   return anchors;

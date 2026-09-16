@@ -244,7 +244,19 @@ async function sourcePages(ref) {
     `https://api.github.com/repos/${REPO}/contents/${SOURCE_DIR}?ref=${ref}`,
     'application/vnd.github+json'
   );
-  const pages = (await res.json())
+  const entries = await res.json();
+  // A nested page would need a placement decision here (a sidebar subgroup, and
+  // an order relative to its siblings), so it stops the sync rather than being
+  // dropped silently while the release check keeps reporting the range as synced.
+  const dirs = entries.filter((e) => e.type === 'dir').map((e) => e.name);
+  if (dirs.length) {
+    throw new Error(
+      `${REPO} ${SOURCE_DIR}/ now has subdirectories (${dirs.join(', ')}) at ${ref}. ` +
+        `This sync publishes one flat folder, so decide how they should be placed ` +
+        `and teach sourcePages() to walk them.`
+    );
+  }
+  const pages = entries
     .filter((e) => e.type === 'file' && e.name.endsWith('.md'))
     .map((e) => e.name)
     .sort();

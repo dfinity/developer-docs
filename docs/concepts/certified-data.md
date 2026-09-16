@@ -42,7 +42,7 @@ This pattern allows canisters to provide both fast responses (query, no consensu
 Certified data is used throughout ICP for exactly this reason:
 
 - **Certified variables in canisters.** Any canister can certify its state for client verification. See the [Certified variables guide](../guides/backends/certified-variables.md) for how to implement this.
-- **Certified assets.** A [frontend canister](../guides/frontends/static-site/overview.md) uses certified variables to produce certified HTTP responses. When a browser fetches a page served by an ICP canister, the HTTP gateway verifies the certificate before serving the response, so the browser sees only content that was committed through consensus.
+- **Certified assets.** A [frontend canister](../guides/frontends/static-site/overview.md) uses certified variables to produce certified HTTP responses. When a browser fetches a page through a verifying HTTP gateway, that gateway checks the certificate before serving the response, so the browser sees only content that was committed through consensus. Whether the check happens is a property of the gateway the URL points at, not of the canister.
 - **Internet Identity.** The Internet Identity service certifies its delegations, so clients can verify that an authentication delegation is authentic without trusting the individual replica that served the query.
 
 ## Relationship to chain-key cryptography

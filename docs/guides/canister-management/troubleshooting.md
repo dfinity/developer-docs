@@ -100,7 +100,7 @@ Refused to connect to 'https://ic0.app/api/v2/canister/<canister-id>/read_state'
 because it violates the document's Content Security Policy.
 ```
 
-**On a [static site](../frontends/static-site/overview.md)** the canister sets no headers of its own, so a CSP error means your own policy is missing or not matching. `_headers` patterns match the file that was served, not the URL the visitor asked for, so a rule written against a client route (`/dashboard/*`) matches nothing. Write it against the file instead (`/index.html` or `/*.html`), redeploy, and check the response:
+**On a [static site](../frontends/static-site/overview.md)** the canister adds no default security headers and no CSP (it manages only what it needs to serve and certify: `Content-Type`, `ETag`, the certification headers, and its `ic_env` cookie), so a CSP error means your own policy is missing or not matching. `_headers` patterns match the file that was served, not the URL the visitor asked for, so a rule written against a client route (`/dashboard/*`) matches nothing. Write it against the file instead (`/index.html` or `/*.html`), redeploy, and check the response:
 
 ```bash
 curl -sI https://<canister-id>.icp.net/ | grep -i content-security-policy

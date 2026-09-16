@@ -110,9 +110,17 @@ jobs:
         if: steps.check.outputs.needed == 'true'
         run: npm run validate
 
-      - name: Initialize examples submodule (required for build)
+      # Same set and the same URL rewrite as build.yml. `.gitmodules` uses SSH
+      # URLs, which a runner cannot fetch, and `.sources/motoko` is required
+      # because pages under docs/languages/motoko/ pull code through
+      # `file=<motokoExamples>/...` includes: without it they render empty
+      # without failing the build, so this step would have reported a passing
+      # build for a site with empty Motoko pages.
+      - name: Initialize submodules (required for build)
         if: steps.check.outputs.needed == 'true'
-        run: git submodule update --init --depth 1 .sources/examples
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git submodule update --init --depth 1 .sources/examples .sources/motoko
 
       - name: Build check
         if: steps.check.outputs.needed == 'true'

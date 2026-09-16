@@ -623,6 +623,6 @@ If an app is served through `raw.icp.net` in addition to `icp.net`, an adversary
 
 - Serve assets from a [frontend canister](../frontends/static-site/overview.md), which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
 
-- Check in the canister's `http_request` method if the request came through raw. If so, return an error and do not serve any assets.
+- In a custom HTTP canister, or on the legacy asset canister, check in `http_request` whether the request came through a raw host and refuse to serve assets if it did. A [static site](../frontends/static-site/overview.md) cannot do this and does not try: the only signal is the `Host` header, which the client supplies and nothing authenticates, so the guidance there is to publish links to a verifying gateway and treat raw URLs as a debugging tool.
 
 <!-- Upstream: sync from dfinity/portal building-apps/security/data-integrity-and-authenticity.mdx -->
