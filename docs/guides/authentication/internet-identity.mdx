@@ -665,6 +665,52 @@ To keep principals consistent across your own custom domains, configure **altern
 
 For full details, see the [Internet Identity specification](../../references/internet-identity-spec.md).
 
+## Sharing a sign-in across sibling subdomains
+
+Apps on sibling subdomains of one domain, such as `chat.example.com` and `hr.example.com`, can share one sign-in: signing in on one signs the user in on the others without a second visit to Internet Identity, and signing out on one signs the user out on all of them.
+
+It rests on the section above. Every app has to derive from one shared derivation origin, authorized by that origin's `ii-alternative-origins` document, because principals are per origin and apps that do not share a principal have nothing to share. On top of that:
+
+1. **Share the record.** Every app passes the same cookie domain, so a sign-in on one writes a record the others read. Choosing a domain means trusting every origin under it, so do this only where you control the subdomains.
+
+   ```javascript
+   const clientOptions = {
+     derivationOrigin: "https://auth.example.com",
+     stateStorage: new CookieStateStorage({ domain: "example.com" }),
+   };
+   ```
+
+2. **Acquire the sign-in where a sibling made it.** An app reading `signed-in-elsewhere` asks the provider for its own credential for that account. That request is made by a second client, since `prompt` and `hint` are set when a client is built, and it runs on page load with no user gesture, so it needs `transport: "redirect"` rather than the default window flow:
+
+   ```javascript
+   const authClient = new AuthClient({
+     ...clientOptions,
+     transport: "redirect",
+     prompt: "none",
+     hint: status.principal, // answer for the account already signed in
+   });
+
+   await authClient.signIn({ returnTo: "/" });
+   ```
+
+   Without `hint` the provider may answer for a different account, signing the user in as someone else. An `InteractionRequiredError` means the provider has nothing to resume, so the sign-in is stale: sign out to clear it, or every app on the domain keeps sending the user back.
+
+3. **Pick it up on load, on every page.** Give that request a route of its own, `/reauth`, and have every page check the status as it loads, handing `signed-in-elsewhere` to that route with the page to return to. Every page, not only the ones that require a sign-in: a visitor already signed in on a sibling would otherwise land on a public page here and see a signed-out header.
+
+   ```javascript
+   const status = new AuthClient(clientOptions).getStatus();
+
+   // This state only: signed-out and expired both mean a normal sign-in, and
+   // sending those to /reauth just bounces the user back.
+   if (status.state === "signed-in-elsewhere") {
+     location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`);
+   }
+   ```
+
+   `/reauth` passes that `next` as `returnTo`, so the user lands back where they were asking to go, signed in, having seen nothing. This is what makes the sharing automatic rather than something the user has to click.
+
+The full walkthrough is in the client's [shared sessions guide](https://js.icp.build/auth/latest/shared-sessions/).
+
 ## App metadata
 
 By default, the sign-in screens identify your app by its origin alone. To have II show your app's name, a short description, and its logo, serve a JSON document at `/.well-known/ii-app-metadata`. Any app can publish it: there is no list to join and no approval step.
