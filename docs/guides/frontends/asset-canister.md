@@ -1,11 +1,15 @@
 ---
-title: "Asset canister"
-description: "Deploy and serve frontend assets from an ICP canister with SPA routing, canister discovery, programmatic uploads, and security configuration"
+title: "Asset canister (legacy)"
+description: "Maintain a frontend on the legacy @dfinity/asset-canister recipe, and migrate it to static-site"
 sidebar:
-  order: 1
+  order: 6
 ---
 
 The asset [canister](../../concepts/canisters.md) hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
+
+:::caution[This is the legacy path]
+New projects should use the [static-site recipe](static-site/overview.md), which deploys the certified-assets canister. It is a different canister with a different configuration format, and it is what the project templates ship. This page is for projects already running `@dfinity/asset-canister`; to move one over, see [Migrate to static-site](#migrate-to-static-site).
+:::
 
 This guide covers configuring the asset canister recipe in `icp.yaml`, deploying frontends, configuring SPA routing with `.ic-assets.json5`, connecting frontends to backend canisters, and uploading assets programmatically.
 
@@ -318,12 +322,57 @@ icp canister call frontend http_request '(record {
 
 **Content types are wrong for programmatic uploads.** The asset canister infers content types from file extensions for files uploaded via `icp deploy`. When uploading programmatically with `AssetManager`, pass the `contentType` option explicitly.
 
+## Migrate to static-site
+
+The [static-site recipe](static-site/overview.md) deploys a different canister, certified-assets, with its own configuration format. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
+
+### You cannot upgrade in place
+
+The two canisters have unrelated Candid interfaces, so repointing the recipe and running a plain `icp deploy` stops at the pre-install compatibility check with `Candid interface compatibility check failed`. Nothing is installed and the running canister is untouched. Two ways forward:
+
+- **A new canister.** Add a new entry with the static-site recipe and deploy it. You get a new canister ID, so any custom domain registration and hardcoded ID has to be updated.
+- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at static-site and run `icp deploy --mode reinstall frontend`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
+
+Do not force the upgrade through with `--yes`. That skips the compatibility check and installs onto stable memory the certified-assets canister cannot read, which leaves a live canister serving nothing.
+
+### Configuration mapping
+
+Delete `.ic-assets.json5` and split its concerns into `_headers` and `_redirects` at the root of your build directory:
+
+| `.ic-assets.json5` | certified-assets |
+|---|---|
+| `enable_aliasing: true` (SPA fallback) | `/*  /index.html  200` in [`_redirects`](static-site/redirects.md) |
+| `headers: { ... }` | a block in [`_headers`](static-site/headers.md), matched against the file path rather than the visitor's URL |
+| `security_policy: "standard"` | no default: write the security headers yourself |
+| `allow_raw_access: false` | no equivalent, [by design](static-site/how-it-works.md#the-raw-hosts-skip-verification) |
+| `{ match: ".well-known", ignore: false }` | not needed, `.well-known/` is uploaded automatically |
+| `**` and `?` glob patterns | a single `*` wildcard, trailing `/*` for a subtree |
+
+Also drop any `configuration.version` field: with static-site the recipe version is the canister version.
+
+### Uploads and permissions change shape
+
+`AssetManager` from `@icp-sdk/canisters/assets` targets this canister only and stops working. certified-assets has no per-file write endpoint: uploads happen in one exclusive sync session, and the final call recomputes the site's state hash, which is what makes a build provable. Runtime writes would make that hash drift from any published build, so the two goals are incompatible rather than merely unimplemented.
+
+If your app stores user-generated content, keep serving the frontend from static-site and store uploads in a separate canister that the frontend calls. Mixing a mutable file store into your deploy target means every user upload changes what your site is.
+
+The three upload roles (Prepare, Commit, ManagePermissions) collapse to controllers plus a flat set of authorized syncers, so re-grant any CI principal after migrating:
+
+```bash
+icp canister call frontend authorize '(principal "<principal-id>")'
+```
+
+### What stays the same
+
+The `ic_env` cookie is served on HTML responses by both canisters, so frontend code reading canister IDs or the root key needs no change. The `build`, `presync`, and `metadata` recipe fields behave the same way, and the mainnet URL is still `https://<canister-id>.icp.net`.
+
 ## Next steps
 
+- [Static site overview](static-site/overview.md): the recommended recipe for new frontends
 - [Framework integration](frameworks.md): set up React, Svelte, or Vue with the asset canister
 - [Custom domains](custom-domains.md): serve your frontend from your own domain
 - [Response certification](certification.md): verify that asset canister responses are authentic
 - [Authentication with Internet Identity](../authentication/internet-identity.md): add user login to your frontend
 - [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage): programmatic uploads with AssetManager
 
-<!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
+<!-- Upstream: informed by dfinity/icskills — skills/static-site/SKILL.md, skills/static-site/references/migrating-from-asset-canister.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->

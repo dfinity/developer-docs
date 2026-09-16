@@ -34,7 +34,7 @@ my-project/
 │   ├── package.json      # Node dependencies (binding generation)
 │   └── app/              # Frontend application (React + Vite)
 │       ├── src/
-│       ├── dist/         # Built assets (uploaded to the asset canister) ← created by icp deploy
+│       ├── dist/         # Built assets (uploaded to the frontend canister) ← created by icp deploy
 │       └── package.json
 └── .gitignore            # Ignores .icp/cache/ (but tracks .icp/data/)
 ```
@@ -118,12 +118,12 @@ The `package` parameter (the Cargo package to build) defaults to the canister `n
 
 ### Frontend canister
 
-The frontend uses the `@dfinity/asset-canister` recipe, which builds the frontend app and uploads the output to an asset canister:
+The frontend uses the `@dfinity/static-site` recipe, which builds the frontend app and uploads the output to a certified-assets canister:
 
 ```yaml
 name: frontend
 recipe:
-  type: "@dfinity/asset-canister@v2.3.0"
+  type: "@dfinity/static-site@v0.3.3"
   configuration:
     build:
       - npm install
@@ -132,20 +132,23 @@ recipe:
     dir: app/dist
 ```
 
-The `build` commands run in order: install dependencies, generate TypeScript bindings from the backend's Candid file, then build the Vite app. The `dir` field tells the recipe which directory to upload to the asset canister.
+The `build` commands run in order: install dependencies, generate TypeScript bindings from the backend's Candid file, then build the Vite app. The `dir` field tells the recipe which directory to upload.
+
+The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version. See [Static site overview](../guides/frontends/static-site/overview.md) for the configuration fields, and [Asset canister (legacy)](../guides/frontends/asset-canister.md) for the older `@dfinity/asset-canister` recipe that existing projects may still use.
 
 ## Recipes
 
 Recipes are reusable build templates that expand into full canister build and sync steps. Instead of writing shell commands from scratch, you reference a recipe with a version pin and pass configuration parameters.
 
-The four official recipes cover the most common patterns:
+The official recipes cover the most common patterns:
 
 | Recipe | Purpose |
 |--------|---------|
 | `@dfinity/rust@<version>` | Rust canisters with Cargo |
 | `@dfinity/motoko@<version>` | Motoko canisters |
-| `@dfinity/asset-canister@<version>` | Asset canisters for static files |
+| `@dfinity/static-site@<version>` | Static files, served with response certification |
 | `@dfinity/prebuilt@<version>` | Pre-compiled WASM files |
+| `@dfinity/asset-canister@<version>` | Static files on the legacy asset canister |
 
 To see what a recipe expands to after template rendering:
 
@@ -192,7 +195,7 @@ During deployment:
 
 ### Frontend reads backend IDs
 
-The asset canister exposes injected canister IDs through a cookie called `ic_env`. Your frontend JavaScript reads this cookie to discover backend canister IDs at runtime, with no code changes needed between environments:
+The frontend canister exposes injected canister IDs through a cookie called `ic_env`. Your frontend JavaScript reads this cookie to discover backend canister IDs at runtime, with no code changes needed between environments:
 
 ```typescript
 import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";

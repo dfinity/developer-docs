@@ -1,15 +1,92 @@
 ---
 title: "Application canisters"
-description: "Reference for the asset canister, SNS canisters, LLM canister, and other application-layer canisters with their interfaces and canister IDs"
+description: "Reference for the frontend hosting canisters, SNS canisters, LLM canister, and other application-layer canisters with their interfaces and canister IDs"
 sidebar:
   order: 4
 ---
 
 Application canisters are well-known canisters at the application layer of the Internet Computer that developers commonly integrate into their projects. Unlike [system canisters](system-canisters.md) (which govern the network) or [protocol canisters](protocol-canisters.md) (which provide platform infrastructure), application canisters implement higher-level functionality: hosting web frontends, governing apps via DAO, and running AI inference.
 
-## Asset canister
+## Static site canister (certified-assets)
 
-The asset canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. It is the standard way to deploy a web frontend on ICP. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
+The certified-assets canister hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. It is the canister the `@dfinity/static-site` recipe deploys, and the recommended way to host a frontend on ICP. Every response it serves is certified, and it accepts only version 2 of the certification protocol, so there is no uncertified serving path.
+
+Static site canisters are deployed per-project. There is no global canister ID: each project creates its own.
+
+### Recipe (icp.yaml)
+
+```yaml
+canisters:
+  - name: frontend
+    recipe:
+      type: "@dfinity/static-site@v0.3.3"
+      configuration:
+        dir: dist
+        build:
+          - npm install
+          - npm run build
+```
+
+The recipe pins a matched canister and sync-plugin pair, so the recipe version is the canister version: there is no separate `configuration.version` field. See [Static site overview](../guides/frontends/static-site/overview.md) for the remaining configuration fields.
+
+### Interface
+
+| Method | Description |
+|---|---|
+| `version()` | The release identity shared by the canister and its sync plugin |
+| `http_request(req)` | Serve an HTTP request with a certified response |
+| `get_asset_details(start_after)` | A page of asset details, ordered by key |
+| `get_redirect_rules(start_index)` | A page of redirect rules, in match order |
+
+**Sync.** Assets are only ever mutated through a sync, and at most one sync runs at a time. `start_sync` returns a session id that every later call must carry.
+
+| Method | Description |
+|---|---|
+| `start_sync()` | Begin a sync, or report `Busy` |
+| `upload_chunks(arg)` | Stage content chunks under the sync |
+| `execute_operations(arg)` | Apply a group of operations; the call flagged `is_final` finalizes the sync and returns the new state hash |
+| `preparation_canary()` | The compression fingerprint of the client that last prepared the assets |
+
+**Authorization.** Controllers are always authorized without being listed, and are the only callers that can change the set.
+
+| Method | Description |
+|---|---|
+| `authorize(principal)` | Allow a principal to sync assets |
+| `deauthorize(principal)` | Revoke that permission |
+| `list_authorized()` | The extra principals authorized to sync |
+| `can_sync()` | Whether the caller may sync |
+
+**Verification and environment:**
+
+| Method | Description |
+|---|---|
+| `state_hash()` | The canonical 32-byte hash over the served-content model, recomputed at the end of every sync. An update call, so the reply is consensus-backed |
+| `refresh_env()` | Re-capture `PUBLIC_*` variables and the root key, and re-certify the `ic_env` cookie |
+
+**Access protection** (controller-only, for private and preview sites):
+
+| Method | Description |
+|---|---|
+| `enable_protection(login_page)` | Turn the gate on, naming the login page asset |
+| `disable_protection()` | Turn the gate off and drop all tokens |
+| `issue_token(arg)` | Mint an access token, returned once |
+| `revoke_token(label)` | Revoke the tokens with that label |
+| `list_tokens()` | Live tokens with their expiry |
+| `check_protection_status()` | Whether protection is off, healthy, or degraded |
+
+### Configuration
+
+Two files at the root of `dir` configure the canister, and are read as configuration rather than served: `_redirects` for SPA fallback, redirects, rewrites, and error pages, and `_headers` for caching, security headers, and media types. No headers are applied by default. See [Redirects and rewrites](../guides/frontends/static-site/redirects.md) and [Custom headers](../guides/frontends/static-site/headers.md).
+
+### Programmatic uploads
+
+There is no per-asset write endpoint and no JS equivalent of `AssetManager`. Uploads go through the recipe's sync plugin on `icp deploy`, because finalizing a sync recomputes the whole-site `state_hash` that makes a build provable. Apps with user-generated content should store it in a separate canister.
+
+---
+
+## Asset canister (legacy)
+
+The asset canister is the older SDK canister for hosting static web assets, deployed by the `@dfinity/asset-canister` recipe and configured with `.ic-assets.json5`. It remains supported for existing projects; new projects should use the static site canister above. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
 
 Asset canisters are deployed per-project. There is no global asset canister ID: each project creates its own.
 
@@ -325,7 +402,8 @@ For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 | Canister | Canister ID | Purpose |
 |---|---|---|
-| Asset canister | Per-project | Static web asset hosting with HTTP certification |
+| Static site (certified-assets) | Per-project | Static web asset hosting, every response certified |
+| Asset canister (legacy) | Per-project | Static web asset hosting with HTTP certification |
 | SNS governance | Per-app | DAO governance for a specific app |
 | SNS ledger | Per-app | ICRC-1/ICRC-2/ICRC-3 token ledger for a specific SNS |
 | SNS root | Per-app | Controller of all app canisters in the SNS set |
@@ -334,10 +412,11 @@ For a complete guide, see [AI inference](../guides/backends/ai-inference.md).
 
 ## Next steps
 
-- [Asset canister guide](../guides/frontends/asset-canister.md): deploying and configuring the asset canister for your project
+- [Static site overview](../guides/frontends/static-site/overview.md): deploying and configuring a frontend canister for your project
+- [Asset canister (legacy)](../guides/frontends/asset-canister.md): the older recipe, and how to migrate off it
 - [Launching an SNS](../guides/governance/launching.md): how to decentralize an app with SNS
 - [AI inference](../guides/backends/ai-inference.md): building AI-powered canisters with the LLM canister
 - [System canisters](system-canisters.md): NNS, Internet Identity, ICP ledger, and other network-level canisters
 - [Protocol canisters](protocol-canisters.md): Bitcoin, ckBTC, EVM RPC, and other protocol-layer canisters
 
-<!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, skills/sns-launch/SKILL.md; dfinity/portal — docs/references/asset-canister.mdx; dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot -->
+<!-- Upstream: informed by dfinity/icskills — skills/static-site/SKILL.md, skills/sns-launch/SKILL.md; dfinity/certified-assets — certified-assets.did; dfinity/portal — docs/references/asset-canister.mdx; dfinity/examples — rust/llm_chatbot, motoko/llm_chatbot -->

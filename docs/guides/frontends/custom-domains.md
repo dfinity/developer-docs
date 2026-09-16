@@ -13,7 +13,7 @@ The service handles TLS certificate provisioning, renewal, and routing automatic
 
 - A registered domain from any registrar (Namecheap, GoDaddy, Cloudflare, Route 53, etc.)
 - Access to edit DNS records for that domain
-- A deployed asset canister (see [Asset canister](asset-canister.md))
+- A deployed frontend canister (see [Static site overview](static-site/overview.md))
 - `curl` for the registration API calls
 
 ## Overview
@@ -58,29 +58,26 @@ app.example.com
 www.example.com
 ```
 
-**Placement for asset canisters:** Hidden directories (starting with `.`) are excluded by the asset canister by default. To include `.well-known/`:
+**Placement.** Put the file in the directory your build tool copies verbatim into its output: `public/` for Vite, Next.js, and Nuxt, `static/` for older SvelteKit versions.
 
-1. Place the file in your `public/` directory (Vite, SvelteKit, Nuxt) or `static/` directory (older SvelteKit versions) so the build tool copies it to the output directory. For Next.js, place it in `public/`. Most frameworks have a dedicated directory for static files that are copied as-is to the build output:
+```text
+public/
+└── .well-known/
+    └── ic-domains
+```
 
-   ```
-   public/
-   ├── .ic-assets.json5
-   └── .well-known/
-       └── ic-domains
-   ```
+With the [static-site recipe](static-site/overview.md) that is all it takes. Dotfiles are skipped on upload, but `.well-known/` is the documented exception and is traversed normally, so the file is served at `/.well-known/ic-domains` with no configuration.
 
-2. Add a rule to your `.ic-assets.json5` to allow the hidden directory:
+On the [legacy asset canister](asset-canister.md), hidden directories are excluded unless you un-ignore them. Add a rule to `.ic-assets.json5` in the same directory, or to the existing array if you already have one:
 
-   ```json5
-   [
-     {
-       "match": ".well-known",
-       "ignore": false
-     }
-   ]
-   ```
-
-   If you already have an `.ic-assets.json5`, add this rule to the existing array.
+```json5
+[
+  {
+    "match": ".well-known",
+    "ignore": false
+  }
+]
+```
 
 ## Step 3: Deploy your canister
 
@@ -130,7 +127,7 @@ If validation fails, the response indicates what is wrong:
 | Missing DNS TXT record | Add the `_canister-id` TXT record with your canister ID |
 | Invalid DNS TXT record | Ensure the TXT value is a valid canister ID (no extra spaces or quotes) |
 | More than one DNS TXT record | Remove duplicate `_canister-id` TXT records: keep exactly one |
-| Failed to retrieve known domains | Ensure `.well-known/ic-domains` is deployed and served (`ignore: false` in `.ic-assets.json5`) |
+| Failed to retrieve known domains | Ensure `.well-known/ic-domains` is deployed and served (on the legacy asset canister, that needs `ignore: false` in `.ic-assets.json5`) |
 | Domain missing from list | Add the domain to the `ic-domains` file and redeploy |
 
 ## Step 5: Register the domain
@@ -328,7 +325,7 @@ dig TXT _canister-id.CUSTOM_DOMAIN
 The `.well-known/ic-domains` file is not accessible on your canister. Check:
 
 1. The file exists in the correct location in your build output
-2. `.ic-assets.json5` contains `{ "match": ".well-known", "ignore": false }`
+2. On the legacy asset canister, `.ic-assets.json5` contains `{ "match": ".well-known", "ignore": false }`
 3. The canister was redeployed after adding the file
 
 Verify directly:

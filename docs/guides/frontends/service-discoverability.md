@@ -2,7 +2,7 @@
 title: "Service discoverability"
 description: "What an app exposes so ICP MCP can discover its canisters, interfaces, behavior, data, and identity from just its URL."
 sidebar:
-  order: 3
+  order: 5
 ---
 
 When an agent working through ICP MCP is handed only your app's URL (for example, `https://yourapp.com`), it should be able to work out the rest on its own: which canisters your app comprises, what each one does, how to call them, how to query their data, and how to act as the signed-in user. No human supplying canister IDs, no bespoke integration.

@@ -89,7 +89,7 @@ A frontend deployed to the mainnet returns a blank screen and the browser consol
 
 **Check for client-side firewall or proxy interference.** Some corporate firewalls and browser extensions block requests to `*.icp.net` domains. If the frontend loads on a different network, a firewall or proxy is the likely cause.
 
-**Verify the asset canister is deployed correctly.** Run `icp canister status <canister-name> -e ic` and confirm the module hash is populated. If the hash is `None`, the canister exists but has no code installed.
+**Verify the frontend canister is deployed correctly.** Run `icp canister status <canister-name> -e ic` and confirm the module hash is populated. If the hash is `None`, the canister exists but has no code installed.
 
 ## Problem: Frontend violates Content Security Policy
 
@@ -100,19 +100,21 @@ Refused to connect to 'https://ic0.app/api/v2/canister/<canister-id>/read_state'
 because it violates the document's Content Security Policy.
 ```
 
-This happens when the asset canister was installed without the current security headers, or when the CSP headers have drifted out of sync with the deployed code.
+**On the [static-site recipe](../frontends/static-site/overview.md)** the canister sets no headers of its own, so a CSP error means your own policy is missing or not matching. `_headers` patterns match the file that was served, not the URL the visitor asked for, so a rule written against a client route (`/dashboard/*`) matches nothing. Write it against the file instead (`/index.html` or `/*.html`), redeploy, and check the response:
 
-**Fix:** reinstall the asset canister to refresh the CSP headers:
+```bash
+curl -sI https://<canister-id>.icp.net/ | grep -i content-security-policy
+```
+
+**On the legacy asset canister** this happens when the canister was installed without the current security headers, or when they have drifted out of sync with the deployed code. Reinstall to refresh them:
 
 ```bash
 icp deploy <frontend-canister-name> --mode reinstall -e ic
 ```
 
-After reinstall, the asset canister serves updated security headers on every request.
-
 ## Problem: Security policy warning "This project does not define a security policy for some assets"
 
-This warning appears when your project includes an asset canister but `.ic-assets.json5` does not define a security policy.
+This warning comes from the legacy asset canister when `.ic-assets.json5` does not define a security policy. The static-site recipe does not warn, because it never adds headers for you: whatever you declare in `_headers` is what gets served.
 
 **Fix:** add a security policy to `.ic-assets.json5` in your frontend asset directory:
 
@@ -139,7 +141,7 @@ The `standard` policy applies a default Content Security Policy and security hea
 ]
 ```
 
-See [Asset canister](../frontends/asset-canister.md#ic-assets-json5) for the full `.ic-assets.json5` reference.
+See [Asset canister (legacy)](../frontends/asset-canister.md#ic-assets-json5) for the full `.ic-assets.json5` reference, and [Custom headers](../frontends/static-site/headers.md) for the static-site equivalent.
 
 ## Problem: Rust canister fails to install with "invalid import section"
 

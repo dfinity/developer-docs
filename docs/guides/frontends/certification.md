@@ -7,11 +7,11 @@ sidebar:
 
 Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) ([boundary nodes](../../concepts/edge-infrastructure.md#api-boundary-nodes)) verify every response automatically, so users are protected without any extra client-side code: as long as the canister certifies its responses.
 
-This guide explains how certification works at the HTTP layer, what the asset canister does automatically, when you need custom certification, and how to verify certificates client-side.
+This guide explains how certification works at the HTTP layer, what each frontend recipe does automatically, when you need custom certification, and how to verify certificates client-side.
 
 ## How HTTP response certification works
 
-The asset canister implements **HTTP certification v2**, a protocol on top of certified data:
+Both frontend recipes implement **HTTP certification v2**, a protocol on top of certified data:
 
 1. **Certification setup (update call)**: when an asset is uploaded, the canister inserts its path, response headers, and body hash into a Merkle tree and commits the tree's root hash via `certified_data_set`. The subnet includes this root hash in its certified state each consensus round.
 
@@ -42,14 +42,18 @@ The browser receives only responses that have passed this check. Because verific
 
 ## Certified vs uncertified access
 
-The asset canister supports two serving modes:
+Any canister that serves HTTP is reachable through two kinds of hostname: one where the gateway verifies the response certificate before forwarding it, and a `raw` one where it forwards the response without checking:
 
 | Domain | Certification | Notes |
 |--------|--------------|-------|
-| `<canister-id>.icp.net` | Verified | Boundary node checks every response |
-| `<canister-id>.raw.icp.net` | None | Responses not verified: use only when necessary |
+| `<canister-id>.icp.net` | Verified | The gateway checks the proof on every response |
+| `<canister-id>.raw.icp.net` | None | The canister still attaches the certificate; the gateway discards it |
 
-Raw access is enabled by default. Disable it in `.ic-assets.json5` for any assets that must not be served unverified:
+What you can do about the raw host depends on which canister you deployed.
+
+**static-site (certified-assets).** The canister certifies every response and accepts only version 2 of the certification protocol, so nothing it serves is uncertified. There is deliberately no raw-access switch: the canister's only clue about the hostname is the `Host` header, which the client supplies and nothing authenticates, and which hostnames verify is a property of how a given gateway is deployed rather than anything the gateway protocol defines. Verification is the gateway's job, so picking the gateway is the trust decision. Link to a verifying host, and treat a raw URL as a debugging tool rather than a way to serve or visit a site. See [Who verifies the certificate](static-site/how-it-works.md#who-verifies-the-certificate).
+
+**Asset canister (legacy).** Raw access is enabled by default, and the canister can refuse it. Disable it in `.ic-assets.json5` for any assets that must not be served unverified:
 
 ```json5
 [
@@ -62,21 +66,17 @@ Raw access is enabled by default. Disable it in `.ic-assets.json5` for any asset
 
 With `allow_raw_access` set to `false`, requests to the `raw.icp.net` domain are redirected to the certified domain automatically.
 
-## What the asset canister handles automatically
+## What each recipe certifies automatically
 
-When you deploy a frontend with `icp deploy`, the asset canister:
+Neither recipe needs certification code from you. What differs is how much of the response is covered.
 
-- Inserts every uploaded file into the HTTP certification tree
-- Sets the certified root hash after each sync
-- Returns the correct `IC-Certificate` and `IC-Certificate-Expression` headers on every `http_request` query
-- Updates certification when files change on subsequent deploys
-- Certifies `Content-Type` and any headers specified in `.ic-assets.json5`
+**static-site (certified-assets)** certifies every response it serves, including status code, body, and the headers you declare in [`_headers`](static-site/headers.md). There is no way to turn certification off and no uncertified header path, which is why redirects and headers are limited to what can be enumerated ahead of time, and why the sync plugin rejects [reserved headers](static-site/headers.md#reserved-headers) at deploy time instead of serving a value it cannot certify. Note that it adds no default headers at all: no `Cache-Control`, no CSP. Anything you want certified, you declare.
 
-You do not need to write any certification code to use the standard asset canister workflow. See [Asset canister](asset-canister.md) for the deployment configuration.
+**The asset canister** inserts every uploaded file into the HTTP certification tree, sets the certified root hash after each sync, returns the `IC-Certificate` and `IC-Certificate-Expression` headers on every `http_request` query, and re-certifies on subsequent deploys. It certifies `Content-Type` plus the headers you list in `.ic-assets.json5`.
 
 ### What gets certified
 
-The asset canister certifies the full response: path, response body, status code, and the response headers you configure in `.ic-assets.json5`. Headers that are not listed are not included in the certification, which means a malicious replica could inject arbitrary values for uncertified headers.
+With the asset canister, headers that are not listed in `.ic-assets.json5` are left out of the certification, which means a malicious replica could inject arbitrary values for them.
 
 Always certify headers that affect browser behavior. In particular:
 
@@ -85,9 +85,11 @@ Always certify headers that affect browser behavior. In particular:
 
 The `security_policy: "standard"` option in `.ic-assets.json5` certifies a baseline set of security headers. For custom headers, list them explicitly in `headers`: the asset canister certifies everything in that object.
 
+This whole class of mistake does not exist on static-site, which certifies the full response.
+
 ## Custom HTTP canisters
 
-If you are writing a canister that serves HTTP responses directly (not through the asset canister), you must handle certification yourself using the `ic-http-certification` or `ic-asset-certification` Rust crates.
+If you are writing a canister that serves HTTP responses directly (not through one of the frontend recipes), you must handle certification yourself using the `ic-http-certification` or `ic-asset-certification` Rust crates.
 
 ### When to use custom certification
 
@@ -95,9 +97,9 @@ Use custom HTTP certification when:
 
 - Your canister serves HTTP responses via `http_request` and you need boundary nodes to verify them
 - You need to certify dynamic responses (generated per request, not pre-uploaded assets)
-- You are building a canister that functions as its own frontend without using the standard asset canister
+- You are building a canister that functions as its own frontend without using one of the frontend recipes
 
-For static assets (HTML, CSS, JS, images), use the standard asset canister instead: it handles all certification automatically and is more efficient.
+For static assets (HTML, CSS, JS, images), use the [static-site recipe](static-site/overview.md) instead: it handles all certification automatically and is more efficient.
 
 ### Using ic-asset-certification
 
@@ -200,7 +202,7 @@ For more control (certifying dynamic responses, certifying only specific headers
 
 ## Client-side certificate verification
 
-For standard asset serving via the asset canister, verification is transparent: the boundary node verifies every response before forwarding it to the browser, and you do not need any JavaScript verification code.
+For standard asset serving through either frontend recipe, verification is transparent: the boundary node verifies every response before forwarding it to the browser, and you do not need any JavaScript verification code.
 
 For custom canisters returning certified data over the Candid interface (not HTTP), you may need to verify the certificate in JavaScript. This is the pattern covered in [Certified variables](../backends/certified-variables.md): the canister returns `(data, certificate, witness)` as Candid values, and the frontend verifies them with `@dfinity/certificate-verification`.
 
@@ -301,9 +303,11 @@ For the full working example including a backend canister, see the [certified-co
 
 ## Common mistakes
 
-**Not disabling raw access for sensitive assets.** By default `allow_raw_access` is `true`, meaning assets are also available on `raw.icp.net` where no verification occurs. Set `"allow_raw_access": false` in `.ic-assets.json5` for any assets that must not be served unverified.
+**Sharing a raw URL.** A raw link is copy-pasteable and gets passed on, and nothing in the response tells the visitor it arrived unverified. Link to a verifying hostname, and keep raw for debugging. On the asset canister you can also refuse it outright with `"allow_raw_access": false`, which is worth setting for anything sensitive.
 
-**Not certifying Content-Type and security headers.** Headers not listed in `.ic-assets.json5` are not included in the certification. A malicious replica could inject arbitrary values for uncertified headers. Always certify `Content-Type` and any security headers your application relies on.
+**Assuming certification implies verification.** A certificate only helps if somebody checks it, and in a browser that is the gateway, chosen by whoever wrote the URL. A canister that certifies every response still gives a visitor on a non-verifying gateway no better assurance than an ordinary web host.
+
+**Not certifying Content-Type and security headers (asset canister).** Headers not listed in `.ic-assets.json5` are not included in the certification. A malicious replica could inject arbitrary values for uncertified headers. Always certify `Content-Type` and any security headers your application relies on.
 
 **Fetching the root key on mainnet.** Calling `agent.fetchRootKey()` or setting `shouldFetchRootKey: true` against mainnet allows a man-in-the-middle to supply a fake root key. Use the hardcoded key (default behavior of the JS SDK) for all mainnet deployments.
 
@@ -315,9 +319,10 @@ For the full working example including a backend canister, see the [certified-co
 
 ## Next steps
 
-- [Asset canister](asset-canister.md): deploy and configure the standard asset canister with automatic certification
+- [Static site overview](static-site/overview.md): deploy a frontend whose every response is certified
+- [Asset canister (legacy)](asset-canister.md): certification on the older recipe, and how to migrate
 - [Certified variables](../backends/certified-variables.md): certify Candid query responses from backend canisters
 - [Security concepts](../../concepts/security.md): why query integrity matters
 - [HTTP Gateway specification](../../references/http-gateway-protocol-spec.md): how boundary nodes verify responses
 
-<!-- Upstream: informed by dfinity/response-verification — packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts, examples/certification/certified-counter; dfinity/portal — docs/building-apps/frontends/asset-security.mdx; dfinity/icskills — skills/certified-variables/SKILL.md, skills/asset-canister/SKILL.md -->
+<!-- Upstream: informed by dfinity/response-verification — packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts, examples/certification/certified-counter; dfinity/portal — docs/building-apps/frontends/asset-security.mdx; dfinity/icskills — skills/certified-variables/SKILL.md, skills/static-site/SKILL.md -->
