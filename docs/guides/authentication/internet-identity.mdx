@@ -23,7 +23,7 @@ When a user authenticates through Internet Identity, the following happens:
 
 **Principal-per-app isolation:** II derives a different principal for each frontend origin. A user logging into `https://app-a.icp.net` gets a different principal than when logging into `https://app-b.icp.net`, even with the same passkey. This prevents apps from correlating users across services.
 
-**Delegations expire.** The frontend sets a `maxTimeToLive` when requesting the delegation (default recommendation: 8 hours). After expiry, the user must re-authenticate. The maximum allowed delegation lifetime is 30 days (2,592,000,000,000,000 nanoseconds).
+**Sessions expire, and the delegation the frontend signs with is replaced as it ages.** Signing in opens a session at Internet Identity; the client mints a short-lived delegation from it and replaces that delegation before it expires, so a long-lived session never means a long-lived key. Two optional bounds on `signIn()` decide how long the session itself may last: `maxTimeToIdle`, after which an unused session ends, and `maxTimeToLive`, which it can never outlive. Leave them unset and Internet Identity applies its own, currently seven days of idleness and thirty days in total.
 
 ## Project setup
 
@@ -41,8 +41,14 @@ networks:
 ### Install frontend packages
 
 ```bash
-npm install @icp-sdk/auth @icp-sdk/core
+npm install @icp-sdk/auth@9 @icp-sdk/core@5
 ```
+
+Both majors are pinned because this page documents that pair: `@icp-sdk/auth` v9 with
+`@icp-sdk/core` v5, which is the peer range v9 declares. On v8 of the client the
+`identityProvider` option below throws a `TypeError`, so see
+[Upgrading to v9](https://js.icp.build/auth/latest/upgrading/v9/) if you are moving an
+existing app.
 
 ## Frontend integration
 
@@ -50,7 +56,7 @@ The `AuthClient` from `@icp-sdk/auth` handles the full sign-in flow: opening the
 
 ### Environment detection
 
-Internet Identity runs at different URLs in local development versus mainnet. II uses a well-known frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`) that you authenticate against. Detect the host to return the right URL:
+Internet Identity is two things to the client: the page a sign-in is rendered at, served by II's frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`), and the canister that mints delegations, which is II's backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`). Only the page differs between local development and mainnet, since [system canisters run at their mainnet canister IDs locally](../../references/system-canisters.md#using-system-canisters-in-local-development):
 
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
@@ -62,32 +68,34 @@ import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 // environment branching. Available in browser contexts only; see note below for Node.js.
 const canisterEnv = safeGetCanisterEnv();
 
-function getIdentityProviderUrl() {
+function getIdentityProvider() {
   const host = window.location.hostname;
   const isLocal =
     host === "localhost" ||
     host === "127.0.0.1" ||
     host.endsWith(".localhost");
 
-  if (isLocal) {
+  return {
     // icp-cli sets up a local alias: http://id.ai.localhost:8000
-    return "http://id.ai.localhost:8000/authorize";
-  }
-  return "https://id.ai/authorize";
+    authorizeUrl: isLocal
+      ? "http://id.ai.localhost:8000/authorize"
+      : "https://id.ai/authorize",
+    canisterId: "rdmx6-jaaaa-aaaaa-aaadq-cai",
+  };
 }
 ```
 
 ### Sign in, sign out, and session check
 
-Create a single `AuthClient` instance on page load and reuse it for all operations. The identity provider URL is passed at construction time, not on each sign-in:
+The sign-in is kept in the client's storage rather than the instance, so a client is cheap: construct one where you need it, and call `dispose()` when that page or component goes away. Several clients on one page read the same sign-in and write to the same storage. The identity provider is passed at construction time, not on each sign-in:
 
 ```javascript
-// Create the auth client (once, on page load)
 const authClient = new AuthClient({
-  identityProvider: getIdentityProviderUrl(),
+  identityProvider: getIdentityProvider(),
 });
 
-// Check for existing session
+// Check for an existing session. isAuthenticated() is synchronous, so it can
+// run during a render; getIdentity() is async.
 if (authClient.isAuthenticated()) {
   const identity = await authClient.getIdentity();
   // Restore session: create agent and actor with this identity
@@ -96,9 +104,7 @@ if (authClient.isAuthenticated()) {
 // Sign in
 async function signIn() {
   try {
-    const identity = await authClient.signIn({
-      maxTimeToLive: BigInt(8) * BigInt(3_600_000_000_000), // 8 hours
-    });
+    const identity = await authClient.signIn();
     console.log("Signed in as:", identity.getPrincipal().toText());
     return identity;
   } catch (error) {
@@ -107,14 +113,46 @@ async function signIn() {
   }
 }
 
-// Sign out
+// Sign out, which ends the session at Internet Identity: every tab of this
+// origin is signed out, and the session cannot be resumed. Nothing to reset or
+// reload: the state changes, so a subscriber re-renders.
 async function signOut() {
   await authClient.signOut();
-  // Reset UI state or reload
+}
+
+// Release what the client hooked up, when the page or component goes away.
+function teardown() {
+  authClient.dispose();
 }
 ```
 
 `signIn()` returns the new `Identity` directly. It rejects if the user closes the popup or authentication fails, so wrap the call in `try`/`catch` instead of relying on success/error callbacks.
+
+### Render
+
+`isAuthenticated()` answers whether this page can act as the user. `getStatus()` answers in more detail, and `subscribe()` tells you when to ask again, including when the answer changed in another tab, so a sign-out in one tab reaches the others without a reload:
+
+```javascript
+const unsubscribe = authClient.subscribe(() => render(authClient.getStatus()));
+
+function render(status) {
+  switch (status.state) {
+    case "signed-in":
+      return showApp(status.principal);
+    case "expired":
+      // Still names the account, so this is a "your session ended" screen
+      // rather than a bare signed-out one.
+      return showSessionEnded(status.principal);
+    case "signed-in-elsewhere":
+      // Someone is signed in on this domain and this origin holds no credential
+      // for them yet, so getIdentity() throws SessionNotHeldError until it does.
+      // Only reachable once the sign-in is shared across sibling subdomains.
+      return showResume(status.principal);
+    case "signed-out":
+      return showSignInButton();
+  }
+}
+```
 
 ### One-click OpenID sign-in
 
@@ -122,12 +160,36 @@ To skip the Internet Identity authentication-method screen and send the user str
 
 ```javascript
 const authClient = new AuthClient({
-  identityProvider: getIdentityProviderUrl(),
+  identityProvider: getIdentityProvider(),
   openIdProvider: "google",
 });
 ```
 
 The rest of the flow (`signIn`, `getIdentity`, `signOut`) is unchanged.
+
+For an organization's own SSO rather than a public provider, pass `ssoDomain` instead (the two are mutually exclusive). The user goes to whichever provider that organization publishes, and `isValidSsoDomain` checks a domain the user typed before you try it:
+
+```javascript
+import { AuthClient, isValidSsoDomain } from "@icp-sdk/auth/client";
+
+async function signInWithSso(domain) {
+  try {
+    if (!(await isValidSsoDomain(domain, AbortSignal.timeout(5_000)))) {
+      return showNoSsoConfiguration(domain); // the domain publishes nothing
+    }
+  } catch {
+    // An abandoned check is not a verdict: the organization's server was too
+    // slow, which is not the same as the domain being unusable.
+    return showCheckTimedOut(domain);
+  }
+
+  const authClient = new AuthClient({
+    identityProvider: getIdentityProvider(),
+    ssoDomain: domain, // e.g. "acme.com"
+  });
+  await authClient.signIn();
+}
+```
 
 ### Create an authenticated agent
 
@@ -170,14 +232,14 @@ async function signInWithAttributes(authClient, canisterId, idl) {
   const anonymousAgent = await HttpAgent.create();
   const anonymousActor = Actor.createActor(idl, { agent: anonymousAgent, canisterId });
 
-  // Mint the nonce, sign in, and request attributes in parallel. Passing the
-  // nonce as a promise lets requestAttributes start before it resolves, so the
-  // user still sees a single Internet Identity interaction.
-  const noncePromise = anonymousActor._internet_identity_sign_in_start();
+  // Mint the nonce, sign in, and request attributes in parallel. `nonce` is the
+  // function that fetches it, which the client calls when it needs the value,
+  // so the request is already in flight while the Internet Identity window
+  // opens, and the user still sees a single interaction.
   const signInPromise = authClient.signIn();
   const attributesPromise = authClient.requestAttributes({
     keys: ["name", "verified_email"], // the library reads verified_email for its email field
-    nonce: noncePromise,
+    nonce: () => anonymousActor._internet_identity_sign_in_start(),
   });
 
   const identity = await signInPromise;
@@ -220,7 +282,7 @@ When using one-click OpenID sign-in, attributes can be scoped to the provider. T
 import { AuthClient, scopedKeys } from "@icp-sdk/auth/client";
 
 const authClient = new AuthClient({
-  identityProvider: getIdentityProviderUrl(),
+  identityProvider: getIdentityProvider(),
   openIdProvider: "google",
 });
 
@@ -229,7 +291,7 @@ const authClient = new AuthClient({
 // and the mo:identity-attributes library maps them onto the same name/email fields.
 const attributesPromise = authClient.requestAttributes({
   keys: scopedKeys({ openIdProvider: "google", keys: ["name", "verified_email"] }),
-  nonce: noncePromise,
+  nonce: () => anonymousActor._internet_identity_sign_in_start(),
 });
 ```
 
@@ -532,7 +594,7 @@ icp network start
 icp deploy
 ```
 
-icp-cli pulls the mainnet II Wasm when deploying locally and registers a local alias so the II frontend is reachable at `http://id.ai.localhost:8000`. Use the `getIdentityProviderUrl` helper (shown in the environment detection section above) to point to this URL in local development.
+icp-cli pulls the mainnet II Wasm when deploying locally and registers a local alias so the II frontend is reachable at `http://id.ai.localhost:8000`. Use the `getIdentityProvider` helper (shown in the environment detection section above) to point to this URL in local development.
 
 To test authentication from the command line:
 
@@ -594,7 +656,7 @@ To keep principals consistent across your own custom domains, configure **altern
 
    ```javascript
    const authClient = new AuthClient({
-     identityProvider: "https://id.ai",
+     identityProvider: getIdentityProvider(),
      derivationOrigin: "https://xxxxx.icp.net", // primary origin A
    });
    ```
@@ -602,6 +664,97 @@ To keep principals consistent across your own custom domains, configure **altern
    The primary origin (A) does not need `derivationOrigin`: it is only required on alternative origins.
 
 For full details, see the [Internet Identity specification](../../references/internet-identity-spec.md).
+
+## Sharing a sign-in across sibling subdomains
+
+Apps on sibling subdomains of one domain, such as `chat.example.com` and `hr.example.com`, can share one sign-in: signing in on one signs the user in on the others without a second visit to Internet Identity, and signing out on one signs the user out on all of them.
+
+It rests on the section above. Every app has to derive from one shared derivation origin, authorized by that origin's `ii-alternative-origins` document, because principals are per origin and apps that do not share a principal have nothing to share. On top of that:
+
+1. **Share the record.** Every app passes the same cookie domain, so a sign-in on one writes a record the others read. Choosing a domain means trusting every origin under it, so do this only where you control the subdomains.
+
+   ```javascript
+   import { AuthClient, CookieStateStorage, InteractionRequiredError } from "@icp-sdk/auth/client";
+
+   const clientOptions = {
+     identityProvider: getIdentityProvider(),
+     derivationOrigin: "https://auth.example.com",
+     stateStorage: new CookieStateStorage({ domain: "example.com" }),
+   };
+   ```
+
+2. **Acquire the sign-in where a sibling made it, on a `/reauth` route.** An app reading `signed-in-elsewhere` asks the provider for its own credential for that account. That request is made by a second client, since `prompt` and `hint` are set when a client is built, and it runs on page load with no user gesture, so it needs `transport: "redirect"` rather than the default window flow:
+
+   ```javascript
+   // /reauth
+   async function reauth() {
+     const status = new AuthClient(clientOptions).getStatus();
+
+     if (status.state !== "signed-in-elsewhere") {
+       location.replace("/");
+       return;
+     }
+
+     const authClient = new AuthClient({
+       ...clientOptions,
+       transport: "redirect",
+       prompt: "none",
+       hint: status.principal, // answer for the account already signed in
+     });
+
+     try {
+       await authClient.signIn({
+         returnTo: new URLSearchParams(location.search).get("next") ?? "/",
+       });
+     } catch (error) {
+       if (error instanceof InteractionRequiredError) {
+         await authClient.signOut().catch(() => {});
+       }
+       location.replace("/");
+     }
+   }
+
+   reauth();
+   ```
+
+   Without `hint`, a provider holding more than one session refuses rather than guessing, with `InteractionRequiredError` and a `reason` of `account_selection_required`: what you lose is the resume, not the user's identity, since a mint for an unexpected account is rejected as `AccountMismatchError`. An `InteractionRequiredError` also means there may be nothing to resume, so the sign-in is stale: sign out to clear it, or every app on the domain keeps sending the user back.
+
+   **Declare that route.** A redirect sign-in is delivered only to a callback the returning origin declares itself, so every app serves `/.well-known/ii-auth-callbacks` on its own origin (not once on the derivation origin), listing its own route:
+
+   ```json
+   { "callbacks": ["https://chat.example.com/reauth"] }
+   ```
+
+   The entry is matched exactly, so it is the full URL with no fragment, and II reads the document cross-origin, so serve it as `application/json` with `Access-Control-Allow-Origin`. Validation fails closed: undeclared or unreadable, and the sign-in never comes back. The route also has to terminate locally, because the response arrives in the URL fragment and a `3xx` carrying none re-attaches it to wherever it forwards.
+
+3. **Pick it up on load, on every page.** Give that request a route of its own, `/reauth`, and have every page check the status as it loads, handing `signed-in-elsewhere` to that route with the page to return to. Every page, not only the ones that require a sign-in: a visitor already signed in on a sibling would otherwise land on a public page here and see a signed-out header.
+
+   ```javascript
+   const status = new AuthClient(clientOptions).getStatus();
+
+   // This state only: signed-out and expired both mean a normal sign-in, and
+   // sending those to /reauth just bounces the user back.
+   if (status.state === "signed-in-elsewhere") {
+     location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`);
+   }
+   ```
+
+   `/reauth` passes that `next` as `returnTo`, so the user lands back where they were asking to go, signed in, having seen nothing. This is what makes the sharing automatic rather than something the user has to click.
+
+4. **Jump on load, ask afterwards.** Step 3 redirects because the page has only just started. Once a page is open the status can still turn `signed-in-elsewhere`, when someone signs in on a sibling in another tab, and redirecting a page the user is working on would throw away what they are doing. So subscribe, and offer the same redirect behind a button:
+
+   ```javascript
+   authClient.subscribe(() => {
+     if (authClient.getStatus().state === "signed-in-elsewhere") {
+       // A banner or dialog whose button runs the same redirect as step 3.
+       showResumeDialog(() =>
+         location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`),
+       );
+     }
+   });
+   ```
+
+The full walkthrough is in the client's [shared sessions guide](https://js.icp.build/auth/latest/shared-sessions/).
 
 ## App metadata
 
@@ -661,13 +814,14 @@ For the normative rules, including a JSON schema to validate your document again
 
 ## Common mistakes
 
-- **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProviderUrl` helper (shown above) to switch based on hostname.
+- **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProvider` helper (shown above) to switch based on hostname.
 - **`fetch` "Illegal invocation" in bundled builds**: always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
 - **Not awaiting `signIn()` or skipping the `try`/`catch`**: `authClient.signIn()` returns a promise that rejects when the user closes the popup or authentication fails. Without `await` and a `catch`, those failures are silently swallowed.
-- **Delegation expiry too long**: the maximum is 30 days. Values above this are silently clamped, causing confusing session behavior. Use 8 hours for typical apps.
+- **Treating the session bounds as a delegation lifetime**: `maxTimeToLive` and `maxTimeToIdle` bound the session at Internet Identity, not the key your frontend signs with; that one is short-lived and replaced for you. Leave both unset unless the app has a policy of its own; the provider's defaults are seven days idle and thirty days in total.
 - **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
 - **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
-- **Creating multiple `AuthClient` instances**: create one on page load and reuse it. Multiple instances cause race conditions with session storage.
+- **Leaking `AuthClient` instances**: several clients may share an origin (they read the same sign-in), but each one hooks browser listeners and schedules a refresh, so call `dispose()` when the page or component that made it goes away.
+- **Passing a bare URL as `identityProvider`**: it is an object, `{ authorizeUrl, canisterId }`, and both fields are required together, because nothing about the minting canister is derived from the URL. A string throws a `TypeError`.
 - **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` is one it actually issued.
 - **Reading attribute data without verifying the signer**: the IC checks the signature, not the identity of the signer, so any canister can produce a valid bundle. The trusted signer for II is `rdmx6-jaaaa-aaaaa-aaadq-cai`. In Motoko, use the [`mo:identity-attributes`](https://mops.one/identity-attributes) mixin and configure `trusted_attribute_signers` and `frontend_origins` in `icp.yaml`: it verifies the signer (and the origin, nonce, and freshness) for you. In Rust, there is no CDK wrapper yet, so always check `msg_caller_info_signer()` against the trusted issuer before reading `msg_caller_info_data()`.
 
@@ -678,6 +832,7 @@ For the normative rules, including a JSON schema to validate your document again
 - [Internet Identity specification](../../references/internet-identity-spec.md) for protocol details and the full alternative origins spec
 - [Security best practices](../../concepts/security.md) for identity and trust fundamentals
 - [AuthClient API reference](https://js.icp.build) for the full `@icp-sdk/auth` API
+- [Upgrading to v9](https://js.icp.build/auth/latest/upgrading/v9/) if you are moving an app off `@icp-sdk/auth` v8
 
 {/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
 
