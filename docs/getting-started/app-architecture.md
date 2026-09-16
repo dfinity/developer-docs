@@ -14,7 +14,7 @@ An application on the Internet Computer typically consists of one or more [canis
 Most ICP applications start with two canisters:
 
 - **Backend canister**: contains your application logic and data. You write it in Motoko or Rust (the official CDKs). Community-supported languages like TypeScript and Python are also available: see [Languages](../languages/index.md). Your code is compiled locally to WebAssembly and executed by the network.
-- **Frontend (asset) canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP.
+- **Frontend canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP.
 
 When a user opens your application in a browser:
 
@@ -32,7 +32,7 @@ This flow replaces the traditional web stack. There is no separate web server, a
 |---------|-------------------|-----------------|
 | **Compute** | Application server (Node, Django, etc.) | [Backend canister](../concepts/canisters.md) (Wasm) |
 | **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](../concepts/orthogonal-persistence.md) (up to 500 GiB) |
-| **Frontend hosting** | CDN + static file server | [Static site](../guides/frontends/static-site/overview.md) (certified responses) |
+| **Frontend hosting** | CDN + static file server | [Frontend canister](../guides/frontends/static-site/overview.md) (certified responses) |
 | **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
 | **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](../concepts/timers.md) |
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](../concepts/https-outcalls.md) |

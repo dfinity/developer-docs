@@ -621,7 +621,7 @@ If an app is served through `raw.icp.net` in addition to `icp.net`, an adversary
 
 - Only serve assets through `<canister-id>.icp.net`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp.net`.
 
-- Serve assets using the asset canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
+- Serve assets from a frontend canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
 
 - Check in the canister's `http_request` method if the request came through raw. If so, return an error and do not serve any assets.
 

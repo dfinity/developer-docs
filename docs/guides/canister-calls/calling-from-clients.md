@@ -79,13 +79,13 @@ For Vite projects, use the Vite plugin to regenerate bindings automatically duri
 
 ### Creating an actor (browser)
 
-In a browser frontend served by an asset canister, read the canister ID from the environment cookie that icp-cli injects at deploy time:
+In a browser frontend served by a frontend canister, read the canister ID from the environment cookie that icp-cli injects at deploy time:
 
 ```typescript
 import { createActor } from "./backend/api/backend";
 import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Declare the environment variables your asset canister exposes.
+// Declare the environment variables your frontend canister exposes.
 // icp-cli injects PUBLIC_CANISTER_ID:<name> for every canister in the project.
 interface CanisterEnv {
   readonly "PUBLIC_CANISTER_ID:backend": string;
@@ -105,7 +105,7 @@ const actor = createActor(canisterId, {
 });
 ```
 
-`getCanisterEnv` reads the `ic_env` cookie that the asset canister sets automatically. See [Canister discovery](#canister-discovery) below for how this works.
+`getCanisterEnv` reads the `ic_env` cookie that the frontend canister sets automatically. See [Canister discovery](#canister-discovery) below for how this works.
 
 ### Creating an actor (Node.js)
 
@@ -247,12 +247,12 @@ PUBLIC_CANISTER_ID:frontend → bd3sg-teaaa-aaaaa-qaaba-cai
 
 ### Frontend: reading the cookie
 
-The asset canister exposes these variables via an `ic_env` cookie, along with the network's root key (`IC_ROOT_KEY`). Use `getCanisterEnv` from `@icp-sdk/core` to read the cookie:
+The frontend canister exposes these variables via an `ic_env` cookie, along with the network's root key (`IC_ROOT_KEY`). Use `getCanisterEnv` from `@icp-sdk/core` to read the cookie:
 
 ```typescript
 import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Declare the environment variables your asset canister exposes.
+// Declare the environment variables your frontend canister exposes.
 // icp-cli injects PUBLIC_CANISTER_ID:<name> for every canister in the project.
 interface CanisterEnv {
   readonly "PUBLIC_CANISTER_ID:backend": string;
@@ -267,7 +267,7 @@ This works identically on local networks and mainnet without code changes.
 
 ### Local development with a dev server
 
-During development, your dev server runs outside the asset canister and the `ic_env` cookie is not set automatically. Simulate it by configuring your dev server to inject the cookie. With Vite:
+During development, your dev server runs outside the frontend canister and the `ic_env` cookie is not set automatically. Simulate it by configuring your dev server to inject the cookie. With Vite:
 
 ```typescript
 // vite.config.ts

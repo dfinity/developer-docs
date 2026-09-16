@@ -57,7 +57,7 @@ import { AuthClient } from "@icp-sdk/auth/client";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
 import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Read the ic_env cookie set by the asset canister or Vite dev server.
+// Read the ic_env cookie set by the frontend canister or Vite dev server.
 // Contains IC_ROOT_KEY and canister IDs: works in both local and production without
 // environment branching. Available in browser contexts only; see note below for Node.js.
 const canisterEnv = safeGetCanisterEnv();
@@ -146,7 +146,7 @@ async function createAuthenticatedActor(identity, canisterId, idlFactory) {
 ```
 
 :::note[Node.js environments]
-`safeGetCanisterEnv()` reads the `ic_env` cookie set by the asset canister or Vite dev server (it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint) on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
+`safeGetCanisterEnv()` reads the `ic_env` cookie set by the frontend canister or Vite dev server (it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint) on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
 :::
 
 ### Requesting identity attributes
