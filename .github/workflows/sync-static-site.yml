@@ -54,17 +54,20 @@ jobs:
           fi
 
           # A release that ships canister changes without touching docs/ leaves
-          # the synced pages byte-identical. The recipe version readers type is
-          # covered by the `static-site` entry under `watched`, which opens its
-          # own issue, so there is nothing to review here.
+          # the synced pages byte-identical, so there is no content to review.
+          # The pin still has to move: it is allowed to sit on a commit only
+          # while no release carries the pages, and skipping here would strand
+          # it on that commit for good. So the PR is opened either way, and the
+          # body says which of the two it is.
           CHANGED=$(git -C /tmp/certified-assets diff --name-only "${PIN}..${TAG}" -- docs/)
+          echo "needed=true" >> $GITHUB_OUTPUT
           if [ -z "$CHANGED" ]; then
-            echo "No docs/ changes between $PIN and $TAG. Skipping."
-            echo "needed=false" >> $GITHUB_OUTPUT
+            echo "No docs/ changes between $PIN and $TAG: advancing the pin only."
+            echo "pin_only=true" >> $GITHUB_OUTPUT
           else
             echo "Changed upstream pages:"
             echo "$CHANGED"
-            echo "needed=true" >> $GITHUB_OUTPUT
+            echo "pin_only=false" >> $GITHUB_OUTPUT
             echo "changed_files<<EOF" >> $GITHUB_OUTPUT
             echo "$CHANGED" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
@@ -134,10 +137,15 @@ jobs:
             echo ""
             echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
             echo ""
-            echo "**Changed upstream files:**"
-            while IFS= read -r f; do
-              [ -n "$f" ] && echo "- \`$f\`"
-            done <<< "$CHANGED"
+            if [ "$PIN_ONLY" = "true" ]; then
+              echo "No page changed in this range. The pin moves off a commit and onto"
+              echo "the release tag, so the only diff is \`source_ref\` on each page."
+            else
+              echo "**Changed upstream files:**"
+              while IFS= read -r f; do
+                [ -n "$f" ] && echo "- \`$f\`"
+              done <<< "$CHANGED"
+            fi
             echo ""
             echo "- Ran \`npm run sync:static-site\`, regenerating \`docs/guides/frontends/static-site/\`"
             echo "- Validator and build passed"
@@ -160,3 +168,4 @@ jobs:
           TAG: ${{ steps.check.outputs.tag }}
           PIN: ${{ steps.check.outputs.pin }}
           CHANGED: ${{ steps.check.outputs.changed_files }}
+          PIN_ONLY: ${{ steps.check.outputs.pin_only }}

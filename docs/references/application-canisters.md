@@ -9,7 +9,7 @@ Application canisters are well-known canisters at the application layer of the I
 
 ## Certified-assets canister
 
-The [certified-assets canister](https://github.com/dfinity/certified-assets) hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. The `@dfinity/static-site` recipe deploys it, and it is the recommended way to host a frontend on ICP. Every response it serves is certified, and it accepts only version 2 of the certification protocol, so there is no uncertified serving path.
+The [certified-assets canister](https://github.com/dfinity/certified-assets) hosts static web assets (HTML, CSS, JavaScript, images, and other files) directly on the network. The `@dfinity/static-site` recipe deploys it, and it is the recommended way to host a frontend on ICP. Every response it serves is certified, and it accepts only version 2 of the certification protocol, so it has no uncertified serving path. Whether a *visitor* gets a verified response is a separate question, decided by the gateway their URL points at: see [Certified vs uncertified access](../guides/frontends/certification.md#certified-vs-uncertified-access).
 
 These canisters are deployed per-project. There is no global canister ID: each project creates its own.
 

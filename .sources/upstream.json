@@ -58,12 +58,15 @@
       "script": "scripts/sync-static-site.mjs",
       "affects": "The synced pages are regenerated wholesale, so review the diff rather than the pages. Behavior changes also reach our own Frontends pages: certification.md describes what this canister certifies, and asset-canister.md contrasts the two recipes. The recipe version readers type is tracked separately as the `static-site` entry under `watched`, and the two move in lockstep.",
       "$comment": [
-        "This entry may pin a commit rather than a release tag. .sources/VERSIONS",
-        "forbids that for submodules so docs cannot describe unshipped behavior, and",
-        "docs-only commits are not that case: check what the range contains before",
-        "pinning past a tag, and prefer a tag whenever one carries the pages.",
-        "Bootstrapped at d9cb7df (certified-assets#124 landed the frontmatter",
-        "contract after the v0.3.3 tag, so that tag cannot be synced at all)."
+        "The `pinned` field above is the ref of record; this note is the policy, not",
+        "a description of it. This entry may pin a commit rather than a release tag:",
+        ".sources/VERSIONS forbids that for submodules so docs cannot describe",
+        "unshipped behavior, and docs-only commits are not that case. Check what the",
+        "range contains before pinning past a tag, and prefer a tag whenever one",
+        "carries the pages. The sync workflow moves the pin onto a tag at the next",
+        "release even when no page changed, so a commit pin is never permanent.",
+        "History: the first sync used d9cb7df, because certified-assets#124 landed",
+        "the frontmatter contract this sync requires after the v0.3.3 tag."
       ]
     }
   ],
@@ -137,7 +140,7 @@
       "pinned": "static-site-v0.3.3",
       "track": "release",
       "tagPattern": "^static-site-v\\d+\\.\\d+\\.\\d+$",
-      "affects": "Not yet documented (dfinity/certified-assets#124). This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "affects": "The canister's own pages are synced from dfinity/certified-assets into docs/guides/frontends/static-site/ and follow that repo's releases, not this one, so a recipe release mainly moves the version readers pin: check the `@dfinity/static-site@` examples in guides/frontends/, getting-started/ and references/application-canisters.md. This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
       "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
     },
     {

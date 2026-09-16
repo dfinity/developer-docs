@@ -90,7 +90,9 @@ function checkInternalLinks(file, content) {
   let m;
   while ((m = re.exec(content)) !== null) {
     const href = m[1];
-    if (href.startsWith('http') || href.startsWith('/')) continue;
+    // Match a URL scheme, not the letters "http": `http-gateway-protocol-spec.md`
+    // is a real relative target in this repo and must still be checked.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('/')) continue;
     // A same-page link is checked against this file's own headings.
     if (href.startsWith('#')) {
       const fragment = href.slice(1);

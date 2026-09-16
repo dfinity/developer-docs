@@ -39,7 +39,7 @@
 // pin into .sources/upstream.json first, then runs the script with no argument,
 // so what lands is always what the file records.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { anchorsOfText, anchorsOfFile } from './lib/anchors.mjs';
 
@@ -64,7 +64,7 @@ const LINK_MAP = {
 // docs.internetcomputer.org subdomain, or the retired internetcomputer.org/docs
 // path. Does not match bare internetcomputer.org, which upstream links
 // legitimately for the project home page.
-const SITE_LINK = /https?:\/\/(?:docs\.)?internetcomputer\.org(?:\/docs)?\/[^\s)">]+/g;
+const SITE_LINK = /https?:\/\/(?:docs\.internetcomputer\.org|internetcomputer\.org\/docs)(?:\/[^\s)">]*)?/g;
 
 function canonicalize(url) {
   return url
@@ -86,8 +86,8 @@ const PROSE_RULES = [
 // this exact shape is rewritten, verified equivalent against `icp canister call`
 // in icp-cli v1.5.0: <CANISTER> accepts a principal, and `-e` selects the
 // network. Any other `dfx` occurrence fails the sync rather than being guessed at.
-const DFX_CALL = /\bdfx canister call (\S+) (\S+)(?: --network ic)?/g;
-const rewriteDfx = (text) => text.replace(DFX_CALL, 'icp canister call $1 $2 -e ic');
+const DFX_CALL = /^(\s*)dfx canister call (\S+) (\S+) --network ic[ \t]*$/gm;
+const rewriteDfx = (text) => text.replace(DFX_CALL, '$1icp canister call $2 $3 -e ic');
 
 // Prose means prose: not a fenced block, not the frontmatter, and within a line,
 // not an inline code span and not a link destination. A rule that reached into
@@ -133,12 +133,17 @@ function normalizeProse(text) {
 function rewriteSiteLinks(text) {
   const unmapped = [];
   const out = text.replace(SITE_LINK, (url) => {
-    const target = LINK_MAP[canonicalize(url)];
+    const key = canonicalize(url);
+    // Try the whole key first, so a map entry may pin a specific section, then
+    // fall back to the page and carry the fragment across.
+    const [pathKey, fragment] = key.split('#');
+    const target = LINK_MAP[key] ?? (fragment ? LINK_MAP[pathKey] : undefined);
     if (!target) {
       unmapped.push(url);
       return url;
     }
-    return target;
+    if (LINK_MAP[key]) return target;
+    return `${target}#${fragment}`;
   });
   return { out, unmapped };
 }
@@ -171,19 +176,20 @@ function marker(file, ref) {
 // written, so this runs before anything touches the tree.
 function brokenLinks(text, file, prepared) {
   const broken = [];
+  const targetRoot = path.resolve(TARGET_DIR);
+  // Inside the tree, the pages about to be written are the only truth: a page
+  // upstream removed is absent from `prepared`, and trusting the stale copy
+  // still on disk would approve a link that the write is about to break.
   const anchorsIn = (href) => {
     if (href.startsWith('#')) return anchorsOfText(text);
     const [linkPath] = href.split('#');
-    const sibling = prepared.get(path.basename(linkPath));
-    if (sibling && path.resolve(TARGET_DIR, linkPath) === path.join(path.resolve(TARGET_DIR), path.basename(linkPath))) {
-      return anchorsOfText(sibling);
-    }
     const resolved = path.resolve(TARGET_DIR, linkPath);
-    const target = existsSync(resolved)
-      ? resolved
-      : existsSync(resolved.replace(/\.md$/, '.mdx'))
-        ? resolved.replace(/\.md$/, '.mdx')
-        : null;
+    if (path.dirname(resolved) === targetRoot) {
+      const sibling = prepared.get(path.basename(resolved));
+      return sibling === undefined ? null : anchorsOfText(sibling);
+    }
+    const mdx = resolved.replace(/\.md$/, '.mdx');
+    const target = existsSync(resolved) ? resolved : existsSync(mdx) ? mdx : null;
     return target ? anchorsOfFile(target) : null;
   };
 
@@ -329,15 +335,29 @@ async function main() {
     );
   }
 
+  // Stage the whole tree next to the target and swap it in with renames, so an
+  // interruption cannot leave a checkout holding pages from two refs. The swap
+  // also handles pages removed upstream: the new tree simply does not have them.
+  const stale = existsSync(TARGET_DIR)
+    ? readdirSync(TARGET_DIR).filter((f) => f.endsWith('.md') && !pages.includes(f))
+    : [];
+  // Staged outside docs/: a directory left behind by an interrupted run would
+  // otherwise be picked up by the build as content pages. Same filesystem, so
+  // the swap is a rename rather than a copy.
+  const staging = '.sync-staging/static-site';
+  const previous = '.sync-staging/static-site.previous';
+  mkdirSync('.sync-staging', { recursive: true });
+  rmSync(staging, { recursive: true, force: true });
+  rmSync(previous, { recursive: true, force: true });
+  mkdirSync(staging, { recursive: true });
   for (const [file, content] of prepared) {
-    writeFileSync(path.join(TARGET_DIR, file), content);
+    writeFileSync(path.join(staging, file), content);
     written.push(file);
   }
-
-  // A page removed upstream has to disappear here too, or the sidebar keeps
-  // serving something nobody maintains any more.
-  const stale = readdirSync(TARGET_DIR).filter((f) => f.endsWith('.md') && !pages.includes(f));
-  for (const file of stale) rmSync(path.join(TARGET_DIR, file));
+  if (existsSync(TARGET_DIR)) renameSync(TARGET_DIR, previous);
+  renameSync(staging, TARGET_DIR);
+  rmSync(previous, { recursive: true, force: true });
+  rmSync('.sync-staging', { recursive: true, force: true });
 
   console.log(`\nWrote ${written.length} page(s) to ${TARGET_DIR}/:`);
   for (const file of written) console.log(`  ${file}`);
