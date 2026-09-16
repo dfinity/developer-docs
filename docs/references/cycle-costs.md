@@ -157,9 +157,8 @@ usage_fee    = 50 * raw_response_bytes + 300 * roundtrip_ms
                  + transform_instructions / 13
                  (+ 50 * n * response_bytes      non-replicated and flexible only)
 
-delivery_fee = n * (10 * n + 600) * response_bytes
-                 (each delivered response counts 181 bytes of overhead   flexible only)
-                 (+ (2_000 * n + 100_000) * n * (K - min_responses)      flexible only)
+delivery_fee = n * (10 * n + 600) * (response_bytes (+ 181 * K   flexible only))
+                 (+ (2_000 * n + 100_000) * n * (K - min_responses)   flexible only)
 ```
 
 `usage_fee` is charged for each node that performs the outcall: all `n` of them for a fully replicated call, one for a non-replicated call, `total_requests` for a flexible one. `response_bytes` is the size after the transform. A non-replicated call (`is_replicated = false`) takes the `otherwise` branch with `min_responses = 1`. A flexible call that does not set `replication` defaults `min_responses` to `floor(2 / 3 * n) + 1`.
