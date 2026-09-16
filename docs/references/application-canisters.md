@@ -86,7 +86,7 @@ There is no per-asset write endpoint and no JS equivalent of `AssetManager`. Upl
 
 ## Asset canister (legacy)
 
-The asset canister is the older SDK canister for hosting static web assets, deployed by the `@dfinity/asset-canister` recipe and configured with `.ic-assets.json5`. It remains supported for existing projects; new projects should use the static site canister above. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
+The asset canister is the older SDK canister for hosting static web assets, deployed by the `@dfinity/asset-canister` recipe and configured with `.ic-assets.json5`. It remains supported for existing projects; new projects should use the certified-assets canister above, with one exception: proposal-gated asset updates for an SNS-governed frontend exist only here, through `propose_commit_batch` and the `Prepare`/`Commit` permission split. Responses are certified by the subnet, allowing HTTP gateways to verify integrity before serving content to browsers.
 
 Asset canisters are deployed per-project. There is no global asset canister ID: each project creates its own.
 

@@ -14,7 +14,7 @@ An application on the Internet Computer typically consists of one or more [canis
 Most ICP applications start with two canisters:
 
 - **Backend canister**: contains your application logic and data. You write it in Motoko or Rust (the official CDKs). Community-supported languages like TypeScript and Python are also available: see [Languages](../languages/index.md). Your code is compiled locally to WebAssembly and executed by the network.
-- **Frontend canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP.
+- **Frontend canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP. See [Deploy a static site](../guides/frontends/static-site/overview.md).
 
 When a user opens your application in a browser:
 

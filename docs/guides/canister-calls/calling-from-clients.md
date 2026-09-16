@@ -79,7 +79,7 @@ For Vite projects, use the Vite plugin to regenerate bindings automatically duri
 
 ### Creating an actor (browser)
 
-In a browser frontend served by a frontend canister, read the canister ID from the environment cookie that icp-cli injects at deploy time:
+In a browser frontend served by a [frontend canister](../frontends/static-site/overview.md), read the canister ID from the environment cookie that icp-cli injects at deploy time:
 
 ```typescript
 import { createActor } from "./backend/api/backend";
