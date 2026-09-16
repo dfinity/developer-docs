@@ -44,7 +44,7 @@ HTTPS outcalls have three modes. Replicated and non-replicated are selected by t
 
 The tradeoff with non-replicated mode: the single node that makes the request could theoretically observe and modify the response before returning it to the canister.
 
-**Use flexible mode** when the data changes too fast for replicas to ever agree, so replicated mode would fail consensus, and you would rather compare several independent answers than trust one. The tradeoff is between cost and trust: a committee of three costs less than one of 13 and is correspondingly easier for a single node to skew. Your canister must handle any count between `min_responses` and `max_responses`, including responses that disagree with each other. See [`flexible_http_request`](../../references/ic-interface-spec/management-canister.md#ic-flexible_http_request) in the interface specification for the argument and result types.
+**Use flexible mode** when the data changes too fast for replicas to ever agree, so replicated mode would fail consensus, and you would rather compare several independent answers than trust one. The tradeoff is between cost and trust: a committee of three costs less than one of 13 and is correspondingly easier for a single node to skew. Your canister must handle any count between `min_responses` and `max_responses`, including responses that disagree with each other. See `flexible_http_request` in the [Interface Specification](../../references/ic-interface-spec/management-canister.md#ic-flexible_http_request) for the argument and result types.
 
 ## GET request
 

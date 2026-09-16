@@ -73,7 +73,7 @@ Not all servers support idempotency keys, so evaluate this on a case-by-case bas
 
 ## Cycle costs
 
-HTTPS outcalls are not free. The calling canister must attach cycles to cover the cost. The system API reports what to attach, so a canister never has to hard-code a price: `ic0.cost_http_request_v2` for pay-as-you-go pricing, and the older `ic0.cost_http_request` for deprecated legacy pricing (charged in advance).
+HTTPS outcalls are not free. The calling canister must attach cycles to cover the cost. The system API reports how many cycles to attach, so a canister never has to hard-code a price: `ic0.cost_http_request_v2` for pay-as-you-go pricing, and the older `ic0.cost_http_request` for deprecated legacy pricing (charged in advance).
 
 There are two pricing models, chosen per call by the `pricing_version` field.
 
@@ -85,7 +85,7 @@ Version 1 is still the default, and is what a call gets unless it asks for versi
 
 Both the Motoko `ic` mops package and the Rust `ic-cdk-management-canister` crate provide wrappers that compute and attach the required amount. In Rust, the `HttpRequest` and `FlexibleHttpRequest` builders always price with version `2`, using the `ic0.cost_http_request_v2` system API. In Motoko, `Call.httpRequest` prices with version `1` using `ic0.cost_http_request`, so a canister that wants version `2` or flexible mode from Motoko has to build the management canister call itself for now.
 
-**Version 1** charges for the number of bytes you reserve. The cost depends on two factors:
+**Version 1** charges based on the following two factors:
 
 - **Request size**: the combined byte length of the URL, headers, body, transform function name, and transform context.
 - **`max_response_bytes`**: the maximum response size you declare. This is what you're charged for, not the actual response size.

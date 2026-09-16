@@ -458,7 +458,7 @@ Pricing version 1 is still the default, but version 2 is to become the default, 
   - `headers` (`vec record { name : text; value : text }`): request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
   - `body` (`opt blob`): request body
   - `transform` (`opt record { function : func; context : blob }`): response transformation function exported by the calling canister
-  - `is_replicated` (`opt bool`): select replicated (`opt true` or unset) or non-replicated (`opt false`) mode
+  - `is_replicated` (`opt bool`): select replicated (`opt true` or `null`) or non-replicated (`opt false`) mode
   - `pricing_version` (`opt nat32`): `1` (default, deprecated) or `2`. Version `2` prices the resources the call consumes instead of `max_response_bytes`. The field is not validated: any other value falls back to version `1` without an error.
 - **Returns:**
   - `status` (`nat`): HTTP status code
@@ -475,7 +475,7 @@ For concept details, see [HTTPS outcalls](../concepts/https-outcalls.md).
 Makes an HTTP request from a committee of nodes and returns their individual responses instead of one response the subnet agreed on. Use it for endpoints whose data changes too fast for replicas to agree, and to trade cost against integrity by sizing the committee.
 
 - **Caller:** Canisters only
-- **Parameters:** as for `http_request`, except that there is no `is_replicated` and no `pricing_version`, and one argument is added:
+- **Parameters:** as for `http_request`, except that there is no `is_replicated` and no `pricing_version`, and one argument (`replication`) is added:
   - `method`: `GET`, `HEAD`, and `POST` are always supported; `PUT`, `DELETE`, and `PATCH` only when `min_responses`, `max_responses`, and `total_requests` are all equal
   - `replication` (`opt record { min_responses : nat32; max_responses : nat32; total_requests : nat32 }`): how many nodes issue the request, and the fewest and most responses the caller will accept. Must satisfy `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the subnet's node count as reported by `ic0.subnet_self_node_count`. Defaults to `floor(2 / 3 * N) + 1`, `N`, and `N`.
 - **Returns:** `variant { ok : vec http_request_result; err : flexible_http_request_err }`. Both arms arrive as a reply, not a reject: a call that cannot meet the requested replication replies with `err`, carrying a `global_error` of `timeout`, `out_of_cycles`, `responses_too_large`, or `too_many_rejects`, a message, and per-node details. Only failures detected before the requests go out are rejects, e.g. invalid or oversized parameters.
@@ -483,7 +483,7 @@ Makes an HTTP request from a committee of nodes and returns their individual res
 
 A successful call returns between `min_responses` and `max_responses` responses, and may return as few as `min_responses` even when every node answered. The responses do not identify the node that produced them and their order is not specified, so handle any count in that range and reconcile disagreement yourself.
 
-For the full argument, result, and error types, see [`flexible_http_request`](ic-interface-spec/management-canister.md#ic-flexible_http_request) in the interface specification.
+For the full argument, result, and error types, see `flexible_http_request` in the [Interface Specification](ic-interface-spec/management-canister.md#ic-flexible_http_request).
 
 ## Bitcoin API (deprecated)
 

@@ -11,11 +11,7 @@ sidebar:
 ### 0.68.0 (2026-09-14) {$0_68_0}
 * New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
   of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus
-  on a single response. The optional `replication` argument sizes the committee (`total_requests`) and
-  bounds how many responses the outcall requires (`min_responses`) and the caller will accept
-  (`max_responses`); it defaults to `floor(2 / 3 * N) + 1`, `N`, and `N` on a subnet of `N` nodes.
-  The result is a variant whose `err` arm reports why the requested replication could not be met and
-  what the individual nodes did; both arms are delivered as a reply rather than as a reject.
+  on a single response.
 * New optional `pricing_version` field of `http_request` selecting the pricing mechanism for the outcall:
   `1` ("legacy"), which prices the call by `max_response_bytes`, or `2` ("pay-as-you-go"), which prices
   the resources the call actually consumes and makes the attached cycles bound what it may consume.
