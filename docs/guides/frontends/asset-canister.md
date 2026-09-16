@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-The asset [canister](../../concepts/canisters.md) hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
+The asset canister hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
 
 :::caution[This is the legacy path]
 New projects should [host a static site](static-site/overview.md) instead. That is a different canister with a different configuration format, and it is what the project templates ship. This page is for projects already running the `@dfinity/asset-canister` recipe; to move one over, see [Migrate to a static site](#migrate-to-a-static-site).

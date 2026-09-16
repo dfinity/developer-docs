@@ -32,7 +32,7 @@ This flow replaces the traditional web stack. There is no separate web server, a
 |---------|-------------------|-----------------|
 | **Compute** | Application server (Node, Django, etc.) | [Backend canister](../concepts/canisters.md) (Wasm) |
 | **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](../concepts/orthogonal-persistence.md) (up to 500 GiB) |
-| **Frontend hosting** | CDN + static file server | [Asset canister](../guides/frontends/asset-canister.md) |
+| **Frontend hosting** | CDN + static file server | [Static site](../guides/frontends/static-site/overview.md) (certified responses) |
 | **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
 | **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](../concepts/timers.md) |
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](../concepts/https-outcalls.md) |
@@ -121,7 +121,7 @@ Start with the simplest architecture that meets your requirements. You can alway
 
 - [Choose your path](choose-your-path.md): pick a development track based on what you want to build
 - [Inter-canister calls](../guides/canister-calls/inter-canister-calls.md): inter-canister communication patterns
-- [Asset canister](../guides/frontends/asset-canister.md): frontend deployment
+- [Hosting a static site](../guides/frontends/static-site/overview.md): frontend deployment
 - [Canisters](../concepts/canisters.md): canister internals
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/application-architectures.mdx, docs/building-apps/getting-started/app-architecture.mdx; canister-per-user section ported from application-architectures.mdx -->

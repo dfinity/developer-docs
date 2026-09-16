@@ -169,7 +169,8 @@ Caused by: Wasm module has an invalid import section
 - [Canister settings](./settings.md): compute allocation, memory allocation, and freezing threshold
 - [Subnet selection](./subnet-selection.md): choosing a subnet when latency is a deployment constraint
 - [Optimization](./optimization.md): reducing Wasm binary size and cycle costs
-- [Asset canister](../frontends/asset-canister.md): frontend deployment and `.ic-assets.json5` configuration
+- [Hosting a static site](../frontends/static-site/overview.md): frontend deployment, headers, and redirects
+- [Asset canister (legacy)](../frontends/asset-canister.md): `.ic-assets.json5` configuration
 - [Certified variables](../backends/certified-variables.md): tamperproof query responses
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/troubleshooting.mdx; dfx-centric content excluded, fully rewritten for icp CLI -->

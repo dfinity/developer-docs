@@ -388,7 +388,8 @@ For design work (CSS, UI, marketing copy), also load `icp-brand-design`.
 ## Content rules
 
 - **Spelling:** "onchain" and "offchain" (no hyphens). "icp-cli" in prose; `icp` in code blocks only.
-- **Recipe names vs canister names:** never put both in one label, such as "static-site (certified-assets)". Name the reader's goal in prose, headings, and the sidebar ("a static site"); name the recipe where they type it (`@dfinity/static-site`, in code or when pinning a version); name the canister only where its identity matters (its Candid interface, state-hash verification, or contrasting it with another canister).
+- **Recipe names vs canister names:** never put both in one label, such as "static-site (certified-assets)". Name the reader's goal in prose, headings, and the sidebar ("a static site"); name the recipe where they type it (`@dfinity/static-site`, in code or when pinning a version); name the canister only where its identity matters (its Candid interface, state-hash verification, or contrasting it with another canister). The distinction matters most for static sites, where the recipe and the canister have different names.
+- **Put the link on the term, and match it to the target.** Never link part of a compound term: "the asset [canister](...)" splits a name the reader is trying to learn, so either link the whole term or leave it unlinked. Link the goal phrase to the guide that covers it; a recipe name links to its releases or the CLI docs, never to a page about canister behavior. When one of two paths is legacy, check that a link lands on the one the sentence is actually about.
 - **Internal links:** `.md` extension always, even for `.mdx` targets. Relative paths only — never absolute like `/getting-started/quickstart/`.
 - **No headings inside `<TabItem>` blocks** — use **bold text** instead.
 - **Motoko:** use `mo:core` (`mops.one/core`), never `mo:base`.

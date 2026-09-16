@@ -219,7 +219,7 @@ const agent = await HttpAgent.create({ host });
 
 Without this, `HttpAgent` falls back to using the page origin as the API host: which will fail on custom domains since they do not proxy IC API traffic.
 
-For local development, you also need to pass `shouldFetchRootKey: true` so the agent can fetch the replica's root key. See [Asset canister](asset-canister.md) for a complete local + mainnet agent setup example.
+For local development, you also need to pass `shouldFetchRootKey: true` so the agent can fetch the replica's root key. See [Reading canister IDs and the root key](frameworks.md#reading-canister-ids-and-the-root-key) for a complete local and mainnet agent setup example.
 
 ## Updating a custom domain
 
