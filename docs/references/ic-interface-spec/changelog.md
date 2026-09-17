@@ -12,15 +12,15 @@ sidebar:
 * New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
   given subnet: the current block height, the number of canisters, the total canister
   state size, the total cycles consumed, the total number of processed transactions, and
-  the total number of instructions accounted for across all rounds. The four aggregates
-  were previously only readable by external users via the certified state tree path
-  `/subnet/<subnet_id>/metrics`; the block height and the instruction total have no path
-  there. The API is EXPERIMENTAL.
-* The instruction total, `million_round_instructions_total`, is reported in units of one
-  million and rounded up. Besides the executed Wasm instructions it covers the fixed
-  per-execution and per-canister overheads charged by the scheduler and the charges for
-  work performed outside of Wasm execution, so it is not a Wasm instruction meter, and its
-  counter starts when a subnet's replica begins tracking it rather than at subnet creation.
+  the total number of instructions accounted for across all rounds
+  (`million_round_instructions_total`), in units of one million and rounded up. The four
+  aggregates were previously only readable by external users via the certified state tree
+  path `/subnet/<subnet_id>/metrics`; the block height and the instruction total have no
+  path there. Besides the executed Wasm instructions, the instruction total covers the
+  fixed per-execution and per-canister overheads charged by the scheduler and the charges
+  for work performed outside of Wasm execution, so it is not a Wasm instruction meter, and
+  its counter starts when a subnet's replica begins tracking it rather than at subnet
+  creation. The API is EXPERIMENTAL.
 
 ### 0.68.0 (2026-09-14) {$0_68_0}
 * New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
