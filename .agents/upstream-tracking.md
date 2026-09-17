@@ -2,14 +2,14 @@
 
 How this repo stays current with the projects it documents.
 
-Upstream repos fall into three groups, and the group decides the procedure.
+Upstream repos fall into four groups, and the group decides the procedure.
 
-| | Vendored (submodule) | Watched | Reference |
-|---|---|---|---|
-| Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
-| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
-| Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
-| Release issue | only `examples`, and only when a quoted file moved | yes | no |
+| | Vendored (submodule) | Synced | Watched | Reference |
+|---|---|---|---|---|
+| Which | `motoko`, `internetidentity`, `examples` | the `synced` array in `.sources/upstream.json` | the `watched` array | the `reference` array |
+| Why | the build opens their files | their own pages are published here as-is | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
+| Pin | the gitlink | `pinned` in `upstream.json` | `pinned` in `upstream.json` | none; verify against the latest release |
+| Release issue | only `examples`, and only when a quoted file moved | no; its own workflow opens the bump PR | yes | no |
 
 Deciding between the last two is a judgment about blast radius, and the `why`
 field on each `reference` entry records the footprint that decided it. Promote an
@@ -51,7 +51,7 @@ Read the file at the **pinned** ref, not at `main`:
 
 ```bash
 # The pinned ref for each repo is in .sources/upstream.json
-curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.1.0/docs/reference/cli.md
+curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.5.0/docs/reference/cli.md
 ```
 
 Use `raw.githubusercontent.com`, not `gh api .../contents/...`: the API returns
@@ -133,11 +133,15 @@ is not a ref git can resolve.
 
 ### `icp-cli`: link slug adaptation
 
-All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.3/...`).
+All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.5/...`).
 When `icp-cli` moves to a new minor:
 
-1. The slug is the `major.minor` of the release (`v1.3.0` → `1.3`). Confirm it is
-   live by opening the docs-site root, which redirects to the latest version.
+1. The slug is the `major.minor` of the release (`v1.5.0` → `1.5`). Confirm it is
+   live in the published version list, where the entry marked `latest: true` is
+   the slug the docs site serves at its root:
+   ```bash
+   curl -sL --compressed https://cli.internetcomputer.org/versions.json
+   ```
 2. Verify every linked path and anchor resolves at the new slug **before**
    replacing. Check the live site, not a repo tree: that validates the published
    URL, its trailing-slash behaviour, and the anchor.
@@ -151,12 +155,12 @@ When `icp-cli` moves to a new minor:
    ```
    For deep links, also confirm the anchor exists:
    ```bash
-   curl -sL "https://cli.internetcomputer.org/<new>/reference/cli/" | grep -o 'id="icp-cycles"'
+   curl -sL --compressed "https://cli.internetcomputer.org/<new>/reference/cli/" | grep -o 'id="icp-cycles"'
    ```
 3. Replace the slug across all files (per-file loop, because GNU and BSD `sed`
    disagree on `-i`):
    ```bash
-   old=1.1; new=1.3
+   old=1.4; new=1.5
    grep -rl "cli.internetcomputer.org/${old}/" docs/ | while IFS= read -r f; do
      sed -i.bak "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g" "$f" && rm -f "$f.bak"
    done
@@ -231,3 +235,107 @@ If a shallow clone cannot resolve a pinned commit:
 git -C .sources/<repo> fetch --unshallow
 git -C .sources/<repo> checkout <commit>
 ```
+
+## Synced trees
+
+A synced tree is a set of pages this repo publishes but does not write. Upstream
+owns the prose; a sync script fetches it at a pinned ref, adapts the few things
+that only make sense on this site, and writes the result into `docs/`.
+
+| Tree | Upstream | Script | Workflow |
+|---|---|---|---|
+| `docs/guides/frontends/static-site/` | `dfinity/certified-assets` `docs/` | `scripts/sync-static-site.mjs` | `.github/workflows/sync-static-site.yml` |
+
+`motoko` and `internetidentity` are synced too, but they are submodules because
+the build also opens their files, so they follow the vendored procedure above.
+This group is for the case where nothing is resolved at build time, only
+markdown links, which is why there is no submodule to hold the pin.
+
+### How the pin moves
+
+The workflow runs weekly, resolves the latest release tag, and opens a bump PR
+for every release the pin does not already contain. Two shapes come out of it:
+
+- **Pages changed.** The usual case: review the diff.
+- **Nothing under `docs/` changed.** The pages are byte-identical and the only
+  diff is `source_ref` on each of them, but the PR still opens, because that is
+  what moves the pin off a commit and onto a release tag. Skipping these would
+  strand a temporary commit pin for good.
+
+The PR body says which of the two it is. The recipe version readers type is a
+separate axis, covered by the `static-site` entry under `watched`.
+
+To sync by hand, or to trial a ref before pinning it:
+
+```bash
+npm run sync:static-site                 # uses the pin in .sources/upstream.json
+node scripts/sync-static-site.mjs --ref main
+```
+
+The script exits non-zero rather than publishing something broken: missing
+frontmatter, an absolute link to this site it cannot map, a relative link that
+does not resolve, or a banned character that survived normalization. Fix the
+cause, do not hand-edit the output.
+
+### The pin may sit ahead of the latest release
+
+`.sources/VERSIONS` forbids pinning a submodule past its latest release, so that
+docs cannot describe behavior users cannot run yet. A synced tree can need the
+opposite: a docs-only fix upstream is published before the next release, and the
+pages must be syncable now. `certified-assets` started exactly there, pinned to a
+commit because the `v0.3.3` tag predated the frontmatter contract the sync
+requires (`certified-assets#124`).
+
+The rule that matters is the one behind it: never pin past a commit that
+documents unreleased behavior. Docs-only commits are safe, so check what the
+range contains before pinning past a tag, and record why in the entry's
+`$comment`. Move the pin back onto release tags as soon as one includes the
+change.
+
+### On bump, check
+
+1. The page diffs, for content changes; the tree is regenerated wholesale
+2. Whether a behavior change contradicts our own pages: `certification.md`
+   describes what this canister certifies, `asset-canister.md` contrasts the two
+   recipes
+3. Whether prose naming the recipe version needs bumping with it
+4. Whether a normalization the script reports should be fixed upstream instead,
+   so it becomes a no-op
+
+## Build dependencies (npm)
+
+The packages in `package.json` are a separate axis: they decide whether the site
+builds, not whether its content is accurate. `.github/dependabot.yml` keeps them
+current with weekly version updates plus security updates.
+
+`astro` and `@astrojs/*` are grouped into a single PR because Astro releases them
+in lockstep and pins their peer ranges narrowly. A bump to one of them alone often
+cannot resolve at all: astro 7.2.10, for example, moved its
+`@astrojs/markdown-remark` peer from an exact pin to `^7.3.0`, which only
+`@astrojs/mdx` 8 satisfies, which only ships with Starlight 0.42. Grouping lets
+dependabot resolve the whole family in one pass.
+
+Grouping a security update coalesces only the family members that each carry an
+advisory, so an advisory against `astro` alone still arrives as a one-package PR
+that cannot resolve. The weekly version update is what keeps that rare, by
+leaving little room between the family's releases and what is committed.
+
+Grouping fixes the resolution, not the code. A Starlight minor is a breaking
+release, so a grouped PR still fails the build check whenever the new version
+needs source changes (0.39 changed the `autogenerate` sidebar shape; 0.42
+rewrote the mobile-menu markup). Take those over by hand on an `infra/` branch:
+`preview-deployment.yml` is skipped on dependabot PRs, whose token is read-only,
+so a bump with visual impact needs a maintainer branch to get a preview at all.
+
+Two things to check when taking one over:
+
+- Regenerating `package-lock.json` on macOS prunes what does not apply locally:
+  the `libc` fields on the Linux binding packages, and, when `node_modules` is
+  present, the top-level `@emnapi/*` packages that `npm ci` needs on Linux. Move
+  `node_modules` aside, regenerate with `npm install --package-lock-only`, copy
+  the `libc` fields back from the previous lockfile, then validate with `npm ci`,
+  which reads the lock without rewriting it.
+- `npm ci && npm run build` is the gate, but it exits 0 on rendering
+  regressions. Diff `dist/` against a `main` baseline: `llms.txt`,
+  `llms-full.txt`, `sitemap.xml` and the `.md` endpoints should be identical,
+  and every HTML difference should trace to a documented upstream change.

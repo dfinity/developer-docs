@@ -37,7 +37,7 @@ icp --version
 ic-wasm --version
 ```
 
-> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/1.3/guides/installation) are also available.
+> **Alternative methods:** [Homebrew, shell scripts, and other options](https://cli.internetcomputer.org/1.5/guides/installation) are also available.
 
 ## Create a project
 
@@ -109,7 +109,7 @@ The hello-world template deploys two [canisters](../concepts/canisters.md) that 
 
 1. **Backend canister**: Your Motoko code compiled to WebAssembly. It exposes a `greet` function through a [Candid](../references/candid-spec.md) interface, making it callable from any client.
 
-2. **Frontend canister**: An asset canister that serves your React app. It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
+2. **Frontend canister**: Serves your React app as a [static site](../guides/frontends/static-site/overview.md). It automatically provides the backend's canister ID to your frontend code via a cookie, so the two canisters can communicate without manual configuration.
 
 The `icp.yaml` file ties everything together:
 
@@ -127,6 +127,6 @@ Each canister name maps to a directory containing its own `canister.yaml` with b
 - [Choose your path](choose-your-path.md): pick a development path based on what you want to build
 - [Concepts: Canisters](../concepts/canisters.md): learn what canisters are and how they work
 - [AI coding agents](../guides/ai-coding-agents.md): use ICP skills to build on the Internet Computer with AI
-- [icp-cli documentation](https://cli.internetcomputer.org/1.3/): full CLI reference and guides
+- [icp-cli documentation](https://cli.internetcomputer.org/1.5/): full CLI reference and guides
 
 <!-- Upstream: informed by dfinity/icp-cli docs/quickstart.md, docs/tutorial.md -->

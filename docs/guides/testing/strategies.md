@@ -281,7 +281,7 @@ For full crate documentation, see [canbench-rs on docs.rs](https://docs.rs/canbe
 
 This section covers the "Deployed testing" tier of the testing pyramid: running tests against a full local network
 rather than an in-process PocketIC replica. icp-cli supports Docker-based test networks for this purpose, which is
-useful when you need to test deployment configuration, CLI workflows, asset canister behavior, or anything that
+useful when you need to test deployment configuration, CLI workflows, frontend canister behavior, or anything that
 requires real network I/O.
 
 ### Configure a containerized network
@@ -330,7 +330,7 @@ icp network status docker-test --json
 
 For the full containerized network configuration reference: including environment variables, volume mounts, and
 custom images: see the
-[icp-cli containerized networks guide](https://cli.internetcomputer.org/1.3/guides/containerized-networks).
+[icp-cli containerized networks guide](https://cli.internetcomputer.org/1.5/guides/containerized-networks).
 
 ## Choosing the right approach
 
@@ -340,7 +340,7 @@ custom images: see the
 | Upgrade hooks, stable memory encoding | PocketIC integration tests |
 | Inter-canister calls | Unit tests (mocked) + PocketIC for end-to-end |
 | Performance regression detection | `canbench` benchmarks in CI |
-| Deployment config, asset canister | Containerized network tests |
+| Deployment config, frontend canister | Containerized network tests |
 | Candid interface compatibility | `candid_parser::utils::service_equal` in unit tests |
 
 ## Next steps

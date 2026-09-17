@@ -1006,6 +1006,169 @@ type IdentityAuthnInfo = record {
     recovery_authn_methods : vec AuthnMethod;
 };
 
+// Which browser a sign-in came from, as a token rather than a name to show. Products
+// get renamed — "Chrome OS" became "ChromeOS", "Mac OS X" became "macOS" — so the name
+// the user reads is derived in the frontend, where a rename reaches every stored record
+// at once. "Brand" is what the client hints call this, and BrowserInfo below is the
+// entry it describes.
+type BrowserBrand = variant {
+    Chrome; Safari; Firefox; Edge; Opera; SamsungInternet;
+    // A browser this list does not name, shown as the client resolved it. Worth seeing
+    // rather than hiding behind a generic label. Named variants are the six that hold
+    // 97% of the web between them, because a variant is what earns an icon.
+    Other : text;
+};
+
+type OperatingSystem = variant {
+    Macos; Ios; Ipados; Windows; Android; ChromeOs; Linux; Other : text;
+};
+
+// Reported where the client can state it and inferred where it cannot, so unknown is a
+// real answer: the browsers exposing no client hints are the ones this is least sure of.
+type FormFactor = variant { Desktop; Mobile; Tablet; Unknown };
+
+// What a browser reported about itself when it registered. Self-reported, so it is
+// something the user reads to recognise their own browser rather than evidence about
+// where a session came from. The canister stores these and never interprets them.
+type BrowserDescription = record {
+    brand : BrowserBrand;
+    os : OperatingSystem;
+    form_factor : FormFactor;
+    // The hardware, where the client can name it — Android is the only place that does.
+    model : opt text;
+};
+
+type BrowserInfo = record {
+    id : nat32;
+    // Fixed at registration. A sign-in reporting something else registers its own entry,
+    // so this describes a registration rather than the last sign-in.
+    description : BrowserDescription;
+    created_at : Timestamp;
+    // Advanced by a sign-in from this browser and by every session refresh it drives.
+    last_used : Timestamp;
+    // Sessions this browser holds. Zero means it is signed in to nothing.
+    session_count : nat32;
+};
+
+type PrepareAccountSessionRequest = record {
+    identity_number : UserNumber;
+    origin : FrontendHostname;
+    account_number : opt AccountNumber;
+    // The II frontend's own public key.
+    session_key : SessionKey;
+    // What this browser is, for the user's session list.
+    browser_description : BrowserDescription;
+    // The browser's own public key, DER-encoded, as the registry currently holds it. A
+    // key this anchor has not seen registers a browser under it.
+    current_browser_key : PublicKey;
+    // What the browser rotates to once this sign-in succeeds. Must differ from
+    // current_browser_key: a browser that never rotates keeps a leaked key useful.
+    next_browser_key : PublicKey;
+    // Signature over session_key and next_browser_key, verified with current_browser_key.
+    current_browser_key_signature : blob;
+    // Signature by next_browser_key over session_key and current_browser_key, proving the
+    // browser holds the key it is announcing.
+    next_browser_key_signature : blob;
+    // The consented access level, fixed for the session's life.
+    permissions : opt Permissions;
+    // Clamped to the session maximum.
+    valid_for : opt nat64;
+    // How long the session may go unminted before it is over, clamped to between
+    // 10 minutes and the session's own granted length. Absent leaves the
+    // canister's own default.
+    max_idle : opt nat64;
+};
+
+type PrepareAccountSessionResponse = record {
+    user_key : PublicKey;
+    // The session's valid_till.
+    expiration : Timestamp;
+    // Names the session this ceremony created, and is what get_account_session is given
+    // to collect the delegation signed for it. Not a credential: it names a session, it
+    // does not authorise one.
+    session_id : nat64;
+    // Which browser this sign-in was attributed to, so the settings list can mark the one
+    // the user is looking at, and so the browser knows which registration its key now
+    // belongs to. Not a credential: a caller never presents it.
+    browser_id : nat32;
+    // The principal apps see for this account, so the frontend can tell its own
+    // sessions apart without minting a delegation to learn it.
+    account_principal : principal;
+};
+
+type GetAccountSessionRequest = record {
+    identity_number : UserNumber;
+    origin : FrontendHostname;
+    account_number : opt AccountNumber;
+    session_key : SessionKey;
+    expiration : Timestamp;
+    // The session prepare_account_session created.
+    session_id : nat64;
+};
+
+type GetAccountSessionResponse = record {
+    signed_delegation : SignedDelegation;
+};
+
+type AccountSessionError = variant {
+    Unauthorized : principal;
+    NoSuchAccount;
+    NoSuchSession;
+    // The session is there, but no delegation was signed for the session_key and
+    // expiration asked for. Ask again with the ones prepare_account_session returned;
+    // signing in afresh is not the remedy.
+    NoSuchDelegation;
+    // The browser's key is unusable, or its signature does not verify against it.
+    InvalidBrowserKey;
+    // The browser presented a key it has already rotated away from, which happens when it
+    // never learned that its last sign-in succeeded. It holds the successor that does
+    // resolve, so the answer is to promote that one and present it.
+    StaleBrowserKey;
+    InternalCanisterError : text;
+};
+
+type AppPrepareDelegationRequest = record {
+    // The key the app delegation delegates to. Nothing about the account is named:
+    // the caller's own session chain is what identifies it.
+    session_key : SessionKey;
+};
+
+type AppPrepareDelegationResponse = record {
+    user_key : PublicKey;
+    expiration : Timestamp;
+};
+
+type AppGetDelegationRequest = record {
+    session_key : SessionKey;
+    // Must match the prepared value.
+    expiration : Timestamp;
+};
+
+
+type RevokeBrowserSessionsRequest = record {
+    identity_number : UserNumber;
+    browser_id : nat32;
+};
+
+type SessionRevokeError = variant {
+    Unauthorized : principal;
+    // Raised before the sweep writes anything, so a browser is never left signed out of
+    // some of its applications and not others.
+    InternalCanisterError : text;
+};
+
+type AppSessionError = variant {
+    // No usable session behind this caller: revoked, expired, pruned, or never one at
+    // all. One outcome, because which of those it is depends on whether a prune has run
+    // yet, and because an app can act on none of them differently.
+    NoSuchSession;
+    // The session is live, but nothing was signed for the session_key and expiration
+    // asked for — so the expiration is one app_prepare_delegation never returned. Prepare
+    // again and use what comes back; signing in afresh is not the remedy.
+    NoSuchDelegation;
+    InternalCanisterError : text;
+};
+
 type IdentityInfo = record {
     authn_methods : vec AuthnMethodData;
     authn_method_registration : opt AuthnMethodRegistrationInfo;
@@ -1026,6 +1189,10 @@ type IdentityInfo = record {
     // shows a "limit reached" notice in the wizard when adding
     // beyond the cap.
     verified_emails : opt vec VerifiedEmail;
+    // Browsers this anchor has signed in from (absent when it has never
+    // created a session), so the Settings UI can offer "sign this browser
+    // out" without a separate call.
+    browsers : opt vec BrowserInfo;
     // The anchor's synced trusted-MCP-server config (absent when the
     // anchor never wrote one). Carried here rather than read from the
     // mcp_get_config query so the Settings UI has a certified value to
@@ -1855,6 +2022,31 @@ service : (opt InternetIdentityInit) -> {
         account_number : opt AccountNumber, // Null is unreserved default account
         update : AccountUpdate
     ) ->  (variant { Ok : AccountInfo; Err: UpdateAccountError });
+
+    // Creates or reuses a revocable session at one account and signs its identity to
+    // the II frontend's own key. Called only by the II frontend, which ships with the
+    // canister; requires an anchor access method, so a session can neither spawn nor
+    // extend itself.
+    prepare_account_session : (PrepareAccountSessionRequest) -> (variant { Ok : PrepareAccountSessionResponse; Err : AccountSessionError });
+    get_account_session : (GetAccountSessionRequest) -> (variant { Ok : GetAccountSessionResponse; Err : AccountSessionError }) query;
+
+    // Mints a short-lived app delegation from a live session. Called by app frontends
+    // with the session chain, so revoking the session ends access within one delegation
+    // lifetime.
+    app_prepare_delegation : (AppPrepareDelegationRequest) -> (variant { Ok : AppPrepareDelegationResponse; Err : AppSessionError });
+    app_get_delegation : (AppGetDelegationRequest) -> (variant { Ok : SignedDelegation; Err : AppSessionError }) query;
+
+    // Signs the calling session out. A session that is already gone is success, so a
+    // client that retries, or that signs out twice, does not have to reason about whether
+    // its session was still there. An app can revoke only its own session.
+    app_revoke_session : () -> (variant { Ok; Err : AppSessionError });
+    // Whether the calling session is still usable. For the II frontend's silent
+    // re-auth path, which must decide whether it can answer without rendering
+    // anything. Advisory: a query reply is not certified, and every mint enforces
+    // the same conditions regardless of the answer here.
+    check_session : () -> (bool) query;
+
+    revoke_browser_sessions : (RevokeBrowserSessionsRequest) -> (variant { Ok; Err : SessionRevokeError });
 
     prepare_account_delegation : (
         anchor_number : UserNumber,

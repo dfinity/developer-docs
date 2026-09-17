@@ -8,12 +8,37 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.68.0 (2026-09-14) {$0_68_0}
+### 0.69.0 (2026-09-17) {$0_69_0}
 * New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
   given subnet: the current block height, the number of canisters, the total canister
-  state size, the total cycles consumed, and the total number of processed transactions.
-  All fields except the block height were previously only readable by external users via
-  the certified state tree path `/subnet/<subnet_id>/metrics`. The API is EXPERIMENTAL.
+  state size, the total cycles consumed, the total number of processed transactions, and
+  the total number of instructions accounted for across all rounds. The four aggregates
+  were previously only readable by external users via the certified state tree path
+  `/subnet/<subnet_id>/metrics`; the block height and the instruction total have no path
+  there. The API is EXPERIMENTAL.
+* The instruction total, `million_round_instructions_total`, is reported in units of one
+  million and rounded up. Besides the executed Wasm instructions it covers the fixed
+  per-execution and per-canister overheads charged by the scheduler and the charges for
+  work performed outside of Wasm execution, so it is not a Wasm instruction meter, and its
+  counter starts when a subnet's replica begins tracking it rather than at subnet creation.
+
+### 0.68.0 (2026-09-14) {$0_68_0}
+* New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
+  of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus
+  on a single response.
+* New optional `pricing_version` field of `http_request` selecting the pricing mechanism for the outcall:
+  `1` ("legacy"), which prices the call by `max_response_bytes`, or `2` ("pay-as-you-go"), which prices
+  the resources the call actually consumes and makes the attached cycles bound what it may consume.
+  The default is `1` and an unrecognized value is treated as `1`. Pricing version `1` is deprecated:
+  version `2` is to become the default, after which version `1` will be removed and the field will no
+  longer have an effect. Flexible outcalls have no `pricing_version` and are always priced with version `2`.
+* New canister System API `ic0.cost_http_request_v2` returning the cycles to attach to an HTTP outcall
+  priced with pricing version `2`, for a fully replicated, non-replicated, or flexible outcall.
+  The System API `ic0.cost_http_request` is deprecated along with the pricing version it prices.
+* New canister System API `ic0.subnet_self_node_count` returning the number of nodes on the subnet
+  the canister is running on.
+* The non-replicated mode of `http_request`, selected by the `is_replicated` field, is no longer
+  considered experimental.
 
 ### 0.67.0 (2026-08-31) {$0_67_0}
 * New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`

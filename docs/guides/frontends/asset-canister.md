@@ -1,11 +1,17 @@
 ---
-title: "Asset canister"
-description: "Deploy and serve frontend assets from an ICP canister with SPA routing, canister discovery, programmatic uploads, and security configuration"
+title: "Asset canister (legacy)"
+description: "Maintain a frontend on the legacy @dfinity/asset-canister recipe, and migrate it to a static site"
 sidebar:
-  order: 1
+  order: 6
 ---
 
-The asset [canister](../../concepts/canisters.md) hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
+The asset canister hosts static files (HTML, CSS, JavaScript, images) directly on the Internet Computer. It serves web frontends over HTTP, with responses certified by the [subnet](../../concepts/network-overview.md#subnets) so that [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) and browsers can verify that content was served tamperproof by the network rather than a centralized server.
+
+:::caution[This is the legacy path, with one exception]
+New projects should [host a static site](static-site/overview.md) instead. That is a different canister with a different configuration format, and it is what the project templates ship. This page is for projects already running the `@dfinity/asset-canister` recipe; to move one over, see [Migrate to a static site](#migrate-to-a-static-site).
+
+**The exception is a frontend governed by an SNS.** Proposal-gated asset updates need this canister; see [When to stay on this canister](#when-to-stay-on-this-canister).
+:::
 
 This guide covers configuring the asset canister recipe in `icp.yaml`, deploying frontends, configuring SPA routing with `.ic-assets.json5`, connecting frontends to backend canisters, and uploading assets programmatically.
 
@@ -199,7 +205,9 @@ See the [frontend-environment-variables example](https://github.com/dfinity/icp-
 
 ## Programmatic uploads with @icp-sdk/canisters
 
-For uploading files from code rather than through `icp deploy`, use the `AssetManager` from `@icp-sdk/canisters`:
+Uploading assets from application code is not a recommended pattern, and it exists only on this canister: [certified-assets](https://github.com/dfinity/certified-assets) has no per-asset write endpoint and will not grow one, because finalizing a sync recomputes the state hash that makes a build provable. An app that stores user-generated content should keep it in a canister of its own and leave its frontend a published build.
+
+It is documented here for projects already doing it. The `AssetManager` from `@icp-sdk/canisters` uploads files from code rather than through `icp deploy`:
 
 ```javascript
 import { AssetManager } from "@icp-sdk/canisters/assets";
@@ -318,12 +326,64 @@ icp canister call frontend http_request '(record {
 
 **Content types are wrong for programmatic uploads.** The asset canister infers content types from file extensions for files uploaded via `icp deploy`. When uploading programmatically with `AssetManager`, pass the `contentType` option explicitly.
 
+## When to stay on this canister
+
+One case still requires the asset canister: **a frontend whose updates are governed by an SNS.** That workflow depends on staging a batch and having the governance canister commit it after a vote (`propose_commit_batch`, an `ExecuteGenericNervousSystemFunction` proposal, then `commit_proposed_batch`), and on the `Prepare`/`Commit` permission split that keeps developers from committing directly.
+
+[certified-assets](https://github.com/dfinity/certified-assets) has no equivalent. Its interface has no proposal-gated commit and no staged-batch evidence to vote on, and its authorization model is controllers plus a flat set of authorized syncers, all of whom can sync at will. An SNS could hold the controller, but there would be nothing for token holders to approve. So if community-governed frontend updates are a requirement, keep the frontend here for now and see [Asset canister updates](../governance/managing.md#asset-canister-updates).
+
+Everything else should migrate.
+
+## Migrate to a static site
+
+[Hosting a static site](static-site/overview.md) means deploying a different canister, [certified-assets](https://github.com/dfinity/certified-assets), with its own configuration format. The `@dfinity/static-site` recipe replaces `@dfinity/asset-canister` in your configuration. Migrating buys automatic clean URLs, [access protection](static-site/access-protection.md) for private and preview sites, and a [reproducible state hash](static-site/verifying-contents.md) that lets anyone prove the canister serves exactly a known build.
+
+### You cannot upgrade in place
+
+The two canisters have unrelated Candid interfaces, so repointing the recipe and running a plain `icp deploy` stops at the pre-install compatibility check with `Candid interface compatibility check failed`. Nothing is installed and the running canister is untouched. Two ways forward:
+
+- **A new canister.** Add a new entry with the `@dfinity/static-site` recipe and deploy it. You get a new canister ID, so any custom domain registration and hardcoded ID has to be updated.
+- **A reinstall, keeping the canister ID.** Point the existing canister's recipe at `@dfinity/static-site` and run `icp deploy --mode reinstall frontend -e ic`. Reinstall skips the Candid check, replaces the wasm, and discards all canister state, after which the sync plugin uploads the whole directory again. The canister ID and its URL survive.
+
+Do not force the upgrade through with `--yes`. That skips the compatibility check and installs onto stable memory the certified-assets canister cannot read, which leaves a live canister serving nothing.
+
+### Configuration mapping
+
+Delete `.ic-assets.json5` and split its concerns into `_headers` and `_redirects` at the root of your build directory:
+
+| `.ic-assets.json5` | certified-assets |
+|---|---|
+| `enable_aliasing: true` (SPA fallback) | `/*  /index.html  200` in [`_redirects`](static-site/redirects.md) |
+| `headers: { ... }` | a block in [`_headers`](static-site/headers.md), matched against the file path rather than the visitor's URL |
+| `security_policy: "standard"` | no default: write the security headers yourself |
+| `allow_raw_access: false` | no equivalent, [by design](static-site/how-it-works.md#the-raw-hosts-skip-verification) |
+| `{ match: ".well-known", ignore: false }` | not needed, `.well-known/` is uploaded automatically |
+| `**` and `?` glob patterns | a single `*` wildcard, trailing `/*` for a subtree |
+
+Also drop any `configuration.version` field: with `@dfinity/static-site` the recipe version is the canister version.
+
+### Uploads and permissions change shape
+
+`AssetManager` from `@icp-sdk/canisters/assets` targets this canister only and stops working. certified-assets has no per-file write endpoint: uploads happen in one exclusive sync session, and the final call recomputes the site's state hash, which is what makes a build provable. Runtime writes would make that hash drift from any published build, so the two goals are incompatible rather than merely unimplemented.
+
+If your app stores user-generated content, keep serving the frontend as a static site and store uploads in a separate canister that the frontend calls. Mixing a mutable file store into your deploy target means every user upload changes what your site is.
+
+The three upload roles (Prepare, Commit, ManagePermissions) collapse to controllers plus a flat set of authorized syncers, so re-grant any CI principal after migrating:
+
+```bash
+icp canister call frontend authorize '(principal "<principal-id>")' -e ic
+```
+
+### What stays the same
+
+The `ic_env` cookie is served on HTML responses by both canisters, so frontend code reading canister IDs or the root key needs no change. The `build`, `presync`, and `metadata` recipe fields behave the same way, and the mainnet URL is still `https://<canister-id>.icp.net`.
+
 ## Next steps
 
-- [Framework integration](frameworks.md): set up React, Svelte, or Vue with the asset canister
+- [Hosting a static site](static-site/overview.md): the recommended path for new frontends
+- [Framework integration](frameworks.md): set up React, Svelte, or Vue with your frontend canister
 - [Custom domains](custom-domains.md): serve your frontend from your own domain
-- [Response certification](certification.md): verify that asset canister responses are authentic
+- [Response certification](certification.md): verify that responses are authentic
 - [Authentication with Internet Identity](../authentication/internet-identity.md): add user login to your frontend
-- [photo-storage example](https://github.com/dfinity/examples/tree/master/hosting/photo-storage): programmatic uploads with AssetManager
 
-<!-- Upstream: informed by dfinity/icskills — skills/asset-canister/SKILL.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->
+<!-- Upstream: informed by dfinity/icskills — skills/static-site/SKILL.md, skills/static-site/references/migrating-from-asset-canister.md, dfinity/portal — docs/building-apps/frontends/using-an-asset-canister.mdx, dfinity/portal — docs/building-apps/frontends/uploading-serving-assets.mdx -->

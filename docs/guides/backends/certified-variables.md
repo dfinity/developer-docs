@@ -353,14 +353,14 @@ icp canister call backend get '("key")'
 
 ## HTTP asset certification
 
-For canisters that serve HTTP responses directly through the HTTP Gateway, responses must be certified so the boundary node can verify them. This is a separate protocol built on top of certified data, handled by the `ic-http-certification` crate. For frontend assets (HTML, CSS, JS), use the asset canister, which handles HTTP certification automatically.
+For canisters that serve HTTP responses directly through the HTTP Gateway, responses must be certified so the boundary node can verify them. This is a separate protocol built on top of certified data, handled by the `ic-http-certification` crate. For frontend assets (HTML, CSS, JS), [host a static site](../frontends/static-site/overview.md) instead, which handles HTTP certification automatically.
 
-See [Frontend certification](../../guides/frontends/certification.md) for the asset canister and HTTP certification workflow.
+See [Frontend certification](../../guides/frontends/certification.md) for how the frontend canisters certify responses, and what a custom HTTP canister has to do itself.
 
 ## Next steps
 
 - [Security concepts](../../concepts/security.md): why query integrity matters and when to use certified variables vs replicated queries
-- [Frontend certification](../../guides/frontends/certification.md): HTTP asset certification for the asset canister
+- [Frontend certification](../../guides/frontends/certification.md): HTTP asset certification for a frontend canister
 - [IC Interface Specification: Certified Data](../../references/ic-interface-spec/canister-interface.md#system-api-certified-data): the certified data system API
 - [IC Interface Specification: Certification](../../references/ic-interface-spec/certification.md): certificate format and delegation
 

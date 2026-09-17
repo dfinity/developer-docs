@@ -38,5 +38,5 @@
 # appear in docs before they ship to users.
 # -------------------------------------------------------
 
-motoko                v1.15.1                                                     1f6fc15
-internetidentity      release-2026-08-28                                         583ad166
+motoko                v1.16.0                                                     a2d0b69
+internetidentity      release-2026-09-11                                         3cd91d62

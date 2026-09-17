@@ -1,10 +1,16 @@
 {
   "$comment": [
-    "Every upstream this repo tracks, in three groups.",
+    "Every upstream this repo tracks, in four groups.",
     "",
     "`watched` are repos where a release can silently invalidate a lot of published",
     "content, so they get a pinned ref and a weekly issue when they move. Verify",
     "claims against the pinned ref, not against main, so a review is reproducible.",
+    "",
+    "`synced` are repos whose own pages are copied into docs/ by a sync script. The",
+    "pin is recorded here because there is no gitlink to hold it: the build resolves",
+    "no file from them, so they are not submodules. Their sync workflow does its own",
+    "release check and opens the bump PR, the way sync-motoko.yml and sync-ii-spec.yml",
+    "do, so check-upstream-releases.mjs ignores this group.",
     "",
     "`vendored` are submodules whose pin has no sync workflow of its own. Their pin",
     "is the gitlink, so git stays the single source of truth. `motoko` and",
@@ -39,7 +45,30 @@
     "",
     "Fields (vendored): path, repo, track 'branch', branch, affects, and an optional",
     "pathFilter. 'snippets' reports only when the range touched a file quoted by a",
-    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent."
+    "`snippet=` in docs/, so an unrelated commit on an active repo stays silent.",
+    "",
+    "Fields (synced): repo, pinned, source, target, script, and affects."
+  ],
+  "synced": [
+    {
+      "repo": "dfinity/certified-assets",
+      "pinned": "65c0f32",
+      "source": "docs/",
+      "target": "docs/guides/frontends/static-site/",
+      "script": "scripts/sync-static-site.mjs",
+      "affects": "The synced pages are regenerated wholesale, so review the diff rather than the pages. Behavior changes also reach our own Frontends pages: certification.md describes what this canister certifies, and asset-canister.md contrasts the two recipes. The recipe version readers type is tracked separately as the `static-site` entry under `watched`, and the two move in lockstep.",
+      "$comment": [
+        "The `pinned` field above is the ref of record; this note is the policy, not",
+        "a description of it. This entry may pin a commit rather than a release tag:",
+        ".sources/VERSIONS forbids that for submodules so docs cannot describe",
+        "unshipped behavior, and docs-only commits are not that case. Check what the",
+        "range contains before pinning past a tag, and prefer a tag whenever one",
+        "carries the pages. The sync workflow moves the pin onto a tag at the next",
+        "release even when no page changed, so a commit pin is never permanent.",
+        "History: the first sync used d9cb7df, because certified-assets#124 landed",
+        "the frontmatter contract this sync requires after the v0.3.3 tag."
+      ]
+    }
   ],
   "vendored": [
     {
@@ -55,7 +84,7 @@
   "watched": [
     {
       "repo": "dfinity/icp-cli",
-      "pinned": "v1.3.0",
+      "pinned": "v1.5.0",
       "track": "release",
       "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
       "verify": "docs/reference/cli.md",
@@ -73,11 +102,20 @@
     },
     {
       "repo": "dfinity/cdk-rs",
-      "pinned": "0.20.2",
+      "pinned": "0.20.3",
       "track": "crate",
       "crate": "ic-cdk",
       "affects": "`ic-cdk` APIs in Rust code blocks. The repo stopped tagging releases (its newest bare-semver tag is two minors behind the published crate), so the crate version on crates.io is the release identity. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk/CHANGELOG.md, then grep docs/ for the symbols they name. `ic-cdk-timers` and `ic-cdk-executor` version separately; check whether they moved too.",
       "reference": "https://docs.rs/ic-cdk/latest/ic_cdk/"
+    },
+    {
+      "repo": "dfinity/cdk-rs",
+      "name": "ic-cdk-management-canister",
+      "pinned": "0.2.0",
+      "track": "crate",
+      "crate": "ic-cdk-management-canister",
+      "affects": "The HTTPS outcall APIs in guides/backends/https-outcalls.mdx, concepts/https-outcalls.md and references/cycle-costs.md, and the Rust snippets in the send_http_get, send_http_post and daily_planner examples. This crate versions independently of `ic-cdk` in the same repo, so it gets its own entry: 0.2.0 replaced the free `http_request` with the `HttpRequest` and `FlexibleHttpRequest` builders and moved pricing to version 2. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk-management-canister/CHANGELOG.md.",
+      "reference": "https://docs.rs/ic-cdk-management-canister/latest/ic_cdk_management_canister/"
     },
     {
       "repo": "dfinity/icp-js-core",
@@ -111,7 +149,7 @@
       "pinned": "static-site-v0.3.3",
       "track": "release",
       "tagPattern": "^static-site-v\\d+\\.\\d+\\.\\d+$",
-      "affects": "Not yet documented (dfinity/certified-assets#124). This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
+      "affects": "The canister's own pages are synced from dfinity/certified-assets into docs/guides/frontends/static-site/ and follow that repo's releases, not this one, so a recipe release mainly moves the version readers pin: check the `@dfinity/static-site@` examples in guides/frontends/, getting-started/ and references/application-canisters.md. This repo's own icp.yaml deploys with it, so a release also affects the docs site itself. Each recipe in this repo tags and releases on its own prefix, so it gets its own entry: a single pattern across prefixes would compare `rust-` against `static-site-` textually and only ever surface one of them.",
       "reference": "https://github.com/dfinity/icp-cli-recipes/releases"
     },
     {
