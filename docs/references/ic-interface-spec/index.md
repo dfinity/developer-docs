@@ -522,6 +522,8 @@ The state tree contains information about the topology of the Internet Computer.
      - `consumed_cycles_total` (`map`): The total number of cycles consumed by all current and deleted canisters on this subnet. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
      - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet since this subnet was created.
 
+     The management canister method [`subnet_metrics`](./management-canister.md#ic-subnet_metrics) returns the same four metrics, plus two fields that have no path in the state tree, as an ordinary inter-canister call. A canister that does not need a certificate to verify them can read them that way instead.
+
 
 :::note
 

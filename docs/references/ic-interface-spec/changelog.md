@@ -8,6 +8,20 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.69.0 (2026-09-17) {$0_69_0}
+* New management canister method `subnet_metrics` returning a subnet's aggregate metrics
+  (`block_height`, `num_canisters`, `canister_state_bytes`, `consumed_cycles_total`,
+  `update_transactions_total`, and `million_round_instructions_total`) as an ordinary inter-canister
+  call, so that a canister can read them without a `read_state` call and a certificate to verify.
+  The method can only be called by canisters and is routed by the `subnet_id` in its argument, so a
+  canister can also read the metrics of a subnet other than its own. It is considered EXPERIMENTAL and
+  may evolve in a non-backward-compatible way.
+* The field `million_round_instructions_total` of `subnet_metrics` reports the total number of
+  instructions the subnet accounted for across the execution phases of all rounds, in units of one
+  million and rounded up. Unlike the four aggregates of `subnet_metrics` it has no counterpart under
+  `/subnet/<subnet_id>/metrics` in the certified state tree, and its counter starts at zero when a
+  subnet's replica begins tracking it rather than at subnet creation.
+
 ### 0.68.0 (2026-09-14) {$0_68_0}
 * New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
   of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus

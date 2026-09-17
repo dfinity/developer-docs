@@ -493,6 +493,19 @@ type node_metrics_history_result = vec record {
     node_metrics : vec node_metrics;
 };
 
+type subnet_metrics_args = record {
+    subnet_id : principal;
+};
+
+type subnet_metrics_result = record {
+    block_height : nat;
+    num_canisters : nat;
+    canister_state_bytes : nat;
+    consumed_cycles_total : nat;
+    update_transactions_total : nat;
+    million_round_instructions_total : nat;
+};
+
 type subnet_info_args = record {
     subnet_id : principal;
 };
@@ -762,6 +775,7 @@ service ic : {
 
     // metrics interface
     node_metrics_history : (node_metrics_history_args) -> (node_metrics_history_result);
+    subnet_metrics : (subnet_metrics_args) -> (subnet_metrics_result);
 
     // subnet info
     subnet_info : (subnet_info_args) -> (subnet_info_result);

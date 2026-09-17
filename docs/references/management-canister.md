@@ -589,6 +589,25 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
   - `num_blocks_proposed_total` (`nat64`)
   - `num_block_failures_total` (`nat64`)
 
+### `subnet_metrics`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns a subnet's aggregate metrics in a single inter-canister call, without the `read_state` call and certificate verification that reading them from the state tree requires. The call is routed by `subnet_id`, so a canister can also read another subnet's metrics. No cycles are charged for the call, and serving it does not add to `million_round_instructions_total`.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`)
+- **Returns:**
+  - `block_height` (`nat`): the height of the block in whose execution the call is processed
+  - `num_canisters` (`nat`): the number of canisters on the subnet
+  - `canister_state_bytes` (`nat`): the total size in bytes of the state taken by those canisters
+  - `consumed_cycles_total` (`nat`): the cycles consumed by all current and deleted canisters on the subnet
+  - `update_transactions_total` (`nat`): the messages executed in replicated mode on the subnet
+  - `million_round_instructions_total` (`nat`): the instructions the subnet accounted for across the execution phases of all rounds, in units of one million and rounded up
+
+Only `block_height` is current. The other fields are written at the end of a round, so they are as of the end of the previous round, and `canister_state_bytes` is only recomputed every 10 rounds. `million_round_instructions_total` counts the executed Wasm instructions plus the scheduler's per-execution and per-canister overheads and charges for work outside Wasm execution (compilation, chunk assembly, snapshots), so it is not a Wasm instruction meter, and its counter starts when a subnet's replica begins tracking it rather than at subnet creation. The four aggregates are the same values the certified state tree serves under `/subnet/<subnet_id>/metrics`; `block_height` and `million_round_instructions_total` have no path there, so they cannot be verified against a certificate.
+
 ### `subnet_info`
 
 Returns metadata about a subnet.

@@ -849,6 +849,38 @@ A single metric entry is a record with the following fields:
 
 - `num_block_failures_total` (`nat64`): the number of failed block proposals by this node.
 
+### IC method `subnet_metrics` {#ic-subnet_metrics}
+
+This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+
+:::note
+
+The subnet metrics management canister API is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
+
+:::
+
+Given a subnet ID as input, this method returns aggregate metrics for that subnet. The call is routed by the `subnet_id` in its argument, so a canister can read the metrics of a subnet other than its own. The subnet executing the call answers with its own metrics and rejects a `subnet_id` that does not match it.
+
+The fields returned are:
+
+- `block_height` (`nat`): the height of the block in whose execution this call is processed. It is monotonically non-decreasing for a given subnet; the heights of different subnets are unrelated.
+
+- `num_canisters` (`nat`): the number of canisters on the subnet.
+
+- `canister_state_bytes` (`nat`): the total size in bytes of the state taken by the canisters on the subnet.
+
+- `consumed_cycles_total` (`nat`): the total number of cycles consumed by all current and deleted canisters on the subnet.
+
+- `update_transactions_total` (`nat`): the total number of transactions processed on the subnet, i.e., the total number of messages executed in replicated mode.
+
+- `million_round_instructions_total` (`nat`): the total number of instructions the subnet accounted for across the execution phases of all rounds, counted in units of one million and rounded up (a value of `42` means 42 million instructions). Besides the executed Wasm instructions it also covers the fixed per-execution and per-canister overheads charged by the scheduler, and charges for work performed outside of Wasm execution (such as compilation, chunk assembly, and snapshot operations), so it is not a Wasm instruction meter.
+
+Only `block_height` is current as of the block in which the call is executed. The other five fields are read from the subnet's aggregated metrics, which the replica updates at the *end* of a round, so they are as of the end of the previous round. The field `canister_state_bytes` is staler still: it is only recomputed every 10 rounds (summing it over every canister is expensive and it does not need to be exact), so it can be up to ten rounds stale and reads as `0` for the first rounds after the subnet is created.
+
+The four aggregates `num_canisters`, `canister_state_bytes`, `consumed_cycles_total`, and `update_transactions_total` are the same values, with the same staleness, that `read_state` serves under the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). The remaining two fields, `block_height` and `million_round_instructions_total`, have no path in the state tree, so unlike the aggregates their values cannot be verified against a certificate. The counter behind `million_round_instructions_total` also starts at zero when a subnet's replica begins tracking it, so on a subnet that predates the field it does not cover the rounds executed before that.
+
+No cycles are charged for the call, and serving it does not contribute to `million_round_instructions_total`.
+
 ### IC method `subnet_info` {#ic-subnet_info}
 
 This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
