@@ -498,7 +498,7 @@ type subnet_metrics_args = record {
 };
 
 // Only `block_height` describes the block in whose execution the call is
-// processed. The other four fields are aggregates refreshed at block
+// processed. The other five fields are aggregates refreshed at block
 // boundaries, so they describe the subnet as of an earlier block, and they are
 // not all refreshed at the same rate; see the individual fields.
 type subnet_metrics_result = record {
@@ -523,6 +523,15 @@ type subnet_metrics_result = record {
     // number of messages executed in the replicated mode. Monotonically
     // non-decreasing.
     update_transactions_total : nat;
+    // Total instructions the subnet accounted for across the execution phases
+    // of all rounds, in units of one million and rounded up: a value of 42
+    // means 42 million instructions. Besides the executed Wasm instructions it
+    // covers the fixed per-execution and per-canister overheads charged by the
+    // scheduler and the charges for work performed outside of Wasm execution,
+    // so it is not a Wasm instruction meter. Monotonically non-decreasing.
+    // Unlike the four fields above, it has no counterpart under
+    // `/subnet/<subnet_id>/metrics` in the certified state tree.
+    million_round_instructions_total : nat;
 };
 
 type subnet_info_args = record {

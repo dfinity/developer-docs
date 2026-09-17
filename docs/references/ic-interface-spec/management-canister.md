@@ -861,11 +861,11 @@ The subnet metrics management canister API is considered EXPERIMENTAL. Canister 
 
 Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance.
 
-All fields except `block_height` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree.
+The fields `num_canisters`, `canister_state_bytes`, `consumed_cycles_total`, and `update_transactions_total` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree. The fields `block_height` and `million_round_instructions_total` have no path in the state tree and are only available through this method.
 
 In the following, *the subnet* refers to the subnet identified by the `subnet_id` argument.
 
-Only `block_height` describes the block in whose execution the call is processed. The other four fields are aggregates that the subnet refreshes at block boundaries, so they describe the subnet as of an earlier block. They are not all refreshed at the same rate, so they need not be mutually consistent, and none of them should be read as a snapshot taken at `block_height`.
+Only `block_height` describes the block in whose execution the call is processed. The other five fields are aggregates that the subnet refreshes at block boundaries, so they describe the subnet as of an earlier block. They are not all refreshed at the same rate, so they need not be mutually consistent, and none of them should be read as a snapshot taken at `block_height`.
 
 The fields returned are:
 
@@ -883,7 +883,9 @@ The fields returned are:
 
 - `update_transactions_total` (`nat`): the total number of transactions processed on the subnet, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing for a given subnet.
 
-`consumed_cycles_total` and `update_transactions_total` cover the whole lifetime of the subnet, or the period since the respective metric was introduced for subnets that predate it.
+- `million_round_instructions_total` (`nat`): the total number of instructions the subnet accounted for across the execution phases of all rounds, in units of one million and rounded up, so a value of `42` means 42 million instructions. Besides the executed Wasm instructions this also covers the fixed per-execution and per-canister overheads charged by the scheduler, and the charges for work performed outside of Wasm execution, such as compilation, chunk assembly, and snapshot operations. It is therefore not a Wasm instruction meter. The value is monotonically non-decreasing for a given subnet.
+
+`consumed_cycles_total`, `update_transactions_total`, and `million_round_instructions_total` cover the whole lifetime of the subnet, or the period since the respective metric was introduced for subnets that predate it.
 
 ### IC method `subnet_info` {#ic-subnet_info}
 
