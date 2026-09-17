@@ -161,13 +161,18 @@ delivery_fee = n * (10 * n + 600) * (response_bytes (+ 181 * K   flexible only))
                  (+ (2_000 * n + 100_000) * n * (K - min_responses)   flexible only)
 ```
 
-`usage_fee` is charged for each node that performs the outcall: all `n` of them for a fully replicated call, one for a non-replicated call, `total_requests` for a flexible one. `response_bytes` is the size after the transform. A non-replicated call (`is_replicated = false`) takes the `otherwise` branch with `min_responses = 1`. A flexible call that does not set `replication` defaults `min_responses` to `floor(2 / 3 * n) + 1`.
+`usage_fee` is charged for each node that performs the outcall: all `n` of them for a fully replicated call, one for a non-replicated call, `total_requests` for a flexible one. The `13` dividing `transform_instructions` is not the node count: outcall fees are calibrated against a reference subnet size of 13, and this is the only term that carries that constant, so a node is charged the same for a transform on every subnet. `response_bytes` is the size after the transform. A non-replicated call (`is_replicated = false`) takes the `otherwise` branch with `min_responses = 1`. A flexible call that does not set `replication` defaults `min_responses` to `floor(2 / 3 * n) + 1`.
 
 | Component | 13-node cycles | ~USD | 34-node cycles | ~USD |
 |-----------|----------------|------|----------------|------|
-| Per fully replicated call (base) | 38_417_600 | ~$0.0000525 | 227_283_200 | ~$0.000311 |
-| Per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
-| Per delivered response byte, charged | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
+| Base, per fully replicated call | 38_417_600 | ~$0.0000525 | 227_283_200 | ~$0.000311 |
+| Base, per request byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
+| Usage, per raw response byte | 650 | ~$0.0000000009 | 1_700 | ~$0.0000000023 |
+| Usage, per millisecond of round trip | 3_900 | ~$0.0000000053 | 10_200 | ~$0.0000000139 |
+| Usage, per million transform instructions | ~1_000_000 | ~$0.0000014 | ~2_615_000 | ~$0.0000036 |
+| Delivery, per delivered response byte | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
+
+The three usage rows are charged per node that performs the outcall, and the figures assume all `n` of them do and each consumes the same amount, as a fully replicated call is priced: a non-replicated call is charged them once, and a flexible call `total_requests` times. Which term dominates depends on the call: round-trip time is capped at 60 seconds, which is 234 million cycles on a 13-node subnet, while a transform that uses the full instruction limit costs about 5 billion and delivering a 2MB response about 19 billion.
 
 **What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the amount it returns reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
 
