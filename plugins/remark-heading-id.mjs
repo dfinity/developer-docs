@@ -13,7 +13,10 @@
  */
 import { visit } from "unist-util-visit";
 
-const HEADING_ID = /\s*\{[#$]([\w-]+)\}\s*$/;
+// Exported so scripts/lib/anchors.mjs recognizes exactly what this applies:
+// an index that accepted more or fewer forms would report working links as
+// broken, or miss broken ones.
+export const HEADING_ID = /\s*\{[#$]([\w-]+)\}\s*$/;
 
 export default function remarkHeadingId() {
   return (tree) => {

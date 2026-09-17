@@ -32,7 +32,7 @@ Subtypes are the types you can change your method **results** to. Supertypes are
 
 You should note that this reference only lists the specific subtypes and supertypes that are relevant for each type. It does not repeat common information about subtypes and supertypes that can apply to any type. For example, the reference does not list `empty` as a subtype because it can be a subtype of any other type. Similarly, the types `reserved` and `opt t` are not listed as supertypes of specific types because they are supertypes of any type. For details about the subtyping rules for the `empty`, `reserved`, and `opt t` types, see the following sections:
 
--   [`opt t`](#type-opt)
+-   [`opt t`](#type-opt-t)
 
 -   [`reserved`](#type-reserved)
 
@@ -254,7 +254,7 @@ The `bool` type is a logical data type that can have only the values `true` or `
 
 ## Type null
 
-The `null` type is the type of the value `null`, thus a subtype of all the `opt t` types. It is also the idiomatic choice when using [variants](#type-variant) to model enumerations.
+The `null` type is the type of the value `null`, thus a subtype of all the `opt t` types. It is also the idiomatic choice when using [variants](#type-variant--n--t--) to model enumerations.
 
 #### Type syntax
 `null`
@@ -643,7 +643,7 @@ type F4 = shared query () -> async Text;
 
 ## Type service: \{…\}
 
-Services may want to pass around references to not just individual functions (using the [`func` type](#type-func)), but references to whole services. In this case, Candid types can be used to declare the complete interface of such a service.
+Services may want to pass around references to not just individual functions (using the [`func` type](#type-func---)), but references to whole services. In this case, Candid types can be used to declare the complete interface of such a service.
 
 See [Candid service descriptions](../guides/canister-calls/candid.md#the-did-file) for more details on the syntax of a service type.
 

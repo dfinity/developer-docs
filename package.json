@@ -13,6 +13,7 @@
     "validate": "node scripts/validate.js --all",
     "sync:motoko": "./scripts/sync-motoko.sh",
     "sync:ii-spec": "./scripts/sync-ii-spec.mjs",
+    "sync:static-site": "node scripts/sync-static-site.mjs",
     "check:upstream": "node scripts/check-upstream-releases.mjs"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "github-slugger": "^2.0.0",
     "glob": "^13.0.6",
     "gray-matter": "^4.0.3"
   }

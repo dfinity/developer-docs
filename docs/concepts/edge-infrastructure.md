@@ -58,7 +58,7 @@ ICP solves this through **asset certification**: a mechanism for canisters to pr
 - When a subnet responds to a message, the response includes a certificate chain: the subnet's signature on the response and the NNS certificate on the subnet's key. Any client can verify this chain using only the ICP network's public key.
 - Because generating a subnet certificate requires agreement from at least two thirds of the subnet's nodes (using [chain-key cryptography](chain-key-cryptography.md#threshold-bls-signatures)), a certified response represents network-level consensus, not a single node's assertion.
 - Query calls do not go through consensus and are not automatically certified. To serve certified query responses, canisters use **certified variables**: the canister stores a certificate for a piece of data in the replicated state during an update call. Any user can later retrieve both the data and its certificate via a query call and verify the certificate independently.
-- For web assets (HTML, CSS, JavaScript, images), canisters can certify all assets upfront. The asset canister provided by DFINITY handles this automatically: developers specify a folder of assets and the asset canister manages and certifies them.
+- For web assets (HTML, CSS, JavaScript, images), canisters can certify all assets upfront. The [frontend canisters](../guides/frontends/static-site/overview.md) DFINITY provides handle this automatically: developers specify a folder of assets, and the canister manages and certifies them.
 
 When the HTTP gateway receives a canister response that includes a certificate, it verifies the certificate before passing the response to the client. This is what makes ICP-hosted web content verifiable end-to-end without trusting any single node.
 

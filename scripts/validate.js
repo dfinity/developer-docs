@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { globSync } from 'glob';
 import matter from 'gray-matter';
+import { anchorsOfFile } from './lib/anchors.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -89,13 +90,35 @@ function checkInternalLinks(file, content) {
   let m;
   while ((m = re.exec(content)) !== null) {
     const href = m[1];
-    if (href.startsWith('http') || href.startsWith('#') || href.startsWith('/')) continue;
-    const [linkPath] = href.split('#');
+    // Match a URL scheme, not the letters "http": `http-gateway-protocol-spec.md`
+    // is a real relative target in this repo and must still be checked.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('/')) continue;
+    // A same-page link is checked against this file's own headings.
+    if (href.startsWith('#')) {
+      const fragment = href.slice(1);
+      if (fragment && !anchorsOfFile(file).has(fragment)) {
+        errors.push(`broken anchor: ${href} (this page has no heading with slug "${fragment}")`);
+      }
+      continue;
+    }
+    const [linkPath, fragment] = href.split('#');
     if (!linkPath?.endsWith('.md')) continue;
     const resolved = path.resolve(dir, linkPath);
     const resolvedMdx = resolved.replace(/\.md$/, '.mdx');
-    if (!fs.existsSync(resolved) && !fs.existsSync(resolvedMdx)) {
+    const target = fs.existsSync(resolved)
+      ? resolved
+      : fs.existsSync(resolvedMdx)
+        ? resolvedMdx
+        : null;
+    if (!target) {
       errors.push(`broken link: ${href}`);
+      continue;
+    }
+    // A link to a section has to land on one. A renamed heading upstream, or on
+    // a page someone else edited, otherwise drops the reader at the top of a
+    // long page with no sign that anything went wrong.
+    if (fragment && !anchorsOfFile(target).has(fragment)) {
+      errors.push(`broken anchor: ${href} (${path.relative(ROOT, target)} has no heading with slug "${fragment}")`);
     }
   }
   return errors;

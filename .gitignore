@@ -44,3 +44,6 @@ skills-lock.json
 
 # Upstream release check output (scripts/check-upstream-releases.mjs)
 .upstream-checks/
+
+# Scratch space for scripts/sync-static-site.mjs (removed on success)
+.sync-staging/
