@@ -226,7 +226,7 @@ Use the "Full example in ICP Ninja" links above to deploy and test directly in t
 
 > **Note:** The local replica runs a single node, so all responses reach consensus automatically: even without a transform function. Verify your transform produces identical output for varying inputs (different headers, timestamps) before deploying to a multi-node subnet, where mismatches cause "no consensus" errors.
 >
-> Flexible outcalls do run locally: the local replica reports 13 nodes through `ic0.subnet_self_node_count`, so a committee of that size is accepted and the call returns as many responses as you ask for. They all come from the one node that is actually running, so a local run exercises the call and your reconciliation code, but never the disagreement between nodes that reconciliation exists for.
+> Flexible outcalls do run locally, but every response comes from that same single node, so a local run exercises the call and your reconciliation code without ever producing the disagreement reconciliation exists for.
 
 ## Next steps
 

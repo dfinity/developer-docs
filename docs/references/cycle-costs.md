@@ -172,7 +172,7 @@ delivery_fee = n * (10 * n + 600) * (response_bytes (+ 181 * K   flexible only))
 | Usage, per million transform instructions | ~1_000_000 | ~$0.0000014 | ~2_615_000 | ~$0.0000036 |
 | Delivery, per delivered response byte | 9_490 | ~$0.0000000130 | 31_960 | ~$0.0000000437 |
 
-The three usage rows are charged per node that performs the outcall, and the figures assume all `n` of them do and each consumes the same amount, as a fully replicated call is priced: a non-replicated call is charged them once, and a flexible call `total_requests` times. Round-trip time is the term most likely to dominate: a call that takes ten seconds is charged about 39 million cycles for that time alone on a 13-node subnet, roughly what the base fee costs.
+The three usage rows are charged per node that performs the outcall, and the figures assume all `n` of them do and each consumes the same amount, as a fully replicated call is priced: a non-replicated call is charged them once, and a flexible call `total_requests` times. Which term dominates depends on the call: round-trip time is capped at 60 seconds, which is 234 million cycles on a 13-node subnet, while a transform that uses the full instruction limit costs about 5 billion and delivering a 2MB response about 19 billion.
 
 **What to attach.** `ic0.cost_http_request_v2` does not return the figure above. Neither how many nodes will respond nor which result they will produce is known when the call is made, and delivering the result has to be paid out of the per-node budgets, so the amount it returns reserves for the most expensive result the call could still produce. It therefore exceeds what the call settles at, and the difference is refunded.
 
