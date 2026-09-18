@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: '0 9 * * 3' # Weekly on Wednesday
   workflow_dispatch:
+    inputs:
+      ref:
+        description: >-
+          Ref to sync, for a docs fix that has shipped upstream but not been
+          released. Any commit-ish the clone can resolve. Leave empty to sync
+          the latest release, which is what the weekly run does.
+        required: false
+        type: string
 
 jobs:
   sync:
@@ -31,25 +39,45 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # A dispatch input reaches the shell as data, never as script.
+          INPUT_REF: ${{ inputs.ref }}
         run: |
           PIN=$(node -p "require('./.sources/upstream.json').synced.find(e => e.repo === 'dfinity/certified-assets').pinned")
           echo "pin=$PIN" >> $GITHUB_OUTPUT
 
-          # Stable releases only, the same pattern the upstream.json watcher uses.
-          # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
-          TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname \
-            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-          echo "Pinned: $PIN. Latest release: $TAG."
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          if [ -n "$INPUT_REF" ]; then
+            # A ref given by hand is the maintainer's call, so the release
+            # checks below do not apply: the reason to pass one is a docs fix
+            # that is not in a release yet. `rev-parse` both sides, because a
+            # short sha, a branch and a tag all have to compare as refs.
+            TAG=$(git -C /tmp/certified-assets rev-parse --short "$INPUT_REF^{commit}") || {
+              echo "::error::Cannot resolve ref '$INPUT_REF' in dfinity/certified-assets."
+              exit 1
+            }
+            echo "Manual ref: $INPUT_REF resolved to $TAG. Pinned: $PIN."
+            if [ "$(git -C /tmp/certified-assets rev-parse "$TAG")" = \
+                 "$(git -C /tmp/certified-assets rev-parse "$PIN")" ]; then
+              echo "That is the pin already. Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          else
+            # Stable releases only, the same pattern the upstream.json watcher uses.
+            # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
+            TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            echo "Pinned: $PIN. Latest release: $TAG."
 
-          # The pin is allowed to sit ahead of the latest release while a docs
-          # fix has shipped but a release has not (the state this sync started
-          # in). Syncing the tag then would publish older prose.
-          if git -C /tmp/certified-assets merge-base --is-ancestor "$TAG" "$PIN"; then
-            echo "Pin already contains $TAG. Nothing to sync."
-            echo "needed=false" >> $GITHUB_OUTPUT
-            exit 0
+            # The pin is allowed to sit ahead of the latest release while a docs
+            # fix has shipped but a release has not (the state this sync started
+            # in). Syncing the tag then would publish older prose.
+            if git -C /tmp/certified-assets merge-base --is-ancestor "$TAG" "$PIN"; then
+              echo "Pin already contains $TAG. Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
           # Skip only when a PR is actually open. A branch on its own proves
           # nothing: if a previous run pushed and then failed at `gh pr create`,
@@ -158,11 +186,17 @@ jobs:
             echo ""
             echo "Automated sync of the certified-assets user docs."
             echo ""
-            echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
+            if [ -n "$INPUT_REF" ]; then
+              echo "**Ref:** \`$TAG\` (pinned from \`$PIN\`), dispatched by hand as \`$INPUT_REF\`."
+              echo "A ref is synced by hand when a docs fix has shipped upstream but not"
+              echo "been released; the next release moves the pin back onto a tag."
+            else
+              echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
+            fi
             echo ""
             if [ "$PIN_ONLY" = "true" ]; then
-              echo "No page changed in this range. The pin moves off a commit and onto"
-              echo "the release tag, so the only diff is \`source_ref\` on each page."
+              echo "No page changed in this range, so the only diff is the pin and the"
+              echo "\`source_ref\` each page records."
             else
               echo "**Changed upstream files:**"
               while IFS= read -r f; do
@@ -192,3 +226,4 @@ jobs:
           PIN: ${{ steps.check.outputs.pin }}
           CHANGED: ${{ steps.check.outputs.changed_files }}
           PIN_ONLY: ${{ steps.check.outputs.pin_only }}
+          INPUT_REF: ${{ inputs.ref }}
