@@ -253,17 +253,29 @@ markdown links, which is why there is no submodule to hold the pin.
 
 ### How the pin moves
 
-The workflow runs weekly, resolves the latest release tag, and opens a bump PR
-for every release the pin does not already contain. Two shapes come out of it:
+The workflow runs weekly and resolves the latest release tag. What comes out of
+it depends on what the release carries:
 
-- **Pages changed.** The usual case: review the diff.
-- **Nothing under `docs/` changed.** The pages are byte-identical and the only
-  diff is `source_ref` on each of them, but the PR still opens, because that is
-  what moves the pin off a commit and onto a release tag. Skipping these would
+- **Pages changed.** A PR to review the diff. The usual case.
+- **Nothing under `docs/` changed, and the pin is a commit.** A PR whose only
+  diff is the pin and the `source_ref` each page records. It opens because that
+  is what moves the pin off a commit and onto a release tag; skipping it would
   strand a temporary commit pin for good.
+- **Nothing under `docs/` changed, and the pin is a tag.** Nothing. A PR would
+  carry an empty page diff for someone to review and merge. The pin then lags
+  the latest release and stays accurate, since it records the ref this copy came
+  from and the copy still matches it, and the release is not missed, because the
+  recipe that deploys this canister releases in lockstep and is tracked under
+  `watched`.
 
-The PR body says which of the two it is. The recipe version readers type is a
-separate axis, covered by the `static-site` entry under `watched`.
+The PR body says which of the first two it is.
+
+To sync a ref rather than a release, dispatch the workflow with `ref`: a sha,
+tag, or branch. That is for a docs fix that has shipped upstream but is not in a
+release, and it leaves the pin on a commit until the next release moves it onto
+a tag. The release checks do not apply to a dispatched ref, so it can also move
+the pin backwards, which a rollback wants and a mistyped sha does not: the run
+says so and the PR body repeats it.
 
 To sync by hand, or to trial a ref before pinning it:
 
