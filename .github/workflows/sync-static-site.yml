@@ -96,18 +96,34 @@ jobs:
             git push origin --delete "$BRANCH"
           fi
 
-          # A release that ships canister changes without touching docs/ leaves
-          # the synced pages byte-identical, so there is no content to review.
-          # The pin still has to move: it is allowed to sit on a commit only
-          # while no release carries the pages, and skipping here would strand
-          # it on that commit for good. So the PR is opened either way, and the
-          # body says which of the two it is.
           CHANGED=$(git -C /tmp/certified-assets diff --name-only "${PIN}..${TAG}" -- docs/)
-          echo "needed=true" >> $GITHUB_OUTPUT
           if [ -z "$CHANGED" ]; then
-            echo "No docs/ changes between $PIN and $TAG: advancing the pin only."
-            echo "pin_only=true" >> $GITHUB_OUTPUT
+            # A release that ships canister changes without touching docs/ leaves
+            # the synced pages byte-identical, so there is nothing to review. Two
+            # cases, and only one of them is worth a pull request.
+            if [ -n "$INPUT_REF" ] || ! git -C /tmp/certified-assets show-ref \
+                 --verify --quiet "refs/tags/${PIN}"; then
+              # The pin is a commit (or a ref was dispatched by hand). Moving it
+              # onto the tag is the point: a commit pin is allowed only while no
+              # release carries the pages, and skipping here would strand it
+              # there for good.
+              echo "No docs/ changes between $PIN and $TAG: advancing the pin only."
+              echo "needed=true" >> $GITHUB_OUTPUT
+              echo "pin_only=true" >> $GITHUB_OUTPUT
+            else
+              # The pin is already a tag, so a pull request would carry an empty
+              # page diff and a bumped ref, for a reader to review and merge with
+              # nothing in it. The pin lags the release and stays accurate: it
+              # says which ref this copy came from, and the copy still matches it.
+              # The release itself is not lost, since the recipe that deploys this
+              # canister releases in lockstep and is tracked under `watched`.
+              echo "No docs/ changes between $PIN and $TAG, and the pin is a tag."
+              echo "Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           else
+            echo "needed=true" >> $GITHUB_OUTPUT
             echo "Changed upstream pages:"
             echo "$CHANGED"
             echo "pin_only=false" >> $GITHUB_OUTPUT
