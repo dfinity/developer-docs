@@ -91,7 +91,7 @@ function canonicalize(url) {
 // upstream, so a hit is an upstream issue to raise, not something to patch on
 // the way in. Prose only: a fence can hold a hyphenated identifier that is none
 // of our business.
-const HOUSE_STYLE = [{ re: /tamper[- ]proof/i, what: 'hyphenated "tamper-proof"' }];
+const HOUSE_STYLE = [{ re: /tamper[- ]proof/i, what: '"tamperproof" split in two' }];
 
 // Prose means prose: not a fenced block, not the frontmatter, and within a line,
 // not an inline code span and not a link destination. A rule that reached into
