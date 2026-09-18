@@ -76,6 +76,16 @@ jobs:
               echo "needed=false" >> $GITHUB_OUTPUT
               exit 0
             fi
+
+            # A ref the pin already contains moves the pin backwards. That is
+            # what a rollback is, so it runs, but it is also what a mistyped sha
+            # looks like, so it is not silent: the run warns and the PR body
+            # says so, which is the difference between the two.
+            if git -C /tmp/certified-assets merge-base --is-ancestor \
+                 "$REF_COMMIT" "$PIN_COMMIT"; then
+              echo "::warning::$INPUT_REF is behind the pin $PIN. This will move the pin backwards."
+              echo "backwards=true" >> $GITHUB_OUTPUT
+            fi
           else
             # Stable releases only, the same pattern the upstream.json watcher uses.
             # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
@@ -221,6 +231,13 @@ jobs:
               echo "**Ref:** \`$TAG\` (pinned from \`$PIN\`), dispatched by hand as \`$INPUT_REF\`."
               echo "A ref is synced by hand when a docs fix has shipped upstream but not"
               echo "been released; the next release moves the pin back onto a tag."
+              if [ "$BACKWARDS" = "true" ]; then
+                echo ""
+                echo "> [!WARNING]"
+                echo "> This ref is **behind** the pin, so the pin moves backwards and any"
+                echo "> page below is reverted to the older text. Intended for a rollback."
+                echo "> If you meant to move forward, close this and dispatch the right ref."
+              fi
             else
               echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
             fi
@@ -258,3 +275,4 @@ jobs:
           CHANGED: ${{ steps.check.outputs.changed_files }}
           PIN_ONLY: ${{ steps.check.outputs.pin_only }}
           INPUT_REF: ${{ inputs.ref }}
+          BACKWARDS: ${{ steps.check.outputs.backwards }}
