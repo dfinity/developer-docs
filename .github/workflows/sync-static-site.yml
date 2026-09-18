@@ -48,15 +48,30 @@ jobs:
           if [ -n "$INPUT_REF" ]; then
             # A ref given by hand is the maintainer's call, so the release
             # checks below do not apply: the reason to pass one is a docs fix
-            # that is not in a release yet. `rev-parse` both sides, because a
-            # short sha, a branch and a tag all have to compare as refs.
-            TAG=$(git -C /tmp/certified-assets rev-parse --short "$INPUT_REF^{commit}") || {
+            # that is not in a release yet.
+            #
+            # Tried as given and then under `origin/`, because a clone creates a
+            # local branch only for the default branch and leaves every other
+            # one reachable as `origin/<branch>` alone. A sha and a tag resolve
+            # on the first attempt.
+            REF_COMMIT=$(git -C /tmp/certified-assets rev-parse --verify --quiet "${INPUT_REF}^{commit}" \
+              || git -C /tmp/certified-assets rev-parse --verify --quiet "origin/${INPUT_REF}^{commit}") || {
               echo "::error::Cannot resolve ref '$INPUT_REF' in dfinity/certified-assets."
               exit 1
             }
+            TAG=$(git -C /tmp/certified-assets rev-parse --short "$REF_COMMIT")
             echo "Manual ref: $INPUT_REF resolved to $TAG. Pinned: $PIN."
-            if [ "$(git -C /tmp/certified-assets rev-parse "$TAG")" = \
-                 "$(git -C /tmp/certified-assets rev-parse "$PIN")" ]; then
+
+            # Peel the pin to a commit before comparing. The tags here are
+            # annotated, so an unpeeled tag name resolves to the tag object and
+            # would never equal a commit: dispatching the pinned tag would then
+            # read as a change and rewrite the pin from that tag to its own
+            # commit sha, moving a tag pin onto a commit for no reason.
+            PIN_COMMIT=$(git -C /tmp/certified-assets rev-parse --verify --quiet "${PIN}^{commit}") || {
+              echo "::error::Pin '$PIN' does not resolve in dfinity/certified-assets."
+              exit 1
+            }
+            if [ "$REF_COMMIT" = "$PIN_COMMIT" ]; then
               echo "That is the pin already. Nothing to sync."
               echo "needed=false" >> $GITHUB_OUTPUT
               exit 0
