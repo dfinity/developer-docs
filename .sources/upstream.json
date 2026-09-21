@@ -65,6 +65,11 @@
         "range contains before pinning past a tag, and prefer a tag whenever one",
         "carries the pages. The sync workflow moves the pin onto a tag at the next",
         "release even when no page changed, so a commit pin is never permanent.",
+        "Once it is a tag, a release that changes no page is skipped instead: the",
+        "pin then lags the latest release and stays accurate, since it records the",
+        "ref this copy came from and the copy still matches it. The release is not",
+        "missed either way, because the recipe that deploys this canister releases",
+        "in lockstep and is tracked under `watched`.",
         "History: the first sync used d9cb7df, because certified-assets#124 landed",
         "the frontmatter contract this sync requires after the v0.3.3 tag."
       ]
