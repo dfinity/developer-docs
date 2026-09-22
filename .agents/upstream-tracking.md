@@ -2,14 +2,14 @@
 
 How this repo stays current with the projects it documents.
 
-Upstream repos fall into three groups, and the group decides the procedure.
+Upstream repos fall into four groups, and the group decides the procedure.
 
-| | Vendored (submodule) | Watched | Reference |
-|---|---|---|---|
-| Which | `motoko`, `internetidentity`, `examples` | the `watched` array in `.sources/upstream.json` | the `reference` array |
-| Why | the build opens their files | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
-| Pin | the gitlink | `pinned` in `upstream.json` | none; verify against the latest release |
-| Release issue | only `examples`, and only when a quoted file moved | yes | no |
+| | Vendored (submodule) | Synced | Watched | Reference |
+|---|---|---|---|---|
+| Which | `motoko`, `internetidentity`, `examples` | the `synced` array in `.sources/upstream.json` | the `watched` array | the `reference` array |
+| Why | the build opens their files | their own pages are published here as-is | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
+| Pin | the gitlink | `pinned` in `upstream.json` | `pinned` in `upstream.json` | none; verify against the latest release |
+| Release issue | only `examples`, and only when a quoted file moved | no; its own workflow opens the bump PR | yes | no |
 
 Deciding between the last two is a judgment about blast radius, and the `why`
 field on each `reference` entry records the footprint that decided it. Promote an
@@ -235,6 +235,84 @@ If a shallow clone cannot resolve a pinned commit:
 git -C .sources/<repo> fetch --unshallow
 git -C .sources/<repo> checkout <commit>
 ```
+
+## Synced trees
+
+A synced tree is a set of pages this repo publishes but does not write. Upstream
+owns the prose; a sync script fetches it at a pinned ref, adapts the few things
+that only make sense on this site, and writes the result into `docs/`.
+
+| Tree | Upstream | Script | Workflow |
+|---|---|---|---|
+| `docs/guides/frontends/static-site/` | `dfinity/certified-assets` `docs/` | `scripts/sync-static-site.mjs` | `.github/workflows/sync-static-site.yml` |
+
+`motoko` and `internetidentity` are synced too, but they are submodules because
+the build also opens their files, so they follow the vendored procedure above.
+This group is for the case where nothing is resolved at build time, only
+markdown links, which is why there is no submodule to hold the pin.
+
+### How the pin moves
+
+The workflow runs weekly and resolves the latest release tag. What comes out of
+it depends on what the release carries:
+
+- **Pages changed.** A PR to review the diff. The usual case.
+- **Nothing under `docs/` changed, and the pin is a commit.** A PR whose only
+  diff is the pin and the `source_ref` each page records. It opens because that
+  is what moves the pin off a commit and onto a release tag; skipping it would
+  strand a temporary commit pin for good.
+- **Nothing under `docs/` changed, and the pin is a tag.** Nothing. A PR would
+  carry an empty page diff for someone to review and merge. The pin then lags
+  the latest release and stays accurate, since it records the ref this copy came
+  from and the copy still matches it, and the release is not missed, because the
+  recipe that deploys this canister releases in lockstep and is tracked under
+  `watched`.
+
+The PR body says which of the first two it is.
+
+To sync a ref rather than a release, dispatch the workflow with `ref`: a sha,
+tag, or branch. That is for a docs fix that has shipped upstream but is not in a
+release, and it leaves the pin on a commit until the next release moves it onto
+a tag. The release checks do not apply to a dispatched ref, so it can also move
+the pin backwards, which a rollback wants and a mistyped sha does not: the run
+says so and the PR body repeats it.
+
+To sync by hand, or to trial a ref before pinning it:
+
+```bash
+npm run sync:static-site                 # uses the pin in .sources/upstream.json
+node scripts/sync-static-site.mjs --ref main
+```
+
+The script exits non-zero rather than publishing something broken: missing
+frontmatter, an absolute link to this site it cannot map, a relative link that
+does not resolve, or a banned character that survived normalization. Fix the
+cause, do not hand-edit the output.
+
+### The pin may sit ahead of the latest release
+
+`.sources/VERSIONS` forbids pinning a submodule past its latest release, so that
+docs cannot describe behavior users cannot run yet. A synced tree can need the
+opposite: a docs-only fix upstream is published before the next release, and the
+pages must be syncable now. `certified-assets` started exactly there, pinned to a
+commit because the `v0.3.3` tag predated the frontmatter contract the sync
+requires (`certified-assets#124`).
+
+The rule that matters is the one behind it: never pin past a commit that
+documents unreleased behavior. Docs-only commits are safe, so check what the
+range contains before pinning past a tag, and record why in the entry's
+`$comment`. Move the pin back onto release tags as soon as one includes the
+change.
+
+### On bump, check
+
+1. The page diffs, for content changes; the tree is regenerated wholesale
+2. Whether a behavior change contradicts our own pages: `certification.md`
+   describes what this canister certifies, `asset-canister.md` contrasts the two
+   recipes
+3. Whether prose naming the recipe version needs bumping with it
+4. Whether a normalization the script reports should be fixed upstream instead,
+   so it becomes a no-op
 
 ## Build dependencies (npm)
 

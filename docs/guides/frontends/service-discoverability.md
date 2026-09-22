@@ -2,7 +2,7 @@
 title: "Service discoverability"
 description: "What an app exposes so ICP MCP can discover its canisters, interfaces, behavior, data, and identity from just its URL."
 sidebar:
-  order: 3
+  order: 5
 ---
 
 When an agent working through ICP MCP is handed only your app's URL (for example, `https://yourapp.com`), it should be able to work out the rest on its own: which canisters your app comprises, what each one does, how to call them, how to query their data, and how to act as the signed-in user. No human supplying canister IDs, no bespoke integration.
@@ -81,7 +81,7 @@ This is the way an app declares its composition. It is recommended to create thi
 - Serve real JSON with `Content-Type: application/json`. The most common failure is a single-page-app catch-all returning `index.html` for unknown paths. Exempt `/.well-known/*` from the SPA rewrite wherever your frontend is served.
 - Generate it at deploy time. Canister IDs differ per network (local, staging, mainnet), so the file must be produced by the deploy pipeline (which already knows the IDs) rather than committed with hard-coded values.
 
-The exact configuration depends on how you host the frontend; the requirement is only that `/.well-known/*` is served as a static file, not rewritten to `index.html`. If you serve assets from an asset canister, see [Asset canister](asset-canister.md#ic-assetsjson5) for including the hidden `.well-known` directory and configuring SPA aliasing, and [Custom domains](custom-domains.md#step-2-create-the-ic-domains-file) for the same `.well-known` pattern applied to domain ownership.
+The exact configuration depends on how you host the frontend; the requirement is only that `/.well-known/*` is served as a static file, not rewritten to `index.html`. On a [static site](static-site/overview.md) that needs no configuration: `.well-known/` is uploaded automatically, and a real file always wins over a `/*` rewrite. On the [legacy asset canister](asset-canister.md#ic-assetsjson5) the directory has to be un-ignored, and SPA aliasing configured around it. [Custom domains](custom-domains.md#step-2-create-the-ic-domains-file) applies the same `.well-known` pattern to domain ownership.
 
 ## Layer 2: Interface discovery
 

@@ -46,7 +46,7 @@ This is where most developers start after the quickstart. The backend guides cov
 
 ICP can serve web assets directly from canisters, giving you a tamperproof application with no external hosting required.
 
-**Start with:** [Asset canister](../guides/frontends/asset-canister.md): deploy a frontend alongside your backend canister.
+**Start with:** [Hosting a static site](../guides/frontends/static-site/overview.md): deploy a frontend alongside your backend canister.
 
 **Then explore:**
 

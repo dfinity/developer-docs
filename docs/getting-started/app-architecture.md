@@ -14,7 +14,7 @@ An application on the Internet Computer typically consists of one or more [canis
 Most ICP applications start with two canisters:
 
 - **Backend canister**: contains your application logic and data. You write it in Motoko or Rust (the official CDKs). Community-supported languages like TypeScript and Python are also available: see [Languages](../languages/index.md). Your code is compiled locally to WebAssembly and executed by the network.
-- **Frontend (asset) canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP.
+- **Frontend canister**: serves your web UI. It is a standard canister that hosts static files (HTML, CSS, JavaScript, images) and delivers them over HTTP. See [Deploy a static site](../guides/frontends/static-site/overview.md).
 
 When a user opens your application in a browser:
 
@@ -32,7 +32,7 @@ This flow replaces the traditional web stack. There is no separate web server, a
 |---------|-------------------|-----------------|
 | **Compute** | Application server (Node, Django, etc.) | [Backend canister](../concepts/canisters.md) (Wasm) |
 | **Storage** | Database (Postgres, MongoDB, etc.) | [Canister stable memory](../concepts/orthogonal-persistence.md) (up to 500 GiB) |
-| **Frontend hosting** | CDN + static file server | [Asset canister](../guides/frontends/asset-canister.md) |
+| **Frontend hosting** | CDN + static file server | [Frontend canister](../guides/frontends/static-site/overview.md) (certified responses) |
 | **Authentication** | OAuth provider or custom auth | [Internet Identity](../guides/authentication/internet-identity.md) (passkey or OAuth)\* |
 | **Scheduled tasks** | Cron jobs, worker queues | [Canister timers](../concepts/timers.md) |
 | **External API calls** | Server-side HTTP requests | [HTTPS outcalls](../concepts/https-outcalls.md) |
@@ -97,11 +97,11 @@ For small to medium datasets, stable memory is straightforward. For applications
 
 ## Frontend options
 
-Not every ICP application needs the default asset canister. Your options:
+Not every ICP application needs a frontend canister. Your options:
 
-- **Asset canister**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to an asset canister that serves it over HTTP. See [Asset canister](../guides/frontends/asset-canister.md).
+- **Static site**: the standard approach. Deploy your built frontend (React, Svelte, vanilla JS, etc.) to a canister that serves it over HTTP with every response certified. See [Hosting a static site](../guides/frontends/static-site/overview.md). Existing projects on the older recipe are covered by [Asset canister (legacy)](../guides/frontends/asset-canister.md).
 - **Framework-specific canister**: use a framework like Juno that provides a more opinionated hosting solution on ICP.
-- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent). Useful during migration or when you need features that asset canisters don't support.
+- **Offchain frontend**: host your frontend on traditional infrastructure (Vercel, Netlify, etc.) and call ICP canisters from JavaScript using [`@icp-sdk/core/agent`](https://js.icp.build/core/latest/libs/agent). Useful during migration or when you need features a static file host cannot provide, such as server-side rendering.
 - **No frontend**: backend-only canisters that expose a Candid API for other canisters or CLI tools to call.
 
 ## Choosing an architecture
@@ -110,7 +110,7 @@ Start with a [single canister](#single-canister): it is the right choice for mos
 
 | Question | If yes | If no |
 |----------|--------|-------|
-| Does the app have a web UI? | Add an [asset canister](#frontend-options) | Backend-only canister |
+| Does the app have a web UI? | Add a [frontend canister](#frontend-options) | Backend-only canister |
 | Do you need separation of concerns or hit platform limits? | [Canister-per-service](#canister-per-service) | Stay with a single canister |
 | Do you need to scale beyond one subnet? | [Canister-per-subnet](#canister-per-subnet) | Stay on one subnet |
 | Is user sovereignty over data a core requirement and are you prepared for high dev cost? | [Canister-per-user](#canister-per-user) (experimental) | None of the above |
@@ -121,7 +121,7 @@ Start with the simplest architecture that meets your requirements. You can alway
 
 - [Choose your path](choose-your-path.md): pick a development track based on what you want to build
 - [Inter-canister calls](../guides/canister-calls/inter-canister-calls.md): inter-canister communication patterns
-- [Asset canister](../guides/frontends/asset-canister.md): frontend deployment
+- [Hosting a static site](../guides/frontends/static-site/overview.md): frontend deployment
 - [Canisters](../concepts/canisters.md): canister internals
 
 <!-- Upstream: informed by dfinity/portal docs/building-apps/best-practices/application-architectures.mdx, docs/building-apps/getting-started/app-architecture.mdx; canister-per-user section ported from application-architectures.mdx -->
