@@ -19,7 +19,7 @@ The mechanism relies on three coordinated steps:
 
 3. **Client verification**: the client verifies the certificate signature against the IC root public key, extracts the root hash from the certificate's state tree, then confirms the witness proves the data is included under that root hash.
 
-```
+```text
 UPDATE CALL (goes through consensus):
   1. Canister modifies state
   2. Canister builds/updates Merkle tree
@@ -41,8 +41,8 @@ CLIENT:
 
 - `certified_data_set` accepts **at most 32 bytes**. You cannot certify arbitrary data directly. Build a Merkle tree over your data and certify only the 32-byte root hash. The tree provides proofs for individual values.
 - `certified_data_set` **must be called in update calls only**. Calling it in a query call traps.
-- `data_certificate()` returns `None` in update calls: certificates are only available during query calls.
-- After a canister upgrade, the certified data is cleared. Re-establish certification in both `#[init]` and `#[post_upgrade]` (Rust), or in `system func postupgrade` (Motoko).
+- `data_certificate()` returns `None` in update calls, including a query method invoked as an update call. `icp canister call` sends an update call unless you pass `--query`, so always test certified getters with `icp canister call --query`.
+- Certified data survives upgrades (install and reinstall start it empty). A Merkle tree kept on the heap does not: in Rust, rebuild the tree in `#[post_upgrade]` and call `certified_data_set` again. A Motoko `CertTree.Store` persists with the actor, so nothing needs re-setting.
 
 ## Rust implementation
 
@@ -51,19 +51,19 @@ Add to `Cargo.toml`:
 ```toml
 [dependencies]
 candid = "0.10"
-ic-cdk = "0.19"
-ic-certified-map = "0.4"
+ic-cdk = "0.20"
+ic-certification = { version = "4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
 ciborium = "0.2"
 ```
 
-`ic-certified-map` provides `RbTree`, a Merkle-tree-backed map. Each call to `tree.root_hash()` returns a 32-byte SHA-256 hash of the entire tree; `tree.witness(key)` returns a Merkle proof for a specific key.
+`ic-certification` provides `RbTree`, a Merkle-tree-backed map (`ic-certified-map` 0.4 has the same API). Each call to `tree.root_hash()` returns a 32-byte SHA-256 hash of the entire tree; `tree.witness(key)` returns a Merkle proof for a specific key.
 
 ```rust
 use candid::{CandidType, Deserialize};
 use ic_cdk::{init, post_upgrade, query, update};
-use ic_certified_map::{AsHashTree, RbTree};
+use ic_certification::{AsHashTree, RbTree};
 use serde_bytes::ByteBuf;
 use std::cell::RefCell;
 
@@ -86,8 +86,8 @@ fn init() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    // Certified data is cleared on upgrade: must be re-established.
-    // Assumes tree data has already been loaded from stable memory.
+    // The heap TREE is empty after an upgrade, while the old certified hash is kept.
+    // Rebuild TREE from stable storage here, then re-set the hash to match it.
     update_certified_data();
 }
 
@@ -118,7 +118,7 @@ struct CertifiedResponse {
 
 #[query]
 fn get(key: String) -> CertifiedResponse {
-    // data_certificate() is only available in query calls.
+    // data_certificate() is only available in query calls (icp canister call --query).
     let certificate = ic_cdk::api::data_certificate()
         .expect("data_certificate only available in query calls");
 
@@ -141,6 +141,9 @@ fn get(key: String) -> CertifiedResponse {
         }
     })
 }
+
+// Required by the icp-cli Rust recipe, which extracts the Candid interface from the wasm
+ic_cdk::export_candid!();
 ```
 
 ### Batch updates
@@ -209,9 +212,10 @@ import Text "mo:core/Text";
 
 persistent actor {
 
-  // CertTree.Store is stable: persists across upgrades.
+  // CertTree.Store is stable: the tree and the certified data persist across upgrades.
   let certStore : CertTree.Store = CertTree.newStore();
-  let ct = CertTree.Ops(certStore);
+  // Ops is an object with functions, not stable data: it must be transient.
+  transient let ct = CertTree.Ops(certStore);
 
   // Establish initial certification.
   ct.setCertifiedData();
@@ -222,7 +226,7 @@ persistent actor {
     ct.setCertifiedData();
   };
 
-  public func remove(key : Text) : async () {
+  public func delete(key : Text) : async () {
     ct.delete([Text.encodeUtf8(key)]);
     ct.setCertifiedData();
   };
@@ -241,20 +245,15 @@ persistent actor {
     }
   };
 
-  // Re-establish certification after upgrade.
-  // (CertTree.Store is stable, so tree data survives, but certified_data is cleared.)
-  system func postupgrade() {
-    ct.setCertifiedData();
-  };
 };
 ```
 
 ## Client-side verification
 
-The client must verify the certificate before trusting the data. The `@dfinity/certificate-verification` package handles the full verification flow:
+The client must verify the certificate before trusting the data. The `@dfinity/certificate-verification` package (version 4, peer-depends on `@icp-sdk/core` ^6, takes `Uint8Array`) handles the full verification flow for a witness:
 
 1. Verify the certificate BLS signature against the IC root public key
-2. Check certificate freshness. The `/time` field must be within an acceptable window (recommended: 5 minutes)
+2. Check certificate freshness: the `/time` field must be within `maxCertificateTimeOffsetMs` (recommended: 5 minutes)
 3. CBOR-decode the witness into a hash tree
 4. Reconstruct the witness root hash
 5. Compare it with the `certified_data` path in the certificate
@@ -262,24 +261,19 @@ The client must verify the certificate before trusting the data. The `@dfinity/c
 
 ```typescript
 import { verifyCertification } from "@dfinity/certificate-verification";
-import { lookup_path, lookupResultToBuffer, HashTree } from "@icp-sdk/core/agent";
+import { lookup_path, LookupPathStatus } from "@icp-sdk/core/agent";
 import { Principal } from "@icp-sdk/core/principal";
 
 const MAX_CERT_TIME_OFFSET_MS = 5 * 60 * 1000; // 5 minutes
 
-async function getVerifiedValue(
-  rootKey: ArrayBuffer,
+export async function getVerifiedValue(
+  rootKey: Uint8Array,
   canisterId: string,
   key: string,
-  response: {
-    value: string | null;
-    certificate: ArrayBuffer;
-    witness: ArrayBuffer;
-  }
+  response: { value: string | null; certificate: Uint8Array; witness: Uint8Array },
 ): Promise<string | null> {
-  // Steps 1-5: verify BLS signature, time, and witness hash match.
-  // Throws CertificateTimeError or CertificateVerificationError on failure.
-  const tree: HashTree = await verifyCertification({
+  // Steps 1-5; throws CertificateTimeError or CertificateVerificationError on failure.
+  const tree = await verifyCertification({
     canisterId: Principal.fromText(canisterId),
     encodedCertificate: response.certificate,
     encodedTree: response.witness,
@@ -287,32 +281,59 @@ async function getVerifiedValue(
     maxCertificateTimeOffsetMs: MAX_CERT_TIME_OFFSET_MS,
   });
 
-  // Step 6: look up the key in the verified witness tree.
-  // lookup_path returns a LookupResult discriminated union; lookupResultToBuffer
-  // extracts the Uint8Array value or returns undefined if the key is absent.
-  const leafData = lookupResultToBuffer(
-    lookup_path([new TextEncoder().encode(key)], tree)
-  );
-
-  if (leafData === undefined) {
-    // Key is provably absent from the certified tree.
-    return null;
+  // Step 6: the path must match how the canister inserted the key (here: UTF-8 bytes).
+  const result = lookup_path([new TextEncoder().encode(key)], tree);
+  switch (result.status) {
+    case LookupPathStatus.Found: {
+      const verified = new TextDecoder().decode(result.value);
+      if (response.value !== verified) throw new Error("value does not match witness");
+      return verified;
+    }
+    case LookupPathStatus.Absent:
+      if (response.value !== null) throw new Error("witness proves the key is absent");
+      return null;
+    default:
+      // Unknown/Error: the witness does not cover this key, so it proves nothing
+      throw new Error(`witness does not cover key (${result.status})`);
   }
-
-  const verifiedValue = new TextDecoder().decode(leafData);
-
-  // Confirm the canister-returned value matches what the witness proves.
-  if (response.value !== null && response.value !== verifiedValue) {
-    throw new Error(
-      "Response value does not match witness: canister returned tampered data"
-    );
-  }
-
-  return verifiedValue;
 }
 ```
 
-The JS SDK documentation covers the full `verifyCertification` API at [js.icp.build](https://js.icp.build).
+`lookup_path` returns a status, and only `Absent` proves that a key does not exist. Treat `Unknown` (the witness does not cover the key) as a failure, never as "not found". For where the root key comes from, see [Client-side certificate verification](../frontends/certification.md#client-side-certificate-verification).
+
+### Single value without a witness
+
+The simple Motoko example certifies `sha256(value)` without a Merkle tree, so there is no witness to pass to `verifyCertification`. Verify it with `Certificate.create` from `@icp-sdk/core`, which checks the signature and a ±5 minute freshness window:
+
+```typescript
+import { Certificate, lookupResultToBuffer, uint8Equals } from "@icp-sdk/core/agent";
+import { Principal } from "@icp-sdk/core/principal";
+
+export async function verifySingleValue(
+  rootKey: Uint8Array,
+  canisterId: string,
+  response: { value: string; certificate: Uint8Array },
+): Promise<string> {
+  const principal = Principal.fromText(canisterId);
+  const cert = await Certificate.create({
+    certificate: response.certificate,
+    rootKey,
+    principal: { canisterId: principal },
+  });
+  const certifiedData = lookupResultToBuffer(
+    cert.lookup_path(["canister", principal.toUint8Array(), "certified_data"]),
+  );
+  // Recompute what the canister certified: sha256 of the UTF-8 value
+  const hash = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(response.value)),
+  );
+  if (!certifiedData || !uint8Equals(certifiedData, hash)) {
+    throw new Error("value does not match certified data");
+  }
+  return response.value;
+}
+```
+
 
 ## Deploy and test
 
@@ -323,18 +344,20 @@ icp deploy backend
 # Set a certified value (update call: goes through consensus)
 icp canister call backend set '("greeting", "hello world")'
 
-# Query the certified value
-icp canister call backend get '("greeting")'
-# Returns: record { value = opt "hello world"; certificate = blob "..."; witness = blob "..." }
+# Query the certified value: --query is required, or no certificate is returned
+icp canister call --query backend get '("greeting")'
+# Returns: record { certificate = blob "..."; value = opt "hello world"; witness = blob "..." }
 
 # Delete a value
 icp canister call backend delete '("greeting")'
 
-# Verify certification survives upgrade
+# Check certification after an upgrade
 icp canister call backend set '("key", "value")'
 icp deploy backend  # triggers upgrade
-icp canister call backend get '("key")'
-# Expected: certificate is non-null (postupgrade re-established certification)
+icp canister call --query backend get '("key")'
+# Motoko CertTree: the value survives and the certificate still verifies.
+# Rust example: the heap tree is gone, so value = null, but the certificate still verifies
+# (a proof of absence) because post_upgrade re-set the hash.
 ```
 
 ## Common mistakes
@@ -343,13 +366,17 @@ icp canister call backend get '("key")'
 
 **Not updating the hash after data changes**: if you modify the tree but forget to call `certified_data_set`, query responses will fail client verification because the certificate proves a stale hash.
 
-**Forgetting to re-certify after upgrade**: certified data is cleared on upgrade. Both `#[init]` and `#[post_upgrade]` (Rust) or `system func postupgrade` (Motoko) must call the certification function.
+**Losing the tree on upgrade**: certified data survives upgrades, but a Rust tree kept on the heap does not, while the old hash stays set. Rebuild the tree in `#[post_upgrade]` and call `certified_data_set` again. A Motoko `CertTree.Store` persists, so no hook is needed.
 
 **Building the witness for the wrong key**: the Merkle proof must correspond to the exact key being queried. A witness for `users/alice` will not verify `users/bob`.
 
 **Skipping certificate freshness checks on the client**: the certificate's `/time` field contains the subnet timestamp. Without a freshness check, an attacker could replay a stale certificate with outdated data. Always check that `certificate_time` is within an acceptable delta (5 minutes is recommended).
 
-**Assuming `data_certificate()` is available in update calls**: it returns `None` / `null` in update calls. Only query calls can access the certificate.
+**Calling the getter as an update call**: `data_certificate()` returns `None` / `null` in update calls, including a query method called as one. `icp canister call` does that unless you pass `--query`.
+
+**Treating every non-`Found` lookup as absent**: `lookupResultToBuffer` returns `undefined` for `Absent`, `Unknown` and `Error` alike. Only `Absent` proves a key does not exist; switch on the `lookup_path` status instead.
+
+**Declaring the Motoko `CertTree.Ops` object as stable**: in a persistent actor, `let ct = CertTree.Ops(certStore)` fails to compile (`variable ct is declared stable but has non-stable type`). Declare it `transient`.
 
 ## HTTP asset certification
 
