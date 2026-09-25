@@ -289,6 +289,23 @@ Once the IC frees the resources of a canister, its id, *cycle* balances, *contro
 
 :::
 
+#### Cost schedules {#cost-schedules}
+
+A subnet's *cost schedule* determines how the protocol charges canisters for resource use, such as instruction execution and memory usage. There are two schedules:
+
+- **Normal:** applies the protocol's ordinary resource charges in cycles.
+- **Free:** waives these resource charges, so they do not deduct cycles from canister balances.
+
+The cost schedule has no impact on explicit cycle burning: they are still burnt from canister balances.
+
+#### Nominal cycles {#nominal-cycles}
+
+*Nominal cycles* are accounting quantities used to measure consumption in cycle metrics.
+
+For resource charges, the nominal amount is the amount calculated under the [normal cost schedule](#cost-schedules). Under that schedule, the nominal charge equals the cycles actually charged. Under a free cost schedule, resource use such as instruction execution or memory usage still records the nominal charge in metrics, while the actual charge to canister balances is zero. Nominal consumption therefore measures the accounted cost even when no cycles are deducted from a canister's balance.
+
+Hence, nominal consumption metrics must not be interpreted as the number of cycles actually removed from circulation.
+
 #### Canister status {#canister-status}
 
 The canister status can be used to control whether the canister is processing calls:
@@ -519,7 +536,7 @@ The state tree contains information about the topology of the Internet Computer.
 
      - `num_canisters` (`nat`): The number of canisters on this subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
      - `canister_state_bytes` (`nat`): The total size of the state in bytes currently taken by canisters on this subnet. This is a current value, not a counter. Recomputing it is expensive, so it is refreshed only every 10 blocks, at heights that are multiples of 10, and reads 0 until the first refresh after this subnet was created.
-     - `consumed_cycles_total` (`map`): The total number of cycles removed from circulation on this subnet since this subnet was created. Besides the cycles charged to the canisters currently on this subnet, this includes the cycles charged to canisters that have since been deleted, together with the balance those canisters still held when they were deleted, and the cycles consumed on behalf of the subnet itself rather than charged to any individual canister. Cycles that are charged in advance and later refunded are excluded once the refund is accounted for, so this value can also decrease. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
+     - `consumed_cycles_total` (`map`): The total [nominal cycles](#nominal-cycles) accounted for by the subnet. This sums the historical consumption of canisters currently on the subnet and the subnet's retained accounting for deleted canisters (including their remaining balances at deletion) and consumption on behalf of the subnet itself. Refunds of prepaid charges reduce the total. Subnet splitting preserves canister histories and redistributes them with the canisters, so the original subnet loses their contribution and the new subnet inherits consumption from before its creation. The total can therefore decrease and is not limited to consumption that occurred on this subnet. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
      - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet since this subnet was created, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing.
 
 
