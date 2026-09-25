@@ -493,6 +493,54 @@ type node_metrics_history_result = vec record {
     node_metrics : vec node_metrics;
 };
 
+type subnet_metrics_args = record {
+    subnet_id : principal;
+};
+
+// Only `block_height` describes the block in whose execution the call is
+// processed. The other five fields are aggregates refreshed at block
+// boundaries, so they describe the subnet as of an earlier block, and they are
+// not all refreshed at the same rate; see the individual fields.
+type subnet_metrics_result = record {
+    // Current block height of the subnet, i.e. the height of the block in
+    // whose execution this call is processed. Monotonically non-decreasing for
+    // a given subnet; the heights of different subnets are unrelated.
+    block_height : nat;
+    // Number of canisters on the subnet. A current value, not a counter.
+    num_canisters : nat;
+    // Total size in bytes of the state taken by canisters on the subnet. A
+    // current value, not a counter. Recomputing it is expensive, so it is
+    // refreshed only every 10 blocks, at heights that are multiples of 10. It
+    // can be up to 10 blocks behind block_height and up to 9 blocks behind the
+    // other aggregates. Reads 0 until the first refresh after subnet creation.
+    canister_state_bytes : nat;
+    // Nominal cycles record consumption at normal cost-schedule rates even
+    // when resource use is free; they are not a spendable balance.
+    // Total nominal cycles accounted for by the subnet: current canisters'
+    // historical consumption plus the subnet's retained accounting for deleted
+    // canisters (including their remaining balances at deletion) and consumption
+    // on behalf of the subnet itself. Free cost schedules can produce nominal
+    // charges without deducting cycles from canister balances. Refunds reduce
+    // the total. Subnet splitting redistributes canisters' histories, so the
+    // total can decrease and can include consumption from before the receiving
+    // subnet was created. It is not limited to consumption on this subnet.
+    consumed_cycles_total : nat;
+    // Total number of transactions processed on the subnet, i.e. the total
+    // number of messages executed in the replicated mode. Monotonically
+    // non-decreasing.
+    update_transactions_total : nat;
+    // Total instructions the subnet accounted for across the execution phases
+    // of all rounds, in units of one million and rounded up: a value of 42
+    // represents 41,000,001 through 42,000,000 instructions. Besides the executed
+    // Wasm instructions it covers the fixed per-execution and per-canister
+    // overheads charged by the scheduler and the charges for work performed
+    // outside of Wasm execution,
+    // so it is not a Wasm instruction meter. Monotonically non-decreasing.
+    // Unlike the four fields above, it has no counterpart under
+    // `/subnet/<subnet_id>/metrics` in the certified state tree.
+    million_round_instructions_total : nat;
+};
+
 type subnet_info_args = record {
     subnet_id : principal;
 };
@@ -762,6 +810,7 @@ service ic : {
 
     // metrics interface
     node_metrics_history : (node_metrics_history_args) -> (node_metrics_history_result);
+    subnet_metrics : (subnet_metrics_args) -> (subnet_metrics_result);
 
     // subnet info
     subnet_info : (subnet_info_args) -> (subnet_info_result);
