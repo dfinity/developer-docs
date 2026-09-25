@@ -515,7 +515,8 @@ type subnet_metrics_result = record {
     canister_state_bytes : nat;
     // Total cycles removed from circulation on the subnet: the cycles charged
     // to the canisters currently on the subnet, plus those charged to canisters
-    // that have since been deleted, plus those consumed on behalf of the subnet
+    // that have since been deleted together with the balance those canisters
+    // still held when deleted, plus those consumed on behalf of the subnet
     // itself. Refunds of cycles charged in advance are netted out, so this
     // value can also decrease.
     consumed_cycles_total : nat;

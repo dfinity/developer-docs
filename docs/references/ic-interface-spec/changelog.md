@@ -8,7 +8,7 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.69.0 (2026-09-17) {$0_69_0}
+### 0.69.0 (2026-09-28) {$0_69_0}
 * New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
   given subnet: the current block height, the number of canisters, the total canister
   state size, the total cycles consumed, the total number of processed transactions, and

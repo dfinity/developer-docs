@@ -608,7 +608,7 @@ Returns subnet-wide metrics for a given subnet, which does not have to be the su
 
 Only `block_height` is as of the block that processes the call. The other five fields are aggregates refreshed at block boundaries, so they describe an earlier block, and they are not refreshed in lockstep with each other. `canister_state_bytes` is the stalest: it is recomputed only every 10 blocks, at heights that are multiples of 10, so it can be up to 10 blocks behind the others, and it reads 0 until the first recomputation after the subnet was created.
 
-`update_transactions_total` and `million_round_instructions_total` only ever grow. `consumed_cycles_total` covers deleted canisters and cycles consumed by the subnet itself, and it nets out refunds of cycles charged in advance, so it can decrease. `num_canisters` and `canister_state_bytes` are current values, not counters.
+`update_transactions_total` and `million_round_instructions_total` only ever grow. `consumed_cycles_total` covers deleted canisters (including the balance they still held when deleted) and cycles consumed by the subnet itself, and it nets out refunds of cycles charged in advance, so it can decrease. `num_canisters` and `canister_state_bytes` are current values, not counters.
 
 `million_round_instructions_total` counts the executed Wasm instructions plus the scheduler's per-execution and per-canister overheads and the charges for work outside Wasm execution (compilation, chunk assembly, snapshots), so it is not a Wasm instruction meter. Like the other counters, it covers the subnet's whole lifetime, or the period since the metric was introduced for subnets that predate it.
 
