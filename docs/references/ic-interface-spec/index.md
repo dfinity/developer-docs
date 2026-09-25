@@ -296,7 +296,7 @@ A subnet's *cost schedule* determines how the protocol charges canisters for res
 - **Normal:** applies the protocol's ordinary resource charges in cycles.
 - **Free:** waives these resource charges, so they do not deduct cycles from canister balances.
 
-The cost schedule has no impact on explicit cycle burning: they are still burnt from canister balances.
+The cost schedule affects resource charges only. Cycles a canister burns explicitly are deducted from its balance under either schedule, as are the remaining balance of a deleted canister and the cycles attached to a dropped best-effort response.
 
 #### Nominal cycles {#nominal-cycles}
 
@@ -536,8 +536,8 @@ The state tree contains information about the topology of the Internet Computer.
 
      - `num_canisters` (`nat`): The number of canisters on this subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
      - `canister_state_bytes` (`nat`): The total size of the state in bytes currently taken by canisters on this subnet. This is a current value, not a counter. Recomputing it is expensive, so it is refreshed only every 10 blocks, at heights that are multiples of 10, and reads 0 until the first refresh after this subnet was created.
-     - `consumed_cycles_total` (`map`): The total [nominal cycles](#nominal-cycles) accounted for by the subnet. This sums the historical consumption of canisters currently on the subnet and the subnet's retained accounting for deleted canisters (including their remaining balances at deletion) and consumption on behalf of the subnet itself. Refunds of prepaid charges reduce the total. Subnet splitting preserves canister histories and redistributes them with the canisters, so the original subnet loses their contribution and the new subnet inherits consumption from before its creation. The total can therefore decrease and is not limited to consumption that occurred on this subnet. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
-     - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet since this subnet was created, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing.
+     - `consumed_cycles_total` (`map`): The total [nominal cycles](#nominal-cycles) accounted for by the subnet. This sums the historical consumption of canisters currently on the subnet, the subnet's retained accounting for deleted canisters (including their remaining balances at deletion), the cycles charged for HTTPS outcalls, threshold signature requests, and vetKD requests, which are accounted for at the subnet level rather than per canister, and the cycles attached to dropped best-effort responses. Refunds of prepaid charges reduce the total. Subnet splitting preserves canister histories and redistributes them with the canisters, so the original subnet loses their contribution and the new subnet inherits consumption from before its creation. The total can therefore decrease and is not limited to consumption that occurred on this subnet. It's a map of two values, a low part of type `nat` and a high part of type `opt nat`.
+     - `update_transactions_total` (`nat`): The total number of transactions processed on this subnet, i.e., the total number of messages executed in the replicated mode. It covers the whole lifetime of the subnet, or the period since the metric was introduced for subnets that predate it. The value is monotonically non-decreasing.
 
 
 :::note

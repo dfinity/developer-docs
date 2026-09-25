@@ -3212,20 +3212,17 @@ is not captured in this formal semantics.
 Conditions
 
 ```html
-
 S.messages = Older_messages · CallMessage M · Younger_messages
 (M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
 M.callee = ic_principal
 M.method_name = 'subnet_metrics'
 M.arg = candid(A)
 R = <implementation-specific>
-
 ```
 
 State after
 
 ```html
-
 S with
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
@@ -3233,7 +3230,6 @@ S with
         response = Reply (candid(R))
         refunded_cycles = M.transferred_cycles
       }
-
 ```
 
 #### IC Management Canister: Subnet information
