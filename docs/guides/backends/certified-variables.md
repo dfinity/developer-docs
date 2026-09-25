@@ -40,7 +40,7 @@ CLIENT:
 ## Key constraints
 
 - `certified_data_set` accepts **at most 32 bytes**. You cannot certify arbitrary data directly. Build a Merkle tree over your data and certify only the 32-byte root hash. The tree provides proofs for individual values.
-- `certified_data_set` works in every replicated context (`init`, `post_upgrade`, update calls, reply and reject callbacks, timers, heartbeat) and **traps in a query call**.
+- `certified_data_set` can be called from `canister_init`, `canister_post_upgrade`, `canister_pre_upgrade`, update methods, reply and reject callbacks, and system tasks (`canister_heartbeat`, `canister_global_timer`, `canister_on_low_wasm_memory`). It **traps anywhere else**, including query methods (whether called as a query or as an update), composite queries and cleanup callbacks.
 - `data_certificate()` returns `None` in update calls, including a query method invoked as an update call. `icp canister call` sends an update call unless you pass `--query`, so always test certified getters with `icp canister call --query`.
 - Certified data survives upgrades (install and reinstall start it empty). A Merkle tree kept on the heap does not: in Rust, rebuild the tree in `#[post_upgrade]` and call `certified_data_set` again. A Motoko `CertTree.Store` persists with the actor, so nothing needs re-setting.
 

@@ -273,7 +273,7 @@ export async function getVerifiedValue(
 
 Pass the root key of the network the canister runs on:
 
-- **Browser:** `safeGetCanisterEnv()?.IC_ROOT_KEY` from the `ic_env` cookie (`@icp-sdk/core/agent/canister-env`), which the frontend canister sets on local networks and mainnet alike. It is the key of the network serving the page.
+- **Browser:** `safeGetCanisterEnv()?.IC_ROOT_KEY` from the `ic_env` cookie (`@icp-sdk/core/agent/canister-env`), which the frontend canister sets on local networks and mainnet alike. It is the key of the network serving the page, and only as trustworthy as the page: on a verifying hostname the gateway verifies the cookie along with the page, but a page loaded from a `raw` hostname can carry a forged key. A client that verifies responses fetched from a `raw` hostname needs a root key obtained independently, such as the mainnet key built into `@icp-sdk/core`.
 - **Node scripts and tests:** the `root_key` field of `icp network status --json`, hex-decoded to bytes.
 - **Mainnet:** the agent's built-in default, `agent.rootKey` on an agent created without a `rootKey` option.
 
