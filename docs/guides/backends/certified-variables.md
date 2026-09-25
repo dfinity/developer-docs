@@ -168,7 +168,7 @@ fn set_many(entries: Vec<(String, String)>) {
 
 ### Simple single-value certification
 
-For a single certified value, hash it to 32 bytes and pass the hash to `CertifiedData.set`:
+For a single certified value, hash it to 32 bytes and pass the hash to `CertifiedData.set`. Certify the initial value at install too: certified data starts empty, so without it a query fails verification until the first write.
 
 ```motoko
 import CertifiedData "mo:core/CertifiedData";
@@ -178,16 +178,24 @@ import Sha256 "mo:sha2/Sha256";
 
 persistent actor {
 
+  // Simple certified single-value example:
   var certifiedValue : Text = "";
 
-  // Update the certified value (update call only).
-  public func setCertifiedValue(value : Text) : async () {
-    certifiedValue := value;
-    let hash = Sha256.fromBlob(#sha256, Text.encodeUtf8(value));
-    CertifiedData.set(hash);
+  // Certify the hash of the current value (max 32 bytes; update calls and init only)
+  func certify() {
+    CertifiedData.set(Sha256.fromBlob(#sha256, Text.encodeUtf8(certifiedValue)));
   };
 
-  // Return the value with its certificate (query call).
+  // Certify the initial value at install: certified data starts empty, not as sha256("")
+  certify();
+
+  // Set a certified value (update call only)
+  public func setCertifiedValue(value : Text) : async () {
+    certifiedValue := value;
+    certify();
+  };
+
+  // Get the certified value with its certificate (query call)
   public query func getCertifiedValue() : async {
     value : Text;
     certificate : ?Blob;
