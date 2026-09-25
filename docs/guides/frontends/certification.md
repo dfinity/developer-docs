@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) verify every HTTP response automatically, so users are protected without any extra client-side code: as long as the canister certifies its responses. The gateway does not verify Candid calls an app makes through an agent; see [Client-side certificate verification](#client-side-certificate-verification).
+Query responses on ICP are answered by a single replica without going through consensus. A malicious or faulty replica could return fabricated data. **Response certification** solves this: canisters commit a cryptographic hash to the subnet's certified state, and query responses include a certificate signed by the subnet's threshold BLS key. On a verifying hostname, [HTTP gateways](../../concepts/edge-infrastructure.md#http-gateways) verify every HTTP response automatically, so users are protected without any extra client-side code: as long as the canister certifies its responses. The gateway does not verify Candid calls an app makes through an agent; see [Client-side certificate verification](#client-side-certificate-verification).
 
 This guide explains how certification works at the HTTP layer, what each frontend recipe does automatically, when you need custom certification, and how to verify certificates client-side.
 
@@ -15,7 +15,7 @@ Both frontend recipes implement **HTTP certification v2**, a protocol on top of 
 
 1. **Certification setup (update call)**: when an asset is uploaded, the canister inserts its path, response headers, and body hash into a Merkle tree and commits the tree's root hash via `certified_data_set`. The subnet includes this root hash in its certified state each consensus round.
 
-2. **HTTP query call**: when a browser requests an asset, the canister retrieves the subnet BLS certificate via `data_certificate()`, generates a Merkle proof (witness) for the requested path, and returns the response with `IC-Certificate` and `IC-CertificateExpression` headers containing the certificate and witness.
+2. **HTTP query call**: when a browser requests an asset, the canister retrieves the subnet BLS certificate via `data_certificate()`, generates a Merkle proof (witness) for the requested path, and returns the response with an `IC-Certificate` header, which carries the certificate and the witness, and an `IC-CertificateExpression` header, which carries the CEL expression describing what was certified.
 
 3. **Gateway verification**: the HTTP gateway verifies the BLS signature on the certificate, extracts the certified root hash, and confirms the witness proves the response body and headers are included under that root hash. If verification fails, the gateway returns an error.
 
@@ -47,7 +47,7 @@ Through the standard ICP gateway, a canister that serves HTTP is reachable on tw
 | Domain | Certification | Notes |
 |--------|--------------|-------|
 | `<canister-id>.icp.net` | Verified | The gateway checks the proof on every response |
-| `<canister-id>.raw.icp.net` | None | The canister still attaches the certificate; the gateway discards it |
+| `<canister-id>.raw.icp.net` | None | The canister still attaches the certificate; the gateway forwards it without checking it |
 
 What you can do about the raw host depends on which canister you deployed.
 

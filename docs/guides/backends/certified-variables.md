@@ -40,7 +40,7 @@ CLIENT:
 ## Key constraints
 
 - `certified_data_set` accepts **at most 32 bytes**. You cannot certify arbitrary data directly. Build a Merkle tree over your data and certify only the 32-byte root hash. The tree provides proofs for individual values.
-- `certified_data_set` **must be called in update calls only**. Calling it in a query call traps.
+- `certified_data_set` works in every replicated context (`init`, `post_upgrade`, update calls, reply and reject callbacks, timers, heartbeat) and **traps in a query call**.
 - `data_certificate()` returns `None` in update calls, including a query method invoked as an update call. `icp canister call` sends an update call unless you pass `--query`, so always test certified getters with `icp canister call --query`.
 - Certified data survives upgrades (install and reinstall start it empty). A Merkle tree kept on the heap does not: in Rust, rebuild the tree in `#[post_upgrade]` and call `certified_data_set` again. A Motoko `CertTree.Store` persists with the actor, so nothing needs re-setting.
 
@@ -86,8 +86,9 @@ fn init() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    // The heap TREE is empty after an upgrade, while the old certified hash is kept.
-    // Rebuild TREE from stable storage here, then re-set the hash to match it.
+    // This example keeps TREE on the heap only: it is empty after an upgrade, while the
+    // old certified hash is kept. A real canister reinserts its entries from stable storage
+    // here first; this one re-certifies the empty tree so the hash matches it again.
     update_certified_data();
 }
 
@@ -181,7 +182,7 @@ persistent actor {
   // Simple certified single-value example:
   var certifiedValue : Text = "";
 
-  // Certify the hash of the current value (max 32 bytes; update calls and init only)
+  // Certify the hash of the current value (max 32 bytes; traps in a query call)
   func certify() {
     CertifiedData.set(Sha256.fromBlob(#sha256, Text.encodeUtf8(certifiedValue)));
   };
