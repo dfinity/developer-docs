@@ -279,10 +279,16 @@ export async function getVerifiedValue(
   rootKey: Uint8Array,
   canisterId: string,
   key: string,
-  // certificate is a blob (Rust) or ?blob (Motoko); null means the getter did not run as a query call
-  response: { value: string | null; certificate: Uint8Array | null; witness: Uint8Array },
+  // value is opt text (Rust) or ?blob (Motoko); certificate is a blob (Rust) or ?blob (Motoko)
+  response: {
+    value: string | Uint8Array | null;
+    certificate: Uint8Array | null;
+    witness: Uint8Array;
+  },
 ): Promise<string | null> {
   if (!response.certificate) throw new Error("no certificate: call the getter as a query");
+  const value =
+    response.value instanceof Uint8Array ? new TextDecoder().decode(response.value) : response.value;
   // Steps 1-5; throws CertificateTimeError or CertificateVerificationError on failure.
   const tree = await verifyCertification({
     canisterId: Principal.fromText(canisterId),
@@ -297,11 +303,11 @@ export async function getVerifiedValue(
   switch (result.status) {
     case LookupPathStatus.Found: {
       const verified = new TextDecoder().decode(result.value);
-      if (response.value !== verified) throw new Error("value does not match witness");
+      if (value !== verified) throw new Error("value does not match witness");
       return verified;
     }
     case LookupPathStatus.Absent:
-      if (response.value !== null) throw new Error("witness proves the key is absent");
+      if (value !== null) throw new Error("witness proves the key is absent");
       return null;
     default:
       // Unknown/Error: the witness does not cover this key, so it proves nothing
