@@ -25,6 +25,11 @@ sidebar:
   the canister is running on.
 * The non-replicated mode of `http_request`, selected by the `is_replicated` field, is no longer
   considered experimental.
+* New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
+  `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as
+  for `secp256k1`, the concatenation of the 32-byte big-endian encodings of r and s. The `ecdsa_curve`
+  argument of `ic0.cost_sign_with_ecdsa` accepts `1` for the new curve. As for any curve, the
+  availability of a particular `key_id` depends on the implementation.
 
 ### 0.67.0 (2026-08-31) {$0_67_0}
 * New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`
