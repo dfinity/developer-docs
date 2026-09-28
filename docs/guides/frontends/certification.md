@@ -242,15 +242,17 @@ export async function getVerifiedValue(
   key: string,
   // value is opt text (Rust) or ?blob (Motoko); certificate is a blob (Rust) or ?blob (Motoko)
   response: {
-    value: string | Uint8Array | null;
-    certificate: Uint8Array | null;
+    value?: string | Uint8Array | null;
+    certificate?: Uint8Array | null;
     witness: Uint8Array;
   },
 ): Promise<string | null> {
   if (!response.certificate) throw new Error("no certificate: call the getter as a query");
   const value =
-    response.value instanceof Uint8Array ? new TextDecoder().decode(response.value) : response.value;
-  // Steps 1-5; throws CertificateTimeError or CertificateVerificationError on failure.
+    response.value instanceof Uint8Array
+      ? new TextDecoder().decode(response.value)
+      : (response.value ?? null);
+  // Checks signature, time and root hash; throws CertificateTimeError or CertificateVerificationError.
   const tree = await verifyCertification({
     canisterId: Principal.fromText(canisterId),
     encodedCertificate: response.certificate,
@@ -259,7 +261,7 @@ export async function getVerifiedValue(
     maxCertificateTimeOffsetMs: MAX_CERT_TIME_OFFSET_MS,
   });
 
-  // Step 6: the path must match how the canister inserted the key (here: UTF-8 bytes).
+  // The path must match how the canister inserted the key (here: UTF-8 bytes).
   const result = lookup_path([new TextEncoder().encode(key)], tree);
   switch (result.status) {
     case LookupPathStatus.Found: {
@@ -277,13 +279,13 @@ export async function getVerifiedValue(
 }
 ```
 
-`lookup_path` returns a status, and only `Absent` proves that a key does not exist. `Unknown` means the witness does not cover the key: treat it as a failure, never as "not found", or a replica can hide a real value behind a witness for another key. Candid `blob` fields arrive as `Uint8Array` in `@icp-sdk/bindgen` bindings, so a getter's response can be passed as returned: the helper accepts the Rust example's `opt text` value and the Motoko `CertTree` example's `?Blob` value (decoded as UTF-8), and a `?Blob` certificate.
+`lookup_path` returns a status, and only `Absent` proves that a key does not exist. `Unknown` means the witness does not cover the key: treat it as a failure, never as "not found", or a replica can hide a real value behind a witness for another key. Candid `blob` fields arrive as `Uint8Array` in `@icp-sdk/bindgen` bindings, and `opt` record fields arrive as optional properties that are `undefined` when empty, so a getter's response can be passed as returned: the helper accepts the Rust example's `opt text` value and the Motoko `CertTree` example's `?Blob` value (decoded as UTF-8), and a `?Blob` certificate.
 
 Pass the root key of the network the canister runs on:
 
 - **Browser:** `safeGetCanisterEnv()?.IC_ROOT_KEY` from the `ic_env` cookie (`@icp-sdk/core/agent/canister-env`), which the frontend canister sets on local networks and mainnet alike. It is the key of the network serving the page, and only as trustworthy as the page: on a verifying hostname the gateway verifies the cookie along with the page, but a page loaded from a `raw` hostname can carry a forged key. A client that verifies responses fetched from a `raw` hostname needs a root key obtained independently, such as the mainnet key built into `@icp-sdk/core`.
 - **Node scripts and tests:** the `root_key` field of `icp network status --json`, hex-decoded to bytes.
-- **Mainnet:** the agent's built-in default, `agent.rootKey` on an agent created without a `rootKey` option.
+- **Mainnet:** the agent's built-in default, `agent.rootKey` on an agent created without a `rootKey` option (typed `Uint8Array | null`, so check it before passing it on).
 
 > **Never call `fetchRootKey()` or set `shouldFetchRootKey: true` in shipped code.** They make the agent fetch the root key from the replica over an unauthenticated connection: a man-in-the-middle could supply a fake root key and make forged certificates appear valid.
 
@@ -313,4 +315,4 @@ For a runnable example of the verification steps in a browser (a single certifie
 - [Security concepts](../../concepts/security.md): why query integrity matters
 - [HTTP Gateway specification](../../references/http-gateway-protocol-spec.md): how HTTP gateways verify responses
 
-<!-- Upstream: informed by dfinity/response-verification — packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts, examples/certification/certified-counter; dfinity/portal — docs/building-apps/frontends/asset-security.mdx; dfinity/icskills — skills/certified-variables/SKILL.md, skills/static-site/SKILL.md -->
+<!-- Upstream: informed by dfinity/response-verification (packages/ic-asset-certification/README.md, packages/ic-http-certification/README.md, packages/certificate-verification-js/README.md, packages/certificate-verification-js/src/index.ts); dfinity/portal (docs/building-apps/frontends/asset-security.mdx); dfinity/icskills (skills/certified-variables/SKILL.md, skills/static-site/SKILL.md) -->

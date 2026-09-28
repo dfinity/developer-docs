@@ -281,15 +281,17 @@ export async function getVerifiedValue(
   key: string,
   // value is opt text (Rust) or ?blob (Motoko); certificate is a blob (Rust) or ?blob (Motoko)
   response: {
-    value: string | Uint8Array | null;
-    certificate: Uint8Array | null;
+    value?: string | Uint8Array | null;
+    certificate?: Uint8Array | null;
     witness: Uint8Array;
   },
 ): Promise<string | null> {
   if (!response.certificate) throw new Error("no certificate: call the getter as a query");
   const value =
-    response.value instanceof Uint8Array ? new TextDecoder().decode(response.value) : response.value;
-  // Steps 1-5; throws CertificateTimeError or CertificateVerificationError on failure.
+    response.value instanceof Uint8Array
+      ? new TextDecoder().decode(response.value)
+      : (response.value ?? null);
+  // Checks signature, time and root hash; throws CertificateTimeError or CertificateVerificationError.
   const tree = await verifyCertification({
     canisterId: Principal.fromText(canisterId),
     encodedCertificate: response.certificate,
@@ -298,7 +300,7 @@ export async function getVerifiedValue(
     maxCertificateTimeOffsetMs: MAX_CERT_TIME_OFFSET_MS,
   });
 
-  // Step 6: the path must match how the canister inserted the key (here: UTF-8 bytes).
+  // The path must match how the canister inserted the key (here: UTF-8 bytes).
   const result = lookup_path([new TextEncoder().encode(key)], tree);
   switch (result.status) {
     case LookupPathStatus.Found: {
@@ -329,8 +331,8 @@ import { Principal } from "@icp-sdk/core/principal";
 export async function verifySingleValue(
   rootKey: Uint8Array,
   canisterId: string,
-  // certificate is ?blob in the Motoko getter; null means it did not run as a query call
-  response: { value: string; certificate: Uint8Array | null },
+  // certificate is ?blob in the Motoko getter; empty means it did not run as a query call
+  response: { value: string; certificate?: Uint8Array | null },
 ): Promise<string> {
   if (!response.certificate) throw new Error("no certificate: call the getter as a query");
   const principal = Principal.fromText(canisterId);
@@ -399,7 +401,7 @@ icp canister call --query backend get '("key")'
 
 ## HTTP asset certification
 
-For canisters that serve HTTP responses directly through the HTTP Gateway, responses must be certified so the boundary node can verify them. This is a separate protocol built on top of certified data, handled by the `ic-http-certification` crate. For frontend assets (HTML, CSS, JS), [host a static site](../frontends/static-site/overview.md) instead, which handles HTTP certification automatically.
+For canisters that serve HTTP responses directly through the HTTP Gateway, responses must be certified so the HTTP gateway can verify them. This is a separate protocol built on top of certified data, handled by the `ic-http-certification` crate. For frontend assets (HTML, CSS, JS), [host a static site](../frontends/static-site/overview.md) instead, which handles HTTP certification automatically.
 
 See [Frontend certification](../../guides/frontends/certification.md) for how the frontend canisters certify responses, and what a custom HTTP canister has to do itself.
 
