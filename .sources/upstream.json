@@ -52,7 +52,7 @@
   "synced": [
     {
       "repo": "dfinity/certified-assets",
-      "pinned": "v0.4.0",
+      "pinned": "853c291",
       "source": "docs/",
       "target": "docs/guides/frontends/static-site/",
       "script": "scripts/sync-static-site.mjs",
