@@ -589,6 +589,29 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
   - `num_blocks_proposed_total` (`nat64`)
   - `num_block_failures_total` (`nat64`)
 
+### `subnet_metrics`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns subnet-wide metrics for a given subnet, which does not have to be the subnet hosting the caller. The four aggregates (`num_canisters`, `canister_state_bytes`, `consumed_cycles_total`, and `update_transactions_total`) report the same quantities that the certified state tree exposes at `/subnet/<subnet_id>/metrics`; this method makes them available to canisters, which cannot read the state tree. `block_height` and `million_round_instructions_total` have no path in the state tree and are only available here.
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`): any subnet
+- **Returns:**
+  - `block_height` (`nat`): the target subnet's current block height, i.e. the height of the block in whose execution the call is processed
+  - `num_canisters` (`nat`): canisters on the subnet
+  - `canister_state_bytes` (`nat`): total size of canister state in bytes
+  - `consumed_cycles_total` (`nat`): total [nominal cycles](ic-interface-spec/index.md#nominal-cycles) accounted for by the subnet
+  - `update_transactions_total` (`nat`): total transactions processed on the subnet
+  - `million_round_instructions_total` (`nat`): total instructions the subnet accounted for across the execution phases of all rounds, in units of one million and rounded up
+
+Only `block_height` is as of the block that processes the call. The other five fields are aggregates refreshed at block boundaries, so they describe an earlier block, and they are not refreshed in lockstep with each other. `canister_state_bytes` is the stalest: it is recomputed only every 10 blocks, at heights that are multiples of 10, so it can be up to 10 blocks behind `block_height` and up to 9 blocks behind the other aggregates, and it reads 0 until the first recomputation after the subnet was created.
+
+`update_transactions_total` and `million_round_instructions_total` only ever grow. `consumed_cycles_total` sums the historical nominal consumption of current canisters and the subnet's retained accounting for deleted canisters (including their remaining balances at deletion) and consumption on behalf of the subnet itself. Nominal charges can increase this metric under a free cost schedule without deducting cycles from canister balances. Refunds reduce it, and subnet splitting redistributes canisters' historical contributions, so the total can decrease and can include consumption from before the receiving subnet was created. `num_canisters` and `canister_state_bytes` are current values, not counters.
+
+`million_round_instructions_total` counts the executed Wasm instructions plus the scheduler's per-execution and per-canister overheads and the charges for work outside Wasm execution (compilation, chunk assembly, snapshots), so it is not a Wasm instruction meter. A reported value of `42` represents an underlying count from 41,000,001 through 42,000,000 instructions. Both instruction and transaction counters cover the subnet's whole lifetime, or the period since each metric was introduced for subnets that predate it.
+
 ### `subnet_info`
 
 Returns metadata about a subnet.
