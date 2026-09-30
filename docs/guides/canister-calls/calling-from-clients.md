@@ -279,7 +279,7 @@ export default defineConfig({
     headers: {
       "Set-Cookie": `ic_env=${encodeURIComponent(
         `ic_root_key=${IC_ROOT_KEY_HEX}&PUBLIC_CANISTER_ID:backend=${BACKEND_CANISTER_ID}`
-      )}; SameSite=Lax;`,
+      )}; Path=/; SameSite=Lax;`,
     },
   },
 });
