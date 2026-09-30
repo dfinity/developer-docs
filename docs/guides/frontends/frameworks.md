@@ -11,7 +11,7 @@ This guide shows you how to configure your framework's build pipeline, wire up t
 
 ## Prerequisites
 
-- [icp-cli](https://cli.internetcomputer.org/1.5/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
+- [icp-cli](https://cli.internetcomputer.org/1.6/guides/installation) installed: `npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm`
 - A backend canister deployed (or a static-only site with no backend)
 - Familiarity with [hosting a static site](static-site/overview.md)
 
@@ -36,7 +36,7 @@ The [hello-world template](../../getting-started/project-structure.md) uses Reac
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         build:
           - npm install
@@ -73,7 +73,7 @@ export default defineConfig({
       // Simulate the ic_env cookie that the canister injects in production.
       "Set-Cookie": `ic_env=${encodeURIComponent(
         `ic_root_key=${IC_ROOT_KEY_HEX}&PUBLIC_CANISTER_ID:backend=${BACKEND_CANISTER_ID}`
-      )}; SameSite=Lax;`,
+      )}; Path=/; SameSite=Lax;`,
     },
     proxy: {
       "/api": {
@@ -216,7 +216,7 @@ export default {
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         build:
           - npm install
@@ -248,7 +248,7 @@ This outputs static files to the `out/` directory.
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         build:
           - npm install
@@ -273,7 +273,7 @@ Export your game from Unity Editor: **File → Build Settings → WebGL → Buil
 canisters:
   - name: unity_webgl_template_assets
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         dir: dist
         build:
@@ -295,7 +295,7 @@ Export your game from Godot Editor: **Project → Export → HTML5 → Export Pr
 canisters:
   - name: godot_html5_assets
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         dir: dist
         build:
@@ -332,7 +332,7 @@ For sites with no backend canister (portfolios, landing pages, documentation):
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         build:
           - npm install
