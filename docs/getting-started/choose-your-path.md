@@ -25,6 +25,21 @@ ICP has a set of [ICP skills](https://skills.internetcomputer.org): structured k
 
 **Learn more:** [AI coding agents](../guides/ai-coding-agents.md)
 
+## Ship an app without a toolchain
+
+**You want to:** Get a working app running on ICP without installing anything.
+
+[Caffeine](https://caffeine.ai) builds apps on ICP from a chat description. You describe what you want, and Caffeine's cloud agent writes the app (a Motoko backend and a React frontend), builds it, and hosts it on the Internet Computer. You publish it to a live URL from the Caffeine web app. Nothing runs on your machine.
+
+Caffeine suits a first prototype, or an app you intend to keep changing through chat. When you want to control the build yourself, choose the language, or use your own frontend stack, follow the [Quickstart](quickstart.md) and build with icp-cli instead.
+
+**Start with:** [caffeine.ai](https://caffeine.ai): describe your app and watch it build.
+
+**Then explore:**
+
+- [Drive Caffeine from your agent](../guides/ai-coding-agents.md#drive-caffeine-from-your-agent): work with your Caffeine projects from Claude Code, Cursor, ChatGPT, or another MCP client
+- [Caffeine help center](https://help.caffeine.ai/hc/en-us): Caffeine's own guides and reference
+
 ## Backend development
 
 **You want to:** Write canister logic: store data, call APIs, run scheduled tasks.
