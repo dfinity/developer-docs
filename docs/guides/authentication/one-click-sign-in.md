@@ -51,16 +51,25 @@ An app that asks the user for their organization's domain can show whether it wo
 | `invalid` | The input is not a domain. | Ask the user to correct it. |
 | `unavailable` | The domain publishes no usable configuration, or resolving it failed. `retryAfter` is when a retry can succeed, when known. | The failure, and a retry button. |
 
-`getSsoStatus()` is synchronous and never throws, and `subscribe()` calls back whenever it changes. Build a new client as the user types, and dispose of the one it replaces, which also stops its check:
+`getSsoStatus()` is synchronous and never throws, and `subscribe()` calls back whenever it changes. Build a new client once the user pauses typing, and dispose of the one it replaces, which also stops its check:
 
 ```javascript
 let client;
+let timer;
 
 input.addEventListener("input", () => {
+  // Drop the old domain at once, so Continue never signs in to it.
   client?.dispose();
-  client = new AuthClient({ ssoDomain: input.value });
-  client.subscribe(() => render(client.getSsoStatus()));
-  render(client.getSsoStatus());
+  client = undefined;
+  showSpinner();
+
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const next = new AuthClient({ ssoDomain: input.value });
+    next.subscribe(() => render(next.getSsoStatus()));
+    render(next.getSsoStatus());
+    client = next;
+  }, 300);
 });
 
 function render(sso) {
@@ -82,7 +91,7 @@ continueButton.addEventListener("click", () => {
 });
 ```
 
-A replaced client is disposed before it can report, so a stale result never renders. The client waits a moment before asking Internet Identity, so fast typing does not need a debounce of its own.
+A replaced client is disposed before it can report, so a stale result never renders. The debounce builds one client per pause rather than one per keystroke.
 
 For a "Try again" button, call `refreshSsoStatus()`. While `retryAfter` is in the future, keep the button disabled and count down to it ("Try again in 2 min"): Internet Identity does not retry a failing domain sooner, and an early retry answers `unavailable` again at once.
 
