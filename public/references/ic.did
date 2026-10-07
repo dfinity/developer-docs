@@ -519,7 +519,8 @@ type subnet_metrics_result = record {
     // canisters (including their remaining balances at deletion), the cycles
     // charged for HTTPS outcalls and threshold signature and vetKD requests
     // (accounted for at the subnet level rather than per canister), and the
-    // cycles attached to dropped best-effort responses. Nominal cycles record
+    // cycles lost when messages or refunds are dropped (e.g. because their
+    // recipient no longer exists). Nominal cycles record
     // consumption at normal cost-schedule rates even when resource use is
     // free, so this is neither a spendable balance nor a count of cycles
     // burned. Refunds reduce the total. Subnet splitting redistributes
