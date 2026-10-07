@@ -259,7 +259,7 @@ To point an existing custom domain at a different canister:
 
 Internet Identity (II) derives user principals from the origin domain. If your users authenticate using the canister URL (`<canister-id>.icp.net`) and you switch to a custom domain, they will get different principals on the new domain.
 
-To preserve the same principals across both origins, configure alternative origins. See [Internet Identity](../authentication/internet-identity.md) for the setup.
+To preserve the same principals across both origins, configure alternative origins. See [Use one derivation origin](../authentication/shared-sessions.md#use-one-derivation-origin) for the setup.
 
 ## DNS configuration by registrar
 
@@ -358,6 +358,6 @@ Remove any duplicates and keep exactly one record containing your canister ID.
 
 - [Certification](certification.md): Enable certified asset responses for your custom domain
 - [Cycles management](../canister-management/cycles-management.md): Ensure your canister has sufficient cycles for production traffic
-- [Internet Identity](../authentication/internet-identity.md): Configure alternative origins if your users authenticate with II
+- [Use one derivation origin](../authentication/shared-sessions.md#use-one-derivation-origin): Configure alternative origins if your users authenticate with II
 
 <!-- Upstream: informed by dfinity/portal — docs/building-apps/frontends/custom-domains/using-custom-domains.mdx, docs/building-apps/frontends/custom-domains/dns-setup.mdx; dfinity/icskills — skills/custom-domains/SKILL.md -->
