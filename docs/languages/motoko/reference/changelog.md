@@ -8,6 +8,25 @@ sidebar:
 
 # Motoko compiler changelog
 
+## 1.16.1 (2026-09-16)
+
+* motoko (`moc`)
+
+  * bugfix: trapping `**` on `Nat8`, `Nat16`, `Nat32`, `Int8`, `Int16` and
+    `Int32` now traps when the result overflows the 64-bit intermediate
+    instead of returning a wrapped value (e.g. `(65536 : Nat32) ** 4` returned
+    `0`) (#6340).
+
+  * bugfix: `Region.loadBlob`/`Region.storeBlob` no longer read one block past
+    the end of a region's block table when a block-aligned range ends exactly
+    at the end of the region (#6373).
+
+  * perf: the incremental GC's write, allocation and weak-reference read barriers now
+    gate on a backend-cached running-GC flag instead of calling into the RTS (#6111).
+
+  * perf: don't GC trace dummy coercion markers for freshly Candid-decoded
+    objects (#6370).
+
 ## 1.16.0 (2026-09-09)
 
 * motoko (`moc`)

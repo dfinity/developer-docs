@@ -1,4 +1,6 @@
 # Files the pr-automation-bot-public bot is allowed to change via automated PRs.
+# Each block covers what its workflow stages. Patterns are fnmatch, where `*`
+# also matches `/`, so a directory entry covers nested paths.
 
 # sync-motoko: bumps the Motoko submodule and syncs generated docs
 .sources/motoko
@@ -11,6 +13,9 @@ docs/references/internet-identity-spec.md
 docs/references/verifiable-credentials-spec.md
 public/references/internet-identity.did
 
+# sync-static-site: bumps the certified-assets pin and syncs the static-site pages
+.sources/upstream.json
+docs/guides/frontends/static-site/*
+
 # update-syntax-grammars: updates TextMate grammars from vscode-motoko releases
-syntaxes/motoko.tmLanguage.json
-syntaxes/candid.tmLanguage.json
+syntaxes/*

@@ -4,9 +4,12 @@
 //
 // That repo is the single source of truth for how the canister behaves. Its
 // docs/ pages carry Starlight frontmatter and page order upstream, so this
-// script copies rather than authors: no headings are added, and nothing is
-// rewritten beyond the mechanical transformations listed below, each of which
-// exists because this site enforces a rule the source repo does not.
+// script copies rather than authors: the prose that lands here is the prose
+// upstream wrote, word for word. Nothing is reworded, and no command is
+// translated. Where a page breaks a rule this site enforces, the sync says so
+// and the fix belongs upstream, in the source of truth, rather than in a
+// pipeline that would hide the divergence and have to be re-applied on every
+// sync.
 //
 // Unlike the motoko and internet-identity syncs, nothing here is a submodule.
 // The build resolves no file from certified-assets, only markdown links, so the
@@ -14,15 +17,16 @@
 // that ref. Read content through raw.githubusercontent.com, never the contents
 // API, which returns base64 that gets truncated for larger files.
 //
-// Transformations:
-//   - Rewrite absolute links to this docs site into relative .md links (LINK_MAP)
-//   - Record provenance as source_repo / source_ref in the frontmatter
-//   - Normalize what the brand rules lock: em dash (U+2014), en dash (U+2013)
-//     as a prose separator, and "tamperproof" as one word. Prose only, never
-//     inside a fence. These are near no-ops today (upstream dropped its em
-//     dashes in certified-assets#125) and exist so a future page cannot
-//     reintroduce them silently.
-//   - Append a do-not-edit marker
+// What is touched, none of it prose:
+//   - Link targets: an absolute link to this docs site becomes the relative .md
+//     link that reaches the same page (LINK_MAP). Upstream writes these as
+//     absolute URLs because its docs/ is also read on GitHub. Keeping them
+//     verbatim is not an option: scripts/validate.js rejects both
+//     docs.internetcomputer.org and the retired internetcomputer.org/docs on
+//     every page in this repo, the synced tree included.
+//   - Frontmatter: source_repo / source_ref appended, recording what this copy
+//     came from.
+//   - A do-not-edit marker appended.
 //
 // Validation (exits non-zero on failure, so a bad sync never lands quietly):
 //   - Frontmatter must carry title, description and sidebar.order. This is the
@@ -32,7 +36,14 @@
 //     upstream linked a page LINK_MAP does not know about yet.
 //   - Every relative .md link must resolve on disk, including the ones pointing
 //     out of the synced tree.
-//   - No banned character may survive normalization.
+//   - No em dash, en-dash separator, or `dfx` command. These three are what
+//     scripts/validate.js and AGENTS.md ban outright, so publishing one would
+//     fail this repo's own CI on a page nobody here can edit. The sync stops
+//     instead, naming the page, and upstream fixes it.
+//
+// Softer house style (one-word "tamperproof", for instance) is reported at the
+// end of a run and not enforced: it is worth an upstream issue, not a blocked
+// sync.
 //
 // Usage: node scripts/sync-static-site.mjs [--ref <git-ref>]
 //   or:  npm run sync:static-site
@@ -74,25 +85,13 @@ function canonicalize(url) {
     .replace(/\/(#|$)/, '$1');
 }
 
-// Brand rules of record: https://jgwns-tqaaa-aaaao-ba5ua-cai.icp0.io/rules.json
-// (banned_characters, one_word_spellings). Prose only: a fence can hold a
-// hyphenated identifier or a range that is none of our business.
-const PROSE_RULES = [
-  { re: /\s*—\s*/g, to: ': ', what: 'em dash' },
-  { re: /\s–\s/g, to: ', ', what: 'en dash as separator' },
-  { re: /tamper[- ]proof/gi, to: 'tamperproof', what: 'hyphenated tamperproof' },
-];
-
-// `dfx` is banned in this repo (AGENTS.md "Never"), and a command reaches a
-// reader from inside a fence, where the prose rules deliberately do not go. Only
-// this exact shape is rewritten, checked against `icp canister call` in icp-cli
-// v1.5.0: <CANISTER> accepts a principal, `-e` selects the network, and the
-// argument has to be written out, because `icp canister call` with no argument
-// opens an interactive prompt instead of sending an empty one. dfx infers `()`;
-// icp does not, so the rewrite adds it. Any other `dfx` occurrence fails the
-// sync rather than being guessed at.
-const DFX_CALL = /^(\s*)dfx canister call (\S+) (\S+) --network ic[ \t]*$/gm;
-const rewriteDfx = (text) => text.replace(DFX_CALL, "$1icp canister call $2 $3 '()' -e ic");
+// House style this sync reports but does not apply. The brand rules of record
+// (https://jgwns-tqaaa-aaaao-ba5ua-cai.icp0.io/rules.json, one_word_spellings)
+// lock these spellings for prose written here; a synced page is prose written
+// upstream, so a hit is an upstream issue to raise, not something to patch on
+// the way in. Prose only: a fence can hold a hyphenated identifier that is none
+// of our business.
+const HOUSE_STYLE = [{ re: /tamper[- ]proof/i, what: '"tamperproof" split in two' }];
 
 // Prose means prose: not a fenced block, not the frontmatter, and within a line,
 // not an inline code span and not a link destination. A rule that reached into
@@ -120,19 +119,13 @@ function mapProse(text, fn) {
   return text.slice(0, cut) + body;
 }
 
-function normalizeProse(text) {
-  const applied = [];
-  const out = mapProse(text, (line) => {
-    let l = line;
-    for (const { re, to, what } of PROSE_RULES) {
-      if (re.test(l)) {
-        applied.push(what);
-        l = l.replace(re, to);
-      }
-    }
-    return l;
+function scanProse(text) {
+  const found = [];
+  mapProse(text, (line) => {
+    for (const { re, what } of HOUSE_STYLE) if (re.test(line)) found.push(what);
+    return line;
   });
-  return { out, applied: [...new Set(applied)] };
+  return [...new Set(found)];
 }
 
 function rewriteSiteLinks(text) {
@@ -312,9 +305,9 @@ async function main() {
 
   const pages = await sourcePages(ref);
   const written = [];
-  const normalized = [];
+  const deviations = [];
 
-  // Transform every page before writing any of them. A page that violates the
+  // Prepare every page before writing any of them. A page that violates the
   // contract then leaves the tree exactly as it was, rather than a mix of two
   // refs that still builds and still validates.
   const prepared = new Map();
@@ -332,12 +325,10 @@ async function main() {
       );
     }
 
-    const deDfxed = rewriteDfx(linked);
-    const { out: clean, applied } = normalizeProse(deDfxed);
-    if (deDfxed !== linked) applied.push('dfx command rewritten to icp');
-    if (applied.length) normalized.push(`${file}: ${applied.join(', ')}`);
+    const housePeeves = scanProse(linked);
+    if (housePeeves.length) deviations.push(`${file}: ${housePeeves.join(', ')}`);
 
-    prepared.set(file, stampProvenance(clean, file, ref) + marker(file, ref));
+    prepared.set(file, stampProvenance(linked, file, ref) + marker(file, ref));
   }
 
   // Check everything while it is still only in memory, so a failure leaves the
@@ -348,13 +339,16 @@ async function main() {
       problems.push(`${file}: broken link ${href}`);
     }
     if (/—|\s–\s/.test(content)) {
-      problems.push(`${file}: a banned character survived normalization`);
+      problems.push(
+        `${file}: holds an em dash or an en-dash separator, which ` +
+          `scripts/validate.js rejects on every page in this repo. Fix it ` +
+          `upstream; this sync does not rewrite prose.`
+      );
     }
     if (/\bdfx\b/.test(content)) {
       problems.push(
-        `${file}: publishes a \`dfx\` command this script does not know how to ` +
-          `rewrite. dfx is banned here (AGENTS.md "Never"), so fix it upstream, ` +
-          `or extend DFX_CALL if the shape is safe to translate.`
+        `${file}: holds a \`dfx\` command, which is banned here (AGENTS.md ` +
+          `"Never"). Fix it upstream; this sync does not translate commands.`
       );
     }
   }
@@ -400,9 +394,9 @@ async function main() {
   console.log(`\nWrote ${written.length} page(s) to ${TARGET_DIR}/:`);
   for (const file of written) console.log(`  ${file}`);
   if (stale.length) console.log(`Removed ${stale.length} page(s) gone upstream: ${stale.join(', ')}`);
-  if (normalized.length) {
-    console.log('\nNormalized (report upstream so these become no-ops):');
-    for (const line of normalized) console.log(`  ${line}`);
+  if (deviations.length) {
+    console.log('\nHouse style upstream does not follow (raise it there; nothing was changed here):');
+    for (const line of deviations) console.log(`  ${line}`);
   }
 }
 

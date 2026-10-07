@@ -19,7 +19,7 @@ These canisters are deployed per-project. There is no global canister ID: each p
 canisters:
   - name: frontend
     recipe:
-      type: "@dfinity/static-site@v0.3.3"
+      type: "@dfinity/static-site@v0.4.0"
       configuration:
         dir: dist
         build:

@@ -10,7 +10,7 @@ import CodeExample from '../../../src/components/CodeExample.astro';
 
 [Canisters](../../concepts/canisters.md) can make HTTP requests to external web services using HTTPS outcalls. This lets your canister call REST APIs or send notifications: all from canister code.
 
-HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`) via the `http_request` method, and via `flexible_http_request` for the flexible mode described below. `GET`, `HEAD`, and `POST` are supported in every mode. `PUT`, `DELETE`, and `PATCH` are only supported where the number of requests and responses is fixed and known, i.e. non-replicated outcalls and flexible outcalls where the number of total requests, min responses, and max responses are equal. `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
+HTTPS outcalls are available through the [IC management canister](../../references/management-canister.md) (`aaaaa-aa`): the `http_request` method, and `flexible_http_request` for the flexible mode described below. `GET`, `HEAD`, and `POST` are supported in every mode; `PUT`, `DELETE`, and `PATCH` only in some (see [Outcall modes](#outcall-modes)). `HEAD` works identically to `GET` but returns only headers: useful for checking resource availability without downloading the body. Only HTTPS (not plain HTTP) is supported.
 
 For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcalls](../../concepts/https-outcalls.md).
 
@@ -31,6 +31,7 @@ HTTPS outcalls have three modes. Replicated and non-replicated are selected by t
 |---|---|---|---|
 | Who sends the request | All N nodes on the subnet | One node | A committee of `total_requests` nodes |
 | What the canister gets | One agreed response | The one node's response | Between `min_responses` and `max_responses` individual responses |
+| Methods | `GET`, `HEAD`, `POST` | plus `PUT`, `DELETE`, `PATCH` | plus `PUT`, `DELETE`, `PATCH` when `total_requests`, `min_responses`, and `max_responses` are equal |
 | Consensus on response | Yes | No | No: consensus is on which responses to deliver |
 | Transform needed | Strongly recommended | Optional | Optional |
 | Pricing | Version 1 (deprecated) or 2 | Version 1 (deprecated) or 2 | Always version 2 |
@@ -188,7 +189,7 @@ Version 1 is still the default, so a call that does not set `pricing_version` ge
 | Attaching too little | rejected up front | rejected up front if it misses the base fee; otherwise runs with tighter per-node limits and may fail partway |
 | Flexible outcalls | not available | required |
 
-Which version a call gets depends on the CDK, and both compute the amount to attach for you. In Rust, the `HttpRequest` builder always selects version `2` and prices the call with `ic0.cost_http_request_v2`; `with_expected_*` narrows the reservation from the worst case to what the call is expected to consume. In Motoko, `Call.httpRequest` from the `ic` package attaches the version `1` cost using `ic0.cost_http_request`. The Rust examples above are therefore priced with version `2`, and the Motoko ones with version `1`. Do not set `pricing_version = 2` on a request you pass to `Call.httpRequest`: the wrapper would still attach the version `1` amount, which is far below what version `2` reserves, so the call would run within a budget too small to finish. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
+Which version a call gets depends on the wrapper you call through, and both compute the amount to attach for you. In Rust, the `HttpRequest` builder always selects version `2` and prices the call with `ic0.cost_http_request_v2`; `with_expected_*` narrows the reservation from the worst case to what the call is expected to consume. In Motoko, `Call.httpRequest` from the `ic` package attaches the version `1` cost using `ic0.cost_http_request`. The Rust examples above are therefore priced with version `2`, and the Motoko ones with version `1`. Do not set `pricing_version = 2` on a request you pass to `Call.httpRequest`: the wrapper would still attach the version `1` amount, which is far below what version `2` reserves, so the call would run within a budget too small to finish. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 ### Version 1
 
@@ -224,6 +225,8 @@ See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full 
 Use the "Full example in ICP Ninja" links above to deploy and test directly in the browser. To test locally with icp-cli, clone the example and run `icp network start -d && icp deploy`.
 
 > **Note:** The local replica runs a single node, so all responses reach consensus automatically: even without a transform function. Verify your transform produces identical output for varying inputs (different headers, timestamps) before deploying to a multi-node subnet, where mismatches cause "no consensus" errors.
+>
+> Flexible outcalls do run locally, but every response comes from that same single node, so a local run exercises the call and your reconciliation code without ever producing the disagreement reconciliation exists for.
 
 ## Next steps
 
@@ -234,4 +237,4 @@ Use the "Full example in ICP Ninja" links above to deploy and test directly in t
 - [Chain Fusion: Ethereum](../chain-fusion/ethereum.md): the EVM RPC canister uses HTTPS outcalls under the hood
 - [Cycles costs](../../references/cycle-costs.md#https-outcalls): outcall pricing details
 
-{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/; dfinity/examples send_http_get, send_http_post */}
+{/* Upstream: informed by dfinity/portal docs/building-apps/network-features/using-http/https-outcalls/; dfinity/examples send_http_get, send_http_post, send_http_flexible */}

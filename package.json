@@ -18,17 +18,19 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.1",
-    "@astrojs/starlight": "^0.42.0",
+    "@astrojs/starlight": "^0.42.4",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/newsreader": "^5.2.10",
-    "astro": "^7.3.2",
+    "astro": "^7.3.5",
     "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "github-slugger": "^2.0.0",
     "glob": "^13.0.6",
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-to-string": "^4.0.0"
   }
 }

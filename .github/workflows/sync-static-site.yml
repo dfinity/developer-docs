@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: '0 9 * * 3' # Weekly on Wednesday
   workflow_dispatch:
+    inputs:
+      ref:
+        description: >-
+          Ref to sync, for a docs fix that has shipped upstream but not been
+          released. Any commit-ish the clone can resolve. Leave empty to sync
+          the latest release, which is what the weekly run does.
+        required: false
+        type: string
 
 jobs:
   sync:
@@ -31,25 +39,70 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # A dispatch input reaches the shell as data, never as script.
+          INPUT_REF: ${{ inputs.ref }}
         run: |
           PIN=$(node -p "require('./.sources/upstream.json').synced.find(e => e.repo === 'dfinity/certified-assets').pinned")
           echo "pin=$PIN" >> $GITHUB_OUTPUT
 
-          # Stable releases only, the same pattern the upstream.json watcher uses.
-          # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
-          TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname \
-            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-          echo "Pinned: $PIN. Latest release: $TAG."
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          if [ -n "$INPUT_REF" ]; then
+            # A ref given by hand is the maintainer's call, so the release
+            # checks below do not apply: the reason to pass one is a docs fix
+            # that is not in a release yet.
+            #
+            # Tried as given and then under `origin/`, because a clone creates a
+            # local branch only for the default branch and leaves every other
+            # one reachable as `origin/<branch>` alone. A sha and a tag resolve
+            # on the first attempt.
+            REF_COMMIT=$(git -C /tmp/certified-assets rev-parse --verify --quiet "${INPUT_REF}^{commit}" \
+              || git -C /tmp/certified-assets rev-parse --verify --quiet "origin/${INPUT_REF}^{commit}") || {
+              echo "::error::Cannot resolve ref '$INPUT_REF' in dfinity/certified-assets."
+              exit 1
+            }
+            TAG=$(git -C /tmp/certified-assets rev-parse --short "$REF_COMMIT")
+            echo "Manual ref: $INPUT_REF resolved to $TAG. Pinned: $PIN."
 
-          # The pin is allowed to sit ahead of the latest release while a docs
-          # fix has shipped but a release has not (the state this sync started
-          # in). Syncing the tag then would publish older prose.
-          if git -C /tmp/certified-assets merge-base --is-ancestor "$TAG" "$PIN"; then
-            echo "Pin already contains $TAG. Nothing to sync."
-            echo "needed=false" >> $GITHUB_OUTPUT
-            exit 0
+            # Peel the pin to a commit before comparing. The tags here are
+            # annotated, so an unpeeled tag name resolves to the tag object and
+            # would never equal a commit: dispatching the pinned tag would then
+            # read as a change and rewrite the pin from that tag to its own
+            # commit sha, moving a tag pin onto a commit for no reason.
+            PIN_COMMIT=$(git -C /tmp/certified-assets rev-parse --verify --quiet "${PIN}^{commit}") || {
+              echo "::error::Pin '$PIN' does not resolve in dfinity/certified-assets."
+              exit 1
+            }
+            if [ "$REF_COMMIT" = "$PIN_COMMIT" ]; then
+              echo "That is the pin already. Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # A ref the pin already contains moves the pin backwards. That is
+            # what a rollback is, so it runs, but it is also what a mistyped sha
+            # looks like, so it is not silent: the run warns and the PR body
+            # says so, which is the difference between the two.
+            if git -C /tmp/certified-assets merge-base --is-ancestor \
+                 "$REF_COMMIT" "$PIN_COMMIT"; then
+              echo "::warning::$INPUT_REF is behind the pin $PIN. This will move the pin backwards."
+              echo "backwards=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Stable releases only, the same pattern the upstream.json watcher uses.
+            # `^v[0-9]` would accept v0.4.0-rc.1 and publish docs for a prerelease.
+            TAG=$(git -C /tmp/certified-assets tag --sort=-version:refname \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            echo "Pinned: $PIN. Latest release: $TAG."
+
+            # The pin is allowed to sit ahead of the latest release while a docs
+            # fix has shipped but a release has not (the state this sync started
+            # in). Syncing the tag then would publish older prose.
+            if git -C /tmp/certified-assets merge-base --is-ancestor "$TAG" "$PIN"; then
+              echo "Pin already contains $TAG. Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
           # Skip only when a PR is actually open. A branch on its own proves
           # nothing: if a previous run pushed and then failed at `gh pr create`,
@@ -68,18 +121,34 @@ jobs:
             git push origin --delete "$BRANCH"
           fi
 
-          # A release that ships canister changes without touching docs/ leaves
-          # the synced pages byte-identical, so there is no content to review.
-          # The pin still has to move: it is allowed to sit on a commit only
-          # while no release carries the pages, and skipping here would strand
-          # it on that commit for good. So the PR is opened either way, and the
-          # body says which of the two it is.
           CHANGED=$(git -C /tmp/certified-assets diff --name-only "${PIN}..${TAG}" -- docs/)
-          echo "needed=true" >> $GITHUB_OUTPUT
           if [ -z "$CHANGED" ]; then
-            echo "No docs/ changes between $PIN and $TAG: advancing the pin only."
-            echo "pin_only=true" >> $GITHUB_OUTPUT
+            # A release that ships canister changes without touching docs/ leaves
+            # the synced pages byte-identical, so there is nothing to review. Two
+            # cases, and only one of them is worth a pull request.
+            if [ -n "$INPUT_REF" ] || ! git -C /tmp/certified-assets show-ref \
+                 --verify --quiet "refs/tags/${PIN}"; then
+              # The pin is a commit (or a ref was dispatched by hand). Moving it
+              # onto the tag is the point: a commit pin is allowed only while no
+              # release carries the pages, and skipping here would strand it
+              # there for good.
+              echo "No docs/ changes between $PIN and $TAG: advancing the pin only."
+              echo "needed=true" >> $GITHUB_OUTPUT
+              echo "pin_only=true" >> $GITHUB_OUTPUT
+            else
+              # The pin is already a tag, so a pull request would carry an empty
+              # page diff and a bumped ref, for a reader to review and merge with
+              # nothing in it. The pin lags the release and stays accurate: it
+              # says which ref this copy came from, and the copy still matches it.
+              # The release itself is not lost, since the recipe that deploys this
+              # canister releases in lockstep and is tracked under `watched`.
+              echo "No docs/ changes between $PIN and $TAG, and the pin is a tag."
+              echo "Nothing to sync."
+              echo "needed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           else
+            echo "needed=true" >> $GITHUB_OUTPUT
             echo "Changed upstream pages:"
             echo "$CHANGED"
             echo "pin_only=false" >> $GITHUB_OUTPUT
@@ -158,11 +227,24 @@ jobs:
             echo ""
             echo "Automated sync of the certified-assets user docs."
             echo ""
-            echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
+            if [ -n "$INPUT_REF" ]; then
+              echo "**Ref:** \`$TAG\` (pinned from \`$PIN\`), dispatched by hand as \`$INPUT_REF\`."
+              echo "A ref is synced by hand when a docs fix has shipped upstream but not"
+              echo "been released; the next release moves the pin back onto a tag."
+              if [ "$BACKWARDS" = "true" ]; then
+                echo ""
+                echo "> [!WARNING]"
+                echo "> This ref is **behind** the pin, so the pin moves backwards and any"
+                echo "> page below is reverted to the older text. Intended for a rollback."
+                echo "> If you meant to move forward, close this and dispatch the right ref."
+              fi
+            else
+              echo "**Release:** \`$TAG\` (pinned from \`$PIN\`)"
+            fi
             echo ""
             if [ "$PIN_ONLY" = "true" ]; then
-              echo "No page changed in this range. The pin moves off a commit and onto"
-              echo "the release tag, so the only diff is \`source_ref\` on each page."
+              echo "No page changed in this range, so the only diff is the pin and the"
+              echo "\`source_ref\` each page records."
             else
               echo "**Changed upstream files:**"
               while IFS= read -r f; do
@@ -192,3 +274,5 @@ jobs:
           PIN: ${{ steps.check.outputs.pin }}
           CHANGED: ${{ steps.check.outputs.changed_files }}
           PIN_ONLY: ${{ steps.check.outputs.pin_only }}
+          INPUT_REF: ${{ inputs.ref }}
+          BACKWARDS: ${{ steps.check.outputs.backwards }}
