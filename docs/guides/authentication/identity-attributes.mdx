@@ -258,7 +258,7 @@ fn _internet_identity_sign_in_finish() -> SignInResult {
 }
 ```
 
-The `ok` / `err` result mirrors the Motoko library's, so the same frontend works against either backend. For scoped keys, look up the scoped form instead, such as `openid:https://accounts.google.com:verified_email` or `sso:acme.com:email`.
+The `ok` / `err` result mirrors the Motoko library's, so the same frontend works against either backend. For scoped keys, look up the scoped form instead, such as `openid:https://accounts.google.com:verified_email` or `sso:acme.com:email`. Accept an `sso:<domain>:` key only for a domain you trust, as the Motoko library's `trusted_sso_domains` does, and reject a bundle that mixes `sso:` keys with keys of another source.
 
 </TabItem>
 </Tabs>
