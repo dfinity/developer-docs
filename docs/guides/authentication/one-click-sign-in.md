@@ -76,14 +76,17 @@ function render(sso) {
   }
 }
 
-continueButton.addEventListener("click", () => client?.signIn());
+// Call signIn() before any await, or the browser blocks the popup.
+continueButton.addEventListener("click", () => {
+  client?.signIn().then(showApp, showSignInError);
+});
 ```
 
 A replaced client is disposed before it can report, so a stale result never renders. The client waits a moment before asking Internet Identity, so fast typing does not need a debounce of its own.
 
 For a "Try again" button, call `refreshSsoStatus()`. While `retryAfter` is in the future, keep the button disabled and count down to it ("Try again in 2 min"): Internet Identity does not retry a failing domain sooner, and an early retry answers `unavailable` again at once.
 
-The check also prepares Internet Identity for this domain, so `signIn()` on the same client starts without waiting. `signIn()` opens Internet Identity in every state except `invalid`, which rejects without opening anything. A sign-in through an `unavailable` domain shows Internet Identity's own error screen.
+The check also prepares Internet Identity for this domain, so `signIn()` on the same client starts without waiting. `signIn()` opens Internet Identity in every state except `invalid`, which rejects without opening anything. A sign-in through an `unavailable` domain shows Internet Identity's own error screen. In every state, `signIn()` also rejects when the user closes Internet Identity or authentication fails, so handle the rejection.
 
 ## Request attributes in the same step
 

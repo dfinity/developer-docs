@@ -50,14 +50,16 @@ The backend exposes two methods: `_internet_identity_sign_in_start` returns a no
 import { AuthClient } from "@icp-sdk/auth/client";
 import { AttributesIdentity } from "@icp-sdk/core/identity";
 import { HttpAgent, Actor } from "@icp-sdk/core/agent";
+import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 import { Principal } from "@icp-sdk/core/principal";
 
 const II_CANISTER_ID = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+const rootKey = safeGetCanisterEnv()?.IC_ROOT_KEY;
 
 async function signInWithAttributes(authClient, canisterId, idlFactory) {
   // Anonymous actor, used only to fetch the nonce.
   const anonymous = Actor.createActor(idlFactory, {
-    agent: await HttpAgent.create(),
+    agent: await HttpAgent.create({ rootKey }),
     canisterId,
   });
 
@@ -77,6 +79,7 @@ async function signInWithAttributes(authClient, canisterId, idlFactory) {
       attributes,
       signer: { canisterId: Principal.fromText(II_CANISTER_ID) },
     }),
+    rootKey,
   });
   const backend = Actor.createActor(idlFactory, { agent, canisterId });
 
@@ -129,7 +132,7 @@ persistent actor {
     };
   });
 
-  public query func getProfile(caller : Principal) : async ?Profile {
+  public shared query ({ caller }) func getProfile() : async ?Profile {
     profiles.get(caller)
   };
 };
@@ -164,14 +167,15 @@ use candid::{decode_one, CandidType, Deserialize, Nat, Principal};
 use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer, time};
 use ic_cdk::update;
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 const II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 const TRUSTED_ORIGIN: &str = "https://your-app.icp.net";
 const MAX_AGE_NS: u64 = 5 * 60 * 1_000_000_000;
+const MAX_PENDING_NONCES: usize = 10_000;
 
 thread_local! {
-    static NONCES: RefCell<HashSet<Vec<u8>>> = RefCell::new(HashSet::new());
+    static NONCES: RefCell<HashMap<Vec<u8>, u64>> = RefCell::new(HashMap::new());
 }
 
 #[derive(CandidType, Deserialize)]
@@ -199,7 +203,14 @@ fn get<'a>(entries: &'a [(String, Value)], key: &str) -> Option<&'a Value> {
 #[update]
 async fn _internet_identity_sign_in_start() -> Vec<u8> {
     let nonce = ic_cdk_management_canister::raw_rand().await.expect("raw_rand failed");
-    NONCES.with_borrow_mut(|n| n.insert(nonce.clone()));
+    let now = time();
+    NONCES.with_borrow_mut(|n| {
+        n.retain(|_, issued| now - *issued < MAX_AGE_NS);
+        if n.len() >= MAX_PENDING_NONCES {
+            ic_cdk::trap("too many pending sign-ins");
+        }
+        n.insert(nonce.clone(), now);
+    });
     nonce
 }
 
@@ -226,7 +237,7 @@ fn verified_attributes() -> Result<Vec<(String, Value)>, String> {
     let Some(Value::Blob(nonce)) = get(&entries, "implicit:nonce") else {
         return Err("missing nonce".into());
     };
-    if !NONCES.with_borrow_mut(|n| n.remove(nonce)) {
+    if NONCES.with_borrow_mut(|n| n.remove(nonce)).is_none() {
         return Err("unknown or consumed nonce".into());
     }
     Ok(entries)

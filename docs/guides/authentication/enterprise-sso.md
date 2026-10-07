@@ -13,7 +13,7 @@ This guide is for the SSO administrator. If you are building an application, see
 
 ## 1. Register an OIDC client
 
-In your identity provider, create App Integration → **OIDC** → **Web Application**.
+In your identity provider, register an **OIDC web application** (in Okta: Create App Integration → OIDC → Web Application) with these settings:
 
 | Setting | Value |
 |---------|-------|

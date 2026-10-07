@@ -133,7 +133,8 @@ Each entry is matched exactly, so it is the full URL with no fragment. Serve the
 Every page reads the status as it loads and hands `signed-in-elsewhere` to `/reauth` with the page to come back to. Every page, not only the ones that need a sign-in: otherwise a visitor already signed in on a sibling lands on a public page here and sees a signed-out header.
 
 ```javascript
-const status = new AuthClient(clientOptions).getStatus();
+const authClient = new AuthClient(clientOptions);
+const status = authClient.getStatus();
 
 // This state only: signed-out and expired need a normal sign-in.
 if (status.state === "signed-in-elsewhere") {
@@ -143,7 +144,7 @@ if (status.state === "signed-in-elsewhere") {
 
 ### Offer it to an open page
 
-Once a page is open, its status can still turn `signed-in-elsewhere` when someone signs in on a sibling in another tab. Redirecting a page the user is working on would lose their work, so offer the same redirect behind a button:
+Once a page is open, the status of that same client can still turn `signed-in-elsewhere` when someone signs in on a sibling in another tab. Redirecting a page the user is working on would lose their work, so offer the same redirect behind a button:
 
 ```javascript
 authClient.subscribe(() => {
