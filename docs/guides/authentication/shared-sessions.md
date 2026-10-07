@@ -39,25 +39,6 @@ Entries are origins, with no paths and no trailing slashes. At most 100 are allo
   Access-Control-Allow-Origin: *
 ```
 
-On the [legacy asset canister](../frontends/asset-canister.md), un-ignore the directory and set the headers in `.ic-assets.json5`:
-
-```json
-[
-  {
-    "match": ".well-known",
-    "ignore": false
-  },
-  {
-    "match": ".well-known/ii-alternative-origins",
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json"
-    },
-    "ignore": false
-  }
-]
-```
-
 The normative rules are in [Alternative frontend origins](../../references/internet-identity-spec.md#alternative-frontend-origins) in the Internet Identity specification.
 
 ## Share one sign-in across sibling subdomains

@@ -47,31 +47,6 @@ On a [static site](../frontends/static-site/overview.md), `.well-known/` is uplo
   Access-Control-Allow-Origin: *
 ```
 
-On the [legacy asset canister](../frontends/asset-canister.md), un-ignore the directory and set the headers in `.ic-assets.json5`:
-
-```json
-[
-  {
-    "match": ".well-known",
-    "ignore": false
-  },
-  {
-    "match": ".well-known/ii-app-metadata",
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json"
-    },
-    "ignore": false
-  },
-  {
-    "match": "logo.png",
-    "headers": {
-      "Access-Control-Allow-Origin": "*"
-    }
-  }
-]
-```
-
 A missing, unreachable, or invalid document never blocks sign-in: the screens fall back to the curated entry II still ships for a small list of apps, and to showing your origin otherwise. A logo that cannot be fetched costs you the logo alone; the name and description still show.
 
 The metadata is exactly as trustworthy as the origin serving it, so II keeps showing your origin next to it: the origin is what users can actually check.
