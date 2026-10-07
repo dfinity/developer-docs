@@ -102,10 +102,12 @@ The bundle is an [ICRC-3 value](https://github.com/dfinity/ICRC-1/tree/main/stan
 3. **`implicit:issued_at_timestamp_ns`** is recent; a few minutes is typical.
 4. **`implicit:nonce`** is one this canister issued and has not consumed yet; consume it.
 
+The `identity-attributes` library, for [Motoko](https://mops.one/identity-attributes) and [Rust](https://crates.io/crates/identity-attributes), adds both methods and runs your function only for a bundle that passes every check:
+
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
 
-The [`mo:identity-attributes`](https://mops.one/identity-attributes) library injects both methods and runs your `onVerified` callback only for a bundle that passes every check. Add it to `mops.toml`:
+Add it to `mops.toml`:
 
 ```toml
 [dependencies]
@@ -138,10 +140,50 @@ persistent actor {
 };
 ```
 
-`onVerified` receives `{ name; email; sso }`:
+</TabItem>
+<TabItem label="Rust">
+
+Add it to `Cargo.toml`:
+
+```toml
+[dependencies]
+candid = "0.10"
+ic-cdk = "0.20"
+identity-attributes = "0.1"
+```
+
+```rust
+use candid::Principal;
+use ic_cdk::api::msg_caller;
+use ic_cdk::query;
+use identity_attributes::IdentityAttributes;
+use std::cell::RefCell;
+use std::collections::BTreeMap;
+
+thread_local! {
+    static PROFILES: RefCell<BTreeMap<Principal, IdentityAttributes>> =
+        const { RefCell::new(BTreeMap::new()) };
+}
+
+identity_attributes::endpoints!(|caller: Principal, attributes: IdentityAttributes| {
+    PROFILES.with_borrow_mut(|profiles| profiles.insert(caller, attributes));
+});
+
+#[query]
+fn get_profile() -> Option<IdentityAttributes> {
+    PROFILES.with_borrow(|profiles| profiles.get(&msg_caller()).cloned())
+}
+
+ic_cdk::export_candid!();
+```
+
+</TabItem>
+</Tabs>
+
+Your function receives `{ name, email, sso }`:
 
 - `email` comes from `verified_email` (or `openid:<provider>:verified_email`), and for an SSO sign-in from `sso:<domain>:email`. The library never reads the unverified `email` key of other sources, which is why the frontend requests `verified_email`.
-- `sso` is the organization's domain when the values came from `sso:` keys, and `null` otherwise.
+- `sso` is the organization's domain when the values came from `sso:` keys, and empty otherwise.
 
 Configure the library through the canister's environment variables in `icp.yaml`:
 
@@ -155,113 +197,7 @@ canisters:
         trusted_sso_domains: "acme.com"                           # optional, comma-separated; omit to reject all sso: keys
 ```
 
-An unconfigured canister trusts nothing: without `trusted_attribute_signers` every bundle is rejected, and without `frontend_origins` the finish method returns `#err(#FrontendOriginsNotConfigured)`. A bundle with an `sso:` key from a domain outside `trusted_sso_domains`, or one mixing `sso:` keys with keys of another source, is rejected as well.
-
-</TabItem>
-<TabItem label="Rust">
-
-There is no CDK library for this yet. Read the bundle with `msg_caller_info_signer()` and `msg_caller_info_data()` (in [`ic-cdk`](https://docs.rs/ic-cdk/latest/ic_cdk/) 0.20.1 and later), mint nonces with [`ic-cdk-management-canister`](https://docs.rs/ic-cdk-management-canister/latest/ic_cdk_management_canister/), and run the four checks before reading an attribute:
-
-```rust
-use candid::{decode_one, CandidType, Deserialize, Nat, Principal};
-use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer, time};
-use ic_cdk::update;
-use std::cell::RefCell;
-use std::collections::HashMap;
-
-const II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
-const TRUSTED_ORIGIN: &str = "https://your-app.icp.net";
-const MAX_AGE_NS: u64 = 5 * 60 * 1_000_000_000;
-const MAX_PENDING_NONCES: usize = 10_000;
-
-thread_local! {
-    static NONCES: RefCell<HashMap<Vec<u8>, u64>> = RefCell::new(HashMap::new());
-}
-
-#[derive(CandidType, Deserialize)]
-enum Value {
-    Nat(Nat),
-    Int(candid::Int),
-    Blob(Vec<u8>),
-    Text(String),
-    Array(Vec<Value>),
-    Map(Vec<(String, Value)>),
-}
-
-#[derive(CandidType, Deserialize)]
-enum SignInResult {
-    #[serde(rename = "ok")]
-    Ok,
-    #[serde(rename = "err")]
-    Err(String),
-}
-
-fn get<'a>(entries: &'a [(String, Value)], key: &str) -> Option<&'a Value> {
-    entries.iter().find(|(k, _)| k == key).map(|(_, v)| v)
-}
-
-#[update]
-async fn _internet_identity_sign_in_start() -> Vec<u8> {
-    let nonce = ic_cdk_management_canister::raw_rand().await.expect("raw_rand failed");
-    let now = time();
-    NONCES.with_borrow_mut(|n| {
-        n.retain(|_, issued| now - *issued < MAX_AGE_NS);
-        if n.len() >= MAX_PENDING_NONCES {
-            ic_cdk::trap("too many pending sign-ins");
-        }
-        n.insert(nonce.clone(), now);
-    });
-    nonce
-}
-
-fn verified_attributes() -> Result<Vec<(String, Value)>, String> {
-    if msg_caller_info_signer() != Some(Principal::from_text(II_CANISTER_ID).unwrap()) {
-        return Err("untrusted signer".into());
-    }
-    let Ok(Value::Map(entries)) = decode_one::<Value>(&msg_caller_info_data()) else {
-        return Err("malformed bundle".into());
-    };
-    let Some(Value::Text(origin)) = get(&entries, "implicit:origin") else {
-        return Err("missing origin".into());
-    };
-    if origin != TRUSTED_ORIGIN {
-        return Err(format!("untrusted origin {origin}"));
-    }
-    let Some(Value::Nat(issued_at)) = get(&entries, "implicit:issued_at_timestamp_ns") else {
-        return Err("missing timestamp".into());
-    };
-    let issued_at: u64 = issued_at.0.clone().try_into().map_err(|_| "bad timestamp")?;
-    if time() > issued_at + MAX_AGE_NS {
-        return Err("bundle too old".into());
-    }
-    let Some(Value::Blob(nonce)) = get(&entries, "implicit:nonce") else {
-        return Err("missing nonce".into());
-    };
-    if NONCES.with_borrow_mut(|n| n.remove(nonce)).is_none() {
-        return Err("unknown or consumed nonce".into());
-    }
-    Ok(entries)
-}
-
-#[update]
-fn _internet_identity_sign_in_finish() -> SignInResult {
-    let entries = match verified_attributes() {
-        Ok(entries) => entries,
-        Err(e) => return SignInResult::Err(e),
-    };
-    let Some(Value::Text(email)) = get(&entries, "verified_email") else {
-        return SignInResult::Err("missing verified_email".into());
-    };
-    // Your logic: for example, store a profile for msg_caller() with this email.
-    let _ = (msg_caller(), email);
-    SignInResult::Ok
-}
-```
-
-The `ok` / `err` result mirrors the Motoko library's, so the same frontend works against either backend. For scoped keys, look up the scoped form instead, such as `openid:https://accounts.google.com:verified_email` or `sso:acme.com:email`. Accept an `sso:<domain>:` key only for a domain you trust, as the Motoko library's `trusted_sso_domains` does, and reject a bundle that mixes `sso:` keys with keys of another source.
-
-</TabItem>
-</Tabs>
+An unconfigured canister trusts nothing: without `trusted_attribute_signers` every bundle is rejected, and without `frontend_origins` the finish method returns `err` with `FrontendOriginsNotConfigured`. A bundle with an `sso:` key from a domain outside `trusted_sso_domains`, or one mixing `sso:` keys with keys of another source, is rejected as well. Both libraries return the same Candid types, so the same frontend works against either.
 
 ## Common mistakes
 
