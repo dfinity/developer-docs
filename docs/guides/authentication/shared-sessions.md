@@ -65,7 +65,7 @@ Choosing a cookie domain means trusting every origin under it, so do this only o
 An app whose status is `signed-in-elsewhere` holds no credential for the account its sibling signed in with. It asks Internet Identity for its own, silently, on a route of its own. That runs on page load without a user gesture, which a popup would be blocked for, so it uses the redirect transport:
 
 ```javascript
-// /reauth
+// Runs on the /reauth route.
 async function reauth() {
   const status = new AuthClient(clientOptions).getStatus();
   if (status.state !== "signed-in-elsewhere") {
