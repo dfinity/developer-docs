@@ -849,6 +849,51 @@ A single metric entry is a record with the following fields:
 
 - `num_block_failures_total` (`nat64`): the number of failed block proposals by this node.
 
+### IC method `subnet_metrics` {#ic-subnet_metrics}
+
+This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+
+:::note
+
+The subnet metrics management canister API is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
+
+:::
+
+Given a subnet ID as input, this method returns a record of subnet-wide metrics describing that subnet's resource usage and performance.
+
+The fields `num_canisters`, `canister_state_bytes`, `consumed_cycles_total`, and `update_transactions_total` report the same quantities that the certified state tree exposes at the path `/subnet/<subnet_id>/metrics` (see [Subnet information](./index.md#state-tree-subnet)). This method makes them available to canisters, which cannot read the state tree. The fields `block_height` and `million_round_instructions_total` have no path in the state tree and are only available through this method.
+
+In the following, *the subnet* refers to the subnet identified by the `subnet_id` argument.
+
+Only `block_height` describes the block in whose execution the call is processed. The other five fields are aggregates that the subnet refreshes at block boundaries, so they describe the subnet as of an earlier block. They are not all refreshed at the same rate, so they need not be mutually consistent. None of them should be read as a snapshot taken at `block_height`.
+
+The fields returned are:
+
+- `block_height` (`nat`): the current block height of the subnet, i.e., the height of the block in whose execution this call is processed.
+
+    Heights are consecutive numbers identifying the successive blocks of a subnet. This specification does not otherwise model block heights, and heights of different subnets are unrelated, so this value is only meaningful when compared against other values for the same subnet.
+
+    The value is monotonically non-decreasing for a given subnet.
+
+- `num_canisters` (`nat`): the number of canisters on the subnet. This is a current value, not a counter, so it decreases when canisters are deleted.
+
+- `canister_state_bytes` (`nat`): the total size in bytes of the state taken by canisters on the subnet. This is a current value, not a counter. Recomputing it is expensive, so it is refreshed only every 10 blocks, at heights that are multiples of 10. It can be up to 10 blocks behind `block_height` and up to 9 blocks behind the other aggregates. It reads 0 until the first refresh after the subnet was created.
+
+- `consumed_cycles_total` (`nat`): the total [nominal cycles](./index.md#nominal-cycles) accounted for by the subnet. This is the sum of:
+
+    - the historical consumption of the canisters currently on the subnet;
+    - the historical consumption of the canisters deleted on the subnet, plus their remaining cycle balances at deletion;
+    - the cycles charged for HTTPS outcalls, threshold signature requests, and vetKD requests, which are accounted for at the subnet level rather than per canister;
+    - the cycles lost when messages or refunds are dropped, for example because their recipient no longer exists.
+
+    Refunds of prepaid charges reduce the total. Subnet splitting preserves canister histories and redistributes them with the canisters. The original subnet thus loses their contribution. The new subnet inherits consumption from before its creation. The total can therefore decrease and is not limited to consumption that occurred on the subnet.
+
+- `update_transactions_total` (`nat`): the total number of transactions processed on the subnet, i.e., the total number of messages executed in the replicated mode. The value is monotonically non-decreasing for a given subnet.
+
+- `million_round_instructions_total` (`nat`): the total number of instructions the subnet accounted for when executing its blocks, in units of one million and rounded up. For example, a value of `42` represents an underlying count from 41,000,001 through 42,000,000 instructions. Besides the executed Wasm instructions, it covers the fixed per-execution and per-canister overheads charged by the scheduler. It also covers the charges for work performed outside of Wasm execution, such as compilation, chunk assembly, and snapshot operations. It is therefore not a Wasm instruction meter. The value is monotonically non-decreasing for a given subnet.
+
+`update_transactions_total` and `million_round_instructions_total` cover the whole lifetime of the subnet, or the period since the respective metric was introduced for subnets that predate it.
+
 ### IC method `subnet_info` {#ic-subnet_info}
 
 This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.

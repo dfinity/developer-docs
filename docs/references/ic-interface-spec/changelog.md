@@ -8,6 +8,26 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.69.0 (2026-09-28) {$0_69_0}
+* New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
+  given subnet: the current block height, the number of canisters, the total canister
+  state size, the total nominal cycles consumed, the total number of processed
+  transactions, and the total number of instructions accounted for when executing the
+  subnet's blocks (`million_round_instructions_total`). All metrics except the block height
+  and the instruction total were previously readable only by external users, via the
+  certified state tree path `/subnet/<subnet_id>/metrics`. The instruction total is reported
+  in units of one million and rounded up. Besides the executed Wasm instructions, it covers
+  the fixed per-execution and per-canister overheads charged by the scheduler. It also
+  covers the charges for work performed outside of Wasm execution, so it is not a Wasm
+  instruction meter. On subnets created before its introduction, the instruction total
+  counts only from when their replicas started tracking it. The API is EXPERIMENTAL.
+* New definitions of cost schedules and nominal cycles.
+* Clarified semantics of the subnet metrics at `/subnet/<subnet_id>/metrics` in the
+  certified state tree. `num_canisters` and `canister_state_bytes` are current values, not
+  counters. `canister_state_bytes` is refreshed only every 10 blocks. `consumed_cycles_total`
+  counts nominal cycles and can decrease. `update_transactions_total` counts the messages
+  executed in replicated mode.
+
 ### 0.68.0 (2026-09-14) {$0_68_0}
 * New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
   of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus
