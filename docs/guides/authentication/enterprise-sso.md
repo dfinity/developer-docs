@@ -49,7 +49,7 @@ https://acme.com/.well-known/ii-openid-configuration
 
 `openid_configuration` must be an `https` URL, and your IdP's issuer and authorization endpoint must be on the same host as it. Internet Identity fetches the file itself, so it needs no CORS header.
 
-That is the whole setup. On **id.ai**, staff choose **Sign in with SSO**, enter **acme.com** as their company domain, then authenticate against your IdP. The domain is entered as a bare host, optionally with a port: `https://acme.com`, `acme.com/`, and `acme.com/sso` are not domains.
+That is the whole setup. On **id.ai**, staff choose **Sign in with SSO**, enter **acme.com** as their company domain, then authenticate against your IdP. The domain is entered bare, such as `acme.com`: `https://acme.com`, `acme.com/`, and `acme.com/sso` are not domains.
 
 ### How long a sign-in lasts
 
