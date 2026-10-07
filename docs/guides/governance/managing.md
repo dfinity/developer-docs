@@ -499,6 +499,10 @@ For a broader guide on cycles management strategies, see [Cycles management](../
 
 An app controlled by an SNS often includes an asset canister that serves the frontend. Once the SNS launches, the governance canister holds `Commit` permissions on the asset canister. No one can update assets without a successful governance vote.
 
+:::note[This workflow requires the legacy asset canister]
+Frontends are otherwise served by a [static site](../frontends/static-site/overview.md), but that canister has no proposal-gated commit: there is no staged batch for token holders to approve, and anyone it authorizes can sync at will. For a frontend whose updates must go through governance, stay on the [asset canister](../frontends/asset-canister.md#when-to-stay-on-this-canister).
+:::
+
 The update process uses a custom proposal (generic nervous system function):
 1. A principal with `Prepare` permissions stages the new assets
 2. Anyone submits an `ExecuteGenericNervousSystemFunction` proposal referencing the staged batch

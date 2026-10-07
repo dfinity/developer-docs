@@ -187,7 +187,7 @@ If you have already built a Wasm and computed its hash, you can deploy it using 
 canisters:
   - name: my-canister
     recipe:
-      type: "@dfinity/prebuilt@v2.0.0"
+      type: "@dfinity/prebuilt@v2.1.0"
       configuration:
         path: dist/my-canister.wasm
         sha256: d7c1aba0de1d7152897aeca49bd5fe89a174b076a0ee1cc3b9e45fcf6bde71a6

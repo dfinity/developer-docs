@@ -237,6 +237,7 @@ To read an ERC-20 balance, use `eth_call` with the `balanceOf(address)` function
 import EvmRpc "canister:evm_rpc";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
+import Char "mo:core/Char";
 
 persistent actor {
 
@@ -290,7 +291,7 @@ persistent actor {
     switch (chars.next(), chars.next()) {
       case (?"0", ?"x") {
         var rest = "";
-        for (c in chars) { rest #= Text.fromChar(c) };
+        for (c in chars) { rest #= Char.toText(c) };
         rest;
       };
       case _ { hex };
@@ -593,7 +594,7 @@ Add the EVM RPC canister to your `icp.yaml` as a pre-built canister for local de
 canisters:
   - name: backend
     recipe:
-      type: "@dfinity/motoko@v5.0.0"
+      type: "@dfinity/motoko@v5.1.0"
   - name: evm_rpc
     build:
       steps:

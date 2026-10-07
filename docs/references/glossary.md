@@ -432,7 +432,7 @@ neuron would have to already be dissolved.
 
 The **Network Nervous System** (NNS) is the decentralized autonomous
 organization (DAO) that governs the [Internet Computer](#internet-computer-protocol-icp)
-by [proposals](#proposal) on which [ICP](#ICP) [neuron](#neuron) owners can vote.
+by [proposals](#proposal) on which [ICP](#icp) [neuron](#neuron) owners can vote.
 Once such a proposal is accepted, it is autonomously executed.
 The NNS consists of a collection of [system canisters](#system-canister) (aka "NNS canisters").
 

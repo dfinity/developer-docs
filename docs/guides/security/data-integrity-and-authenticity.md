@@ -91,6 +91,7 @@ import Debug "mo:core/Debug";
 import Text "mo:core/Text";
 import Nat64 "mo:core/Nat64";
 import Array "mo:core/Array";
+import Nat "mo:core/Nat";
 import CertTree "mo:ic-certification/CertTree";
 import CV "mo:cbor/Value";
 import CborEncoder "mo:cbor/Encoder";
@@ -157,11 +158,11 @@ actor CertifiedVariable {
   func encodeUser(user : User) : Blob {
     let bytes : CV.Value = #majorType5([
       (#majorType3("name"), #majorType3(user.name)),
-      (#majorType3("age"), #majorType0(Nat64.fromNat(Nat8.toNat(user.age)))),
+      (#majorType3("age"), #majorType0(Nat.toNat64(Nat8.toNat(user.age)))),
     ]);
 
     let #ok(encoded_user) = CborEncoder.encode(bytes);
-    return Blob.fromArray(encoded_user);
+    return Array.toBlob(encoded_user);
   };
 
   func decodeUser(bytes : Blob) : User {
@@ -182,7 +183,7 @@ actor CertifiedVariable {
     let age = switch (age_tag) {
       case (?age_value) {
         let #majorType0(age) = age_value.1;
-        Nat8.fromNat(Nat64.toNat(age));
+        Nat.toNat8(Nat64.toNat(age));
       };
       case (null) {
         Debug.trap("Decoding failed for age");
@@ -198,9 +199,9 @@ actor CertifiedVariable {
   func blobOfNat64(n : Nat64) : Blob {
     let byteMask : Nat64 = 0xff;
     func byte(x : Nat64) : Nat8 {
-      Nat8.fromNat(Nat64.toNat(x));
+      Nat.toNat8(Nat64.toNat(x));
     };
-    Blob.fromArray([
+    Array.toBlob([
       byte(((byteMask << 56) & n) >> 56),
       byte(((byteMask << 48) & n) >> 48),
       byte(((byteMask << 40) & n) >> 40),
@@ -620,8 +621,8 @@ If an app is served through `raw.icp.net` in addition to `icp.net`, an adversary
 
 - Only serve assets through `<canister-id>.icp.net`, where the boundary nodes enforce response verification on the served assets. Do not serve through `<canister-id>.raw.icp.net`.
 
-- Serve assets using the asset canister, which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
+- Serve assets from a [frontend canister](../frontends/static-site/overview.md), which creates asset certification automatically, or add the `ic-certificate` header including the asset certification as, e.g., done in the [NNS app](https://github.com/dfinity/nns-dapp) and [Internet Identity](https://github.com/dfinity/internet-identity).
 
-- Check in the canister's `http_request` method if the request came through raw. If so, return an error and do not serve any assets.
+- In a custom HTTP canister, check in `http_request` whether the request came through a raw host and refuse to serve assets if it did. On the legacy asset canister, which is prebuilt and has no handler of yours to change, set `"allow_raw_access": false` in `.ic-assets.json5` instead. A [static site](../frontends/static-site/overview.md) has neither option and does not try: the only signal is the `Host` header, which the client supplies and nothing authenticates, so the guidance there is to publish links to a verifying gateway and treat raw URLs as a debugging tool.
 
 <!-- Upstream: sync from dfinity/portal building-apps/security/data-integrity-and-authenticity.mdx -->

@@ -87,13 +87,25 @@ Implementing user authentication and canister calls yourself in your web app is 
 
 ### Security concern
 
-Currently, Internet Identity issues delegations with an expiry time. This expiry time can be set in the auth-client. After a delegation expires, the user has to re-authenticate. Setting a good value is a trade-off between security and usability.
+Internet Identity issues a session with an expiry time, and the auth client asks for its bounds at sign-in. Once a session ends the user has to re-authenticate. Setting a good value is a trade-off between security and usability.
 
 ### Recommendation
 
 See the [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-expiration). A timeout of 30 minutes should be set for security-sensitive applications.
 
-The auth-client supports [idle timeouts](https://js.icp.build/auth/latest/api/client/classes/idlemanager).
+How long a sign-in lasts is Internet Identity's policy, narrowed by what the user agrees to at consent and by any cap their organization sets. The auth client names no bounds of its own, so leaving `signIn()` unbounded gets that policy, which is the right default for most applications.
+
+An application with a stricter rule of its own can narrow it further, never widen it. `maxTimeToIdle` ends a session nobody has used and `maxTimeToLive` is the ceiling it cannot outlive; both are in nanoseconds, and Internet Identity enforces them, so they hold across every tab and for as long as the device is away.
+
+```javascript
+await authClient.signIn({
+  maxTimeToIdle: 30n * 60n * 1_000_000_000n, // 30 minutes of inactivity
+});
+```
+
+Unset, Internet Identity applies its own: seven days of idleness, and thirty days in total, which is also its ceiling. Both bounds are clamped with a ten-minute floor, so the thirty minutes above sits comfortably inside what it accepts.
+
+Note what this is not about: the delegation the frontend signs calls with is short-lived and replaced automatically whatever you pass here, so no key sits in the browser for the length of the session.
 
 ## Don't use fetchRootKey in the ICP JavaScript agent in production
 

@@ -615,7 +615,7 @@ Request statuses will not actually be kept around indefinitely, and eventually t
 
 ### Canister information {#state-tree-canister-information}
 
-Users have the ability to learn about the hash of the canister's module, its current controllers, and metadata in a certified way.
+Users have the ability to learn about the hash of the canister's module, its current controllers, metadata, creation time, and last install time in a certified way.
 
 -   `/canister/<canister_id>/module_hash` (blob):
 
@@ -624,6 +624,14 @@ Users have the ability to learn about the hash of the canister's module, its cur
 -   `/canister/<canister_id>/controllers` (blob):
 
     The current controllers of the canister. The value consists of a CBOR (see [CBOR](#cbor)) data item with major type 6 ("Semantic tag") and tag value `55799`, followed by an array of principals in their binary form (CDDL `#6.55799([* bytes .size (0..29)])`, see [CDDL](#cddl)).
+
+-   `/canister/<canister_id>/canister_creation_timestamp` (natural):
+
+    The time at which the canister was created, expressed in nanoseconds since 1970-01-01. If the canister was created before this information was recorded, this path does not exist.
+
+-   `/canister/<canister_id>/last_install_timestamp` (natural):
+
+    The time at which the canister's code was most recently deployed ([code install, reinstall, or upgrade](./management-canister.md#ic-install_code)) or a [snapshot was loaded](./management-canister.md#ic-load_canister_snapshot) onto it, expressed in nanoseconds since 1970-01-01. If the canister is empty, or its code was deployed before this information was recorded, this path does not exist.
 
 -   `/canister/<canister_id>/metadata/<name>` (blob):
 

@@ -580,7 +580,7 @@ If the count drops to 0 after upgrade, the data is not in stable memory. Review 
 | Heap | 4 GiB | No (Rust) / Yes (Motoko `persistent actor`) | Frequently accessed data, caches, ephemeral computation |
 | Stable | 500 GiB | Yes | All important data, large datasets, anything that must survive upgrades |
 
-The practical rule: **use stable structures directly for any data that matters**. Avoid relying on `pre_upgrade` / `post_upgrade` hooks to serialize heap data to stable memory. Serializing large heap state during an upgrade can hit the instruction limit and trap, leaving the canister on the old code. Data in stable structures is already in stable memory from the first write — no serialization step required on upgrade.
+The practical rule: **use stable structures directly for any data that matters**. Avoid relying on `pre_upgrade` / `post_upgrade` hooks to serialize heap data to stable memory. Serializing large heap state during an upgrade can hit the instruction limit and trap, leaving the canister on the old code. Data in stable structures is already in stable memory from the first write, with no serialization step required on upgrade.
 
 For Motoko, `persistent actor` makes all `let` and `var` declarations persistent automatically. There is no need to choose manually between heap and stable memory.
 

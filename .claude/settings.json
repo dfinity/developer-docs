@@ -21,5 +21,17 @@
       "Bash(cargo audit*)",
       "Bash(cargo check*)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/sync-ic-skills.sh"
+          }
+        ]
+      }
+    ]
   }
 }

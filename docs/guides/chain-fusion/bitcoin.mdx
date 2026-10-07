@@ -47,6 +47,7 @@ import Blob "mo:core/Blob";
 import Nat8 "mo:core/Nat8";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
+import Nat "mo:core/Nat";
 
 persistent actor Self {
 
@@ -63,11 +64,11 @@ persistent actor Self {
     let bytes = Blob.toArray(Principal.toBlob(p));
     let size = bytes.size();
     let sub = Array.tabulate<Nat8>(32, func(i : Nat) : Nat8 {
-      if (i == 0) { Nat8.fromNat(size) }
+      if (i == 0) { Nat.toNat8(size) }
       else if (i <= size) { bytes[i - 1] }
       else { 0 }
     });
-    Blob.fromArray(sub)
+    Array.toBlob(sub)
   };
 
   public shared ({ caller }) func getDepositAddress() : async Text {
@@ -934,7 +935,7 @@ type Utxo = { outpoint : { txid : Blob; vout : Nat32 }; value : Nat64; height : 
 func selectUtxosGreedy(utxos : [Utxo], amount : Nat64, fee : Nat64) : [Utxo] {
   var selected : [Utxo] = [];
   var total : Nat64 = 0;
-  label done for (utxo in Array.reverse(utxos).vals()) {
+  label done for (utxo in Array.reverse(utxos).values()) {
     selected := Array.concat(selected, [utxo]);
     total += utxo.value;
     if (total >= amount + fee) break done;
@@ -946,7 +947,7 @@ func selectUtxosGreedy(utxos : [Utxo], amount : Nat64, fee : Nat64) : [Utxo] {
 // Single UTXO: find one that alone covers amount + fee.
 // Use for Ordinals, Runes, and BRC-20 where the asset is tied to a specific satoshi.
 func selectOneUtxo(utxos : [Utxo], amount : Nat64, fee : Nat64) : Utxo {
-  for (utxo in Array.reverse(utxos).vals()) {
+  for (utxo in Array.reverse(utxos).values()) {
     if (utxo.value >= amount + fee) return utxo;
   };
   Runtime.trap("No single UTXO covers amount + fee")

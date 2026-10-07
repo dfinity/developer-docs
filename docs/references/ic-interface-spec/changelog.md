@@ -8,6 +8,61 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.68.0 (2026-09-14) {$0_68_0}
+* New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
+  of nodes return their individual HTTP responses to the caller instead of the subnet reaching consensus
+  on a single response.
+* New optional `pricing_version` field of `http_request` selecting the pricing mechanism for the outcall:
+  `1` ("legacy"), which prices the call by `max_response_bytes`, or `2` ("pay-as-you-go"), which prices
+  the resources the call actually consumes and makes the attached cycles bound what it may consume.
+  The default is `1` and an unrecognized value is treated as `1`. Pricing version `1` is deprecated:
+  version `2` is to become the default, after which version `1` will be removed and the field will no
+  longer have an effect. Flexible outcalls have no `pricing_version` and are always priced with version `2`.
+* New canister System API `ic0.cost_http_request_v2` returning the cycles to attach to an HTTP outcall
+  priced with pricing version `2`, for a fully replicated, non-replicated, or flexible outcall.
+  The System API `ic0.cost_http_request` is deprecated along with the pricing version it prices.
+* New canister System API `ic0.subnet_self_node_count` returning the number of nodes on the subnet
+  the canister is running on.
+* The non-replicated mode of `http_request`, selected by the `is_replicated` field, is no longer
+  considered experimental.
+
+### 0.67.0 (2026-08-31) {$0_67_0}
+* New canister setting `log_memory_limit` bounding the memory used for canister logs: it must be either `0`
+  or a number between `4096` and `2097152` (`2 MiB`), inclusively, with the default value `4096`.
+  The oldest canister logs are purged if the total memory used for canister logs exceeds this value.
+  The memory used by the store holding the canister logs is determined by this setting
+  (it does not depend on the canister logs actually stored) and counted in the canister's memory usage.
+  Hence, raising this setting might require reserving cycles. Changing this setting also resizes
+  the store holding the canister logs, which consumes cycles.
+  The setting is reset if the canister runs out of cycles.
+* `canister_status` returns the setting `log_memory_limit` and the memory used by the store holding
+  the canister logs in the new field `log_memory_store_size` of `memory_metrics`.
+* `fetch_canister_logs` can also be called by canisters via replicated (update) calls.
+  It still cannot be called by external users via replicated calls.
+* New optional `filter` argument of `fetch_canister_logs` restricting the returned logs to a range of
+  log indices (`by_idx`) or timestamps (`by_timestamp_nanos`).
+* The total size of all logs returned by `fetch_canister_logs` is bounded by an implementation-defined
+  constant chosen so as not to exceed the maximum response size (instead of the previous bound of 4KiB).
+  If the selected logs do not all fit, an unfiltered read trims the oldest logs (so the response ends
+  with the newest log) and a filtered read trims the newest logs (so the response starts with the oldest
+  log satisfying the filter).
+* The management canister method `canister_info` can now also be invoked via non-replicated (query) calls
+  by external users and from composite query methods (it remains callable by canisters via inter-canister
+  calls and remains rejected for ingress messages). Retrieving canister information is not subject to any
+  access control, so any principal, including the anonymous one, can call it.
+
+### 0.66.0 (2026-08-17) {$0_66_0}
+* Two new paths in the certified state tree, `/canister/<canister_id>/canister_creation_timestamp`
+  (the time at which the canister was created) and `/canister/<canister_id>/last_install_timestamp`
+  (the time at which the canister's code was most recently deployed or a snapshot was loaded onto it),
+  both expressed in nanoseconds since 1970-01-01. Both can be requested via `read_state` if
+  `<canister_id>` matches the effective canister id of the request.
+* Composite query methods and their callbacks can call the management canister query methods
+  `canister_status`, `canister_metrics`, `fetch_canister_logs`, and `list_canisters`.
+  Such a call is always executed against the state of the subnet hosting the calling canister
+  and it is subject to the same access control as the corresponding query call submitted by a user,
+  with the calling canister as the caller. Calls to all other management canister methods are rejected.
+
 ### 0.65.0 (2026-08-03) {$0_65_0}
 * New canister setting `status_visibility` controlling who can read a canister's status via the
   `canister_status` endpoint: `controllers` (default) restricts access to the canister's controllers,

@@ -7,7 +7,7 @@ sidebar:
 
 The management canister provides access to system features on the Internet Computer: creating and managing canisters, chain-key signing, HTTPS outcalls, randomness, and Bitcoin integration. It is not a real canister with its own state or Wasm module. It is a virtual canister implemented as part of the IC protocol itself.
 
-The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently.
+The management canister address is `aaaaa-aa` (the empty blob). It is present on every subnet. When you call `aaaaa-aa`, the IC routes the request to the appropriate subnet transparently. Calls made from a composite query are the exception: they are always answered by the calling canister's own subnet.
 
 Most methods require the caller to be a **controller** of the target canister. Some methods (such as `raw_rand` and `deposit_cycles`) can only be called by canisters, not by external users. When an external user calls the management canister, the cost is charged to the managed canister.
 
@@ -27,6 +27,7 @@ Several methods accept or return a `canister_settings` record. The fields are:
 | `wasm_memory_limit` | `nat` | `0` | Upper limit on Wasm heap memory in bytes (0 = no limit) |
 | `wasm_memory_threshold` | `nat` | `0` | Remaining Wasm memory threshold that triggers the low-memory hook |
 | `log_visibility` | `log_visibility` | `controllers` | Who can read canister logs: `controllers`, `public`, or `allowed_viewers(vec principal)` |
+| `log_memory_limit` | `nat` | `4096` | Memory in bytes for storing canister logs: either `0` or between `4096` and `2097152` (2 MiB) |
 | `snapshot_visibility` | `snapshot_visibility` | `controllers` | Who can list and read canister snapshots: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `status_visibility` | `status_visibility` | `controllers` | Who can read the canister status: `controllers`, `public`, or `allowed_viewers(vec principal)` |
 | `environment_variables` | `opt record` | `null` | Key-value pairs accessible during canister execution |
@@ -119,7 +120,7 @@ Removes a canister's code and state, making it empty. Outstanding calls are reje
 
 Returns detailed information about a canister: status, settings, module hash, cycle balance, memory usage, and query statistics.
 
-- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call)
+- **Caller:** Governed by the `status_visibility` setting (see below); the canister itself and subnet admins can always call it (canisters or external users; also available as a query call, including from composite queries)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -129,7 +130,7 @@ Returns detailed information about a canister: status, settings, module hash, cy
   - `settings`: the definite canister settings currently in effect
   - `module_hash` (`opt blob`): SHA-256 of installed module (`null` if empty)
   - `memory_size` (`nat`): total memory consumed
-  - `memory_metrics`: breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots)
+  - `memory_metrics`: breakdown by component (Wasm memory, stable memory, globals, binary, custom sections, history, chunk store, snapshots, log memory store)
   - `cycles` (`nat`): current cycle balance
   - `reserved_cycles` (`nat`): reserved cycle balance
   - `idle_cycles_burned_per_day` (`nat`): daily idle burn rate
@@ -141,7 +142,7 @@ By default, only controllers can read a canister's status. The `status_visibilit
 
 Returns cycle consumption metrics for a canister broken down by use case. Metrics are monotonically increasing counters accumulating since canister creation (or since the metrics feature was introduced for existing canisters).
 
-- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, but query responses come from a single replica and are not suitable for security-sensitive use)
+- **Caller:** Controllers or subnet admins (canisters or external users; also available as a query call, including from composite queries, but query responses come from a single replica and are not suitable for security-sensitive use)
 - **Parameters:**
   - `canister_id` (`principal`)
 - **Returns:** A record containing:
@@ -149,9 +150,9 @@ Returns cycle consumption metrics for a canister broken down by use case. Metric
 
 ### `canister_info`
 
-Returns the history, current module hash, and controllers of any canister. Unlike `canister_status`, any canister can call this on any other canister.
+Returns the history, current module hash, and controllers of any canister. Unlike `canister_status`, this information is public: it is not subject to any access control.
 
-- **Caller:** Canisters only
+- **Caller:** Anyone (canisters via inter-canister calls; external users via query calls only, not update calls; also callable from composite query methods. Query responses come from a single replica and are not suitable for security-sensitive use)
 - **Parameters:**
   - `canister_id` (`principal`)
   - `num_requested_changes` (`opt nat64`): how many history entries to return (default `0`)
@@ -443,24 +444,46 @@ Returns an encrypted vetKD key that can be decrypted with the caller's transport
 
 Makes an HTTP request to an external URL and returns the response. This enables canisters to fetch offchain data, call external APIs, and interact with other blockchain RPCs.
 
+:::caution[Version 1 is deprecated]
+
+Pricing version 1 is still the default, but version 2 is to become the default, after which version 1 will be removed. Set `pricing_version = 2` on new calls and plan to migrate existing ones.
+
+:::
+
 - **Caller:** Canisters only
 - **Parameters:**
   - `url` (`text`): must start with `https://`; max 8192 characters
   - `max_response_bytes` (`opt nat64`): max response size (up to 2 MB; defaults to 2 MB if not set)
-  - `method`: `GET`, `HEAD`, or `POST` (replicated); additionally `PUT` and `DELETE` (non-replicated mode only)
+  - `method`: `GET`, `HEAD`, or `POST` (replicated); additionally `PUT`, `DELETE`, and `PATCH` (non-replicated mode only)
   - `headers` (`vec record { name : text; value : text }`): request headers (max 64 headers, 8 KiB per name/value, 48 KiB total)
   - `body` (`opt blob`): request body
   - `transform` (`opt record { function : func; context : blob }`): response transformation function exported by the calling canister
-  - `is_replicated` (`opt bool`): select replicated (default) or non-replicated mode
+  - `is_replicated` (`opt bool`): select replicated (`opt true` or `null`) or non-replicated (`opt false`) mode
+  - `pricing_version` (`opt nat32`): `1` (default, deprecated) or `2`. Version `2` prices the resources the call consumes instead of `max_response_bytes`. The field is not validated: any other value falls back to version `1` without an error.
 - **Returns:**
   - `status` (`nat`): HTTP status code
   - `headers` (`vec record { name : text; value : text }`)
   - `body` (`blob`)
-- **Cycles:** Must be explicitly attached to the call. Charged based on `max_response_bytes`: always set this to a reasonable value to avoid overpaying.
+- **Cycles:** Must be explicitly attached to the call. Under pricing version `1`, charged based on `max_response_bytes`: always set this to a reasonable value to avoid overpaying. Under version `2`, charged for the resources actually consumed, and the attached cycles also bound what the call may consume.
 
 In replicated mode, multiple replicas make the same request. Use the `transform` function to sanitize non-deterministic parts of the response (timestamps, unique IDs) so replicas can reach consensus.
 
 For concept details, see [HTTPS outcalls](../concepts/https-outcalls.md).
+
+### `flexible_http_request`
+
+Makes an HTTP request from a committee of nodes and returns their individual responses instead of one response the subnet agreed on. Use it for endpoints whose data changes too fast for replicas to agree, and to trade cost against integrity by sizing the committee.
+
+- **Caller:** Canisters only
+- **Parameters:** as for `http_request`, except that there is no `is_replicated` and no `pricing_version`, and one argument (`replication`) is added:
+  - `method`: `GET`, `HEAD`, and `POST` are always supported; `PUT`, `DELETE`, and `PATCH` only when `min_responses`, `max_responses`, and `total_requests` are all equal
+  - `replication` (`opt record { min_responses : nat32; max_responses : nat32; total_requests : nat32 }`): how many nodes issue the request, and the fewest and most responses the caller will accept. Must satisfy `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the subnet's node count as reported by `ic0.subnet_self_node_count`. Defaults to `floor(2 / 3 * N) + 1`, `N`, and `N`.
+- **Returns:** `variant { ok : vec http_request_result; err : flexible_http_request_err }`. Both arms arrive as a reply, not a reject: a call that cannot meet the requested replication replies with `err`, carrying a `global_error` of `timeout`, `out_of_cycles`, `responses_too_large`, or `too_many_rejects`, a message, and per-node details. Only failures detected before the requests go out are rejects, e.g. invalid or oversized parameters.
+- **Cycles:** Must be explicitly attached to the call. Always priced with pricing version `2`, so the attached cycles also bound what each node may consume.
+
+A successful call returns between `min_responses` and `max_responses` responses, and may return as few as `min_responses` even when every node answered. The responses do not identify the node that produced them and their order is not specified, so handle any count in that range and reconcile disagreement yourself.
+
+For the full argument, result, and error types, see `flexible_http_request` in the [Interface Specification](ic-interface-spec/management-canister.md#ic-flexible_http_request).
 
 ## Bitcoin API (deprecated)
 
@@ -534,12 +557,16 @@ For Bitcoin integration patterns, see the [Bitcoin guide](../guides/chain-fusion
 
 ### `fetch_canister_logs`
 
-Returns the most recent log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. Total log size is capped at 4 KiB.
+Returns log entries for a canister. Logs are produced by `ic0.debug_print` and trap messages. Logs persist across upgrades but are purged on reinstall or uninstall. The oldest logs are purged once the memory used for canister logs exceeds the `log_memory_limit` canister setting.
 
-- **Caller:** External users only (query call; not callable by canisters)
-- **Parameters:** `canister_id` (`principal`)
+- **Caller:** Canisters via replicated calls or composite queries, and external users via query calls (external users cannot call it via replicated calls)
+- **Parameters:**
+  - `canister_id` (`principal`)
+  - `filter` (`opt variant { by_idx : record { start : nat64; end : nat64 }; by_timestamp_nanos : record { start : nat64; end : nat64 } }`): returns only the logs whose `idx` or `timestamp_nanos` falls in the given range (`start` is inclusive, `end` is exclusive)
 - **Returns:**
   - `canister_log_records` (`vec record { idx : nat64; timestamp_nanos : nat64; content : blob }`)
+
+The total size of the returned logs is bounded by an implementation-defined constant chosen so as not to exceed the maximum response size. When the selected logs do not all fit, an unfiltered read trims the oldest records, so the response ends with the newest log, and a filtered read trims the newest records, so the response starts with the oldest log matching the filter.
 
 Log visibility is controlled by the `log_visibility` canister setting.
 
@@ -575,9 +602,9 @@ Returns metadata about a subnet.
 
 ### `list_canisters`
 
-Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call; not callable by canisters, via replicated calls, or from composite query calls.
+Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call, either by an external user directly or by a canister from a composite query; not callable via replicated calls.
 
-- **Caller:** Subnet admins only (query call; not callable by canisters)
+- **Caller:** Subnet admins only (query call, including from composite queries)
 - **Parameters:** none
 - **Returns:**
   - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive
@@ -616,12 +643,13 @@ Cycle costs for management canister calls vary depending on subnet replication f
 
 - `ic0.cost_create_canister`: cost of `create_canister`
 - `ic0.cost_call`: cost of an inter-canister call (base + per-byte)
-- `ic0.cost_http_request`: cost of `http_request`
+- `ic0.cost_http_request`: cost of `http_request` under pricing version `1` (deprecated)
+- `ic0.cost_http_request_v2`: cost of `http_request` under pricing version `2`, and of `flexible_http_request`
 - `ic0.cost_sign_with_ecdsa`: cost of `sign_with_ecdsa`
 - `ic0.cost_sign_with_schnorr`: cost of `sign_with_schnorr`
 - `ic0.cost_vetkd_derive_key`: cost of `vetkd_derive_key`
 
-Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`) will fail if insufficient cycles are provided.
+Methods that require explicit cycle attachment (`create_canister`, `sign_with_ecdsa`, `sign_with_schnorr`, `vetkd_derive_key`, `http_request`, `flexible_http_request`) will fail if insufficient cycles are provided. Under `http_request` pricing version `2`, and for `flexible_http_request`, only the base fee has to be covered up front; the rest of the attached cycles is the call's resource budget.
 
 ## Candid interface
 

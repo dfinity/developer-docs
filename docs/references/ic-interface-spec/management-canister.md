@@ -18,7 +18,7 @@ The *IC management canister* is just a facade; it does not actually exist as a c
 
 The IC management canister address is `aaaaa-aa` (i.e. the empty blob).
 
-It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand` and `deposit_cycles` are never accepted as ingress messages.
+It is possible to use the management canister via external requests (a.k.a. ingress messages). The cost of processing that request is charged to the canister that is being managed. Most methods only permit the controllers to call them. Calls to `raw_rand`, `deposit_cycles`, `canister_info`, and `canister_metadata` are never accepted as ingress messages (but `canister_info` can be invoked via query calls, see [IC method `canister_info`](#ic-canister_info)).
 
 ### Interface overview {#ic-candid}
 
@@ -104,6 +104,14 @@ The optional `settings` parameter can be used to set the following settings:
     - `allowed_viewers` (`vec principal`): Only principals in the provided list and the canister's controllers can fetch logs, the maximum length of the list is 10
 
     Default value: `controllers`.
+
+-   `log_memory_limit` (`nat`)
+
+    Must be either `0` or a number between `4096` and `2097152` (`2 MiB`), inclusively, and indicates the maximum amount of memory used for canister logs.
+    In particular, values between `1` and `4095`, inclusively, are not allowed.
+    Oldest canister logs are purged if the total memory used for canister logs exceeds this value.
+
+    Default value: `4096`.
 
 -   `snapshot_visibility` (`snapshot_visibility`)
 
@@ -247,7 +255,8 @@ The optional `sender_canister_version` parameter can contain the caller's canist
 ### IC method `canister_status` {#ic-canister_status}
 
 This method can be called by canisters as well as by external users via ingress messages.
-This method can also be called by external users via non-replicated (query) calls, but it cannot be called from composite query calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 Indicates various information about the canister. It contains:
 
@@ -331,12 +340,15 @@ Regardless of this setting, the canister itself and subnet admins can always req
 
     * `snapshots_size`: Represents the memory consumed by all snapshots that belong to this canister.
 
+    * `log_memory_store_size`: Represents the memory used by canister logs of the canister.
+
 All sizes are expressed in bytes.
 
 ### IC method `canister_metrics` {#ic-canister_metrics}
 
 This method can be called by canisters as well as by external users via ingress messages.
-This method can also be called by external users via non-replicated (query) calls, but it cannot be called from composite query calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 This method returns a set of canister related metrics for the requested canister, like cycles consumed by different use cases. These metrics should be counters (i.e. monotonically increasing values) that report the accumulated respective amount since the canister was created for new canisters or since the metrics introduction for existing canisters.
 
@@ -351,9 +363,11 @@ Replica-signed queries may improve security because the recipient can verify the
 
 ### IC method `canister_info` {#ic-canister_info}
 
-This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+This method can be called by canisters, but it cannot be called by external users via ingress messages.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
-Provides the history of the canister, its current module SHA-256 hash, and its current controllers. Every canister can call this method on every other canister (including itself). Users cannot call this method.
+Provides the history of the canister, its current module SHA-256 hash, and its current controllers. This method is not subject to any access control: every canister and every external user can retrieve this information about every canister (including, for a canister caller, itself).
 
 The canister history consists of a list of canister changes (canister creation, code uninstallation, code deployment, loading a snapshot, controllers change, canister renaming). Every canister change consists of the system timestamp at which the change was performed, the canister version after performing the change, the change's origin (a user or a canister), and its details. The change origin includes the principal (called *originator* in the following) that initiated the change and, if the originator is a canister, the originator's canister version when the originator initiated the change (if available).
 - Canister creation is described by the full set of controllers along with a [hash of the environment variables](./https-interface.md#hash-of-map), if environment variables were specified. The order of controllers stored in the canister history may vary depending on the implementation.
@@ -379,6 +393,13 @@ The returned response contains the following fields:
 -   `module_hash`: the SHA-256 hash of the currently installed canister module (or `null` if the canister is empty).
 
 -   `controllers`: the current set of canister controllers. The order of returned controllers may vary depending on the implementation.
+
+:::warning
+
+The response of a query comes from a single replica, and is therefore not appropriate for security-sensitive applications.
+Replica-signed queries may improve security because the recipient can verify the response comes from the correct subnet.
+
+:::
 
 ### IC method `canister_metadata` {#ic-canister_metadata}
 
@@ -655,12 +676,6 @@ This method makes an HTTP request to a given URL and returns the HTTP response, 
 
 The method can be called in either replicated or non-replicated mode. In the replicated mode, the same HTTP request is performed by multiple IC replicas, providing strong guarantees on the integrity of the response. In the non-replicated mode, the request is made by a single replica, with weak integrity guarantees.
 
-:::note
-
-The non-replicated mode is considered EXPERIMENTAL. Canister developers must be aware that the API may evolve in a non-backward-compatible way.
-
-:::
-
 Both because of replication and to handle network issues, the canister should aim to issue *idempotent* requests, meaning that it must not change the state at the remote server, or that the remote server has the means to identify duplicated requests. Otherwise, the risk of failure increases.
 
 In the replicated mode, the responses for all identical requests must match, too. However, a web service could return slightly different responses for identical idempotent requests. For example, it may include some unique identification or a timestamp that would vary across responses.
@@ -689,7 +704,7 @@ The following parameters should be supplied for the call:
 
 -   `url` - the requested URL. The URL must be valid according to [RFC-3986](https://www.ietf.org/rfc/rfc3986.txt), it might contain non-ASCII characters according to [RFC-3987](https://www.ietf.org/rfc/rfc3987.txt), and its length must not exceed `8192`. The URL may specify a custom port number.
 
--   `max_response_bytes` - optional, specifies the maximal size of the response in bytes. If provided, the value must not exceed `2MB` (`2,000,000B`). The call will be charged based on this parameter. If not provided, the maximum of `2MB` will be used.
+-   `max_response_bytes` - optional, specifies the maximal size of the response in bytes. If provided, the value must not exceed `2MB` (`2,000,000B`). If not provided, the maximum of `2MB` will be used. The limit applies for both pricing versions, and is enforced on the response received from the remote server as well as on the response produced by the `transform` function. Only pricing version `1` ("legacy", deprecated) also charges the call upfront based on this parameter; with pricing version `2` ("pay-as-you-go"), the call is charged only for the resources it actually consumes.
 
 -   `method` - currently, `GET`, `HEAD`, and `POST` are supported. Additionally, `PUT`, `DELETE`, and `PATCH` are supported in non-replicated mode only.
 
@@ -699,15 +714,25 @@ The following parameters should be supplied for the call:
 
 -   `transform` - an optional record that includes a function that transforms raw responses to sanitized responses, and a byte-encoded context that is provided to the function upon invocation, along with the response to be sanitized. If provided, the calling canister itself must export this function
 
--   `is_replicated` - optional, selecting between replicated and non-replicated modes.
+-   `is_replicated` - optional, selecting between replicated and non-replicated modes. Setting the field to `opt false` selects the non-replicated mode, in which a single node chosen by the system performs the request. Setting it to `opt true`, or omitting it, selects the replicated mode.
 
-:::note
+-   `pricing_version` - optional, the version of the pricing mechanism for HTTP outcalls that should be applied to this call; it can be either `1` ("legacy", deprecated) or `2` ("pay-as-you-go"). For compatibility reasons, the default is `1`. If the field is omitted, or set to any value other than `1` or `2`, the call is priced with version `1` and no error is reported. Note that pricing version `1` does not take the replication mode into account, so a non-replicated call is charged the same as a replicated one with the same request size and `max_response_bytes`; only version `2` prices a call according to its replication mode.
 
-The `is_replicated` field is considered EXPERIMENTAL.
+    :::note
 
-:::
+    Pricing version `1` is DEPRECATED. Version `2` is to become the default, after which version `1` will be removed and the `pricing_version` field will no longer have an effect. Canister developers are advised to select version `2`.
 
-Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls).
+    :::
+
+Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). How many cycles must be attached, and what is refunded, depends on the pricing version:
+
+- with pricing version `1`, the call is rejected unless the attached cycles cover the cost returned by the `ic0.cost_http_request` API with the appropriate parameters; the difference between the attached cycles and that cost is refunded.
+
+- with pricing version `2`, the call is rejected unless the attached cycles cover a base fee that depends on the request and is charged when the call is accepted. Any attached cycles exceeding those used by the outcall execution are refunded.
+
+The cycles attached beyond the base fee of a pricing version `2` call are not merely a payment: they are withheld, and split evenly into a per-node budget. A node's remaining budget bounds the response it may download, the time it may wait for that response, and the instructions its execution of the `transform` function may use. A call that covers the base fee but is funded below the amount reported by the `ic0.cost_http_request_v2` API for the resources it will use, is therefore not rejected up front: it runs with reduced limits, and a node that exhausts its budget produces a `CANISTER_REJECT` response instead of the response it was asked for. The same applies to the call as a whole: delivering the agreed response is paid out of what the nodes left unspent, so if that no longer covers any result the call could still produce, the call is rejected with a `CANISTER_REJECT` whose message begins with `Out of cycles`. Since the cost of delivering a response depends on its size, both can happen after the remote server has already been contacted.
+
+Any unspent part of the per-node budgets is credited to the caller's cycles balance asynchronously, separately from the refund that accompanies the response: each node returns what it did not spend. A node that never reports has its whole budget returned after a timeout of one minute. A canister's cycles balance may therefore keep settling for a while after the response arrives, as further refunds come in.
 
 The returned response (and the response provided to the `transform` function, if specified) contains the following fields:
 
@@ -742,9 +767,65 @@ The Internet Computer mainnet supports requests to both IPv6 and IPv4 destinatio
 
 :::warning
 
-If you do not specify the `max_response_bytes` parameter, the maximum of a `2MB` response will be charged for, which is expensive in terms of cycles. Always set the parameter to a reasonable upper bound of the expected (network and transformed) response size to not incur unnecessary cycles costs for your request.
+With pricing version `1`, if you do not specify the `max_response_bytes` parameter, the maximum of a `2MB` response will be charged for, which is expensive in terms of cycles. Always set the parameter to a reasonable upper bound of the expected response size to not incur unnecessary cycles costs for your request.
 
 :::
+
+### IC method `flexible_http_request` {#ic-flexible_http_request}
+
+This method can only be called by canisters, i.e., it cannot be called by external users via ingress messages.
+
+This is a variant of the [`http_request`](#ic-http_request) method where nodes return their individual HTTP responses to the caller instead of trying to reach consensus on the response, letting the caller do its own HTTP response processing. Use cases include calling HTTP endpoints that provide rapidly changing information (where achieving consensus is unlikely) and letting the caller trade cost against integrity: fewer nodes issuing the request cost less, more nodes make the result harder for any single node to influence.
+
+Flexible outcalls have no `pricing_version` argument; they are always priced with pricing version `2` ("pay-as-you-go").
+
+The arguments of the call are as for `http_request`, except that:
+
+- there is an additional optional argument `replication`. When set, the caller can specify how many nodes should issue an HTTP outcall (`total_requests`), the minimum number of successful HTTP responses from nodes in order for the outcall to succeed (`min_responses`), and the maximum number of HTTP responses the caller is willing to receive as the result of the outcall (`max_responses`). That is, a successful HTTP outcall is guaranteed to return between `min_responses` and `max_responses` responses. If `replication` is set, then the caller must ensure that `0 <= min_responses <= max_responses <= total_requests` and `1 <= total_requests <= N`, where `N` is the number of the nodes on the caller's subnet, otherwise the call will fail. The caller may use the `ic0.subnet_self_node_count` System API call to determine `N`. If `replication` is not provided, the defaults of `floor(2 / 3 * N) + 1`, `N` and `N` are used for `min_responses`, `max_responses` and `total_requests`.
+
+    It is `min_responses` that determines when the outcall returns: the result is delivered as soon as `min_responses` successful responses are available, and further responses are included only if they have arrived by then, fit into the total result limit below, and are covered by the attached cycles. A successful outcall may therefore return as few as `min_responses` responses even when every node responded, so callers must handle any count in the permitted range. Setting both `min_responses` and `max_responses` to `0` makes the outcall fire-and-forget: the requests are issued, and the call replies with an empty vector as soon as the first node has reported back, regardless of the request's outcome.
+
+- the optional `max_response_bytes` argument bounds the size of the response, but it does not determine the cost of the call: flexible outcalls are always charged for the resources they actually consume. If provided, the value must not exceed `2MB` (`2,000,000B`), otherwise the call will fail. If not provided, the limit of `2MB` is used. Each node enforces the limit individually, both on the response received from the remote server and on the response produced by the `transform` function. For the response received from the remote server, the limit a node actually applies is the smaller of `max_response_bytes` and the response size its share of the attached cycles pays for, so a node may fail on a response that is within `max_response_bytes` if too few cycles were attached. The response produced by the `transform` function is held to `max_response_bytes` itself, and its dissemination is then charged against the node's remaining budget; a node that cannot afford it rejects as well.
+
+The other arguments, `url`, `method`, `headers`, `body`, and `transform`, are the same as for `http_request`.
+
+The result is a vector of responses, with each individual response having the same structure as a `http_request` response, providing `status`, `headers`, and `body` fields. Each response comes from a different node, but the responses do not identify the node that produced them, identical responses from different nodes are not merged, and the order of the responses in the vector is not specified. When fewer responses are returned than the nodes produced, which of them are returned is up to the system, so the returned responses must not be assumed to be a uniform sample.
+
+As for `http_request`, the endpoint specified by the provided `url` should be idempotent. The one exception is `total_requests = 1`. The request restrictions are also the same as for the `http_request` method:
+
+- The total number of bytes in the request must not exceed `2MB` (`2,000,000`) bytes.
+
+- The `GET`, `HEAD`, and `POST` methods are always supported. The `PUT`, `DELETE`, and `PATCH` methods are supported only when the replication counts are deterministic, i.e., when `min_responses`, `max_responses`, and `total_requests` are all equal; otherwise the call will fail.
+
+- The number of headers must not exceed `64`.
+
+- The number of bytes representing a header name or value must not exceed `8KiB`.
+
+- The total number of bytes representing the header names and values must not exceed `48KiB`.
+
+The response from the remote server must not exceed `max_response_bytes`, if provided, and `2MB` otherwise. Moreover, the responses returned by the different nodes (possibly after the transform function) are delivered together and must jointly fit into a total result limit of `2MiB` (`2,097,152B`), which applies to their encoded sizes plus a small per-response overhead. If they do not all fit, fewer responses are returned, down to `min_responses`; only when the smallest `min_responses` responses jointly exceed that limit does the call fail.
+
+Cycles to pay for the call must be explicitly transferred with the call, i.e., they are not automatically deducted from the caller's balance implicitly (e.g., as for inter-canister calls). As for `http_request` with pricing version `2`, a base fee is charged when the call is accepted and the remaining attached cycles bound what the nodes may spend on the outcall; the unused cycles are then refunded to the caller. That budget is split between the `total_requests` nodes performing the outcall rather than across the whole subnet, and a node that exhausts its share rejects, counting towards `too_many_rejects` below.
+
+The result of the call is a variant with an `ok` and an `err` arm, and both arms are delivered as a reply rather than as a reject: an outcall that cannot meet the requested replication requirements, including one that times out, replies with an `err` of the `flexible_http_request_err` type. That error includes a textual error message, an optional global error code, and a vector of per-node details. Failures detected before the requests are issued, such as invalid arguments, invalid `replication` counts, or too few attached cycles, are delivered as a reject instead.
+
+The `global_error` field describes why the aggregate call failed to meet the requirements:
+
+- `timeout`: fewer than `min_responses` successful responses were collected from the nodes before the system-defined timeout of one minute.
+
+- `out_of_cycles`: what the nodes left unspent of the attached cycles no longer covers delivering any result the call could still produce, including a `too_many_rejects` result. Since the cost of delivering a result depends on the sizes of the responses, this can be reported after the nodes have already completed their HTTP requests.
+
+- `responses_too_large`: no combination of at least `min_responses` available responses could fit into the total 2MiB result limit.
+
+- `too_many_rejects`: more than `total_requests - min_responses` nodes returned reject responses, so at least `min_responses` successful responses can never be collected. A response, or a transform output, that exceeds the size limit a node enforces is rejected by that node, so exceeding that limit surfaces as `too_many_rejects` rather than as `responses_too_large`.
+
+The `node_details` vector provides visibility into the execution on specific nodes; it may be empty, and it is not guaranteed to list every node the outcall was issued to. A `timeout` carries no entries; `too_many_rejects` lists at least `total_requests - min_responses + 1` of the rejecting nodes; `responses_too_large` and `out_of_cycles` list nodes whose responses the system has seen, independently of whether those responses succeeded or were rejected. Each node appears at most once, and a successful outcall carries no per-node details at all. Each entry contains:
+
+- `node_id`.
+
+- `report`: An accounting of resources (bytes, instructions, time, and cycles) used by the node. Every field is optional and takes one of three forms: absent when the resource is not reported, `used` when the node reports the amount it consumed, or `exceeded` when the node failed because that resource ran over its budget. An implementation may leave the whole report empty, so callers must not rely on it to diagnose a failure.
+
+- `error`: An optional record containing a `code` and `message`. Its presence does not by itself indicate that the node failed: depending on the global error it is reported for every listed node, including nodes that responded successfully, in which case the `code` conveys the observed outcome and the `message` carries a size or a cycles figure. The `code` values are diagnostic strings and are not a fixed enumeration.
 
 ### IC method `node_metrics_history` {#ic-node_metrics_history}
 
@@ -948,12 +1029,14 @@ A snapshot may be deleted only by the controllers of the canister that the snaps
 
 ### IC method `fetch_canister_logs` {#ic-fetch_canister_logs}
 
-This method can only be called by external users via non-replicated (query) calls, i.e., it cannot be called by canisters, cannot be called via replicated calls, and cannot be called from composite query calls.
+This method can be called by canisters via replicated calls, but it cannot be called by external users via replicated (update) calls.
+This method can also be called via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks.
+A call from a composite query is executed against the state of the subnet hosting the calling canister and can thus only target canisters hosted by that subnet.
 
 Given a canister ID as input, this method returns a vector of logs of that canister including its trap messages.
 The canister logs are *not* collected in canister methods running in non-replicated mode (NRQ, TQ, CQ, CRy, CRt, CC, and F modes, as defined in [Overview of imports](./canister-interface.md#system-api-imports)) and the canister logs are *purged* when the canister is reinstalled or uninstalled.
-The total size of all returned logs does not exceed 4KiB.
-If new logs are added resulting in exceeding the maximum total log size of 4KiB, the oldest logs will be removed.
+The total size of all returned logs does not exceed an implementation-defined constant chosen so as not to exceed the maximum response size.
+Oldest canister logs are purged if the total memory used for canister logs exceeds the value `log_memory_limit` in canister settings.
 Logs persist across canister upgrades and they are deleted if the canister is reinstalled or uninstalled.
 
 The log visibility is defined in the `log_visibility` field of `canister_settings` and can be one of the following variants:
@@ -968,6 +1051,14 @@ A single log is a record with the following fields:
 - `timestamp_nanos` (`nat64`): the timestamp as nanoseconds since 1970-01-01 at which the log was recorded;
 - `content` (`blob`): the actual content of the log;
 
+To filter canister logs, an optional filter can be provided and has one of the following variants:
+- `by_idx` (`record { start : nat64; end : nat64 }`): only logs are returned whose `idx` is within the provided range (`start` is inclusive, but `end` is exclusive);
+- `by_timestamp_nanos` (`record { start : nat64; end : nat64 }`): only logs are returned whose `timestamp_nanos` is within the provided range (`start` is inclusive, but `end` is exclusive).
+
+When the logs selected for the response do not all fit within a single response, they are trimmed to fit, and the direction of trimming differs between filtered and unfiltered reads:
+- An **unfiltered** read trims the **oldest** log records, so the response ends with the newest log record. This surfaces the most recent activity.
+- A **filtered** read trims the **newest** log records, so the response starts with the oldest log record satisfying the filter. This lets a filtered read page forward through logs starting from the beginning of the requested range.
+
 :::warning
 
 The response of a query comes from a single replica, and is therefore not appropriate for security-sensitive applications.
@@ -977,7 +1068,8 @@ Replica-signed queries may improve security because the recipient can verify the
 
 ### IC method `list_canisters` {#ic-list_canisters}
 
-This method can only be called by external users with subnet admin privileges via non-replicated (query) calls, i.e., it cannot be called by canisters, cannot be called via replicated calls, and cannot be called from composite query calls.
+This method can only be called by subnet admins via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks, i.e., it cannot be called via replicated calls.
+A call from a composite query returns the canisters on the subnet hosting the calling canister.
 
 This method returns the list of all canisters on the subnet as consecutive canister ID ranges. Deleted canisters are not included in the result.
 

@@ -15,7 +15,7 @@ Practical how-to guides organized by development stage. Each guide solves a spec
 
 - **[Backends](backends/data-persistence.md)**: Persist data, make HTTPS outcalls, schedule timers, and generate randomness.
 - **[Canister Calls](canister-calls/candid.md)**: Define Candid interfaces, generate type-safe bindings, and call canisters from backends and frontends.
-- **[Frontends](frontends/asset-canister.md)**: Serve assets, integrate frontend frameworks, configure custom domains, and certify responses.
+- **[Frontends](frontends/static-site/overview.md)**: Host a static site, integrate frontend frameworks, configure custom domains, and certify responses.
 - **[Authentication](authentication/internet-identity.md)**: Add passwordless login and verifiable user identity to your app.
 
 ## Quality and shipping

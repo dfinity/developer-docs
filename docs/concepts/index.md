@@ -33,7 +33,7 @@ Understand the ideas behind the Internet Computer before you build on it. These 
 - **[Orthogonal persistence](orthogonal-persistence.md)**: How canister memory survives across executions and upgrades without databases.
 - **[Timers](timers.md)**: Periodic and one-shot scheduled tasks via the global timer mechanism.
 - **[Verifiable randomness](verifiable-randomness.md)**: Cryptographically secure random numbers using threshold VRF.
-- **[HTTPS outcalls](https-outcalls.md)**: How canisters make HTTP requests to external services with consensus on responses.
+- **[HTTPS outcalls](https-outcalls.md)**: How canisters make HTTP requests to external services, with or without consensus on the response.
 
 ## Cryptography
 

@@ -1,0 +1,353 @@
+# Upstream tracking
+
+How this repo stays current with the projects it documents.
+
+Upstream repos fall into four groups, and the group decides the procedure.
+
+| | Vendored (submodule) | Synced | Watched | Reference |
+|---|---|---|---|---|
+| Which | `motoko`, `internetidentity`, `examples` | the `synced` array in `.sources/upstream.json` | the `watched` array | the `reference` array |
+| Why | the build opens their files | their own pages are published here as-is | a release can silently invalidate a lot of published content | drawn on too lightly, or another check already catches the drift |
+| Pin | the gitlink | `pinned` in `upstream.json` | `pinned` in `upstream.json` | none; verify against the latest release |
+| Release issue | only `examples`, and only when a quoted file moved | no; its own workflow opens the bump PR | yes | no |
+
+Deciding between the last two is a judgment about blast radius, and the `why`
+field on each `reference` entry records the footprint that decided it. Promote an
+entry to `watched` if its footprint grows.
+
+`motoko` and `internetidentity` have their own weekly sync workflows that open
+the bump PR directly. The `watched` repos are covered by the weekly **Upstream
+release check**, which opens an issue whenever one moves. That same check covers
+`examples`, but opens an issue only when the range touched a file a `snippet=`
+quotes. `reference` repos are not checked at all.
+
+## Why only three are vendored
+
+A submodule is justified only when the repo's content is resolved during the
+build, because then it has to be on disk at a known ref:
+
+- `motoko` — synced into `docs/languages/motoko/` **and** resolved at build time
+  by 52 `<motokoExamples>` file includes.
+- `internetidentity` — `scripts/sync-ii-spec.mjs` generates two reference pages
+  from it.
+- `examples` — `plugins/remark-snippet.mjs` extracts `snippet=` code at build
+  time.
+
+Everything else is read to check a fact, which needs a pinned ref rather than a
+copy, or is a skill, which the session-start sync mirrors from
+[skills.internetcomputer.org](https://skills.internetcomputer.org) (see AGENTS.md
+"Skills"). Add a submodule only if the build has to open its files.
+
+Third-party content that is copied in rather than referenced must carry its
+license with it: the license text alongside the files, and an entry in
+[`NOTICE`](../NOTICE). A license that forbids that is a reason to reference the
+upstream instead of copying it.
+
+## Watched repos
+
+### Verifying a fact against a watched repo
+
+Read the file at the **pinned** ref, not at `main`:
+
+```bash
+# The pinned ref for each repo is in .sources/upstream.json
+curl -sL https://raw.githubusercontent.com/dfinity/icp-cli/v1.6.0/docs/reference/cli.md
+```
+
+Use `raw.githubusercontent.com`, not `gh api .../contents/...`: the API returns
+base64 that gets truncated by the CLI wrapper, and a truncated flag reference is
+worse than none because it looks complete.
+
+Verify against the pinned ref rather than `main` for two reasons. A review stays
+reproducible, and a page cannot end up documenting a flag from a release whose
+doc links have not been adapted yet.
+
+Many of these repos also publish authoritative docs (the `reference` field in
+`upstream.json`: mops.one, docs.rs, js.icp.build, cli.internetcomputer.org).
+Those are the right thing to *link* readers to. For verifying a claim, prefer the
+pinned source file, because a published site always shows "latest".
+
+### When an upstream moves
+
+`.github/workflows/upstream-releases.yml` runs weekly and opens one issue per
+repo that has moved past its pin. Every issue carries `upstream-sync`, so they
+are findable as a class, plus a per-upstream label so a later run can supersede
+its own issue: `upstream-dfinity-<repo>` for a watched repo and
+`upstream-submodule-<name>` for a vendored one. The issue
+carries the ref delta, a compare link, a summary of what changed in the repo's
+`verify` file when one is configured, and the `affects` note saying which pages
+to re-check.
+
+To close one:
+
+1. Review the changes against the pages named in the issue.
+2. Update those pages if anything they state has changed.
+3. Set `pinned` to the new ref in `.sources/upstream.json`, in the same PR.
+
+If nothing in the docs is affected, bump the pin alone and say so in the PR. The
+pin means "the docs were checked against this ref", so it should not move
+without someone having looked.
+
+Run it locally at any time:
+
+```bash
+node scripts/check-upstream-releases.mjs                      # all repos
+node scripts/check-upstream-releases.mjs --repo dfinity/icp-cli
+```
+
+Exit code 0 means nothing moved, 1 means at least one did (bodies are written to
+`.upstream-checks/`), 2 means a check errored.
+
+### Adding a repo to the watch list
+
+Add an entry to `.sources/upstream.json`, declaring where its releases actually
+appear:
+
+| `track` | Latest ref comes from | Use it when |
+|---|---|---|
+| `release` | git tags matching `tagPattern` | tags are the release identity |
+| `crate` | crates.io `newest_version` for `crate` | the repo publishes without tagging |
+| `npm` | the npm registry `latest` for `package` | same, for a JS package |
+| `commit` | the default branch head | the repo has no releases at all |
+
+Three traps this has already hit:
+
+- **One entry cannot cover several tag prefixes.** Refs are compared by numeric
+  runs, so `rust-` against `static-site-` compares textually and only the
+  alphabetically-last prefix can ever be reported. `icp-cli-recipes` tags per
+  recipe, so each recipe gets its own entry with a `name`, which also gives it
+  its own pin, issue and label.
+- **A `release` pin must be a real tag**, and a `crate` or `npm` pin must be a
+  published version. A pin nothing can overtake makes the repo report "current"
+  for ever, so both are rejected loudly. That is how `cdk-rs` was caught pinned
+  to a crate version its tags were two minors behind, and it also catches a pin
+  in the wrong shape, such as `v0.20.1` for a crate that publishes `0.20.1`.
+- **`tagPattern` must be anchored**, or a prefix match picks up a neighbouring
+  series.
+
+Set `verify` when a single file carries the surface we check against; its diff
+becomes the issue's review payload, and a changelog is usually the best choice
+because it names what changed instead of leaving "check every signature" as the
+task. It only applies to `release` and `commit` tracks, since a registry version
+is not a ref git can resolve.
+
+### `icp-cli`: link slug adaptation
+
+All CLI docs links use a versioned slug (`https://cli.internetcomputer.org/1.6/...`).
+When `icp-cli` moves to a new minor:
+
+1. The slug is the `major.minor` of the release (`v1.6.0` → `1.6`). Confirm it is
+   live in the published version list, where the entry marked `latest: true` is
+   the slug the docs site serves at its root:
+   ```bash
+   curl -sL --compressed https://cli.internetcomputer.org/versions.json
+   ```
+2. Verify every linked path and anchor resolves at the new slug **before**
+   replacing. Check the live site, not a repo tree: that validates the published
+   URL, its trailing-slash behaviour, and the anchor.
+   ```bash
+   grep -roh "cli\.internetcomputer\.org/[0-9][.0-9]*/[^\"' )#]*" docs/ \
+     | sed 's|cli\.internetcomputer\.org/[0-9][.0-9]*/||' | sort -u | grep -v "^$" \
+     | while read -r p; do
+         code=$(curl -sSL -o /dev/null -w "%{http_code}" "https://cli.internetcomputer.org/<new>/$p")
+         [ "$code" = "200" ] || echo "MISSING ($code): $p"
+       done
+   ```
+   For deep links, also confirm the anchor exists:
+   ```bash
+   curl -sL --compressed "https://cli.internetcomputer.org/<new>/reference/cli/" | grep -o 'id="icp-cycles"'
+   ```
+3. Replace the slug across all files (per-file loop, because GNU and BSD `sed`
+   disagree on `-i`):
+   ```bash
+   old=1.5; new=1.6
+   grep -rl "cli.internetcomputer.org/${old}/" docs/ | while IFS= read -r f; do
+     sed -i.bak "s|cli.internetcomputer.org/${old}/|cli.internetcomputer.org/${new}/|g" "$f" && rm -f "$f.bak"
+   done
+   ```
+4. Update the slug named in the AGENTS.md linking rule.
+5. Run `npm run build`.
+
+## Vendored submodules
+
+Only the project maintainer bumps submodule refs.
+
+`examples` is checked, but only for the case the build cannot see. A `snippet=`
+path or `#region` marker that stops resolving already fails the build. What the
+build cannot notice is an example being corrected upstream while still
+resolving, which leaves the docs quoting old code with everything green. So its
+entry carries `pathFilter: "snippets"`: the check intersects the files changed
+between the pinned gitlink and the branch head with every file a `snippet=`
+quotes, and opens an issue only when they overlap, naming the files. Any other
+commit on that repo stays silent.
+
+`motoko` and `internetidentity` are not in `upstream.json`: `sync-motoko.yml` and
+`sync-ii-spec.yml` already check for a new release, run the sync, and open the
+bump PR with the result.
+
+### Determine the new ref
+
+- **Release-pinned** (`motoko`, `internetidentity`): `git ls-remote --tags origin`,
+  pin to the highest version tag's commit.
+- **Branch-tracking** (`examples`): fetch and check out `origin/master`.
+
+### Checklist
+
+1. Identify changes: `git -C .sources/<repo> log --oneline <old-ref>..<new-ref>`
+2. Grep `docs/` for content derived from that submodule; update affected pages
+3. Check open PRs — post a bump notice if the bump may affect pages under review
+4. Update `.sources/VERSIONS` for the release-pinned ones
+5. Note the bump in the PR description
+
+**Bump-notice PR comment:**
+```bash
+gh pr comment <PR#> --body "$(cat <<'EOF'
+<!-- submodule-bump-notice -->
+`<repo>` was bumped to `<new-ref>`. The following content on this PR may be outdated:
+- [specific item and why]
+
+Please review before merging.
+EOF
+)"
+```
+
+### Per-submodule extra checks
+
+| Submodule | Extra checks on bump |
+|---|---|
+| `motoko` | **Automated** — `.github/workflows/sync-motoko.yml` opens a PR with the bump, the synced docs, and the VERSIONS update already committed. Review the content diff and merge. Also grep Motoko code blocks for changed API signatures. |
+| `internetidentity` | Run `npm run sync:ii-spec`. If it warns about an unhandled link, add the pattern to `linkMap` (ii-spec) or `vcLinkMap` (vc-spec) in `scripts/sync-ii-spec.mjs`. Pin to the latest `release-YYYY-MM-DD` tag. `.github/workflows/sync-ii-spec.yml` runs this automatically; trigger it manually for an early sync. |
+| `examples` | Verify every `snippet=` path and `#region` marker still resolves — a missing region is a build error. |
+
+### Link adaptation for the synced specs
+
+`internet-identity-spec.md` and `verifiable-credentials-spec.md` are handled by
+`npm run sync:ii-spec`. If a new unhandled link pattern appears the script exits
+with a warning; add it to `linkMap` or `vcLinkMap` in `scripts/sync-ii-spec.mjs`
+and re-run. Use `grep -r "{#<anchor>}" docs/references/ic-interface-spec/` to
+find which file owns an anchor.
+
+### Shallow clone resolution
+
+If a shallow clone cannot resolve a pinned commit:
+
+```bash
+git -C .sources/<repo> fetch --unshallow
+git -C .sources/<repo> checkout <commit>
+```
+
+## Synced trees
+
+A synced tree is a set of pages this repo publishes but does not write. Upstream
+owns the prose; a sync script fetches it at a pinned ref, adapts the few things
+that only make sense on this site, and writes the result into `docs/`.
+
+| Tree | Upstream | Script | Workflow |
+|---|---|---|---|
+| `docs/guides/frontends/static-site/` | `dfinity/certified-assets` `docs/` | `scripts/sync-static-site.mjs` | `.github/workflows/sync-static-site.yml` |
+
+`motoko` and `internetidentity` are synced too, but they are submodules because
+the build also opens their files, so they follow the vendored procedure above.
+This group is for the case where nothing is resolved at build time, only
+markdown links, which is why there is no submodule to hold the pin.
+
+### How the pin moves
+
+The workflow runs weekly and resolves the latest release tag. What comes out of
+it depends on what the release carries:
+
+- **Pages changed.** A PR to review the diff. The usual case.
+- **Nothing under `docs/` changed, and the pin is a commit.** A PR whose only
+  diff is the pin and the `source_ref` each page records. It opens because that
+  is what moves the pin off a commit and onto a release tag; skipping it would
+  strand a temporary commit pin for good.
+- **Nothing under `docs/` changed, and the pin is a tag.** Nothing. A PR would
+  carry an empty page diff for someone to review and merge. The pin then lags
+  the latest release and stays accurate, since it records the ref this copy came
+  from and the copy still matches it, and the release is not missed, because the
+  recipe that deploys this canister releases in lockstep and is tracked under
+  `watched`.
+
+The PR body says which of the first two it is.
+
+To sync a ref rather than a release, dispatch the workflow with `ref`: a sha,
+tag, or branch. That is for a docs fix that has shipped upstream but is not in a
+release, and it leaves the pin on a commit until the next release moves it onto
+a tag. The release checks do not apply to a dispatched ref, so it can also move
+the pin backwards, which a rollback wants and a mistyped sha does not: the run
+says so and the PR body repeats it.
+
+To sync by hand, or to trial a ref before pinning it:
+
+```bash
+npm run sync:static-site                 # uses the pin in .sources/upstream.json
+node scripts/sync-static-site.mjs --ref main
+```
+
+The script exits non-zero rather than publishing something broken: missing
+frontmatter, an absolute link to this site it cannot map, a relative link that
+does not resolve, or a banned character that survived normalization. Fix the
+cause, do not hand-edit the output.
+
+### The pin may sit ahead of the latest release
+
+`.sources/VERSIONS` forbids pinning a submodule past its latest release, so that
+docs cannot describe behavior users cannot run yet. A synced tree can need the
+opposite: a docs-only fix upstream is published before the next release, and the
+pages must be syncable now. `certified-assets` started exactly there, pinned to a
+commit because the `v0.3.3` tag predated the frontmatter contract the sync
+requires (`certified-assets#124`).
+
+The rule that matters is the one behind it: never pin past a commit that
+documents unreleased behavior. Docs-only commits are safe, so check what the
+range contains before pinning past a tag, and record why in the entry's
+`$comment`. Move the pin back onto release tags as soon as one includes the
+change.
+
+### On bump, check
+
+1. The page diffs, for content changes; the tree is regenerated wholesale
+2. Whether a behavior change contradicts our own pages: `certification.md`
+   describes what this canister certifies, `asset-canister.md` contrasts the two
+   recipes
+3. Whether prose naming the recipe version needs bumping with it
+4. Whether a normalization the script reports should be fixed upstream instead,
+   so it becomes a no-op
+
+## Build dependencies (npm)
+
+The packages in `package.json` are a separate axis: they decide whether the site
+builds, not whether its content is accurate. `.github/dependabot.yml` keeps them
+current with weekly version updates plus security updates.
+
+`astro` and `@astrojs/*` are grouped into a single PR because Astro releases them
+in lockstep and pins their peer ranges narrowly. A bump to one of them alone often
+cannot resolve at all: astro 7.2.10, for example, moved its
+`@astrojs/markdown-remark` peer from an exact pin to `^7.3.0`, which only
+`@astrojs/mdx` 8 satisfies, which only ships with Starlight 0.42. Grouping lets
+dependabot resolve the whole family in one pass.
+
+Grouping a security update coalesces only the family members that each carry an
+advisory, so an advisory against `astro` alone still arrives as a one-package PR
+that cannot resolve. The weekly version update is what keeps that rare, by
+leaving little room between the family's releases and what is committed.
+
+Grouping fixes the resolution, not the code. A Starlight minor is a breaking
+release, so a grouped PR still fails the build check whenever the new version
+needs source changes (0.39 changed the `autogenerate` sidebar shape; 0.42
+rewrote the mobile-menu markup). Take those over by hand on an `infra/` branch:
+`preview-deployment.yml` is skipped on dependabot PRs, whose token is read-only,
+so a bump with visual impact needs a maintainer branch to get a preview at all.
+
+Two things to check when taking one over:
+
+- Regenerating `package-lock.json` on macOS prunes what does not apply locally:
+  the `libc` fields on the Linux binding packages, and, when `node_modules` is
+  present, the top-level `@emnapi/*` packages that `npm ci` needs on Linux. Move
+  `node_modules` aside, regenerate with `npm install --package-lock-only`, copy
+  the `libc` fields back from the previous lockfile, then validate with `npm ci`,
+  which reads the lock without rewriting it.
+- `npm ci && npm run build` is the gate, but it exits 0 on rendering
+  regressions. Diff `dist/` against a `main` baseline: `llms.txt`,
+  `llms-full.txt`, `sitemap.xml` and the `.md` endpoints should be identical,
+  and every HTML difference should trace to a documented upstream change.
