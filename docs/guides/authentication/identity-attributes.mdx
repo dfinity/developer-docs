@@ -15,7 +15,7 @@ When your backend needs more than the user's principal, for example a verified e
 |-----|------------|------------|
 | `name` | The user's display name from their linked account. | Personalization. |
 | `email` | The email address from their linked account. Internet Identity does not check it, so treat it as user-supplied input. | Contact details, mailing lists. |
-| `verified_email` | An email address Internet Identity knows the user has access to: one an OpenID provider such as Google marked as verified, or one the user linked and verified with Internet Identity. | Anything that gates access on the email, such as an admin allowlist. |
+| `verified_email` | An email address Internet Identity knows the user has access to: one that an OpenID provider such as Google marked as verified, or one that the user linked and verified with Internet Identity. | Anything that gates access on the email, such as an admin allowlist. |
 
 `requestAttributes` has no default key set: pass the keys you need.
 
