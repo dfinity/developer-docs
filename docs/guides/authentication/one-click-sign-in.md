@@ -36,7 +36,7 @@ await authClient.signIn();
 
 Internet Identity reads the organization's configuration from `https://acme.com/.well-known/ii-openid-configuration` and sends the user to the provider named there. Any organization that [publishes that file](enterprise-sso.md) can be signed in against, with nothing registered ahead of time.
 
-The domain is normalized when the client is built: lowercased, IDNA-encoded, and reduced to a host with an optional port. A value carrying a scheme, a path, a query, or a fragment is not a domain, and the client reports it as `invalid` (see below).
+The domain is normalized when the client is built: lowercased and IDNA-encoded. A value that is not a domain, such as one carrying a scheme or a path, or a malformed name such as `foo..com`, is reported as `invalid` (see below).
 
 If your app sets a `derivationOrigin`, the client sends it along with the domain, so Internet Identity uses the client the organization assigned to that origin.
 
@@ -95,7 +95,7 @@ A replaced client is disposed before it can report, so a stale result never rend
 
 For a "Try again" button, call `refreshSsoStatus()`. While `retryAfter` is in the future, keep the button disabled and count down to it ("Try again in 2 min"): Internet Identity does not retry a failing domain sooner, and an early retry answers `unavailable` again at once.
 
-The check also prepares Internet Identity for this domain, so `signIn()` on the same client starts without waiting. `signIn()` opens Internet Identity in every state except `invalid`, which rejects without opening anything. A sign-in through an `unavailable` domain shows Internet Identity's own error screen. In every state, `signIn()` also rejects when the user closes Internet Identity or authentication fails, so handle the rejection.
+The check also prepares Internet Identity for this domain, so `signIn()` on the same client starts without waiting. `signIn()` opens Internet Identity in every state. A sign-in through an `unavailable` or `invalid` domain shows Internet Identity's own error screen. In every state, `signIn()` rejects when the user closes Internet Identity or authentication fails, so handle the rejection.
 
 ## Request attributes in the same step
 
