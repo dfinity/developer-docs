@@ -297,7 +297,7 @@ Anonymous calls work without any setup. The sender principal is `"2vxsx-fae"`. C
 
 ### Authenticated calls with Internet Identity
 
-To associate calls with a user's Internet Identity, use `@icp-sdk/auth` to complete the delegation flow and get an `Identity` object, then pass it to the agent. See [Internet Identity](../authentication/internet-identity.md#create-an-authenticated-agent) for the full integration guide.
+To associate calls with a user's Internet Identity, use `@icp-sdk/auth` to complete the delegation flow and get an `Identity` object, then pass it to the agent. See [Internet Identity](../authentication/internet-identity.md#call-your-backend-as-the-user) for the full integration guide.
 
 Once you have an authenticated identity, pass it to the agent at creation time:
 
