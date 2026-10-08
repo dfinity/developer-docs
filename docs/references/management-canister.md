@@ -353,12 +353,12 @@ Returns a SEC1-encoded ECDSA public key derived for the given canister and deriv
 - **Parameters:**
   - `canister_id` (`opt principal`): defaults to caller
   - `derivation_path` (`vec blob`): up to 255 byte strings of arbitrary length
-  - `key_id` (`record { curve : ecdsa_curve; name : text }`): currently supports `secp256k1`
+  - `key_id` (`record { curve : ecdsa_curve; name : text }`): the curve is `secp256k1` or `secp256r1` (NIST P-256); see [Deployed keys](../concepts/chain-key-cryptography.md#deployed-keys) for the keys available on mainnet
 - **Returns:**
   - `public_key` (`blob`): SEC1 compressed public key
   - `chain_code` (`blob`): for deterministic child key derivation
 
-For `secp256k1`, key derivation uses a generalization of BIP-32. To derive BIP-32-compatible public keys, each entry in `derivation_path` must be a 4-byte big-endian unsigned integer less than 2^31.
+For `secp256k1`, key derivation uses a generalization of BIP-32. For `secp256r1`, it uses the same generalization instantiated over P-256, which is [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md). To derive BIP-32-compatible (or, for `secp256r1`, SLIP-10-compatible) public keys, each entry in `derivation_path` must be a 4-byte big-endian unsigned integer less than 2^31.
 
 ### `sign_with_ecdsa`
 
@@ -370,7 +370,7 @@ Signs a message hash using threshold ECDSA. The corresponding public key can be 
   - `derivation_path` (`vec blob`)
   - `key_id` (`record { curve : ecdsa_curve; name : text }`)
 - **Returns:**
-  - `signature` (`blob`): concatenation of SEC1-encoded `r` and `s` values (64 bytes for `secp256k1`)
+  - `signature` (`blob`): concatenation of SEC1-encoded `r` and `s` values (64 bytes for both `secp256k1` and `secp256r1`)
 - **Cycles:** Must be explicitly attached to the call
 
 > If the call returns a reject with code `SYS_UNKNOWN` or `CANISTER_ERROR`, the signature may still exist in the system. Do not assume the signature was not produced.
