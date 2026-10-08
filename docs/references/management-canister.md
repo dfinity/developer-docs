@@ -589,6 +589,25 @@ Returns a time series of node metrics for a given subnet. Returns up to 60 times
   - `num_blocks_proposed_total` (`nat64`)
   - `num_block_failures_total` (`nat64`)
 
+### `subnet_metrics`
+
+> This API is **experimental** and may change in a non-backward-compatible way.
+
+Returns subnet-wide metrics for a given subnet, which does not have to be the subnet hosting the caller. `num_canisters`, `canister_state_bytes`, `consumed_cycles_total`, and `update_transactions_total` report the same quantities that the certified state tree exposes at `/subnet/<subnet_id>/metrics`. This method makes them available to canisters, which cannot read the state tree. `block_height` and `million_round_instructions_total` have no path in the state tree and are only available here. The full field semantics are in the [interface specification](ic-interface-spec/management-canister.md#ic-subnet_metrics).
+
+- **Caller:** Canisters only
+- **Parameters:**
+  - `subnet_id` (`principal`): any subnet
+- **Returns:**
+  - `block_height` (`nat`): the height of the block in whose execution the call is processed
+  - `num_canisters` (`nat`): number of canisters on the subnet
+  - `canister_state_bytes` (`nat`): total size of canister state in bytes
+  - `consumed_cycles_total` (`nat`): total [nominal cycles](ic-interface-spec/index.md#nominal-cycles) accounted for by the subnet
+  - `update_transactions_total` (`nat`): total messages executed in replicated mode on the subnet
+  - `million_round_instructions_total` (`nat`): total instructions the subnet accounted for when executing its blocks, in units of one million and rounded up
+
+Only `block_height` is as of the block that processes the call. The other five fields are aggregates refreshed at block boundaries, so they describe an earlier block. They are not refreshed in lockstep with each other. `canister_state_bytes` is recomputed only every 10 blocks. It reads 0 until the first recomputation after the subnet was created. `consumed_cycles_total` can decrease (refunds, subnet splitting) and is not a count of cycles burned. `update_transactions_total` and `million_round_instructions_total` never decrease.
+
 ### `subnet_info`
 
 Returns metadata about a subnet.
