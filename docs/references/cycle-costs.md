@@ -94,8 +94,8 @@ Threshold signing and key derivation are core ICP protocol capabilities: the cry
 
 | Key name | Algorithm(s) | Environment | Signing subnet | Cycles | ~USD |
 |----------|-------------|------------|----------------|--------|------|
-| `test_key_1` | ECDSA (`secp256k1`), Schnorr (`bip340secp256k1`, `ed25519`) | Testing | 13-node (`fuqsr`) | 10_000_000_000 | ~$0.0137 |
-| `key_1` | ECDSA (`secp256k1`), Schnorr (`bip340secp256k1`, `ed25519`) | Production | 34-node fiduciary (`pzp6e`) | 26_153_846_153 | ~$0.0357 |
+| `test_key_1` | ECDSA (`secp256k1`, `secp256r1`), Schnorr (`bip340secp256k1`, `ed25519`) | Testing | 13-node (`fuqsr`) | 10_000_000_000 | ~$0.0137 |
+| `key_1` | ECDSA (`secp256k1`, `secp256r1`), Schnorr (`bip340secp256k1`, `ed25519`) | Production | 34-node fiduciary (`pzp6e`) | 26_153_846_153 | ~$0.0357 |
 
 If the canister may be blackholed or called by other canisters, send more cycles than the listed cost: unused cycles are refunded, and this ensures calls succeed if the signing subnet grows in node count.
 
