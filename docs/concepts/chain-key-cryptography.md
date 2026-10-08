@@ -40,11 +40,12 @@ BLS was chosen for two properties:
 
 Chain-key signatures extend threshold cryptography beyond ICP's internal operations. They let canisters hold keys for external signature schemes and sign arbitrary messages, which means canisters can control accounts on other chains.
 
-Two signature schemes are supported, with the Schnorr API offering two algorithm variants:
+Two signature schemes are supported. The ECDSA API offers two curves, and the Schnorr API offers two algorithms:
 
-| Scheme | Algorithm | Key ID examples | Use cases |
+| Scheme | Curve or algorithm | Key ID examples | Use cases |
 |--------|-----------|-----------------|-----------|
 | Threshold ECDSA | `secp256k1` | `key_1`, `test_key_1` | Bitcoin (legacy/SegWit), Ethereum, EVM chains, Filecoin |
+| Threshold ECDSA | `secp256r1` (NIST P-256) | `key_1`, `test_key_1` | JSON Web Tokens signed with ES256, VAPID web push |
 | Threshold Schnorr | `bip340secp256k1` | `key_1`, `test_key_1` | Bitcoin Taproot, Ordinals |
 | Threshold Schnorr | `ed25519` | `key_1`, `test_key_1` | Solana, TON, Polkadot, Cardano, NEAR |
 
@@ -67,7 +68,7 @@ Threshold Schnorr (including Ed25519) protocols are simplified variants of the E
 
 A small number of **master keys** are deployed across the network: one per signature scheme. From each master key, the protocol derives a unique **canister root key** for every canister using the canister's principal as input. From the root key, canisters can derive an unlimited number of child keys by providing a `derivation_path` in API calls.
 
-For ECDSA and BIP340, key derivation uses a generalized form of [BIP-32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), which means derived keys are compatible with standard Bitcoin and Ethereum HD wallet tooling. Ed25519 uses a custom hierarchical derivation mechanism designed for this use case.
+For ECDSA on `secp256k1` and for BIP340, key derivation uses a generalized form of [BIP-32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), which means derived keys are compatible with standard Bitcoin and Ethereum HD wallet tooling. ECDSA on `secp256r1` uses the same generalization over P-256, which is [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md). Ed25519 uses a custom hierarchical derivation mechanism designed for this use case.
 
 Derivation is transparent: it happens inside the protocol as part of the signing and public-key-retrieval APIs. You provide a derivation path and the protocol handles the rest.
 
@@ -91,6 +92,8 @@ The following master keys are deployed at the time of writing. The Network Nervo
 |--------|--------|---------|----------------|
 | `(secp256k1, test_key_1)` | ECDSA | Development and testing | 13-node subnet |
 | `(secp256k1, key_1)` | ECDSA | Production | High-replication subnet |
+| `(secp256r1, test_key_1)` | ECDSA | Development and testing | 13-node subnet |
+| `(secp256r1, key_1)` | ECDSA | Production | High-replication subnet |
 | `(bip340secp256k1, test_key_1)` | Schnorr | Development and testing | 13-node subnet |
 | `(bip340secp256k1, key_1)` | Schnorr | Production | High-replication subnet |
 | `(ed25519, test_key_1)` | Schnorr (Ed25519) | Development and testing | 13-node subnet |
