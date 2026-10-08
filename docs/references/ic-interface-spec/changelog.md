@@ -8,6 +8,13 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.70.0 (2026-10-05) {$0_70_0}
+* New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
+  `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as
+  for `secp256k1`, the concatenation of the 32-byte big-endian encodings of r and s. The `ecdsa_curve`
+  argument of `ic0.cost_sign_with_ecdsa` accepts `1` for the new curve. As for any curve, the
+  availability of a particular `key_id` depends on the implementation.
+
 ### 0.69.0 (2026-09-28) {$0_69_0}
 * New management canister endpoint `subnet_metrics` returning subnet-wide metrics for a
   given subnet: the current block height, the number of canisters, the total canister
@@ -27,11 +34,6 @@ sidebar:
   counters. `canister_state_bytes` is refreshed only every 10 blocks. `consumed_cycles_total`
   counts nominal cycles and can decrease. `update_transactions_total` counts the messages
   executed in replicated mode.
-* New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
-  `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as
-  for `secp256k1`, the concatenation of the 32-byte big-endian encodings of r and s. The `ecdsa_curve`
-  argument of `ic0.cost_sign_with_ecdsa` accepts `1` for the new curve. As for any curve, the
-  availability of a particular `key_id` depends on the implementation.
 
 ### 0.68.0 (2026-09-14) {$0_68_0}
 * New management canister method `flexible_http_request`, a variant of `http_request` in which a committee
