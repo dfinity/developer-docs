@@ -48,8 +48,8 @@ An app that asks the user for their organization's domain can show whether it wo
 |-------|---------|------|
 | `checking` | Internet Identity is resolving the domain. | A spinner. |
 | `available` | The domain is ready for sign-in. `name` is the organization's display name, when it publishes one. | "Continue with Acme Corp". |
-| `invalid` | The input is not a domain. | Ask the user to correct it. |
-| `unavailable` | The domain publishes no usable configuration, or resolving it failed. `retryAfter` is when a retry can succeed, when known. | The failure, and a retry button. |
+| `invalid` | The input is not a domain. `reason` names every problem with it. | `reason`, and ask the user to correct it. |
+| `unavailable` | The domain publishes no usable configuration, or resolving it failed. `retryAfter` is when a retry can succeed, when known; `reason` is Internet Identity's explanation, when it gives one. | `reason` if set, and a retry button. |
 
 `getSsoStatus()` is synchronous and never throws, and `subscribe()` calls back whenever it changes. Build a new client once the user pauses typing, and dispose of the one it replaces, which also stops its check:
 
@@ -79,9 +79,9 @@ function render(sso) {
     case "available":
       return enableContinue(sso.name);
     case "invalid":
-      return showNotADomain();
+      return showNotADomain(sso.reason);
     case "unavailable":
-      return showUnavailable(sso.retryAfter);
+      return showUnavailable(sso.retryAfter, sso.reason);
   }
 }
 
