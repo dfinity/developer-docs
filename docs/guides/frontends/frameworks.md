@@ -184,7 +184,7 @@ If your Vue app calls `getCanisterEnv()` to read canister IDs, add the same `ser
 
 ## Authentication
 
-Authentication with Internet Identity is framework-agnostic. The `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md#frontend-integration) for integration steps.
+Authentication with Internet Identity is framework-agnostic. The `@icp-sdk/auth` package works the same way in React, Vue, Svelte, and Next.js static export mode. See the [Internet Identity guide](../authentication/internet-identity.md#sign-in-and-sign-out) for integration steps.
 
 ## Svelte and SvelteKit
 

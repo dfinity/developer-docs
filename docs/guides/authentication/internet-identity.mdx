@@ -1,152 +1,72 @@
 ---
-title: "Internet Identity"
-description: "Integrate passkey-based authentication with Internet Identity for frontend sign-in, backend caller verification, and session management"
+title: "Getting started"
+description: "Add Internet Identity sign-in to a frontend with @icp-sdk/auth, call your backend as the signed-in user, and reject anonymous callers."
 sidebar:
   order: 1
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Internet Identity (II) is the Internet Computer's native authentication system. Users sign in with passkeys or OpenID accounts (Google, Apple, Microsoft) instead of passwords. Each user receives a unique principal per frontend origin, preventing cross-app tracking.
-
-This guide covers setting up II authentication end-to-end: configuring your project, adding sign-in to your frontend, and verifying callers in your backend.
+Internet Identity (II) is the Internet Computer's sign-in. Users authenticate with a passkey, with a Google, Apple, or Microsoft account, or through their organization's SSO, and your app receives an identity it can call canisters with. This page adds sign-in to a frontend and checks the caller in a backend.
 
 ## How it works
 
-When a user authenticates through Internet Identity, the following happens:
+Signing in opens a session at Internet Identity. The `AuthClient` from `@icp-sdk/auth` receives a **delegation** from that session: a short-lived key that may sign canister calls for the user, which the client replaces before it expires. Canisters see the user's **principal** as the caller.
 
-1. Your frontend opens an II popup window.
-2. The user authenticates with a passkey or OpenID provider.
-3. II creates a **delegation identity**: a temporary key pair that can sign messages on behalf of the user's master key.
-4. Your frontend receives this delegation and uses it to sign canister calls.
-5. The backend canister sees the user's **principal** (derived from the delegation chain) as `msg.caller`.
+II derives a different principal for each app origin, so one person is a different user to `https://app-a.icp.net` and `https://app-b.icp.net`, and apps cannot correlate users across services. To keep one principal across several origins you control, see [Shared sessions across subdomains](shared-sessions.md#use-one-derivation-origin).
 
-**Principal-per-app isolation:** II derives a different principal for each frontend origin. A user logging into `https://app-a.icp.net` gets a different principal than when logging into `https://app-b.icp.net`, even with the same passkey. This prevents apps from correlating users across services.
-
-**Sessions expire, and the delegation the frontend signs with is replaced as it ages.** Signing in opens a session at Internet Identity; the client mints a short-lived delegation from it and replaces that delegation before it expires, so a long-lived session never means a long-lived key. Two optional bounds on `signIn()` decide how long the session itself may last: `maxTimeToIdle`, after which an unused session ends, and `maxTimeToLive`, which it can never outlive. Leave them unset and Internet Identity applies its own, currently seven days of idleness and thirty days in total.
-
-## Project setup
-
-### Configure icp.yaml for local Internet Identity
-
-Add `ii: true` to your local network configuration. This tells icp-cli to deploy a local Internet Identity canister automatically:
-
-```yaml
-networks:
-  - name: local
-    mode: managed
-    ii: true
-```
-
-### Install frontend packages
+## Install
 
 ```bash
-npm install @icp-sdk/auth@9 @icp-sdk/core@5
+npm install @icp-sdk/auth @icp-sdk/core
 ```
 
-Both majors are pinned because this page documents that pair: `@icp-sdk/auth` v9 with
-`@icp-sdk/core` v5, which is the peer range v9 declares. On v8 of the client the
-`identityProvider` option below throws a `TypeError`, so see
-[Upgrading to v9](https://js.icp.build/auth/latest/upgrading/v9/) if you are moving an
-existing app.
+Install both together: each `@icp-sdk/auth` major peers a specific `@icp-sdk/core` major.
 
-## Frontend integration
+## Sign in and sign out
 
-The `AuthClient` from `@icp-sdk/auth` handles the full sign-in flow: opening the II popup, receiving the delegation, and managing session persistence.
-
-### Environment detection
-
-Internet Identity is two things to the client: the page a sign-in is rendered at, served by II's frontend canister (`uqzsh-gqaaa-aaaaq-qaada-cai`), and the canister that mints delegations, which is II's backend (`rdmx6-jaaaa-aaaaa-aaadq-cai`). Only the page differs between local development and mainnet, since [system canisters run at their mainnet canister IDs locally](../../references/system-canisters.md#using-system-canisters-in-local-development):
+A client reads and writes the sign-in held in the browser's storage, not in the instance, so it is cheap: construct one where you need it and call `dispose()` when that page or component goes away. Without options, it signs in against mainnet Internet Identity:
 
 ```javascript
 import { AuthClient } from "@icp-sdk/auth/client";
-import { HttpAgent, Actor } from "@icp-sdk/core/agent";
-import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-// Read the ic_env cookie set by the frontend canister or Vite dev server.
-// Contains IC_ROOT_KEY and canister IDs: works in both local and production without
-// environment branching. Available in browser contexts only; see note below for Node.js.
-const canisterEnv = safeGetCanisterEnv();
+const authClient = new AuthClient();
 
-function getIdentityProvider() {
-  const host = window.location.hostname;
-  const isLocal =
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host.endsWith(".localhost");
-
-  return {
-    // icp-cli sets up a local alias: http://id.ai.localhost:8000
-    authorizeUrl: isLocal
-      ? "http://id.ai.localhost:8000/authorize"
-      : "https://id.ai/authorize",
-    canisterId: "rdmx6-jaaaa-aaaaa-aaadq-cai",
-  };
-}
-```
-
-### Sign in, sign out, and session check
-
-The sign-in is kept in the client's storage rather than the instance, so a client is cheap: construct one where you need it, and call `dispose()` when that page or component goes away. Several clients on one page read the same sign-in and write to the same storage. The identity provider is passed at construction time, not on each sign-in:
-
-```javascript
-const authClient = new AuthClient({
-  identityProvider: getIdentityProvider(),
-});
-
-// Check for an existing session. isAuthenticated() is synchronous, so it can
-// run during a render; getIdentity() is async.
-if (authClient.isAuthenticated()) {
-  const identity = await authClient.getIdentity();
-  // Restore session: create agent and actor with this identity
-}
-
-// Sign in
 async function signIn() {
   try {
     const identity = await authClient.signIn();
-    console.log("Signed in as:", identity.getPrincipal().toText());
-    return identity;
+    console.log("Signed in as", identity.getPrincipal().toText());
   } catch (error) {
+    // The user closed the window, or authentication failed.
     console.error("Sign-in failed:", error);
-    throw error;
   }
 }
 
-// Sign out, which ends the session at Internet Identity: every tab of this
-// origin is signed out, and the session cannot be resumed. Nothing to reset or
-// reload: the state changes, so a subscriber re-renders.
 async function signOut() {
+  // Ends the session at Internet Identity, in every tab of this origin.
   await authClient.signOut();
-}
-
-// Release what the client hooked up, when the page or component goes away.
-function teardown() {
-  authClient.dispose();
 }
 ```
 
-`signIn()` returns the new `Identity` directly. It rejects if the user closes the popup or authentication fails, so wrap the call in `try`/`catch` instead of relying on success/error callbacks.
+`signIn()` accepts two optional bounds on the session, both in nanoseconds: `maxTimeToIdle`, after which an unused session ends, and `maxTimeToLive`, which it never outlives. Leave them unset unless your app has a policy of its own: Internet Identity then applies seven days of idleness and thirty days in total.
 
-### Render
+## Render on the sign-in status
 
-`isAuthenticated()` answers whether this page can act as the user. `getStatus()` answers in more detail, and `subscribe()` tells you when to ask again, including when the answer changed in another tab, so a sign-out in one tab reaches the others without a reload:
+`isAuthenticated()` answers whether this page can act as the user, synchronously. `getStatus()` answers in more detail, and `subscribe()` tells you when to read it again, including when another tab signs in or out:
 
 ```javascript
-const unsubscribe = authClient.subscribe(() => render(authClient.getStatus()));
+authClient.subscribe(() => render(authClient.getStatus()));
+render(authClient.getStatus());
 
 function render(status) {
   switch (status.state) {
     case "signed-in":
       return showApp(status.principal);
     case "expired":
-      // Still names the account, so this is a "your session ended" screen
-      // rather than a bare signed-out one.
+      // Still names the account: show "your session ended" rather than a bare sign-in screen.
       return showSessionEnded(status.principal);
     case "signed-in-elsewhere":
-      // Someone is signed in on this domain and this origin holds no credential
-      // for them yet, so getIdentity() throws SessionNotHeldError until it does.
-      // Only reachable once the sign-in is shared across sibling subdomains.
+      // Only reachable when sessions are shared across subdomains.
       return showResume(status.principal);
     case "signed-out":
       return showSignInButton();
@@ -154,154 +74,28 @@ function render(status) {
 }
 ```
 
-### One-click OpenID sign-in
+`subscribe()` returns a function that stops the subscription; `dispose()` ends every subscription and listener the client holds, without signing out.
 
-To skip the Internet Identity authentication-method screen and send the user straight to a specific OpenID provider, pass `openIdProvider` to the constructor. Supported values are `'google'`, `'apple'`, and `'microsoft'`:
+## Call your backend as the user
 
-```javascript
-const authClient = new AuthClient({
-  identityProvider: getIdentityProvider(),
-  openIdProvider: "google",
-});
-```
-
-The rest of the flow (`signIn`, `getIdentity`, `signOut`) is unchanged.
-
-For an organization's own SSO rather than a public provider, pass `ssoDomain` instead (the two are mutually exclusive). The user goes to whichever provider that organization publishes, and `isValidSsoDomain` checks a domain the user typed before you try it:
+Pass the identity to an `HttpAgent`. The root key comes from the `ic_env` cookie that the frontend canister (or the Vite dev server) sets, so the same code runs locally and on mainnet:
 
 ```javascript
-import { AuthClient, isValidSsoDomain } from "@icp-sdk/auth/client";
+import { HttpAgent, Actor } from "@icp-sdk/core/agent";
+import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
 
-async function signInWithSso(domain) {
-  try {
-    if (!(await isValidSsoDomain(domain, AbortSignal.timeout(5_000)))) {
-      return showNoSsoConfiguration(domain); // the domain publishes nothing
-    }
-  } catch {
-    // An abandoned check is not a verdict: the organization's server was too
-    // slow, which is not the same as the domain being unusable.
-    return showCheckTimedOut(domain);
-  }
+const canisterEnv = safeGetCanisterEnv();
 
-  const authClient = new AuthClient({
-    identityProvider: getIdentityProvider(),
-    ssoDomain: domain, // e.g. "acme.com"
-  });
-  await authClient.signIn();
-}
-```
-
-### Create an authenticated agent
-
-After sign-in, create an `HttpAgent` using the delegation identity. The agent signs all subsequent canister calls with the user's delegated key:
-
-```javascript
-async function createAuthenticatedActor(identity, canisterId, idlFactory) {
+async function createActor(canisterId, idlFactory) {
   const agent = await HttpAgent.create({
-    identity,
-    host: window.location.origin,
+    identity: await authClient.getIdentity(),
     rootKey: canisterEnv?.IC_ROOT_KEY,
   });
-
   return Actor.createActor(idlFactory, { agent, canisterId });
 }
 ```
 
-:::note[Node.js environments]
-`safeGetCanisterEnv()` reads the `ic_env` cookie set by the frontend canister or Vite dev server (it only works in browser contexts. For Node.js scripts or tests connecting to a **local** replica, create the agent normally and call `await agent.fetchRootKey()` explicitly after creation. Never call `fetchRootKey()` against a mainnet endpoint) on mainnet the root key is pre-trusted, and fetching it at runtime exposes a man-in-the-middle risk.
-:::
-
-### Requesting identity attributes
-
-When a backend canister needs more than just the user's principal (for example, a verified email address), Internet Identity can return signed attributes alongside the delegation. The flow is a two-method handshake on the backend: `_internet_identity_sign_in_start` mints a nonce, and `_internet_identity_sign_in_finish` verifies the bundle. In Motoko the [`mo:identity-attributes`](https://mops.one/identity-attributes) library provides both methods; in Rust you implement them by hand (see [Read identity attributes](#read-identity-attributes)). The frontend below is identical against either backend.
-
-**Why a backend-issued nonce?** The canister issues a single-use nonce and consumes it on sign-in, so an intercepted bundle cannot be redeemed again. The nonce must originate from the canister, not the frontend.
-
-```typescript
-import { AuthClient } from "@icp-sdk/auth/client";
-import { AttributesIdentity } from "@icp-sdk/core/identity";
-import { HttpAgent, Actor } from "@icp-sdk/core/agent";
-import { Principal } from "@icp-sdk/core/principal";
-
-const II_PRINCIPAL = "rdmx6-jaaaa-aaaaa-aaadq-cai";
-
-// `idl` and `canisterId` identify your backend, which exposes
-// _internet_identity_sign_in_start / _internet_identity_sign_in_finish.
-async function signInWithAttributes(authClient, canisterId, idl) {
-  // Anonymous handle, used only to mint the nonce.
-  const anonymousAgent = await HttpAgent.create();
-  const anonymousActor = Actor.createActor(idl, { agent: anonymousAgent, canisterId });
-
-  // Mint the nonce, sign in, and request attributes in parallel. `nonce` is the
-  // function that fetches it, which the client calls when it needs the value,
-  // so the request is already in flight while the Internet Identity window
-  // opens, and the user still sees a single interaction.
-  const signInPromise = authClient.signIn();
-  const attributesPromise = authClient.requestAttributes({
-    keys: ["name", "verified_email"], // the library reads verified_email for its email field
-    nonce: () => anonymousActor._internet_identity_sign_in_start(),
-  });
-
-  const identity = await signInPromise;
-  const attributes = await attributesPromise;
-
-  // Wrap the identity so the signed bundle travels as sender_info on each call.
-  const verifiedAgent = await HttpAgent.create({
-    identity: new AttributesIdentity({
-      inner: identity,
-      attributes,
-      // The Internet Identity backend canister is the trusted attribute signer.
-      signer: { canisterId: Principal.fromText(II_PRINCIPAL) },
-    }),
-  });
-  const verifiedActor = Actor.createActor(idl, { agent: verifiedAgent, canisterId });
-
-  // The backend verifies signer, origin, nonce, and freshness, then runs its
-  // verification logic. Returns { ok } on success, { err } otherwise.
-  const result = await verifiedActor._internet_identity_sign_in_finish();
-  if ("err" in result) {
-    throw new Error(`Attribute verification failed: ${JSON.stringify(result.err)}`);
-  }
-  return identity;
-}
-```
-
-Each signed attribute bundle carries three implicit fields the backend should verify:
-
-- `implicit:nonce`: matches a single-use nonce the canister issued and consumes on sign-in, so a captured bundle cannot be replayed.
-- `implicit:origin`: the requesting frontend origin, so a malicious dapp cannot forward attributes to a different backend.
-- `implicit:issued_at_timestamp_ns`: issuance time, letting the canister reject stale bundles even when the nonce is still valid.
-
-Attributes can also be requested again later, for example to link an email to an existing account, by exposing another start/finish method pair: mint a fresh nonce, call `requestAttributes`, and verify the bundle the same way.
-
-#### OpenID-scoped attributes
-
-When using one-click OpenID sign-in, attributes can be scoped to the provider. The user authenticates and shares attributes in a single step, with no extra prompt:
-
-```typescript
-import { AuthClient, scopedKeys } from "@icp-sdk/auth/client";
-
-const authClient = new AuthClient({
-  identityProvider: getIdentityProvider(),
-  openIdProvider: "google",
-});
-
-// In signInWithAttributes, request the Google-scoped keys instead. They arrive
-// in the bundle as e.g. "openid:https://accounts.google.com:verified_email",
-// and the mo:identity-attributes library maps them onto the same name/email fields.
-const attributesPromise = authClient.requestAttributes({
-  keys: scopedKeys({ openIdProvider: "google", keys: ["name", "verified_email"] }),
-  nonce: () => anonymousActor._internet_identity_sign_in_start(),
-});
-```
-
-## Backend authentication
-
-Your backend canister receives the caller's principal automatically through the IC protocol. You do not pass the principal as a function argument: use `msg.caller` (Motoko) or `ic_cdk::api::msg_caller()` (Rust) to read it.
-
-### Reject anonymous callers
-
-Any unauthenticated request uses the anonymous principal (`2vxsx-fae`). Reject it in protected endpoints:
+The backend reads the caller from the call itself (`msg.caller` in Motoko, `ic_cdk::api::msg_caller()` in Rust), so never pass the principal as an argument. An unauthenticated call arrives as the anonymous principal `2vxsx-fae`; reject it in protected methods:
 
 <Tabs syncKey="lang">
 <TabItem label="Motoko">
@@ -311,22 +105,10 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 
 persistent actor {
-  func requireAuth(caller : Principal) : () {
+  public shared ({ caller }) func protectedAction() : async Text {
     if (Principal.isAnonymous(caller)) {
       Runtime.trap("Anonymous principal not allowed.");
     };
-  };
-
-  public shared query ({ caller }) func whoAmI() : async Text {
-    if (Principal.isAnonymous(caller)) {
-      "anonymous"
-    } else {
-      Principal.toText(caller)
-    };
-  };
-
-  public shared ({ caller }) func protectedAction() : async Text {
-    requireAuth(caller);
     "Action performed by " # Principal.toText(caller)
   };
 };
@@ -337,526 +119,47 @@ persistent actor {
 
 ```rust
 use candid::Principal;
-use ic_cdk::{query, update};
+use ic_cdk::update;
 
-fn require_auth() -> Principal {
+#[update]
+fn protected_action() -> String {
     let caller = ic_cdk::api::msg_caller();
     if caller == Principal::anonymous() {
         ic_cdk::trap("Anonymous principal not allowed.");
     }
-    caller
-}
-
-#[query]
-fn who_am_i() -> String {
-    let caller = ic_cdk::api::msg_caller();
-    if caller == Principal::anonymous() {
-        "anonymous".to_string()
-    } else {
-        format!("{}", caller)
-    }
-}
-
-#[update]
-fn protected_action() -> String {
-    let caller = require_auth();
-    format!("Action performed by {}", caller)
+    format!("Action performed by {caller}")
 }
 ```
 
 </TabItem>
 </Tabs>
 
-### Rust: capture caller before await
+For role checks and other access-control patterns, see [Security best practices](../../concepts/security.md).
 
-In async update functions, bind the caller at the top of the function before any `.await` points. The current ic-cdk executor preserves the caller across await points, but capturing it early is a defensive practice that guards against future executor changes:
+## Develop locally
 
-```rust
-#[update]
-async fn protected_async_action() -> String {
-    let caller = require_auth(); // Capture before any await
-    // Replace with your actual async canister call, e.g.:
-    // ic_cdk::call::<_, (String,)>(some_canister_id, "some_method", ()).await
-    format!("Action completed by {}", caller)
-}
-```
+The default client signs in against mainnet Internet Identity from a local network as well.
+{/* Needs human verification: that a local network started by icp-cli trusts delegations signed by mainnet Internet Identity (stated in the internet-identity IC skill, not found in the pinned icp-cli docs). */}
+For a fully local setup, add `ii: true` to the local network in `icp.yaml`, construct the client with `identityProvider: { authorizeUrl: "http://id.ai.localhost:8000/authorize", canisterId: "rdmx6-jaaaa-aaaaa-aaadq-cai" }`, and pass `agentOptions: { rootKey: canisterEnv?.IC_ROOT_KEY }` so the client accepts the local network's certificates.
 
-### Read identity attributes
-
-The backend exposes two methods the frontend calls: `_internet_identity_sign_in_start` (mints a nonce) and `_internet_identity_sign_in_finish` (verifies the wrapped bundle and runs your logic). The checks are the same in both languages: the bundle must be signed by a trusted signer, its `implicit:origin` must be one you allow, its `implicit:issued_at_timestamp_ns` must be fresh, and its `implicit:nonce` must be one you issued and have not consumed. Motoko gets these checks from a library; Rust does them by hand.
-
-**Always verify the signer.** The IC checks that the bundle is signed; it does not check *who* signed it, and any canister could have signed an arbitrary one. The trusted signer for Internet Identity is `rdmx6-jaaaa-aaaaa-aaadq-cai`.
-
-The bundle is Candid-encoded as an [ICRC-3 Value](../../references/internet-identity-spec.md) `Map` with three implicit fields plus the keys you requested:
-
-- `implicit:nonce`: must equal a nonce your canister issued and not yet consumed.
-- `implicit:origin`: must equal a trusted frontend origin.
-- `implicit:issued_at_timestamp_ns`: reject if too old (a few minutes is typical).
-- Plain attribute keys (for example, `"verified_email"`) for default-scope attributes; OpenID-scoped keys (for example, `"openid:https://accounts.google.com:verified_email"`) when the frontend used `scopedKeys`.
-
-<Tabs syncKey="lang">
-<TabItem label="Motoko">
-
-The [`mo:identity-attributes`](https://mops.one/identity-attributes) mixin injects both methods and runs your `onVerified` callback only on a bundle that passes every check. Add it to `mops.toml`:
-
-```toml
-[dependencies]
-identity-attributes = "0.4.1"
-core                = "2.5.0"
-
-[toolchain]
-moc = "1.6.0"
-```
-
-`onVerified` receives the resolved `{ name : ?Text; email : ?Text; sso : ?Text }`. The `email` field comes from the `verified_email` key (or its scoped form), which is why the frontend requests `verified_email`. The `sso` field is the matched trusted domain when name and email came from `sso:` keys, otherwise `null`.
-
-```motoko
-import IdentityAttributes "mo:identity-attributes";
-import Map "mo:core/Map";
-import Principal "mo:core/Principal";
-
-persistent actor {
-  type Profile = { name : ?Text; email : ?Text; sso : ?Text };
-
-  let profiles = Map.empty<Principal, Profile>();
-
-  // Injects _internet_identity_sign_in_start / _internet_identity_sign_in_finish.
-  // onVerified runs only on a bundle that passed the signer, origin, nonce, and
-  // freshness checks.
-  include IdentityAttributes({
-    onVerified = func(caller, attrs) {
-      profiles.add(caller, attrs);
-    };
-  });
-
-  public query func getProfile(caller : Principal) : async ?Profile {
-    profiles.get(caller)
-  };
-};
-```
-
-Configure the env vars in your `icp.yaml` so `icp deploy` sets them on the canister. The values are comma-separated, so list both your local and mainnet II principals if your tests run against a locally deployed II:
-
-```yaml
-canisters:
-  - name: backend
-    settings:
-      environment_variables:
-        trusted_attribute_signers: "rdmx6-jaaaa-aaaaa-aaadq-cai"  # required
-        frontend_origins: "https://your-app.icp.net"              # required, comma-separated
-        trusted_sso_domains: "your-org.com"                       # optional; omit to reject all sso:* keys
-```
-
-If `trusted_attribute_signers` is unset the bundle is rejected as untrusted; if `frontend_origins` is unset the finish method returns `#err(#FrontendOriginsNotConfigured)`. Both are correct: an unconfigured canister must not trust attribute bundles.
-
-</TabItem>
-<TabItem label="Rust">
-
-There is no CDK wrapper yet, so implement the two methods by hand. `_internet_identity_sign_in_start` mints a nonce and stores it; `_internet_identity_sign_in_finish` checks the signer with `msg_caller_info_signer()`, decodes the ICRC-3 `Value::Map` from `msg_caller_info_data()`, then verifies origin, freshness, and the nonce before reading attributes. This mirrors what the Motoko library does internally.
-
-```rust
-use candid::{decode_one, CandidType, Deserialize, Principal};
-use ic_cdk::api::{msg_caller, msg_caller_info_data, msg_caller_info_signer, time};
-use ic_cdk::update;
-use std::cell::RefCell;
-use std::collections::HashSet;
-
-const II_PRINCIPAL: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
-const TRUSTED_ORIGIN: &str = "https://your-app.icp.net";
-const FRESHNESS_NS: u64 = 300_000_000_000; // 5 minutes
-
-thread_local! {
-    // Nonces issued by sign_in_start and consumed by sign_in_finish.
-    static PENDING_NONCES: RefCell<HashSet<Vec<u8>>> = RefCell::new(HashSet::new());
-}
-
-// Mirrors the mo:identity-attributes Result so the frontend "err" check works
-// against either backend.
-#[derive(CandidType)]
-enum SignInResult {
-    #[serde(rename = "ok")]
-    Ok,
-    #[serde(rename = "err")]
-    Err(String),
-}
-
-#[derive(CandidType, Deserialize)]
-enum Icrc3Value {
-    Nat(candid::Nat),
-    Int(candid::Int),
-    Blob(Vec<u8>),
-    Text(String),
-    Array(Vec<Icrc3Value>),
-    Map(Vec<(String, Icrc3Value)>),
-}
-
-fn lookup_text<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a str> {
-    entries.iter().find_map(|(k, v)| match v {
-        Icrc3Value::Text(s) if k == key => Some(s.as_str()),
-        _ => None,
-    })
-}
-
-fn lookup_blob<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a [u8]> {
-    entries.iter().find_map(|(k, v)| match v {
-        Icrc3Value::Blob(b) if k == key => Some(b.as_slice()),
-        _ => None,
-    })
-}
-
-fn lookup_nat<'a>(entries: &'a [(String, Icrc3Value)], key: &str) -> Option<&'a candid::Nat> {
-    entries.iter().find_map(|(k, v)| match v {
-        Icrc3Value::Nat(n) if k == key => Some(n),
-        _ => None,
-    })
-}
-
-// Mint a fresh nonce. The frontend calls this anonymously before sign-in.
-#[update]
-async fn _internet_identity_sign_in_start() -> Vec<u8> {
-    let nonce = ic_cdk::management_canister::raw_rand()
-        .await
-        .expect("raw_rand failed");
-    PENDING_NONCES.with_borrow_mut(|n| n.insert(nonce.clone()));
-    nonce
-}
-
-// Runs every check the mo:identity-attributes mixin runs internally.
-fn verified_attributes() -> Result<Vec<(String, Icrc3Value)>, String> {
-    // 1. Trusted signer: the IC checks the signature, not who signed it.
-    let trusted = Principal::from_text(II_PRINCIPAL).unwrap();
-    if msg_caller_info_signer() != Some(trusted) {
-        return Err("Untrusted attribute signer".to_string());
-    }
-
-    // 2. Decode the bundle as an ICRC-3 Value::Map.
-    let value: Icrc3Value =
-        decode_one(&msg_caller_info_data()).map_err(|_| "Malformed attribute bundle".to_string())?;
-    let Icrc3Value::Map(entries) = value else {
-        return Err("Expected attribute map".to_string());
-    };
-
-    // 3. Origin must be one we allow.
-    let origin = lookup_text(&entries, "implicit:origin").ok_or("Missing origin")?;
-    if origin != TRUSTED_ORIGIN {
-        return Err(format!("Untrusted frontend origin: {origin}"));
-    }
-
-    // 4. Bundle must be fresh.
-    let issued_at: u64 = lookup_nat(&entries, "implicit:issued_at_timestamp_ns")
-        .ok_or("Missing timestamp")?
-        .0
-        .clone()
-        .try_into()
-        .map_err(|_| "Timestamp out of range".to_string())?;
-    if time() > issued_at + FRESHNESS_NS {
-        return Err("Bundle too old".to_string());
-    }
-
-    // 5. Nonce must be one we issued and have not consumed yet.
-    let nonce = lookup_blob(&entries, "implicit:nonce").ok_or("Missing nonce")?;
-    if !PENDING_NONCES.with_borrow_mut(|n| n.remove(nonce)) {
-        return Err("Unknown or already-consumed nonce".to_string());
-    }
-
-    Ok(entries)
-}
-
-#[update]
-fn _internet_identity_sign_in_finish() -> SignInResult {
-    let entries = match verified_attributes() {
-        Ok(entries) => entries,
-        Err(e) => return SignInResult::Err(e),
-    };
-
-    // Your app logic. verified_email gates access.
-    let Some(email) = lookup_text(&entries, "verified_email") else {
-        return SignInResult::Err("Missing verified_email".to_string());
-    };
-    let caller = msg_caller();
-    let name = lookup_text(&entries, "name");
-    // For example, persist a profile keyed by `caller` here.
-    let _ = (caller, email, name);
-
-    SignInResult::Ok
-}
-```
-
-</TabItem>
-</Tabs>
-
-## Local development
-
-Start the local network and deploy. With `ii: true` in your `icp.yaml`, icp-cli deploys a local Internet Identity canister automatically:
+To call a protected method as anonymous from the command line:
 
 ```bash
-icp network start
-icp deploy
-```
-
-icp-cli pulls the mainnet II Wasm when deploying locally and registers a local alias so the II frontend is reachable at `http://id.ai.localhost:8000`. Use the `getIdentityProvider` helper (shown in the environment detection section above) to point to this URL in local development.
-
-To test authentication from the command line:
-
-```bash
-# Test as the default identity (authenticated)
-icp canister call backend whoAmI
-
-# Test as anonymous using --identity to avoid changing your global default
 icp canister call backend protectedAction --identity anonymous
-# Expected: Error containing "Anonymous principal not allowed"
 ```
-
-For mainnet deployment, Internet Identity is already running: backend canister `rdmx6-jaaaa-aaaaa-aaadq-cai` and frontend canister `uqzsh-gqaaa-aaaaq-qaada-cai` (served at `https://id.ai`). Both IDs are identical on local replicas when `ii: true` is configured. Deploy only your own canisters:
-
-```bash
-icp deploy -e ic
-```
-
-## Alternative origins
-
-By default, each frontend origin produces a different user principal. If you serve your app from multiple domains (for example, migrating from `<canister-id>.icp.net` to a custom domain), users would get different principals on each domain.
-
-:::note
-II now automatically handles the `icp0.io` vs `ic0.app` domain difference: you do **not** need to use `derivationOrigin` or `ii-alternative-origins` for that case. Use alternative origins only when you have two genuinely distinct custom domains that should share the same user principal.
-:::
-
-To keep principals consistent across your own custom domains, configure **alternative origins**:
-
-1. **On the primary origin (A):** Create a file at `.well-known/ii-alternative-origins` listing the alternative domains:
-
-   ```json
-   {
-     "alternativeOrigins": ["https://www.yourcustomdomain.com"]
-   }
-   ```
-
-   A maximum of 100 alternative origins can be listed. No trailing slashes or paths.
-
-2. **Serve it with the right content type and CORS headers.** II reads the file cross-origin, and nothing is set for you.
-
-   On a [static site](../frontends/static-site/overview.md), `.well-known/` is uploaded automatically; declare the two headers in a `_headers` file at the root of your build directory:
-
-   ```text
-   /.well-known/ii-alternative-origins
-     Content-Type: application/json
-     Access-Control-Allow-Origin: *
-   ```
-
-   On the [legacy asset canister](../frontends/asset-canister.md), the directory has to be un-ignored as well, in `.ic-assets.json5`:
-
-   ```json
-   [
-     {
-       "match": ".well-known",
-       "ignore": false
-     },
-     {
-       "match": ".well-known/ii-alternative-origins",
-       "headers": {
-         "Access-Control-Allow-Origin": "*",
-         "Content-Type": "application/json"
-       },
-       "ignore": false
-     }
-   ]
-   ```
-
-3. **On the alternative origin (B):** Set the `derivationOrigin` on the `AuthClient` constructor to point back to the primary origin:
-
-   ```javascript
-   const authClient = new AuthClient({
-     identityProvider: getIdentityProvider(),
-     derivationOrigin: "https://xxxxx.icp.net", // primary origin A
-   });
-   ```
-
-   The primary origin (A) does not need `derivationOrigin`: it is only required on alternative origins.
-
-For full details, see the [Internet Identity specification](../../references/internet-identity-spec.md).
-
-## Sharing a sign-in across sibling subdomains
-
-Apps on sibling subdomains of one domain, such as `chat.example.com` and `hr.example.com`, can share one sign-in: signing in on one signs the user in on the others without a second visit to Internet Identity, and signing out on one signs the user out on all of them.
-
-It rests on the section above. Every app has to derive from one shared derivation origin, authorized by that origin's `ii-alternative-origins` document, because principals are per origin and apps that do not share a principal have nothing to share. On top of that:
-
-1. **Share the record.** Every app passes the same cookie domain, so a sign-in on one writes a record the others read. Choosing a domain means trusting every origin under it, so do this only where you control the subdomains.
-
-   ```javascript
-   import { AuthClient, CookieStateStorage, InteractionRequiredError } from "@icp-sdk/auth/client";
-
-   const clientOptions = {
-     identityProvider: getIdentityProvider(),
-     derivationOrigin: "https://auth.example.com",
-     stateStorage: new CookieStateStorage({ domain: "example.com" }),
-   };
-   ```
-
-2. **Acquire the sign-in where a sibling made it, on a `/reauth` route.** An app reading `signed-in-elsewhere` asks the provider for its own credential for that account. That request is made by a second client, since `prompt` and `hint` are set when a client is built, and it runs on page load with no user gesture, so it needs `transport: "redirect"` rather than the default window flow:
-
-   ```javascript
-   // /reauth
-   async function reauth() {
-     const status = new AuthClient(clientOptions).getStatus();
-
-     if (status.state !== "signed-in-elsewhere") {
-       location.replace("/");
-       return;
-     }
-
-     const authClient = new AuthClient({
-       ...clientOptions,
-       transport: "redirect",
-       prompt: "none",
-       hint: status.principal, // answer for the account already signed in
-     });
-
-     try {
-       await authClient.signIn({
-         returnTo: new URLSearchParams(location.search).get("next") ?? "/",
-       });
-     } catch (error) {
-       if (error instanceof InteractionRequiredError) {
-         await authClient.signOut().catch(() => {});
-       }
-       location.replace("/");
-     }
-   }
-
-   reauth();
-   ```
-
-   Without `hint`, a provider holding more than one session refuses rather than guessing, with `InteractionRequiredError` and a `reason` of `account_selection_required`: what you lose is the resume, not the user's identity, since a mint for an unexpected account is rejected as `AccountMismatchError`. An `InteractionRequiredError` also means there may be nothing to resume, so the sign-in is stale: sign out to clear it, or every app on the domain keeps sending the user back.
-
-   **Declare that route.** A redirect sign-in is delivered only to a callback the returning origin declares itself, so every app serves `/.well-known/ii-auth-callbacks` on its own origin (not once on the derivation origin), listing its own route:
-
-   ```json
-   { "callbacks": ["https://chat.example.com/reauth"] }
-   ```
-
-   The entry is matched exactly, so it is the full URL with no fragment, and II reads the document cross-origin, so serve it as `application/json` with `Access-Control-Allow-Origin`. Validation fails closed: undeclared or unreadable, and the sign-in never comes back. The route also has to terminate locally, because the response arrives in the URL fragment and a `3xx` carrying none re-attaches it to wherever it forwards.
-
-3. **Pick it up on load, on every page.** Give that request a route of its own, `/reauth`, and have every page check the status as it loads, handing `signed-in-elsewhere` to that route with the page to return to. Every page, not only the ones that require a sign-in: a visitor already signed in on a sibling would otherwise land on a public page here and see a signed-out header.
-
-   ```javascript
-   const status = new AuthClient(clientOptions).getStatus();
-
-   // This state only: signed-out and expired both mean a normal sign-in, and
-   // sending those to /reauth just bounces the user back.
-   if (status.state === "signed-in-elsewhere") {
-     location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`);
-   }
-   ```
-
-   `/reauth` passes that `next` as `returnTo`, so the user lands back where they were asking to go, signed in, having seen nothing. This is what makes the sharing automatic rather than something the user has to click.
-
-4. **Jump on load, ask afterwards.** Step 3 redirects because the page has only just started. Once a page is open the status can still turn `signed-in-elsewhere`, when someone signs in on a sibling in another tab, and redirecting a page the user is working on would throw away what they are doing. So subscribe, and offer the same redirect behind a button:
-
-   ```javascript
-   authClient.subscribe(() => {
-     if (authClient.getStatus().state === "signed-in-elsewhere") {
-       // A banner or dialog whose button runs the same redirect as step 3.
-       showResumeDialog(() =>
-         location.replace(`/reauth?next=${encodeURIComponent(location.pathname + location.search)}`),
-       );
-     }
-   });
-   ```
-
-The full walkthrough is in the client's [shared sessions guide](https://js.icp.build/auth/latest/shared-sessions/).
-
-## App metadata
-
-By default, the sign-in screens identify your app by its origin alone. To have II show your app's name, a short description, and its logo, serve a JSON document at `/.well-known/ii-app-metadata`. Any app can publish it: there is no list to join and no approval step.
-
-```json
-{
-  "name": "Example App",
-  "description": "A short tagline shown on the sign-in screen",
-  "logo": "/logo.png"
-}
-```
-
-II fetches this document when the authorization flow starts, from the origin your users' identities are derived for: your `derivationOrigin` when you set one (see [Alternative origins](#alternative-origins) above), and the origin the request came from otherwise. Publish it once on that origin, and every alternative origin listed there is presented with the same name, description, and logo, with nothing to keep in sync between them.
-
-All three fields are optional, and unknown fields are ignored, so a document stays valid as fields are added:
-
-- `name` is limited to 40 characters and `description` to 120, counted in Unicode code points on the value as served. Runs of whitespace are collapsed before display.
-- Control characters, `U+FEFF`, and the bidirectional embedding and override characters `U+202A` to `U+202E` are rejected, since they can make rendered text read differently from what it contains. The bidirectional marks and isolates that mixed-direction names legitimately need are accepted, provided every isolate a field opens it also closes.
-- A field that fails validation invalidates the **whole document**, which is then ignored, so an app is never shown with half of its metadata applied. II logs which field is at fault to the browser console: check the console on the sign-in screen if your metadata does not appear.
-- `logo` must point to a raster image on the same origin as the document (relative URLs resolve against it), served as `image/png`, `image/jpeg`, `image/webp`, `image/gif`, or `image/avif`, at most 1 MiB and 4096 pixels per side. SVG is not accepted. II downloads the image, re-encodes it at up to 512 pixels on its longest side, and renders its own copy, so a roughly square PNG or WebP of about 512 pixels works well.
-- Only the shape of `logo` (a non-empty URL on the document's own origin) is part of the validation above. Once it passes, a logo that cannot be fetched or decoded, or that breaks the content type, size, or dimension rules, costs you the logo alone: the name and description still render. Fetching a second resource can fail transiently, so that is treated differently from a mistake in the document itself.
-- The document must not exceed 8 KiB, must be answered with `200`, and must not redirect. II requests it without credentials and gives up after 10 seconds.
-
-Both the document and the logo are read cross-origin, so they need CORS headers too. Extend the configuration shown under [Alternative origins](#alternative-origins) with an entry for each.
-
-With `_headers`:
-
-```text
-/.well-known/ii-app-metadata
-  Content-Type: application/json
-  Access-Control-Allow-Origin: *
-
-/logo.png
-  Access-Control-Allow-Origin: *
-```
-
-With `.ic-assets.json5`:
-
-```json
-[
-  {
-    "match": ".well-known",
-    "ignore": false
-  },
-  {
-    "match": ".well-known/ii-app-metadata",
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json"
-    },
-    "ignore": false
-  },
-  {
-    "match": "logo.png",
-    "headers": {
-      "Access-Control-Allow-Origin": "*"
-    }
-  }
-]
-```
-
-If the document is missing, unreachable, or invalid, sign-in is unaffected: the screens fall back to the curated entry II still ships for a small list of apps (the mechanism this file supersedes), and to showing your origin alone otherwise. Metadata is a display nicety and never blocks authentication.
-
-:::note
-This metadata is exactly as trustworthy as the origin serving it, and publishing it does not verify your app's identity in any way. II therefore keeps displaying the origin alongside whatever you provide, since the origin is the value users can actually check.
-:::
-
-For the normative rules, including a JSON schema to validate your document against, see [App metadata](../../references/internet-identity-spec.md#app-metadata) in the Internet Identity specification.
 
 ## Common mistakes
 
-- **Using the wrong II URL per environment**: local development must point to `http://id.ai.localhost:8000`, mainnet to `https://id.ai`. Use the `getIdentityProvider` helper (shown above) to switch based on hostname.
-- **`fetch` "Illegal invocation" in bundled builds**: always pass `fetch: window.fetch.bind(window)` to `HttpAgent.create()`. Without explicit binding, bundlers (Vite, webpack) extract `fetch` from `window` and call it without the correct `this` context.
-- **Not awaiting `signIn()` or skipping the `try`/`catch`**: `authClient.signIn()` returns a promise that rejects when the user closes the popup or authentication fails. Without `await` and a `catch`, those failures are silently swallowed.
-- **Treating the session bounds as a delegation lifetime**: `maxTimeToLive` and `maxTimeToIdle` bound the session at Internet Identity, not the key your frontend signs with; that one is short-lived and replaced for you. Leave both unset unless the app has a policy of its own; the provider's defaults are seven days idle and thirty days in total.
-- **Passing principal as a string argument**: the backend reads the caller automatically from the IC protocol. Do not pass it as a function parameter.
-- **Using `shouldFetchRootKey: true` in browser code**: pass `rootKey: canisterEnv?.IC_ROOT_KEY` from `safeGetCanisterEnv()` instead. `shouldFetchRootKey: true` fetches the root key from the replica at runtime, which lets a man-in-the-middle substitute a fake key on mainnet. For Node.js scripts targeting a local replica only, `await agent.fetchRootKey()` is acceptable: but never on mainnet.
-- **Leaking `AuthClient` instances**: several clients may share an origin (they read the same sign-in), but each one hooks browser listeners and schedules a refresh, so call `dispose()` when the page or component that made it goes away.
-- **Passing a bare URL as `identityProvider`**: it is an object, `{ authorizeUrl, canisterId }`, and both fields are required together, because nothing about the minting canister is derived from the URL. A string throws a `TypeError`.
-- **Generating the attribute nonce on the frontend**: a frontend-generated nonce defeats the anti-replay guarantee. The nonce passed to `requestAttributes` must come from a backend canister call so the canister can later verify that the bundle's `implicit:nonce` is one it actually issued.
-- **Reading attribute data without verifying the signer**: the IC checks the signature, not the identity of the signer, so any canister can produce a valid bundle. The trusted signer for II is `rdmx6-jaaaa-aaaaa-aaadq-cai`. In Motoko, use the [`mo:identity-attributes`](https://mops.one/identity-attributes) mixin and configure `trusted_attribute_signers` and `frontend_origins` in `icp.yaml`: it verifies the signer (and the origin, nonce, and freshness) for you. In Rust, there is no CDK wrapper yet, so always check `msg_caller_info_signer()` against the trusted issuer before reading `msg_caller_info_data()`.
+- **Not handling a rejected `signIn()`.** It rejects when the user closes the window or authentication fails. Without `await` and a `catch`, that failure is silently lost.
+- **Signing out on the delegation's expiry.** The delegation an identity signs with is short-lived and replaced for you, so a timer set from it ends the session after minutes. The session's end arrives as the `expired` status.
+- **Leaking clients.** Each client hooks browser listeners and schedules delegation refreshes; call `dispose()` when the view that made it goes away.
+- **Passing `identityProvider` as a URL string.** It is `{ authorizeUrl, canisterId }`, both required together, and only needed for a non-mainnet Internet Identity.
+- **Fetching the root key at runtime.** Use the `rootKey` from the `ic_env` cookie. `shouldFetchRootKey` or `fetchRootKey()` against mainnet lets a man-in-the-middle substitute the key.
 
 ## Next steps
 
-- [Wallet integration](../digital-assets/wallet-integration.md) for token-based authentication alternatives
-- [Frontend frameworks](../frontends/frameworks.md) for framework-specific auth setup patterns
-- [Internet Identity specification](../../references/internet-identity-spec.md) for protocol details and the full alternative origins spec
-- [Security best practices](../../concepts/security.md) for identity and trust fundamentals
-- [AuthClient API reference](https://js.icp.build) for the full `@icp-sdk/auth` API
-- [Upgrading to v9](https://js.icp.build/auth/latest/upgrading/v9/) if you are moving an app off `@icp-sdk/auth` v8
-
-{/* TODO: Add Unity native app integration via deep links: see portal native-apps/unity_ii_* */}
-
-{/* Upstream: informed by dfinity/internet-identity (docs/ii-spec.mdx: the App metadata section, #4221); dfinity/portal (docs/building-apps/authentication/overview.mdx, docs/building-apps/authentication/integrate-internet-identity.mdx, docs/building-apps/authentication/alternative-origins.mdx); dfinity/icskills (skills/internet-identity/SKILL.md); dfinity/icp-js-sdk-docs (public/auth/latest.zip api/client/: AuthClient, scopedKeys, SignedAttributes, AuthClientCreateOptions; public/core/latest.zip libs/identity/api.md: AttributesIdentity); dfinity/cdk-rs (ic-cdk/src/api.rs); dfinity/motoko-identity-attributes (README.md, src/lib.mo, src/Internal/Verify.mo @ v0.4.1: the mixin and its verification order); caffeinelabs/motoko-core (src/CallerAttributes.mo getAttributes wrapper, src/Map.mo); caffeinelabs/motoko (src/prelude/prim.mo callerInfoData/Signer, test/run-drun/caller-info/caller-info.mo); dfinity/icp-cli (docs/reference/canister-settings.md#environment_variables) */}
+- [App metadata](app-metadata.md): show your app's name and logo on the sign-in screen.
+- [Identity attributes](identity-attributes.md): receive a verified email or name with the sign-in.
+- [One-click sign-in](one-click-sign-in.md): send users straight to Google, Apple, Microsoft, or their organization's SSO.
+- [Shared sessions across subdomains](shared-sessions.md): sign in once across sibling subdomains, and keep one principal across your origins.
+- [`@icp-sdk/auth` API reference](https://js.icp.build/auth/latest/): every option and method.

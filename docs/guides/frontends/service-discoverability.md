@@ -149,7 +149,7 @@ https://hcv4s-uaaaa-aaabq-qaaba-cai.icp.net
 
 If you use the default (the app's own origin), you may omit the file. Its absence means "derive for the visible / requested origin itself." Serve it with no file extension and exempt `/.well-known/*` from the SPA catch-all, exactly as for the manifest. Generate it at deploy time when the origin is a per-network canister URL.
 
-**Relationship between derivation origin and alternative-origins.** A custom origin is enabled by two coupled files: the app pins `derivationOrigin` in its Internet Identity configuration, and the derivation origin publishes `/.well-known/ii-alternative-origins` listing the origins permitted to derive against it. That list answers "who may point here," not "where does this app point." The two are not interchangeable, and there is no reverse lookup from an app URL to its custom derivation origin. Reading it the wrong way round silently produces the wrong principal. See [Internet Identity](../authentication/internet-identity.md#alternative-origins) for how to configure `derivationOrigin` and `ii-alternative-origins`.
+**Relationship between derivation origin and alternative-origins.** A custom origin is enabled by two coupled files: the app pins `derivationOrigin` in its Internet Identity configuration, and the derivation origin publishes `/.well-known/ii-alternative-origins` listing the origins permitted to derive against it. That list answers "who may point here," not "where does this app point." The two are not interchangeable, and there is no reverse lookup from an app URL to its custom derivation origin. Reading it the wrong way round silently produces the wrong principal. See [Use one derivation origin](../authentication/shared-sessions.md#use-one-derivation-origin) for how to configure `derivationOrigin` and `ii-alternative-origins`.
 
 ## Deployment checklist
 
@@ -185,5 +185,5 @@ End to end: an agent given only `https://APP` resolves the backend ID first (lab
 
 - [Asset canister](asset-canister.md): serve `.well-known` files and configure SPA routing.
 - [Custom domains](custom-domains.md): apply the same `.well-known` pattern to domain ownership.
-- [Internet Identity](../authentication/internet-identity.md#alternative-origins): configure `derivationOrigin` and alternative origins.
+- [Use one derivation origin](../authentication/shared-sessions.md#use-one-derivation-origin): configure `derivationOrigin` and alternative origins.
 - [Candid interface](../canister-calls/candid.md): define the typed interface agents read.
