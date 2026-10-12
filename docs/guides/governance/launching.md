@@ -14,7 +14,7 @@ This guide walks through the complete launch process: from designing your tokeno
 SNS launch is irreversible. Once the NNS proposal is adopted and the swap succeeds, your app canisters are fully controlled by SNS root. Review these prerequisites before proceeding:
 
 - Your app canisters are deployed and working on mainnet
-- You hold an NNS neuron with sufficient stake to submit proposals (8 ICP minimum stake, plus dissolve delay)
+- You hold an NNS neuron with sufficient stake to submit proposals (50 ICP minimum stake, plus dissolve delay)
 - You have done a security review and open-sourced the app code
 - Your tokenomics design is finalized and community-vetted
 

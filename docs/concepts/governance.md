@@ -48,7 +48,7 @@ A neuron is a governance participant created by locking ICP in the NNS governanc
 
 **Liquid democracy (following):** Neurons can delegate their votes to other neurons on specific proposal topics. A neuron that doesn't vote directly inherits the vote of its followed neurons. This allows passive participation while still counting toward quorum.
 
-**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron with at least 6 months of dissolve delay and at least 25 ICP staked can submit a `RegisterKnownNeuron` proposal.
+**Known neurons** are named neurons registered in the NNS governance canister through a proposal. They act as trusted delegates that other neurons follow. Any neuron with at least 6 months of dissolve delay and at least 50 ICP staked can submit a `RegisterKnownNeuron` proposal.
 
 ## Proposals
 
