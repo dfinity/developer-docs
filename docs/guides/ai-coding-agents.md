@@ -102,10 +102,28 @@ ICP skills are available without authentication:
 | Skill zip bundle | `https://skills.internetcomputer.org/.well-known/skills/{name}/SKILL.zip` |
 | Skills discovery index | `https://skills.internetcomputer.org/llms.txt` |
 
+## Drive Caffeine from your agent
+
+[Caffeine](https://caffeine.ai) builds and hosts apps on ICP from a chat description; see [Ship an app without a toolchain](../getting-started/choose-your-path.md#ship-an-app-without-a-toolchain). Its hosted MCP (Model Context Protocol) server lets the agent you already use work with your Caffeine account: list your projects, start a Caffeine build session, watch it progress, and continue a conversation that is running on Caffeine, without switching tabs.
+
+The connector drives Caffeine's cloud agent. It does not read or write code on your machine, and it does not send your project's source to your AI tool. Agents that can run shell commands (Claude Code, Cursor, Codex) can ask it for the local workflow instead: the Caffeine CLI clones the project, you edit and validate it locally, and the CLI uploads the result to Caffeine as a new draft. For the code itself, the agent should load the [`caffeine-app`](https://skills.internetcomputer.org/.well-known/skills/caffeine-app/SKILL.md) skill alongside `writing-motoko`.
+
+The server is at `https://mcp.caffeine.ai/mcp`, over Streamable HTTP with OAuth. In Claude Code:
+
+```bash
+claude mcp add --transport http --scope user caffeine https://mcp.caffeine.ai/mcp
+```
+
+Any client that supports remote MCP servers takes the same URL. The first time the agent calls a Caffeine tool, it opens your browser to sign in at caffeine.ai. To confirm the connection, ask the agent to list your Caffeine projects.
+
+:::note[Alpha]
+The Caffeine MCP server is in alpha, and its tool surface can change between releases, so this page does not list the tools. Setup for ChatGPT, Claude Desktop, Cursor, VS Code, Codex, and Perplexity, plus troubleshooting, is in Caffeine's [Setting up the Caffeine MCP server](https://help.caffeine.ai/hc/en-us/articles/49663075113236-Setting-Up-the-Caffeine-MCP-Server).
+:::
+
 ## Next steps
 
 - [skills.internetcomputer.org](https://skills.internetcomputer.org): browse all available ICP skills
 - [Developer tools](../developer-tools/index.md): icp-cli, CDKs, and other tools in the ICP toolchain
 - [Quickstart](../getting-started/quickstart.md): deploy your first canister with icp-cli
 
-<!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md -->
+<!-- Upstream: informed by dfinity/icskills — README.md, skills/*/SKILL.md; help.caffeine.ai — Setting Up the Caffeine MCP Server (article 49663075113236, updated 2026-06-04) -->
