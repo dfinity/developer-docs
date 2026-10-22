@@ -45,7 +45,7 @@ Two signature schemes are supported. The ECDSA API offers two curves, and the Sc
 | Scheme | Curve or algorithm | Key ID examples | Use cases |
 |--------|-----------|-----------------|-----------|
 | Threshold ECDSA | `secp256k1` | `key_1`, `test_key_1` | Bitcoin (legacy/SegWit), Ethereum, EVM chains, Filecoin |
-| Threshold ECDSA | `secp256r1` (NIST P-256) | `key_1`, `test_key_1` | JSON Web Tokens signed with ES256, VAPID web push |
+| Threshold ECDSA | `secp256r1` (NIST P-256) | `key_1`, `test_key_1` | X.509 certificates, JSON Web Tokens signed with ES256, VAPID web push |
 | Threshold Schnorr | `bip340secp256k1` | `key_1`, `test_key_1` | Bitcoin Taproot, Ordinals |
 | Threshold Schnorr | `ed25519` | `key_1`, `test_key_1` | Solana, TON, Polkadot, Cardano, NEAR |
 
