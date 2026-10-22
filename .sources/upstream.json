@@ -116,7 +116,7 @@
     {
       "repo": "dfinity/cdk-rs",
       "name": "ic-cdk-management-canister",
-      "pinned": "0.2.0",
+      "pinned": "0.3.0",
       "track": "crate",
       "crate": "ic-cdk-management-canister",
       "affects": "The HTTPS outcall APIs in guides/backends/https-outcalls.mdx, concepts/https-outcalls.md and references/cycle-costs.md, and the Rust snippets in the send_http_get, send_http_post and daily_planner examples. This crate versions independently of `ic-cdk` in the same repo, so it gets its own entry: 0.2.0 replaced the free `http_request` with the `HttpRequest` and `FlexibleHttpRequest` builders and moved pricing to version 2. Read the sections newer than the pin in https://github.com/dfinity/cdk-rs/blob/master/ic-cdk-management-canister/CHANGELOG.md.",
