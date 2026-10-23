@@ -43,4 +43,279 @@ Teach your AI coding agent the patterns, APIs, and deployment workflows it needs
   <LinkCard title="JS SDK" description="JavaScript/TypeScript libraries for ICP" href="https://js.icp.build" />
   <LinkCard title="ICP Skills" description="Skills for agents that write code on ICP" href="https://skills.internetcomputer.org" />
   <LinkCard title="Examples" description="Working Motoko and Rust canister examples" href="https://github.com/dfinity/examples" />
-</CardGrid>
+</CardGrid> https://skills.internetcomputer.org/skills/icp-cli/#configuration// Copyright (c) 2026 INTE MECCA BANK LLC
+// MECCA Token Ecosystem — MindSpark Realm
+// All Rights Reserved. OBSOFTWARE@COPYRIGHT.ITC
+
+import Text "mo:core/Text";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import Time "mo:core/Time";
+import Array "mo:core/Array";
+
+persistent actor AuditLedger {
+
+  public type Event = {
+    id        : Nat;
+    action    : Text;
+    timestamp : Int;
+  };
+
+  var events : [Event] = [];
+  var nextId : Nat = 0;
+
+  public func log(action : Text) : async Nat {
+    let event : Event = {
+      id        = nextId;
+      action    = action;
+      timestamp = Time.now();
+    };
+    events := Array.append(events, [event]);
+    nextId += 1;
+    nextId - 1
+  };
+
+  public query func getEvents() : async [Event] { events };
+}import Nat "mo:core/Nat";
+import Text "mo:core/Text";
+
+persistent actor MECCA {
+
+  var totalSupply : Nat = 1_000_000_000;
+
+  public query func name() : async Text { "MECCA Token" };
+  public query func symbol() : async Text { "MECCA" };
+  public query func total_supply() : async Nat { totalSupply };
+}Below are production-ready starter configuration files for the ICP repository structure we've been discussing.
+
+## `dfx.json`
+
+```json
+{
+  "version": 1,
+  "canisters": {
+    "mecca_token": {
+      "type": "motoko",
+      "main": "canisters/mecca_token/main.mo",
+      "candid": "canisters/mecca_token/mecca.did"
+    },
+    "treasury": {
+      "type": "motoko",
+      "main": "canisters/treasury/main.mo",
+      "candid": "canisters/treasury/treasury.did"
+    },
+    "governance": {
+      "type": "motoko",
+      "main": "canisters/governance/main.mo",
+      "candid": "canisters/governance/governance.did"
+    },
+    "rewards": {
+      "type": "motoko",
+      "main": "canisters/rewards/main.mo",
+      "candid": "canisters/rewards/rewards.did"
+    },
+    "audit_ledger": {
+      "type": "motoko",
+      "main": "canisters/audit_ledger/main.mo",
+      "candid": "canisters/audit_ledger/ledger.did"
+    },
+    "analytics": {
+      "type": "motoko",
+      "main": "canisters/analytics/main.mo",
+      "candid": "canisters/analytics/analytics.did"
+    },
+    "credentials": {
+      "type": "motoko",
+      "main": "canisters/credentials/main.mo",
+      "candid": "canisters/credentials/credentials.did"
+    },
+    "nft_registry": {
+      "type": "motoko",
+      "main": "canisters/nft_registry/main.mo",
+      "candid": "canisters/nft_registry/nft.did"
+    },
+    "marketplace": {
+      "type": "motoko",
+      "main": "canisters/marketplace/main.mo",
+      "candid": "canisters/marketplace/marketplace.did"
+    },
+    "dashboard": {
+      "type": "assets",
+      "source": [
+        "apps/dashboard/dist"
+      ]
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "mops sources"
+    }
+  },
+  "output_env_file": ".env"
+}
+```
+
+---
+
+## Root `package.json`
+
+```json
+{
+  "name": "inte-mecca-bank",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MECCA Token Ecosystem on ICP",
+  "scripts": {
+    "start": "dfx start --background",
+    "stop": "dfx stop",
+    "deploy:local": "dfx deploy",
+    "deploy:ic": "dfx deploy --network ic",
+    "generate": "dfx generate",
+    "build": "npm run build:dashboard",
+    "build:dashboard": "cd apps/dashboard && npm install && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
+```
+
+---
+
+## `mops.toml`
+
+```toml
+[package]
+name = "inte-mecca-bank"
+version = "1.0.0"
+description = "MECCA Token ICP Ecosystem"
+
+[dependencies]
+base = "0.13.0"
+```
+
+---
+
+## Dashboard `package.json`
+
+`apps/dashboard/package.json`
+
+```json
+{
+  "name": "mecca-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@dfinity/agent": "^2.0.0",
+    "@dfinity/auth-client": "^2.0.0",
+    "@dfinity/principal": "^2.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^6.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}
+```
+
+---
+
+## Deployment Script
+
+`deployment/ic/deploy-ic.sh`
+
+```bash
+#!/bin/bash
+
+set -e
+
+echo "Building dashboard"
+cd apps/dashboard
+npm install
+npm run build
+cd ../..
+
+echo "Deploying canisters"
+
+dfx deploy mecca_token --network ic
+dfx deploy treasury --network ic
+dfx deploy governance --network ic
+dfx deploy rewards --network ic
+dfx deploy audit_ledger --network ic
+dfx deploy analytics --network ic
+dfx deploy marketplace --network ic
+dfx deploy credentials --network ic
+dfx deploy nft_registry --network ic
+dfx deploy dashboard --network ic
+
+echo "Deployment Complete"
+```
+
+---
+
+## Environment Template
+
+`.env.example`
+
+```text
+ICP_NETWORK=local
+
+TOKEN_NAME=MECCA Token
+TOKEN_SYMBOL=MECCA
+
+TREASURY_HUMANITARIAN=35
+TREASURY_RND=30
+TREASURY_RESERVE=25
+TREASURY_OPERATIONS=10
+
+COMPANY_NAME=INTE MECCA BANK LLC
+
+COPYRIGHT_EMAIL=OBSOFTWARE@COPYRIGHT.ITC
+```
+
+---
+
+## COPYRIGHT.md
+
+```text
+INTE MECCA BANK LLC
+
+MECCA TOKEN ECOSYSTEM
+
+MindSpark Realm
+
+Celestial Governance Framework
+
+Copyright © 2026
+
+All Rights Reserved.
+
+Contact:
+
+OBSOFTWARE@COPYRIGHT.ITC
+```
+
+### Growth Model Audit Note
+
+The growth schedule you've provided is mathematically a compound-growth simulation using approximately:
+
+- Starting principal: $100,000
+- Weekly reward rate: 5%
+- Weekly contribution: $20,000
+- Significant reinvestment
+
+The schedule should be displayed in the dashboard as:
+
+```text
+Treasury Growth Projection
+Illustrative Tokenomics Simulation
+```
+
+rather than as guaranteed dividends, banking returns, or investment performance. This keeps the dashboard transparent and avoids presenting modeled outcomes as assured results.-ic.sh
