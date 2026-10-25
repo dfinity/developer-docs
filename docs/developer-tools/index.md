@@ -5,7 +5,7 @@ sidebar:
   hidden: true
 ---
 
-Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, Motoko, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, and Candid tooling.
+Developer tools are used to create, manage, and interact with canisters. ICP provides tooling across several categories: command-line tools, Motoko, canister development kits (CDKs), client libraries, testing tools, browser-based IDEs, AI app builders, and Candid tooling.
 
 ## Command-line tools
 
@@ -163,6 +163,14 @@ Deployed canisters remain live for 20 minutes. You can redeploy to reset the tim
 Limitations:
 - Projects are limited to 5 MB and 2 canisters
 - ICP Ninja is not a replacement for icp-cli for production workflows
+
+## AI app builder
+
+### Caffeine
+
+[Caffeine](https://caffeine.ai) builds and hosts apps on ICP from a chat description. Its cloud agent writes a Motoko backend and a React frontend, builds them, and hosts the app on the Internet Computer; you publish it to a live URL from the Caffeine web app. No local toolchain is required.
+
+The optional [Caffeine CLI](https://www.npmjs.com/package/@caffeineai/cli) clones a project's source so you can edit it on your machine and upload it back as a new draft, and the hosted Caffeine MCP server lets an AI coding agent work with your Caffeine projects. See [Drive Caffeine from your agent](../guides/ai-coding-agents.md#drive-caffeine-from-your-agent) and the [Caffeine help center](https://help.caffeine.ai/hc/en-us).
 
 ## Candid tools
 
