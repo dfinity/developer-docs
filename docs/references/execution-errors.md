@@ -527,16 +527,65 @@ To fix this error, top up the canister if it does not have enough cycles, or use
 
 ### Invalid controller
 
-An action failed because it can only be performed by a controller of the canister.
+An action failed because it can only be performed by a controller of a canister involved in the call.
 
 **Example error:**
 ```
-Only the controllers of the canister {} can control it.
-Canister's controllers: xxx-xxx yyy-yyy
-Sender's ID: zzz-zzz
+Only the controllers of the canister xxx-xxx can control it.
+Canister's controllers: yyy-yyy zzz-zzz
+Sender's ID: www-www
 ```
 
-Certain actions (such as updating the canister's Wasm code) can only be performed by controllers. To fix this error, perform the action from a principal that is already a controller, or have an existing controller add your principal to the canister's controller list.
+Certain actions (such as updating the canister's Wasm code) can only be performed by controllers. The first line of the error names the canister whose controllers are required and the role it plays in the call:
+
+- **The target canister:** `Only the controllers of the canister xxx-xxx can control it.` The call targets a canister that the caller does not control.
+- **The store canister of `install_chunked_code`:** `Only the canister xxx-xxx itself and its controllers can use its chunks to install code on the canister ttt-ttt.` The chunks are stored in a different canister (`store_canister`) than the one receiving the code. The caller must be the store canister itself or one of its controllers, in addition to being a controller of the target canister.
+- **The canister owning a snapshot:** `Only the controllers of the canister xxx-xxx can load its snapshot sss-sss into the canister ttt-ttt.` `load_canister_snapshot` loads a snapshot that belongs to a different canister. The caller must control the canister owning the snapshot, in addition to the target canister.
+
+In every case, the `Canister's controllers` line lists the controllers of the canister named in the first line, not necessarily the target canister.
+
+To fix this error, perform the action from a principal that is already a controller of the named canister, or have an existing controller add your principal to that canister's controller list.
+
+### Invalid controller (subnet admin)
+
+An action failed because it can only be performed by a controller of the canister or by a subnet admin.
+
+**Example error:**
+```
+Only the controllers of the canister xxx-xxx or subnet admins can perform certain actions.
+Canister's controllers: yyy-yyy zzz-zzz
+Subnet admins: aaa-aaa
+Sender's ID: www-www
+```
+
+Only rented subnets (application subnets on the [free cost schedule](ic-interface-spec/index.md#cost-schedules)) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
+
+- **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, `canister_metrics`, and `canister_status`. Subnet admins can read the status regardless of the canister's status visibility setting.
+- **On cloud engines:** every action on a canister except `rename_canister`.
+
+When the caller is neither a controller nor a subnet admin, `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics` fail with this error on both kinds of subnet, even if the subnet has no subnet admins set (the `Subnet admins` line is then empty). On all other subnets, subnet admins are not taken into account, and these five actions fail with [Invalid controller](#invalid-controller) instead.
+
+For other controller-only operations, such as `install_code` and `update_settings`, unauthorized callers receive [Invalid controller](#invalid-controller). Status, log, and snapshot reads have separate visibility checks: callers may be allowed by the visibility settings, and denied calls return different errors. For example, denied `canister_status` calls return `CanisterStatusAccessDenied`.
+
+To fix this error, perform the action from a controller of the canister or a subnet admin, or have an existing controller add your principal to the canister's controller list.
+
+### Invalid subnet admin
+
+An action failed because it can only be performed by a subnet admin.
+
+**Example error:**
+```
+Only the subnet admins can perform certain actions.
+Subnet admins: aaa-aaa
+Sender's ID: www-www
+```
+
+On subnets that can have subnet admins (see [Invalid controller (subnet admin)](#invalid-controller-subnet-admin)), only a subnet admin can:
+
+- Call `list_canisters` through an inter-canister call or a direct non-replicated query. Ingress update messages are rejected.
+- Create a canister with `create_canister` from an ingress message, or from a canister on a subnet other than the NNS subnet or the subnet itself.
+
+To fix this error, perform the action from a subnet admin, or have the subnet admins updated to include your principal.
 
 ### Canister not found
 
@@ -764,17 +813,6 @@ Snapshot is not currently loadable on the specified canister. Try again later. T
 ```
 
 To fix this error, wait at least 10 minutes and retry.
-
-### Canister snapshot not controller
-
-The caller is not a controller of the canister that owns the snapshot.
-
-**Example error:**
-```
-Only a controller of the canister that the snapshot belongs to can load it.
-```
-
-To fix this error, ensure the caller is a controller of the canister that originally created the snapshot.
 
 ---
 
