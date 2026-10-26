@@ -560,10 +560,12 @@ Sender's ID: www-www
 
 Only rented subnets (application subnets on the [free cost schedule](ic-interface-spec/index.md#cost-schedules)) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
 
-- **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics`.
+- **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, `canister_metrics`, and `canister_status`. Subnet admins can read the status regardless of the canister's status visibility setting.
 - **On cloud engines:** every action on a canister except `rename_canister`.
 
-When the caller is neither a controller nor a subnet admin, `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics` fail with this error on both kinds of subnet, even if the subnet has no subnet admins set (the `Subnet admins` line is then empty). Other actions fail with [Invalid controller](#invalid-controller). On all other subnets, subnet admins are not taken into account, and these actions fail with [Invalid controller](#invalid-controller) instead.
+When the caller is neither a controller nor a subnet admin, `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics` fail with this error on both kinds of subnet, even if the subnet has no subnet admins set (the `Subnet admins` line is then empty). On all other subnets, subnet admins are not taken into account, and these five actions fail with [Invalid controller](#invalid-controller) instead.
+
+For other controller-only operations, such as `install_code` and `update_settings`, unauthorized callers receive [Invalid controller](#invalid-controller). Status, log, and snapshot reads have separate visibility checks: callers may be allowed by the visibility settings, and denied calls return different errors. For example, denied `canister_status` calls return `CanisterStatusAccessDenied`.
 
 To fix this error, perform the action from a controller of the canister or a subnet admin, or have an existing controller add your principal to the canister's controller list.
 
@@ -580,7 +582,7 @@ Sender's ID: www-www
 
 On subnets that can have subnet admins (see [Invalid controller (subnet admin)](#invalid-controller-subnet-admin)), only a subnet admin can:
 
-- Call `list_canisters`. It can only be called by a canister, not by an ingress message.
+- Call `list_canisters` through an inter-canister call or a direct non-replicated query. Ingress update messages are rejected.
 - Create a canister with `create_canister` from an ingress message, or from a canister on a subnet other than the NNS subnet or the subnet itself.
 
 To fix this error, perform the action from a subnet admin, or have the subnet admins updated to include your principal.
