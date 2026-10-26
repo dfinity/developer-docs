@@ -558,9 +558,32 @@ Subnet admins: aaa-aaa
 Sender's ID: www-www
 ```
 
-On subnets that have subnet admins, subnet admins can also perform some actions on canisters they do not control: `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics`. When the caller is neither a controller nor a subnet admin, these actions fail with this error. On subnets without subnet admins, they fail with [Invalid controller](#invalid-controller) instead.
+Only rented subnets (application subnets on the free cost schedule) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
+
+- **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics`.
+- **On cloud engines:** every action on a canister except `rename_canister`.
+
+When the caller is neither a controller nor a subnet admin, `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics` fail with this error on both kinds of subnet, even if the subnet has no subnet admins set (the `Subnet admins` line is then empty). Other actions fail with [Invalid controller](#invalid-controller). On all other subnets, subnet admins are not taken into account, and these actions fail with [Invalid controller](#invalid-controller) instead.
 
 To fix this error, perform the action from a controller of the canister or a subnet admin, or have an existing controller add your principal to the canister's controller list.
+
+### Invalid subnet admin
+
+An action failed because it can only be performed by a subnet admin.
+
+**Example error:**
+```
+Only the subnet admins can perform certain actions.
+Subnet admins: aaa-aaa
+Sender's ID: www-www
+```
+
+On subnets that can have subnet admins (see [Invalid controller (subnet admin)](#invalid-controller-subnet-admin)), only a subnet admin can:
+
+- Call `list_canisters`. It can only be called by a canister, not by an ingress message.
+- Create a canister with `create_canister` from an ingress message, or from a canister on a subnet other than the NNS subnet or the subnet itself.
+
+To fix this error, perform the action from a subnet admin, or have the subnet admins updated to include your principal.
 
 ### Canister not found
 
