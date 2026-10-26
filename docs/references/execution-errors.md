@@ -558,7 +558,7 @@ Subnet admins: aaa-aaa
 Sender's ID: www-www
 ```
 
-Only rented subnets (application subnets on the free cost schedule) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
+Only rented subnets (application subnets on the [free cost schedule](ic-interface-spec/index.md#cost-schedules)) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
 
 - **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, and `canister_metrics`.
 - **On cloud engines:** every action on a canister except `rename_canister`.
