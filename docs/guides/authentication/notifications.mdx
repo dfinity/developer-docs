@@ -100,6 +100,15 @@ notifications::endpoints!();
 
 #[init]
 fn init() {
+    open_notifications();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    open_notifications();
+}
+
+fn open_notifications() {
     MEMORIES.with_borrow(|manager| {
         notifications::init(manager, Memories {
             entries: MemoryId::new(10),
