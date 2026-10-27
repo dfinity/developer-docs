@@ -7,64 +7,42 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Your canister can notify a signed-in user while your app is closed. The user grants permission once, through Internet Identity, and your canister sends with one call. Internet Identity owns the push subscriptions, so your app needs no push service of its own, no VAPID keys, and no device tokens.
+Your canister can notify a signed-in user while your app is closed. Internet Identity owns the push subscriptions, so your app needs no push service, no VAPID keys and no device tokens.
 
-This page covers the three pieces: asking the user, letting Internet Identity accept your canister, and sending.
-
-## How it fits together
-
-- **Your frontend** asks the user, through Internet Identity, whether your app may notify them.
-- **Your canister** sends a notification to a user's principal.
-- **Internet Identity** delivers it to the user, and calls back to your canister for the content.
-
-Notifications build on sign-in. A user who has not signed in has no identity to record consent against, so set up [Internet Identity](internet-identity.md) first.
+Three pieces: your frontend asks the user, your origin names the canisters allowed to send, and your canister sends. You notify a principal, so [sign-in](internet-identity.md) comes first: without it there is nobody to address.
 
 ## Ask the user
 
-Permission is the user's answer, so asking opens Internet Identity. This needs `@icp-sdk/auth` 11.1.0 or later:
+Needs `@icp-sdk/auth` 11.1.0 or later.
 
 ```ts
-const { granted } = await authClient.requestNotificationConsent();
-```
-
-Ask from a click, at a point where a notification would mean something to the user, rather than on first load. Asking signs the user in if they are not already, so it can open Internet Identity when nothing else has.
-
-A refusal is an answer rather than a failure: it comes back as `granted: false` and your app renders that. The value is what Internet Identity recorded rather than what its screen showed, so a user who already allowed your app is reported as allowed without being asked again.
-
-Two more calls complete the surface:
-
-```ts
-const { granted } = await authClient.getNotificationConsentStatus();
+const { granted } = await authClient.requestNotificationConsent();  // opens II
+const { granted } = await authClient.getNotificationConsentStatus(); // query, no screen
 await authClient.revokeNotificationConsent();
 ```
 
-`getNotificationConsentStatus` reads what is recorded without opening anything, which is what a settings toggle paints from. `revokeNotificationConsent` ends it. Both need a live session and raise `SessionGoneError` without one. Reading is a query, so the answer is uncertified: display it rather than gate on it.
+Ask from a click, when a notification would mean something to the user. `granted: false` is the user's answer, not a failure. Status and revoke need a live session and raise `SessionGoneError` without one.
 
-Two failures are worth handling in the UI:
-
-- `InteractionRequiredError`, when the client was built with `prompt: 'none'`. No consent ceremony can run without rendering, so ask again from a click.
-- `NotificationsUnsupportedError`, when that Internet Identity does not send notifications at all. Nothing can be retried, so hide the control.
+Two errors are worth branching on: `InteractionRequiredError`, when the client was built with `prompt: 'none'`, so ask again from a click; and `NotificationsUnsupportedError`, when that Internet Identity does not notify at all, so hide the control.
 
 ## Name your canister as a sender
 
-Internet Identity does not accept a notification from any caller that asks. Serve a document at `/.well-known/ii-notification-senders` from your app's origin, naming the canisters allowed to notify on its behalf:
+Internet Identity sends only for canisters your origin names at `/.well-known/ii-notification-senders`:
 
 ```json
 { "senders": ["ryjl3-tyaaa-aaaaa-aaaba-cai"] }
 ```
 
-At most ten canisters. Internet Identity caches what it reads, so a canister you add is not accepted instantly and one you remove keeps working for a while afterwards.
+At most ten. Internet Identity caches what it reads, so a change is not instant.
 
 ## Send from your canister
-
-Each language has its own wiring, and then the same `send` call.
 
 <Tabs>
 <TabItem label="Motoko">
 
 **Package:** [identity-notifications on Mops](https://mops.one/identity-notifications), which documents the mixin and the full `Notification` type. Requires moc 2.0.0 or later.
 
-Add the mixin to your actor and the endpoints Internet Identity calls back on come with it. There is nothing to do on upgrade.
+The mixin brings the endpoints Internet Identity calls back on. Nothing to do on upgrade.
 
 ```motoko
 import Notifications "mo:identity-notifications";
@@ -93,7 +71,7 @@ actor {
 
 **Crate:** [identity-notifications on crates.io](https://crates.io/crates/identity-notifications), which documents `endpoints!`, `init`, and the full `Notification` type.
 
-`endpoints!()` generates the endpoints Internet Identity calls back on. Hand `init` three stable memory ids, and call it again from `post_upgrade`: the library's state lives in those memories, and the timer that flushes what is waiting does not survive an upgrade.
+`endpoints!()` brings the endpoints Internet Identity calls back on. Hand `init` three stable memory ids and call it again from `post_upgrade`, which is what re-arms the flush.
 
 ```rust
 notifications::endpoints!();
@@ -134,7 +112,7 @@ notifications::send(
 </TabItem>
 </Tabs>
 
-Point the library at Internet Identity and at your own origin with environment variables:
+Configuration is environment variables:
 
 ```yaml
 canisters:
@@ -148,64 +126,49 @@ canisters:
 
 ## What you send
 
-`title` and `body` are required. The rest are optional, and worth understanding before you reach for them.
+`title` and `body` are required.
 
 | Field | Default | What it is |
 |---|---|---|
-| `url` | none | Where acting on the notification takes the user. Must be your own origin or one of its alternative origins; Internet Identity refuses anything else. |
-| `key` | none | What the notification is *about*, rather than what it says. A second send under the same key updates that notification instead of adding another, and it is what you dismiss by. Scoped per recipient. |
-| `urgency` | `Normal` | `VeryLow`, `Low`, `Normal` or `High`. Schedules this notification against your origin's other traffic. Not a rendering hint: channels with no notification tray honour it too. |
-| `expiresAt` / `expires_at` | a short window | How long this is still worth sending. Set it past the default for anything that matters later, and short for anything worthless once the moment passes. |
-| `funnel` | none | Which funnel to count this notification in, on top of the hour it was sent in. One per campaign or kind of notification: a label per send is an unbounded set of rows. |
+| `url` | none | Where acting on it takes the user. Must be your origin or one of its alternative origins. |
+| `key` | none | What the notification is *about*. A second send under the same key updates it instead of adding another, and it is what you dismiss by. Scoped per recipient. |
+| `urgency` | `Normal` | `VeryLow`, `Low`, `Normal`, `High`. Orders this against your origin's other traffic. Not a rendering hint. |
+| `expiresAt` / `expires_at` | a short window | How long this is still worth sending. Not a tray lifetime: a delivered notification stays until the user clears it. |
+| `funnel` | none | Groups notifications whose conversion you want to read, such as one campaign. One label per send is an unbounded set of rows. |
 
-### Urgency and expiry together
+`urgency` and `expiresAt` answer different questions, so pick them together:
 
-These two answer different questions. `urgency` is about *order*: where this notification sits against the rest of your origin's traffic. `expiresAt` is about *shelf life*: whether it is still worth showing by the time it could be.
+| Sending | `urgency` | `expiresAt` |
+|---|---|---|
+| A security alert, such as a new sign-in | `High` | days, since it is worth seeing late |
+| A direct message | `Normal` | unset |
+| "Your driver is outside" | `High` | minutes |
+| A campaign to your whole user base | `VeryLow` | days, with a `funnel` |
+| A digest or a nudge | `Low` | hours |
 
-Leaving `expiresAt` unset gives you a short default, so anything still worth delivering later needs an explicit value. It is not a lifetime in the user's notification tray: once a notification has been delivered it stays until the user clears it. What `expiresAt` bounds is how long the notification is still worth sending at all.
+A short expiry does not make something urgent, and `High` does not make it last longer.
 
-| What you are sending | `urgency` | `expiresAt` | Why |
-|---|---|---|---|
-| A security alert, such as a new sign-in | `High` | days | Should go ahead of your other traffic, and is still worth seeing late, so set it well past the short default. |
-| A direct message | `Normal` | unset | The ordinary case: worth sending now, and noise if it lands much later. |
-| "Your driver is outside" | `High` | minutes | Ahead of everything, and worthless once the moment has passed. |
-| A campaign to your whole user base | `VeryLow` | days | No single one is urgent, and sending a lot of them must not push your real notifications behind them, but each should still land eventually. Give the campaign a `funnel` and you can read its conversion rate. |
-| A digest, a nudge, a streak reminder | `Low` | hours | Should yield to anything else you send, and there is no point delivering yesterday's. |
-
-A short expiry is not a way to make something urgent, and `High` is not a way to make something last longer. Reaching for `High` on everything removes the ordering you were trying to get.
-
-### Keys
-
-A `key` is what keeps a busy conversation to one entry in the tray instead of twenty. Derive it from the thing the notification is about, such as the conversation it belongs to, rather than from whatever a caller happened to pass you: two senders sharing a key collide in that recipient's tray, and the later send wins.
-
-### Funnels
-
-A `funnel` groups notifications you want to read a conversion rate for, a campaign or one kind of notification, and the metrics then report that group's own path from sent to shown separately from your ordinary traffic. One label per notification would be an unbounded set of rows, so label the campaign rather than the send.
-
-### Where your app's name comes from
-
-Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one, the same document that names it on the sign-in screen.
+Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one.
 
 ## Delivery
 
-You address a notification to a user. Where and how it reaches them is Internet Identity's, and the user's, to manage.
+You address a user. Where it reaches them is Internet Identity's and the user's to manage.
 
-On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
+Sending cannot fail the call it is made from: it neither traps nor awaits, and returns nothing. What became of a notification is in the library's metrics.
 
-Sending never fails the call it is made from: it neither traps nor awaits, so a user who cannot be notified costs your endpoint nothing. What became of a notification afterwards is in the library's metrics, hour by hour, which is where to look when something is not arriving.
+On iOS, web push needs Internet Identity on the Home Screen. The consent ceremony walks the user through it.
 
 ## Common mistakes
 
-- **Asking on page load.** The ceremony needs a click, and a user who has not yet seen what your app does will refuse.
-- **Treating a refusal as an error.** `granted: false` is the user's decision. Render it, and offer the control again later.
-- **Leaving out the senders document.** Without `/.well-known/ii-notification-senders` naming your canister, every send is refused.
-- **Expecting a sender change to take effect at once.** Internet Identity caches the list, so adding or removing a canister is not instant.
-- **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting until a later call arms a flush. The Motoko mixin handles this itself.
+- **Asking on page load.** The ceremony needs a click, and a user who has not seen what your app does will refuse.
+- **Treating a refusal as an error.** `granted: false` is a decision. Render it, and offer the control again later.
+- **Leaving out the senders document.** Without it, every send is refused.
 - **Deriving the `key` from whatever a caller passed in.** Two senders sharing a key collide in one recipient's tray, and the later send wins.
+- **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting. The Motoko mixin handles this itself.
 
 ## Next steps
 
-- [Internet Identity](internet-identity.md) for the sign-in that a consent is recorded against.
-- [Identity attributes](identity-attributes.md) for what else Internet Identity can tell your backend about a user.
+- [Internet Identity](internet-identity.md) for the sign-in a consent is recorded against.
+- [Identity attributes](identity-attributes.md) for what else Internet Identity can tell your backend.
 
 {/* Upstream: informed by dfinity/identity-notifications rust/README.md motoko/README.md */}
