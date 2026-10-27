@@ -174,17 +174,23 @@ These two answer different questions. `urgency` is about *order*: where this not
 
 A short expiry is not a way to make something urgent, and `High` is not a way to make something last longer. Reaching for `High` on everything removes the ordering you were trying to get.
 
-The campaign row is also where `funnel` earns its place: one label for the whole campaign, and the metrics then report that campaign's own path from sent to shown, separately from your ordinary traffic. One label per notification instead would be an unbounded set of rows.
+### Keys
 
 A `key` is what keeps a busy conversation to one entry in the tray instead of twenty. Derive it from the thing the notification is about, such as the conversation it belongs to, rather than from whatever a caller happened to pass you: two senders sharing a key collide in that recipient's tray, and the later send wins.
 
-Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one, the same document that names it on the sign-in screen.
+### Funnels
 
-On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
+A `funnel` groups notifications you want to read a conversion rate for, a campaign or one kind of notification, and the metrics then report that group's own path from sent to shown separately from your ordinary traffic. One label per notification would be an unbounded set of rows, so label the campaign rather than the send.
+
+### Where your app's name comes from
+
+Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one, the same document that names it on the sign-in screen.
 
 ## Delivery
 
 You address a notification to a user. Where and how it reaches them is Internet Identity's, and the user's, to manage.
+
+On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
 
 Sending never fails the call it is made from: it neither traps nor awaits, so a user who cannot be notified costs your endpoint nothing. What became of a notification afterwards is in the library's metrics, hour by hour, which is where to look when something is not arriving.
 
