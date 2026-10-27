@@ -15,7 +15,7 @@ This page covers the three pieces: asking the user, letting Internet Identity ac
 
 - **Your frontend** asks the user, through Internet Identity, whether your app may notify them.
 - **Your canister** sends a notification to a user's principal.
-- **Internet Identity** delivers it to every browser that user has registered, and calls back to your canister for the content.
+- **Internet Identity** delivers it to the user, and calls back to your canister for the content.
 
 Notifications build on sign-in. A user who has not signed in has no identity to record consent against, so set up [Internet Identity](internet-identity.md) first.
 
@@ -53,7 +53,7 @@ Internet Identity does not accept a notification from any caller that asks. Serv
 { "senders": ["ryjl3-tyaaa-aaaaa-aaaba-cai"] }
 ```
 
-At most ten canisters. Internet Identity fetches the document when it needs it and caches the result for about an hour, so adding a canister is not instant, and a canister you remove keeps working for up to two hours while the stale list is served.
+At most ten canisters. Internet Identity caches what it reads, so a canister you add is not accepted instantly and one you remove keeps working for a while afterwards.
 
 ## Send from your canister
 
@@ -118,20 +118,13 @@ The outbox, the content a channel may still pull, and the hourly metrics live in
 
 On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
 
-## How it appears
-
-The notification is shown by Internet Identity rather than by your app, so your app's own name has to come from somewhere it cannot simply claim. Internet Identity takes it from the [app metadata](app-metadata.md) document your origin already publishes for the sign-in screen:
-
-- `name` leads the title, ahead of the title your canister sent. Without a metadata document, the origin's hostname is used instead, which is the part no app can claim for itself.
-- `logo` becomes the notification's icon, on the platforms that show one.
-
-So publishing `/.well-known/ii-app-metadata` is what puts your name and logo on every notification, not only on the sign-in screen.
-
 ## Delivery
 
-A notification is addressed to a **principal**, not to a browser. Internet Identity fans it out to every browser that identity has registered, so a user signed in on a laptop and a phone is woken on both. Dropping someone from your app's own list of recipients does not unsubscribe their other browsers; only the user can do that, from Internet Identity.
+A notification is addressed to a user, and Internet Identity decides where it reaches them. Your app does not choose or see the devices involved, and it cannot withdraw a notification from one by changing its own list of recipients: that is the user's to manage, from Internet Identity.
 
-A browser unused for 60 days counts as gone and is not woken. A recipient whose every browser is past that is reported as `NoSuchRecipient`, which is also the answer for a principal Internet Identity holds no account for at your origin.
+`NoSuchRecipient` means Internet Identity has nowhere to deliver to for that user at your origin. Sending to them again later is fine; nothing about it is permanent.
+
+If you publish [app metadata](app-metadata.md), your app is named by it here as well as on the sign-in screen.
 
 The library reports the delivery pipeline hour by hour, which is where to look when something is not arriving.
 
@@ -140,7 +133,7 @@ The library reports the delivery pipeline hour by hour, which is where to look w
 - **Asking on page load.** The ceremony needs a click, and a user who has not yet seen what your app does will refuse.
 - **Treating a refusal as an error.** `granted: false` is the user's decision. Render it, and offer the control again later.
 - **Leaving out the senders document.** Without `/.well-known/ii-notification-senders` naming your canister, every send is refused.
-- **Expecting a sender change to take effect at once.** The list is cached for about an hour and served stale for another.
+- **Expecting a sender change to take effect at once.** Internet Identity caches the list, so adding or removing a canister is not instant.
 - **Skipping `init` in `post_upgrade`.** Anything waiting in the outbox stays there until a later call arms a flush.
 
 ## Next steps
