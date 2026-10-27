@@ -15,7 +15,7 @@ You notify a principal, so [sign-in](internet-identity.md) comes first: without 
 
 Needs `@icp-sdk/auth` 11.1.0 or later.
 
-The consent request and the sign-in run in parallel, so the user sees a single Internet Identity interaction. Asking after `signIn` resolves does not work: the client closes its channel once nothing is in flight, and reopening it needs a click your continuation no longer has.
+Asking needs a click. Run it in parallel with the sign-in and the user sees a single Internet Identity interaction:
 
 ```ts
 const [identity, { granted }] = await Promise.all([
@@ -25,6 +25,8 @@ const [identity, { granted }] = await Promise.all([
 ```
 
 `granted: false` is the user's answer, not a failure.
+
+To ask later instead, do it from a control of its own, such as the [toggle](#a-notifications-toggle) below.
 
 ## Name your canister as a sender
 
@@ -174,7 +176,7 @@ On iOS, web push needs Internet Identity on the Home Screen. The consent ceremon
 
 ## Common mistakes
 
-- **Asking after `signIn` resolves.** There is no window left to open; ask alongside it.
+- **Asking without a click.** The ceremony needs a user gesture: the sign-in, or a control of your own.
 - **Treating a refusal as an error.** `granted: false` is a decision. Render it, and offer the control again later.
 - **Asking under `prompt: 'none'`.** A ceremony has to render, so this raises `InteractionRequiredError`. Ask again from a click.
 - **Not handling `NotificationsUnsupportedError`.** That Internet Identity does not notify at all, so hide the control rather than retrying.
