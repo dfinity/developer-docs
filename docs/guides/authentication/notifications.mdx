@@ -57,26 +57,35 @@ At most ten canisters. Internet Identity caches what it reads, so a canister you
 
 ## Send from your canister
 
-Add the library, hand it three stable memory ids in `init` and again in `post_upgrade`, and send. The endpoints Internet Identity calls to fetch a notification's content and report a delivery are generated for you.
+Each language has its own wiring, and then the same `send` call.
 
 <Tabs>
 <TabItem label="Motoko">
 
 **Package:** [identity-notifications on Mops](https://mops.one/identity-notifications), which documents the mixin and the full `Notification` type. Requires moc 2.0.0 or later.
 
+Add the mixin to your actor and the endpoints Internet Identity calls back on come with it. There is nothing to do on upgrade.
+
 ```motoko
-notifications.send<system>(
-  to,
-  {
-    title = "New message";
-    body = text;
-    url = ?("https://chat.example.com/chats/" # caller.toText());
-    key = ?("chat-" # caller.toText());
-    urgency = null;
-    expiresAt = null;
-    funnel = null;
-  },
-)
+import Notifications "mo:identity-notifications";
+
+actor {
+  include Notifications<system>();
+
+  // ... then, wherever you want to notify someone:
+  notifications.send<system>(
+    to,
+    {
+      title = "New message";
+      body = text;
+      url = ?("https://chat.example.com/chats/" # caller.toText());
+      key = ?("chat-" # caller.toText());
+      urgency = null;
+      expiresAt = null;
+      funnel = null;
+    },
+  )
+}
 ```
 
 </TabItem>
@@ -84,7 +93,23 @@ notifications.send<system>(
 
 **Crate:** [identity-notifications on crates.io](https://crates.io/crates/identity-notifications), which documents `endpoints!`, `init`, and the full `Notification` type.
 
+`endpoints!()` generates the endpoints Internet Identity calls back on. Hand `init` three stable memory ids, and call it again from `post_upgrade`: the library's state lives in those memories, and the timer that flushes what is waiting does not survive an upgrade.
+
 ```rust
+notifications::endpoints!();
+
+#[init]
+fn init() {
+    MEMORIES.with_borrow(|manager| {
+        notifications::init(manager, Memories {
+            entries: MemoryId::new(10),
+            content: MemoryId::new(11),
+            metrics: MemoryId::new(12),
+        })
+    });
+}
+
+// ... then, wherever you want to notify someone:
 notifications::send(
     to,
     Notification {
@@ -100,8 +125,6 @@ notifications::send(
 </TabItem>
 </Tabs>
 
-The `url` opens when the user taps the notification. The `key` names it, so a second send under the same key replaces the first instead of stacking another beside it, which is what keeps a busy conversation to one entry. Dismiss one that no longer needs attention by key.
-
 Point the library at Internet Identity and at your own origin with environment variables:
 
 ```yaml
@@ -114,7 +137,19 @@ canisters:
         notification_capacity_mb: "1024"   # optional
 ```
 
-The outbox, the content a channel may still pull, and the hourly metrics live in the stable memories you hand over, so an upgrade neither serialises nor restores any of it. Timers do not survive an upgrade, so calling `init` again from `post_upgrade` is what arms a flush for anything still waiting.
+## What you send
+
+`title` and `body` are the words. The rest is worth understanding before you reach for it.
+
+**`url`** is where acting on the notification takes the user. It has to be on your own origin, or one of its alternative origins; Internet Identity refuses anything else.
+
+**`key`** is what the notification is *about*, not what it says. Send again under the same key and that notification is updated rather than joined by another, which is what keeps a busy conversation to one entry instead of twenty. It is also what you dismiss by, once the thing no longer needs attention. Derive it from something the sender cannot choose, such as the conversation it belongs to: a key an untrusted caller controls lets them overwrite or dismiss a notification that was not theirs.
+
+**`urgency`** is `VeryLow`, `Low`, `Normal` (the default) or `High`, and it schedules this notification against your origin's other traffic. It is not a styling hint, and it is honoured on channels that have no notification tray at all, so reach for `High` when something is genuinely time-critical rather than to make it look important.
+
+**`expires_at`** drops a notification that is no longer worth delivering. Leaving it unset uses Internet Identity's default retention, which is also the longest it will hold one.
+
+Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one, the same document that names it on the sign-in screen.
 
 On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
 
@@ -124,15 +159,14 @@ You address a notification to a user. Where and how it reaches them is Internet 
 
 Sending never fails the call it is made from: it neither traps nor awaits, so a user who cannot be notified costs your endpoint nothing. What became of a notification afterwards is in the library's metrics, hour by hour, which is where to look when something is not arriving.
 
-If you publish [app metadata](app-metadata.md), your app is named by it on its notifications as well as on the sign-in screen.
-
 ## Common mistakes
 
 - **Asking on page load.** The ceremony needs a click, and a user who has not yet seen what your app does will refuse.
 - **Treating a refusal as an error.** `granted: false` is the user's decision. Render it, and offer the control again later.
 - **Leaving out the senders document.** Without `/.well-known/ii-notification-senders` naming your canister, every send is refused.
 - **Expecting a sender change to take effect at once.** Internet Identity caches the list, so adding or removing a canister is not instant.
-- **Skipping `init` in `post_upgrade`.** Anything waiting in the outbox stays there until a later call arms a flush.
+- **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting until a later call arms a flush. The Motoko mixin handles this itself.
+- **Letting a caller choose the `key`.** They can then overwrite or dismiss notifications that are not theirs.
 
 ## Next steps
 
