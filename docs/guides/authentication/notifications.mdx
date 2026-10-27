@@ -100,15 +100,15 @@ notifications::endpoints!();
 
 #[init]
 fn init() {
-    open_notifications();
+    init_notifications();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    open_notifications();
+    init_notifications();
 }
 
-fn open_notifications() {
+fn init_notifications() {
     MEMORIES.with_borrow(|manager| {
         notifications::init(manager, Memories {
             entries: MemoryId::new(10),
@@ -155,22 +155,24 @@ canisters:
 | `url` | none | Where acting on the notification takes the user. Must be your own origin or one of its alternative origins; Internet Identity refuses anything else. |
 | `key` | none | What the notification is *about*, rather than what it says. A second send under the same key updates that notification instead of adding another, and it is what you dismiss by. Scoped per recipient. |
 | `urgency` | `Normal` | `VeryLow`, `Low`, `Normal` or `High`. Schedules this notification against your origin's other traffic. Not a rendering hint: channels with no notification tray honour it too. |
-| `expiresAt` / `expires_at` | Internet Identity's default retention | Drops a notification no longer worth delivering. The default is also the longest one is held. |
+| `expiresAt` / `expires_at` | Internet Identity's default retention | Expires a notification no longer worth delivering. Only brings expiry forward: the default is already the longest anything is held. |
 | `funnel` | none | Which funnel to count this notification in, on top of the hour it was sent in. One per campaign or kind of notification: a label per send is an unbounded set of rows. |
 
 ### Urgency and expiry together
 
-These two answer different questions. `urgency` is about *order*: where this notification sits against the rest of your origin's traffic. `expiresAt` is about *shelf life*: whether it is still worth showing by the time it could be. Most decisions are clearer when you pick both at once.
+These two answer different questions. `urgency` is about *order*: where this notification sits against the rest of your origin's traffic. `expiresAt` is about *shelf life*: whether it is still worth showing by the time it could be.
+
+`expiresAt` only ever brings expiry forward. Leaving it unset gives you Internet Identity's default retention, which is also the longest it will hold anything, so there is no setting that makes a notification last longer. Reach for it when a notification stops being worth delivering, not when you want one to persist.
 
 | What you are sending | `urgency` | `expiresAt` | Why |
 |---|---|---|---|
-| A security alert, such as a new sign-in | `High` | unset | Should go ahead of your other traffic, and still matters if the user only sees it tomorrow. |
+| A security alert, such as a new sign-in | `High` | unset | Should go ahead of your other traffic, and is still worth seeing late, so take the full retention. |
 | A direct message | `Normal` | unset | The ordinary case, and the default for a reason. |
 | "Your driver is outside" | `High` | minutes | Ahead of everything, and worthless once the moment has passed. |
-| A campaign to your whole user base | `VeryLow` | long | No single one is urgent, and sending a lot of them must not push your real notifications behind them. Give the campaign a `funnel` and you can read its conversion rate. |
-| A digest, a nudge, a streak reminder | `Low` | hours to days | Should yield to anything else you send, and there is no point delivering yesterday's. |
+| A campaign to your whole user base | `VeryLow` | unset | No single one is urgent, and sending a lot of them must not push your real notifications behind them. Give the campaign a `funnel` and you can read its conversion rate. |
+| A digest, a nudge, a streak reminder | `Low` | hours | Should yield to anything else you send, and there is no point delivering yesterday's. |
 
-A short expiry is not a way to make something urgent, and `High` is not a way to make something persist. Reaching for `High` on everything removes the ordering you were trying to get.
+A short expiry is not a way to make something urgent, and `High` is not a way to make something last longer. Reaching for `High` on everything removes the ordering you were trying to get.
 
 The campaign row is also where `funnel` earns its place: one label for the whole campaign, and the metrics then report that campaign's own path from sent to shown, separately from your ordinary traffic. One label per notification instead would be an unbounded set of rows.
 
