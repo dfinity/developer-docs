@@ -1,0 +1,151 @@
+---
+title: "Notifications"
+description: "Ask a user's permission to notify them through Internet Identity, and send web push notifications from your Motoko or Rust canister."
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Your canister can notify a signed-in user while your app is closed. The user grants permission once, through Internet Identity, and your canister sends with one call. Internet Identity owns the push subscriptions, so your app needs no push service of its own, no VAPID keys, and no device tokens.
+
+This page covers the three pieces: asking the user, letting Internet Identity accept your canister, and sending.
+
+## How it fits together
+
+- **Your frontend** asks the user, through Internet Identity, whether your app may notify them.
+- **Your canister** sends a notification to a user's principal.
+- **Internet Identity** delivers it to every browser that user has registered, and calls back to your canister for the content.
+
+Notifications build on sign-in. A user who has not signed in has no identity to record consent against, so set up [Internet Identity](internet-identity.md) first.
+
+## Ask the user
+
+Permission is the user's answer, so asking opens Internet Identity. This needs `@icp-sdk/auth` 11.1.0 or later:
+
+```ts
+const { granted } = await authClient.requestNotificationConsent();
+```
+
+Ask from a click, at a point where a notification would mean something to the user, rather than on first load. Asking signs the user in if they are not already, so it can open Internet Identity when nothing else has.
+
+A refusal is an answer rather than a failure: it comes back as `granted: false` and your app renders that. The value is what Internet Identity recorded rather than what its screen showed, so a user who already allowed your app is reported as allowed without being asked again.
+
+Two more calls complete the surface:
+
+```ts
+const { granted } = await authClient.getNotificationConsentStatus();
+await authClient.revokeNotificationConsent();
+```
+
+`getNotificationConsentStatus` reads what is recorded without opening anything, which is what a settings toggle paints from. `revokeNotificationConsent` ends it. Both need a live session and raise `SessionGoneError` without one. Reading is a query, so the answer is uncertified: display it rather than gate on it.
+
+Two failures are worth handling in the UI:
+
+- `InteractionRequiredError`, when the client was built with `prompt: 'none'`. No consent ceremony can run without rendering, so ask again from a click.
+- `NotificationsUnsupportedError`, when that Internet Identity does not send notifications at all. Nothing can be retried, so hide the control.
+
+## Name your canister as a sender
+
+Internet Identity does not accept a notification from any caller that asks. Serve a document at `/.well-known/ii-notification-senders` from your app's origin, naming the canisters allowed to notify on its behalf:
+
+```json
+{ "senders": ["ryjl3-tyaaa-aaaaa-aaaba-cai"] }
+```
+
+At most ten canisters. Internet Identity fetches the document when it needs it and caches the result for about an hour, so adding a canister is not instant, and a canister you remove keeps working for up to two hours while the stale list is served.
+
+## Send from your canister
+
+Add the library, hand it three stable memory ids in `init` and again in `post_upgrade`, and send. The endpoints Internet Identity calls to fetch a notification's content and report a delivery are generated for you.
+
+<Tabs>
+<TabItem label="Motoko">
+
+**Package:** [identity-notifications on Mops](https://mops.one/identity-notifications), which documents the mixin and the full `Notification` type. Requires moc 2.0.0 or later.
+
+```motoko
+notifications.send<system>(
+  to,
+  {
+    title = "New message";
+    body = text;
+    url = ?("https://chat.example.com/chats/" # caller.toText());
+    key = ?("chat-" # caller.toText());
+    urgency = null;
+    expiresAt = null;
+    funnel = null;
+  },
+)
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+**Crate:** [identity-notifications on crates.io](https://crates.io/crates/identity-notifications), which documents `endpoints!`, `init`, and the full `Notification` type.
+
+```rust
+notifications::send(
+    to,
+    Notification {
+        title: "New message".into(),
+        body: text,
+        url: Some(format!("https://chat.example.com/chats/{from}")),
+        key: Some(format!("chat-{from}")),
+        ..Default::default()
+    },
+);
+```
+
+</TabItem>
+</Tabs>
+
+The `url` opens when the user taps the notification. The `key` names it, so a second send under the same key replaces the first instead of stacking another beside it, which is what keeps a busy conversation to one entry. Dismiss one that no longer needs attention by key.
+
+Point the library at Internet Identity and at your own origin with environment variables:
+
+```yaml
+canisters:
+  - name: backend
+    settings:
+      environment_variables:
+        notification_sender:      "rdmx6-jaaaa-aaaaa-aaadq-cai"   # Internet Identity
+        notification_origin:      "https://your-app.icp0.io"
+        notification_capacity_mb: "1024"   # optional
+```
+
+The outbox, the content a channel may still pull, and the hourly metrics live in the stable memories you hand over, so an upgrade neither serialises nor restores any of it. Timers do not survive an upgrade, so calling `init` again from `post_upgrade` is what arms a flush for anything still waiting.
+
+On iOS, web push requires the user to add Internet Identity to the Home Screen. The consent ceremony walks them through it, so there is nothing for your app to do beyond asking.
+
+## How it appears
+
+The notification is shown by Internet Identity rather than by your app, so your app's own name has to come from somewhere it cannot simply claim. Internet Identity takes it from the [app metadata](app-metadata.md) document your origin already publishes for the sign-in screen:
+
+- `name` leads the title, ahead of the title your canister sent. Without a metadata document, the origin's hostname is used instead, which is the part no app can claim for itself.
+- `logo` becomes the notification's icon, on the platforms that show one.
+
+So publishing `/.well-known/ii-app-metadata` is what puts your name and logo on every notification, not only on the sign-in screen.
+
+## Delivery
+
+A notification is addressed to a **principal**, not to a browser. Internet Identity fans it out to every browser that identity has registered, so a user signed in on a laptop and a phone is woken on both. Dropping someone from your app's own list of recipients does not unsubscribe their other browsers; only the user can do that, from Internet Identity.
+
+A browser unused for 60 days counts as gone and is not woken. A recipient whose every browser is past that is reported as `NoSuchRecipient`, which is also the answer for a principal Internet Identity holds no account for at your origin.
+
+The library reports the delivery pipeline hour by hour, which is where to look when something is not arriving.
+
+## Common mistakes
+
+- **Asking on page load.** The ceremony needs a click, and a user who has not yet seen what your app does will refuse.
+- **Treating a refusal as an error.** `granted: false` is the user's decision. Render it, and offer the control again later.
+- **Leaving out the senders document.** Without `/.well-known/ii-notification-senders` naming your canister, every send is refused.
+- **Expecting a sender change to take effect at once.** The list is cached for about an hour and served stale for another.
+- **Skipping `init` in `post_upgrade`.** Anything waiting in the outbox stays there until a later call arms a flush.
+
+## Next steps
+
+- [Internet Identity](internet-identity.md) for the sign-in that a consent is recorded against.
+- [Identity attributes](identity-attributes.md) for what else Internet Identity can tell your backend about a user.
+
+{/* Upstream: informed by dfinity/identity-notifications rust/README.md motoko/README.md */}
