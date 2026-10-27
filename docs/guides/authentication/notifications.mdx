@@ -11,15 +11,11 @@ Your canister can notify a signed-in user while your app is closed. Internet Ide
 
 You notify a principal, so [sign-in](internet-identity.md) comes first: without it there is nobody to address.
 
-## Ask for permission
+## Ask for permission with the sign-in
 
 Needs `@icp-sdk/auth` 11.1.0 or later.
 
-```ts
-const { granted } = await authClient.requestNotificationConsent();
-```
-
-Ask **alongside `signIn`**, not after it. The client closes its channel to Internet Identity once nothing is in flight, and reopening it needs a click your continuation no longer has, so a request made after `signIn` resolves has no window to reach:
+The consent request and the sign-in run in parallel, so the user sees a single Internet Identity interaction. Asking after `signIn` resolves does not work: the client closes its channel once nothing is in flight, and reopening it needs a click your continuation no longer has.
 
 ```ts
 const [identity, { granted }] = await Promise.all([
