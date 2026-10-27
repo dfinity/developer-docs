@@ -120,11 +120,11 @@ On iOS, web push requires the user to add Internet Identity to the Home Screen. 
 
 ## Delivery
 
-A notification is addressed to a user, and Internet Identity decides where it reaches them. Your app does not choose or see the devices involved, and it cannot withdraw a notification from one by changing its own list of recipients: that is the user's to manage, from Internet Identity.
+You address a notification to a user. Where and how it reaches them is Internet Identity's, and the user's, to manage.
 
-`NoSuchRecipient` means Internet Identity has nowhere to deliver to for that user at your origin. Sending to them again later is fine; nothing about it is permanent.
+`NoSuchRecipient` says this user cannot be notified at your origin. It is not permanent, so later sends are worth making.
 
-If you publish [app metadata](app-metadata.md), your app is named by it here as well as on the sign-in screen.
+If you publish [app metadata](app-metadata.md), your app is named by it on its notifications as well as on the sign-in screen.
 
 The library reports the delivery pipeline hour by hour, which is where to look when something is not arriving.
 
