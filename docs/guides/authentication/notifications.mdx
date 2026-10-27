@@ -148,15 +148,17 @@ canisters:
 
 ## What you send
 
-`title` and `body` are the words. The rest is worth understanding before you reach for it.
+`title` and `body` are required. The rest are optional, and worth understanding before you reach for them.
 
-**`url`** is where acting on the notification takes the user. It has to be on your own origin, or one of its alternative origins; Internet Identity refuses anything else.
+| Field | Default | What it is |
+|---|---|---|
+| `url` | none | Where acting on the notification takes the user. Must be your own origin or one of its alternative origins; Internet Identity refuses anything else. |
+| `key` | none | What the notification is *about*, rather than what it says. A second send under the same key updates that notification instead of adding another, and it is what you dismiss by. Scoped per recipient. |
+| `urgency` | `Normal` | `VeryLow`, `Low`, `Normal` or `High`. Schedules this notification against your origin's other traffic. Not a rendering hint: channels with no notification tray honour it too. |
+| `expiresAt` / `expires_at` | Internet Identity's default retention | Drops a notification no longer worth delivering. The default is also the longest one is held. |
+| `funnel` | none | Which funnel to count this notification in, on top of the hour it was sent in. One per campaign or kind of notification: a label per send is an unbounded set of rows. |
 
-**`key`** is what the notification is *about*, not what it says. Send again under the same key and that notification is updated rather than joined by another, which is what keeps a busy conversation to one entry instead of twenty. It is also what you dismiss by, once the thing no longer needs attention. Derive it from something the sender cannot choose, such as the conversation it belongs to: a key an untrusted caller controls lets them overwrite or dismiss a notification that was not theirs.
-
-**`urgency`** is `VeryLow`, `Low`, `Normal` (the default) or `High`, and it schedules this notification against your origin's other traffic. It is not a styling hint, and it is honoured on channels that have no notification tray at all, so reach for `High` when something is genuinely time-critical rather than to make it look important.
-
-**`expires_at`** drops a notification that is no longer worth delivering. Leaving it unset uses Internet Identity's default retention, which is also the longest it will hold one.
+A `key` is what keeps a busy conversation to one entry in the tray instead of twenty. Derive it from the thing the notification is about, such as the conversation it belongs to, rather than from whatever a caller happened to pass you: two senders sharing a key collide in that recipient's tray, and the later send wins.
 
 Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one, the same document that names it on the sign-in screen.
 
@@ -175,7 +177,7 @@ Sending never fails the call it is made from: it neither traps nor awaits, so a 
 - **Leaving out the senders document.** Without `/.well-known/ii-notification-senders` naming your canister, every send is refused.
 - **Expecting a sender change to take effect at once.** Internet Identity caches the list, so adding or removing a canister is not instant.
 - **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting until a later call arms a flush. The Motoko mixin handles this itself.
-- **Letting a caller choose the `key`.** They can then overwrite or dismiss notifications that are not theirs.
+- **Deriving the `key` from whatever a caller passed in.** Two senders sharing a key collide in one recipient's tray, and the later send wins.
 
 ## Next steps
 
