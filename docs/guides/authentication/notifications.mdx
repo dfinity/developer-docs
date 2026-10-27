@@ -9,21 +9,26 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Your canister can notify a signed-in user while your app is closed. Internet Identity owns the push subscriptions, so your app needs no push service, no VAPID keys and no device tokens.
 
-Three pieces: your frontend asks the user, your origin names the canisters allowed to send, and your canister sends. You notify a principal, so [sign-in](internet-identity.md) comes first: without it there is nobody to address.
+You notify a principal, so [sign-in](internet-identity.md) comes first: without it there is nobody to address.
 
-## Ask the user
+## Ask for permission
 
 Needs `@icp-sdk/auth` 11.1.0 or later.
 
 ```ts
-const { granted } = await authClient.requestNotificationConsent();  // opens II
-const { granted } = await authClient.getNotificationConsentStatus(); // query, no screen
-await authClient.revokeNotificationConsent();
+const { granted } = await authClient.requestNotificationConsent();
 ```
 
-Ask from a click, when a notification would mean something to the user. `granted: false` is the user's answer, not a failure. Status and revoke need a live session and raise `SessionGoneError` without one.
+Ask **alongside `signIn`**, not after it. The client closes its channel to Internet Identity once nothing is in flight, and reopening it needs a click your continuation no longer has, so a request made after `signIn` resolves has no window to reach:
 
-Two errors are worth branching on: `InteractionRequiredError`, when the client was built with `prompt: 'none'`, so ask again from a click; and `NotificationsUnsupportedError`, when that Internet Identity does not notify at all, so hide the control.
+```ts
+const [identity, { granted }] = await Promise.all([
+  authClient.signIn(),
+  authClient.requestNotificationConsent(),
+]);
+```
+
+`granted: false` is the user's answer, not a failure.
 
 ## Name your canister as a sender
 
@@ -124,7 +129,7 @@ canisters:
         notification_capacity_mb: "1024"   # optional
 ```
 
-## What you send
+## The notification
 
 `title` and `body` are required.
 
@@ -136,7 +141,11 @@ canisters:
 | `expiresAt` / `expires_at` | a short window | How long this is still worth sending. Not a tray lifetime: a delivered notification stays until the user clears it. |
 | `funnel` | none | Groups notifications whose conversion you want to read, such as one campaign. One label per send is an unbounded set of rows. |
 
-`urgency` and `expiresAt` answer different questions, so pick them together:
+Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one.
+
+## Choosing urgency and expiry
+
+They answer different questions, so pick them together.
 
 | Sending | `urgency` | `expiresAt` |
 |---|---|---|
@@ -148,7 +157,16 @@ canisters:
 
 A short expiry does not make something urgent, and `High` does not make it last longer.
 
-Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one.
+## A notifications toggle
+
+To show the user whether your app may notify them, and let them turn it off:
+
+```ts
+const { granted } = await authClient.getNotificationConsentStatus();
+await authClient.revokeNotificationConsent();
+```
+
+Both need a live session and raise `SessionGoneError` without one. Reading is a query, so display the answer rather than gate on it.
 
 ## Delivery
 
@@ -160,8 +178,10 @@ On iOS, web push needs Internet Identity on the Home Screen. The consent ceremon
 
 ## Common mistakes
 
-- **Asking on page load.** The ceremony needs a click, and a user who has not seen what your app does will refuse.
+- **Asking after `signIn` resolves.** There is no window left to open; ask alongside it.
 - **Treating a refusal as an error.** `granted: false` is a decision. Render it, and offer the control again later.
+- **Asking under `prompt: 'none'`.** A ceremony has to render, so this raises `InteractionRequiredError`. Ask again from a click.
+- **Not handling `NotificationsUnsupportedError`.** That Internet Identity does not notify at all, so hide the control rather than retrying.
 - **Leaving out the senders document.** Without it, every send is refused.
 - **Deriving the `key` from whatever a caller passed in.** Two senders sharing a key collide in one recipient's tray, and the later send wins.
 - **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting. The Motoko mixin handles this itself.
