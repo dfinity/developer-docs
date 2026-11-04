@@ -83,7 +83,7 @@ Version 1 is still the default, and is what a call gets unless it asks for versi
 
 :::
 
-Both languages provide a wrapper that computes and attaches the required amount, but not for the same version: the Rust builders in `ic-cdk-management-canister` always price with version `2`, while Motoko's `Call.httpRequest`, from the `ic` mops package, still prices with version `1`. Reaching version `2` or flexible mode from Motoko therefore means building the management canister call yourself for now. The [HTTPS outcalls guide](../guides/backends/https-outcalls.md#cycle-costs) covers what each wrapper attaches and the pitfalls of overriding it.
+Both languages provide a wrapper that computes and attaches the required amount, and both price with version `2`: the builders in `ic-cdk-management-canister` for Rust, and `Call.httpRequest` from the `ic` mops package for Motoko. Each has a counterpart for flexible outcalls. The [HTTPS outcalls guide](../guides/backends/https-outcalls.md#cycle-costs) covers what each wrapper attaches and the pitfalls of overriding it.
 
 **Version 1** charges based on the following two factors:
 

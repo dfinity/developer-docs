@@ -18,7 +18,7 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the amount and attaches it: the `HttpRequest` builder in Rust (the `ic-cdk-management-canister` crate, from 0.2.0), and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the amount and attaches it: the `HttpRequest` builder in Rust (the `ic-cdk-management-canister` crate, from 0.2.0), and `Call.httpRequest` from the `ic` package in Motoko (from 6.0.0). Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
 - The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1 to 2 KB of headers before any body. Requests exceeding this limit fail. Under legacy pricing (version 1), always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly. In flexible mode the same 2MB cap applies to each node's response, and the responses delivered together (at least `min_responses` many) must additionally fit a **2 MiB total** (2,097,152 bytes).
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated (`is_replicated = false`) and flexible mode it is optional, because the nodes' individual responses are returned rather than reconciled. See [Outcall modes](#outcall-modes) below.
@@ -74,7 +74,7 @@ A minimal example that sends a GET request to an echo service. The response body
 </TabItem>
 </Tabs>
 
-The two `with_expected_*` calls size the cycles reservation, not the price. They are Rust only: the Motoko wrapper prices with version `1`, which has no equivalent. [Cycle costs](#cycle-costs) below explains what they do.
+The two expectation setters (`with_expected_*` in Rust, `withExpected*` in Motoko) size the cycles reservation, not the price. [Cycle costs](#cycle-costs) below explains what they do.
 
 Because these examples use replicated mode, they include a transform function to strip non-deterministic HTTP response headers before consensus:
 
@@ -135,6 +135,19 @@ POST requests work the same way, with two additional considerations:
 
 Flexible outcalls go through the `flexible_http_request` management canister method, which hands the canister each node's own response instead of one the subnet agreed on.
 
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+<CodeExample example="send_http_flexible" lang="motoko">
+
+```motoko snippet="send_http_flexible/backend/main.mo#flexible_request"
+```
+
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
+
 <CodeExample example="send_http_flexible" lang="rust">
 
 ```rust snippet="send_http_flexible/backend/src/lib.rs#flexible_request"
@@ -142,11 +155,27 @@ Flexible outcalls go through the `flexible_http_request` management canister met
 
 </CodeExample>
 
-The committee is five nodes, or the whole subnet if it is smaller: `total_requests` cannot exceed the number of nodes, which `subnet_self_node_count()` reports. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes. The Motoko `ic` package has no equivalent for flexible outcalls yet, so this is Rust only.
+</TabItem>
+</Tabs>
+
+The committee is five nodes, or the whole subnet if it is smaller: `total_requests` cannot exceed the number of nodes, which `subnet_self_node_count()` reports in Rust and `Prim.subnetSelfNodeCount()` in Motoko. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes.
 
 Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
 
 Reconciling the responses is what the canister has to do with them. This example tallies the distinct bodies and reports the most common first, checking each response's status on its own, because no node had to agree with any other:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+<CodeExample example="send_http_flexible" lang="motoko">
+
+```motoko snippet="send_http_flexible/backend/main.mo#reconcile"
+```
+
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
 
 <CodeExample example="send_http_flexible" lang="rust">
 
@@ -154,6 +183,9 @@ Reconciling the responses is what the canister has to do with them. This example
 ```
 
 </CodeExample>
+
+</TabItem>
+</Tabs>
 
 **The delivered responses must fit 2 MiB between them.** The limit applies to the combined encoded size of every response returned after the transform, and not to each response on its own. When they do not all fit, fewer are returned, down to `min_responses`. The call fails only when even the smallest `min_responses` responses exceed the limit together.
 
@@ -189,7 +221,7 @@ Version 1 is still the default, so a call that does not set `pricing_version` ge
 | Attaching too little | rejected up front | rejected up front if it misses the base fee; otherwise runs with tighter per-node limits and may fail partway |
 | Flexible outcalls | not available | required |
 
-Which version a call gets depends on the wrapper you call through, and both compute the amount to attach for you. In Rust, the `HttpRequest` builder always selects version `2` and prices the call with `ic0.cost_http_request_v2`; `with_expected_*` narrows the reservation from the worst case to what the call is expected to consume. In Motoko, `Call.httpRequest` from the `ic` package attaches the version `1` cost using `ic0.cost_http_request`. The Rust examples above are therefore priced with version `2`, and the Motoko ones with version `1`. Do not set `pricing_version = 2` on a request you pass to `Call.httpRequest`: the wrapper would still attach the version `1` amount, which is far below what version `2` reserves, so the call would run within a budget too small to finish. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
+Both wrappers select version `2` and compute the amount to attach for you, pricing the call with `ic0.cost_http_request_v2`: the `HttpRequest` builder in Rust, and `Call.httpRequest` from the `ic` package in Motoko. The expectation setters narrow the reservation from the worst case to what the call is expected to consume. Each builder overwrites `pricing_version` with `2`, including when it starts from arguments you built yourself, so the field and the attached amount cannot disagree. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 ### Version 1
 
