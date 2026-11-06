@@ -585,6 +585,8 @@ On subnets that can have subnet admins (see [Invalid controller (subnet admin)](
 - Call `list_canisters`, from a canister (in a replicated call or from a composite query) or as a query call. Ingress messages are rejected.
 - Create a canister with `create_canister` from an ingress message.
 
+On all other subnets, these calls fail with different errors: `list_canisters` is rejected because it is only available on subnets with subnet admins, and `create_canister` from an ingress message is rejected because only canisters can call it.
+
 To fix this error, perform the action from a subnet admin, or have the subnet admins updated to include your principal.
 
 ### Canister not found
