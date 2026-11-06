@@ -7,6 +7,8 @@ sidebar:
 
 By default, the Internet Identity sign-in screens identify your app by its origin alone. To have them also show a name, a short description, and a logo, publish a JSON document at `/.well-known/ii-app-metadata`. Any app can publish one: there is no list to join and no approval step.
 
+The same document also names your app on the [notifications](notifications.md) it sends.
+
 ## Publish the document
 
 ```json

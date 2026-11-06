@@ -1,0 +1,192 @@
+---
+title: "Notifications"
+description: "Ask a user's permission to notify them through Internet Identity, and send web push notifications from your Motoko or Rust canister."
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Your canister can notify a signed-in user while your app is closed. Internet Identity owns the push subscriptions, so your app needs no push service, no VAPID keys and no device tokens.
+
+You notify a principal, so [sign-in](internet-identity.md) comes first: without it there is nobody to address.
+
+## Ask for permission with the sign-in
+
+Needs `@icp-sdk/auth` 11.1.0 or later.
+
+Asking needs a click. Run it in parallel with the sign-in and the user sees a single Internet Identity interaction:
+
+```ts
+const [identity, { granted }] = await Promise.all([
+  authClient.signIn(),
+  authClient.requestNotificationConsent(),
+]);
+```
+
+`granted: false` is the user's answer, not a failure.
+
+To ask later instead, do it from a control of its own, such as the [toggle](#a-notifications-toggle) below.
+
+## Name your canister as a sender
+
+Internet Identity sends only for canisters your origin names at `/.well-known/ii-notification-senders`:
+
+```json
+{ "senders": ["ryjl3-tyaaa-aaaaa-aaaba-cai"] }
+```
+
+At most ten. Internet Identity caches what it reads, so a change is not instant.
+
+## Send from your canister
+
+<Tabs>
+<TabItem label="Motoko">
+
+**Package:** [identity-notifications on Mops](https://mops.one/identity-notifications), which documents the mixin and the full `Notification` type. Requires moc 2.0.0 or later.
+
+The mixin brings the endpoints Internet Identity calls back on. Nothing to do on upgrade.
+
+```motoko
+import Notifications "mo:identity-notifications";
+
+actor {
+  include Notifications<system>();
+
+  // ... then, wherever you want to notify someone:
+  notifications.send<system>(
+    to,
+    {
+      title = "New message";
+      body = text;
+      url = ?("https://chat.example.com/chats/" # caller.toText());
+      key = ?("chat-" # caller.toText());
+      urgency = null;
+      expiresAt = null;
+      funnel = null;
+    },
+  )
+}
+```
+
+</TabItem>
+<TabItem label="Rust">
+
+**Crate:** [identity-notifications on crates.io](https://crates.io/crates/identity-notifications), which documents `endpoints!`, `init`, and the full `Notification` type.
+
+`endpoints!()` brings the endpoints Internet Identity calls back on. Hand `init` three stable memory ids and call it again from `post_upgrade`, which is what re-arms the flush.
+
+```rust
+notifications::endpoints!();
+
+#[init]
+fn init() {
+    init_notifications();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    init_notifications();
+}
+
+fn init_notifications() {
+    MEMORIES.with_borrow(|manager| {
+        notifications::init(manager, Memories {
+            entries: MemoryId::new(10),
+            content: MemoryId::new(11),
+            metrics: MemoryId::new(12),
+        })
+    });
+}
+
+// ... then, wherever you want to notify someone:
+notifications::send(
+    to,
+    Notification {
+        title: "New message".into(),
+        body: text,
+        url: Some(format!("https://chat.example.com/chats/{from}")),
+        key: Some(format!("chat-{from}")),
+        ..Default::default()
+    },
+);
+```
+
+</TabItem>
+</Tabs>
+
+Configuration is environment variables:
+
+```yaml
+canisters:
+  - name: backend
+    settings:
+      environment_variables:
+        notification_sender:      "rdmx6-jaaaa-aaaaa-aaadq-cai"   # Internet Identity
+        notification_origin:      "https://your-app.icp0.io"
+        notification_capacity_mb: "1024"   # optional
+```
+
+## The notification
+
+`title` and `body` are required.
+
+| Field | Default | What it is |
+|---|---|---|
+| `url` | none | Where acting on it takes the user. Must be your origin or one of its alternative origins. |
+| `key` | none | What the notification is *about*. A second send under the same key updates it instead of adding another, and it is what you dismiss by. Scoped per recipient. |
+| `urgency` | `Normal` | `VeryLow`, `Low`, `Normal`, `High`. Orders this against your origin's other traffic. Not a rendering hint. |
+| `expiresAt` / `expires_at` | a short window | How long this is still worth sending. Not a tray lifetime: a delivered notification stays until the user clears it. |
+| `funnel` | none | Groups notifications whose conversion you want to read, such as one campaign. One label per send is an unbounded set of rows. |
+
+Your app is named on its notifications by the [app metadata](app-metadata.md) document, if you publish one.
+
+## Choosing urgency and expiry
+
+They answer different questions, so pick them together.
+
+| Sending | `urgency` | `expiresAt` |
+|---|---|---|
+| A security alert, such as a new sign-in | `High` | days, since it is worth seeing late |
+| A direct message | `Normal` | unset |
+| "Your driver is outside" | `High` | minutes |
+| A campaign to your whole user base | `VeryLow` | days, with a `funnel` |
+| A digest or a nudge | `Low` | hours |
+
+A short expiry does not make something urgent, and `High` does not make it last longer.
+
+## A notifications toggle
+
+To show the user whether your app may notify them, and let them turn it off:
+
+```ts
+const { granted } = await authClient.getNotificationConsentStatus();
+await authClient.revokeNotificationConsent();
+```
+
+Both need a live session and raise `SessionGoneError` without one. Reading is a query, so display the answer rather than gate on it.
+
+## Delivery
+
+You address a user. Where it reaches them is Internet Identity's and the user's to manage.
+
+Sending cannot fail the call it is made from: it neither traps nor awaits, and returns nothing. What became of a notification is in the library's metrics.
+
+On iOS, web push needs Internet Identity on the Home Screen. The consent ceremony walks the user through it.
+
+## Common mistakes
+
+- **Asking without a click.** The ceremony needs a user gesture: the sign-in, or a control of your own.
+- **Treating a refusal as an error.** `granted: false` is a decision. Render it, and offer the control again later.
+- **Asking under `prompt: 'none'`.** A ceremony has to render, so this raises `InteractionRequiredError`. Ask again from a click.
+- **Not handling `NotificationsUnsupportedError`.** That Internet Identity does not notify at all, so hide the control rather than retrying.
+- **Leaving out the senders document.** Without it, every send is refused.
+- **Deriving the `key` from whatever a caller passed in.** Two senders sharing a key collide in one recipient's tray, and the later send wins.
+- **Skipping `init` in `post_upgrade`, in Rust.** Anything waiting stays waiting. The Motoko mixin handles this itself.
+
+## Next steps
+
+- [Internet Identity](internet-identity.md) for the sign-in a consent is recorded against.
+- [Identity attributes](identity-attributes.md) for what else Internet Identity can tell your backend.
+
+{/* Upstream: informed by dfinity/identity-notifications rust/README.md motoko/README.md */}
