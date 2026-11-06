@@ -4700,7 +4700,7 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 M.callee = ic_principal
 M.method_name = 'list_canisters'
 M.arg = candid()
-M.caller ∈ S.subnet_admins[S.canister_subnet[M.caller]]
+M.caller ∈ S.subnet_admins[S.canister_subnet[M.caller].subnet_id]
 
 ```
 
