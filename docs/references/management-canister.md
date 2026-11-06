@@ -628,7 +628,7 @@ Returns all canisters hosted on the caller's subnet as a list of consecutive can
 - **Returns:**
   - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive
 
-> The response comes from a single replica and is not suitable for security-sensitive applications. Consider replica-signed queries if verification of the subnet origin is required.
+> The response of a query comes from a single replica and is not suitable for security-sensitive applications. Consider replica-signed queries if verification of the subnet origin is required.
 
 ## Provisional methods (local testing only)
 

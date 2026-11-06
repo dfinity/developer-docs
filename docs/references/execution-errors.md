@@ -539,7 +539,7 @@ Sender's ID: www-www
 Certain actions (such as updating the canister's Wasm code) can only be performed by controllers. The first line of the error names the canister whose controllers are required and the role it plays in the call:
 
 - **The target canister:** `Only the controllers of the canister xxx-xxx can control it.` The call targets a canister that the caller does not control.
-- **The store canister of `install_chunked_code`:** `Only the canister xxx-xxx itself and its controllers can use its chunks to install code on the canister ttt-ttt.` The chunks are stored in a different canister (`store_canister`) than the one receiving the code. The caller must be the store canister itself or one of its controllers, in addition to being a controller of the target canister.
+- **The store canister of `install_chunked_code`:** `Only the canister xxx-xxx itself and its controllers can use its chunks to install code on the canister ttt-ttt.` The error identifies the canister storing the chunks (`store_canister`), which may also be the target canister. If `store_canister` is omitted, it defaults to the target canister. The caller must be the store canister itself or one of its controllers, in addition to being a controller of the target canister.
 - **The canister owning a snapshot:** `Only the controllers of the canister xxx-xxx can load its snapshot sss-sss into the canister ttt-ttt.` `load_canister_snapshot` loads a snapshot that belongs to a different canister. The caller must control the canister owning the snapshot, in addition to the target canister.
 
 In every case, the `Canister's controllers` line lists the controllers of the canister named in the first line, not necessarily the target canister.

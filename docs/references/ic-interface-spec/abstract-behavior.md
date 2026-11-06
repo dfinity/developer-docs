@@ -4699,6 +4699,7 @@ S.messages = Older_messages · CallMessage M · Younger_messages
 (M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
 M.callee = ic_principal
 M.method_name = 'list_canisters'
+M.arg = candid()
 M.caller ∈ S.subnet_admins[S.canister_subnet[M.caller]]
 
 ```
@@ -4711,7 +4712,7 @@ S with
     messages = Older_messages · Younger_messages ·
       ResponseMessage {
         origin = M.origin
-        response = candid({canisters: CanisterIdRanges})
+        response = Reply (candid({canisters: CanisterIdRanges}))
         refunded_cycles = M.transferred_cycles
       }
 
