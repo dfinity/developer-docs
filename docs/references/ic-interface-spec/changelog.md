@@ -96,6 +96,11 @@ sidebar:
   `public` allows anyone, and `allowed_viewers` grants access to a list of up to 10 principals in addition
   to the controllers. The canister itself and subnet admins can always read the status.
 
+### 0.64.1 (2026-07-20) {$0_64_1}
+* The management canister method `list_canisters` can now also be called by subnet admin canisters via
+  replicated (inter-canister) calls. Such a call returns the canisters on the subnet hosting the calling
+  canister. The method remains rejected for ingress messages.
+
 ### 0.64.0 (2026-07-06) {$0_64_0}
 * New optional `permissions` field in request delegations restricting the kinds of requests
   the delegation applies for: the value `"queries"` restricts the delegation to query calls

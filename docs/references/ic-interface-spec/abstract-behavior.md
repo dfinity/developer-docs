@@ -4684,15 +4684,45 @@ S with
 
 ```
 
-#### IC Management Canister: List canisters (query call) {#ic-mgmt-canister-list-canisters}
-
-This section specifies the `list_canisters` management canister query call.
-It is a call to `/api/v3/canister/<ECID>/query` or `/api/v3/subnet/<ESID>/query`
-with CBOR content `Q` such that `Q.canister_id = ic_principal`.
+#### IC Management Canister: List canisters {#ic-mgmt-canister-list-canisters}
 
 The management canister offers the method `list_canisters`
-that can be called as a query call by subnet admins and
+that can be called by subnet admins and
 returns the list of all canisters on the subnet as consecutive canister ID ranges.
+A call from a canister returns the canisters on the subnet hosting the calling canister.
+
+Conditions
+
+```html
+
+S.messages = Older_messages · CallMessage M · Younger_messages
+(M.queue = Unordered) or (∀ CallMessage M' | FuncMessage M' ∈ Older_messages. M'.queue ≠ M.queue)
+M.callee = ic_principal
+M.method_name = 'list_canisters'
+M.arg = candid()
+M.caller ∈ S.subnet_admins[S.canister_subnet[M.caller].subnet_id]
+
+```
+
+State after
+
+```html
+
+S with
+    messages = Older_messages · Younger_messages ·
+      ResponseMessage {
+        origin = M.origin
+        response = Reply (candid({canisters: CanisterIdRanges}))
+        refunded_cycles = M.transferred_cycles
+      }
+
+```
+
+where `CanisterIdRanges` is the list of all canister IDs on the subnet `S.canister_subnet[M.caller]` encoded as consecutive canister ID ranges (excluding deleted canisters).
+
+The IC method `list_canisters` can also be invoked via management canister query calls.
+They are calls to `/api/v3/canister/<ECID>/query` or `/api/v3/subnet/<ESID>/query`
+with CBOR content `Q` such that `Q.canister_id = ic_principal`.
 
 Submitted request to `/api/v3/canister/<ECID>/query` or `/api/v3/subnet/<ESID>/query`
 
