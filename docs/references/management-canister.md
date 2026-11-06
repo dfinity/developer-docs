@@ -621,9 +621,9 @@ Returns metadata about a subnet.
 
 ### `list_canisters`
 
-Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins as a query call, either by an external user directly or by a canister from a composite query; not callable via replicated calls.
+Returns all canisters hosted on the caller's subnet as a list of consecutive canister ID ranges. Deleted canisters are not included. Only callable by subnet admins: by a canister via an inter-canister call (replicated or from a composite query), or by an external user as a query call; not callable via ingress messages. A call from a canister lists the canisters on the calling canister's subnet.
 
-- **Caller:** Subnet admins only (query call, including from composite queries)
+- **Caller:** Subnet admins only (canisters, or external users via query calls)
 - **Parameters:** none
 - **Returns:**
   - `canisters` (`vec record { start : principal; end : principal }`): contiguous ranges of canister IDs where `start` and `end` are both inclusive

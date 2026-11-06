@@ -558,7 +558,7 @@ Subnet admins: aaa-aaa
 Sender's ID: www-www
 ```
 
-Only rented subnets (application subnets on the [free cost schedule](ic-interface-spec/index.md#cost-schedules)) and cloud engines on the free cost schedule can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
+Only rented subnets (application subnets on the [free cost schedule](ic-interface-spec/index.md#cost-schedules)) and cloud engines can have subnet admins. On these subnets, subnet admins can perform actions on canisters they do not control:
 
 - **On rented subnets:** `start_canister`, `stop_canister`, `delete_canister`, `uninstall_code`, `canister_metrics`, and `canister_status`. Subnet admins can read the status regardless of the canister's status visibility setting.
 - **On cloud engines:** every action on a canister except `rename_canister`.
@@ -582,8 +582,8 @@ Sender's ID: www-www
 
 On subnets that can have subnet admins (see [Invalid controller (subnet admin)](#invalid-controller-subnet-admin)), only a subnet admin can:
 
-- Call `list_canisters` through an inter-canister call or a direct non-replicated query. Ingress update messages are rejected.
-- Create a canister with `create_canister` from an ingress message, or from a canister on a subnet other than the NNS subnet or the subnet itself.
+- Call `list_canisters`, from a canister (in a replicated call or from a composite query) or as a query call. Ingress messages are rejected.
+- Create a canister with `create_canister` from an ingress message.
 
 To fix this error, perform the action from a subnet admin, or have the subnet admins updated to include your principal.
 

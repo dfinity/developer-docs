@@ -1117,8 +1117,8 @@ Replica-signed queries may improve security because the recipient can verify the
 
 ### IC method `list_canisters` {#ic-list_canisters}
 
-This method can only be called by subnet admins via non-replicated (query) calls: by external users directly and by canisters from composite query methods and their callbacks, i.e., it cannot be called via replicated calls.
-A call from a composite query returns the canisters on the subnet hosting the calling canister.
+This method can only be called by subnet admins: by canisters via inter-canister calls (including from composite query methods and their callbacks) and by external users via non-replicated (query) calls, i.e., it cannot be called via ingress messages.
+A call from a canister returns the canisters on the subnet hosting the calling canister.
 
 This method returns the list of all canisters on the subnet as consecutive canister ID ranges. Deleted canisters are not included in the result.
 
