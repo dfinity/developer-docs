@@ -159,7 +159,6 @@ Returns the history, current module hash, and controllers of any canister. Unlik
 - **Returns:**
   - `total_num_changes` (`nat64`)
   - `recent_changes`: list of canister changes (creation, deployment, controller changes, etc.)
-    - A code deployment entry records the mode (`install`, `reinstall`, or `upgrade`), the SHA-256 hash of the installed module (`module_hash`), and the SHA-256 hash of the install argument `arg` (`args_hash`; `null` for deployments recorded before the hash was introduced)
   - `module_hash` (`opt blob`)
   - `controllers` (`vec principal`)
 
