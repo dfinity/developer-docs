@@ -76,6 +76,7 @@ type change_details = variant {
     code_deployment : record {
         mode : variant { install; reinstall; upgrade };
         module_hash : blob;
+        args_hash : opt blob;
     };
     load_snapshot : record {
         from_canister_id : opt principal;
