@@ -8,6 +8,13 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.71.0 (2026-11-XX) {$0_71_0}
+<!-- Needs human verification: date by the day dfinity/ic#12077 reaches all subnets -->
+* New field `args_hash` of a code deployment in the canister history, holding the SHA-256 hash of the
+  argument `arg` of `install_code` (and `install_chunked_code`) that was passed to the canister's
+  `canister_init` or `canister_post_upgrade` method. The field is `null` for code deployments recorded
+  before the system started recording it.
+
 ### 0.70.0 (2026-10-05) {$0_70_0}
 * New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
   `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as

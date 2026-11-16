@@ -424,6 +424,7 @@ ChangeDetails
   | CodeDeployment {
       mode : CodeDeploymentMode;
       module_hash : Blob;
+      args_hash : opt Blob;
     }
   | LoadSnapshot {
       from_canister_id : PrincipalId;
@@ -2504,6 +2505,7 @@ New_canister_history = {
     details = CodeDeployment {
       mode = A.mode;
       module_hash = SHA-256(A.wasm_module);
+      args_hash = opt SHA-256(A.arg);
     };
   };
 }
@@ -2670,6 +2672,7 @@ New_canister_history = {
     details = CodeDeployment {
       mode = Upgrade;
       module_hash = SHA-256(A.wasm_module);
+      args_hash = opt SHA-256(A.arg);
     };
   };
 }
