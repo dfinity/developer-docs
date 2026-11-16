@@ -18,7 +18,7 @@ For how the consensus mechanism works for outcalls, see [Concepts: HTTPS Outcall
 
 By default, every replica node in the subnet independently makes the same HTTP request: called **replicated mode**. All nodes must agree on the response before execution continues. Two constraints apply regardless of mode:
 
-- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the amount and attaches it: the `HttpRequest` builder in Rust (the `ic-cdk-management-canister` crate, from 0.2.0), and `Call.httpRequest` from the `ic` package in Motoko. Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
+- [Cycles](../../concepts/cycles.md) to cover the request cost **must be attached** at call time. Both languages provide a wrapper that computes the amount and attaches it: the `HttpRequest` builder in Rust (the `ic-cdk-management-canister` crate, from 0.2.0), and `Call.httpRequest` from the `ic` package in Motoko (from 6.0.0, which requires `moc` 2.1.0). Prefer these over a hand-picked figure: attached cycles are held for the duration of the call, so an arbitrary margin caps how many outcalls the canister can have in flight.
 - The **maximum response size is 2MB** (2,000,000 bytes). This covers the response's header names and values plus the body, so size a cap against both: a response can carry 1 to 2 KB of headers before any body. Requests exceeding this limit fail. Under legacy pricing (version 1), always set `max_response_bytes` to a tight upper bound: omitting it defaults to 2MB and charges cycles accordingly. In flexible mode the same 2MB cap applies to each node's response, and the responses delivered together (at least `min_responses` many) must additionally fit a **2 MiB total** (2,097,152 bytes).
 
 In replicated mode, a transform function is strongly recommended: without one, responses across nodes will likely differ and consensus will fail. In non-replicated (`is_replicated = false`) and flexible mode it is optional, because the nodes' individual responses are returned rather than reconciled. See [Outcall modes](#outcall-modes) below.
@@ -74,7 +74,7 @@ A minimal example that sends a GET request to an echo service. The response body
 </TabItem>
 </Tabs>
 
-The two `with_expected_*` calls size the cycles reservation, not the price. They are Rust only: the Motoko wrapper prices with version `1`, which has no equivalent. [Cycle costs](#cycle-costs) below explains what they do.
+The two expectation setters (`with_expected_*` in Rust, `withExpected*` in Motoko) size the cycles reservation, not the price. [Cycle costs](#cycle-costs) below explains what they do.
 
 Because these examples use replicated mode, they include a transform function to strip non-deterministic HTTP response headers before consensus:
 
@@ -135,6 +135,19 @@ POST requests work the same way, with two additional considerations:
 
 Flexible outcalls go through the `flexible_http_request` management canister method, which hands the canister each node's own response instead of one the subnet agreed on.
 
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+<CodeExample example="send_http_flexible" lang="motoko">
+
+```motoko snippet="send_http_flexible/backend/main.mo#flexible_request"
+```
+
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
+
 <CodeExample example="send_http_flexible" lang="rust">
 
 ```rust snippet="send_http_flexible/backend/src/lib.rs#flexible_request"
@@ -142,11 +155,27 @@ Flexible outcalls go through the `flexible_http_request` management canister met
 
 </CodeExample>
 
-The committee is five nodes, or the whole subnet if it is smaller: `total_requests` cannot exceed the number of nodes, which `subnet_self_node_count()` reports. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes. The Motoko `ic` package has no equivalent for flexible outcalls yet, so this is Rust only.
+</TabItem>
+</Tabs>
+
+The committee is five nodes, or the whole subnet if it is smaller: `total_requests` cannot exceed the number of nodes, which `subnet_self_node_count()` reports in Rust and `Prim.subnetSelfNodeCount()` in Motoko. The example sets no transform: each node's own response is what the canister receives, so there is nothing to make identical across nodes.
 
 Handle any count between `min_responses` and `max_responses`: fewer than `max_responses` is a normal success, not a degraded one. The responses do not say which node produced them and their order is not specified, so treat them as an unordered multiset. On failure, `err.global_error` distinguishes a `timeout` from `out_of_cycles`, `responses_too_large`, and `too_many_rejects`, and `err.node_details` reports what the individual nodes did.
 
 Reconciling the responses is what the canister has to do with them. This example tallies the distinct bodies and reports the most common first, checking each response's status on its own, because no node had to agree with any other:
+
+<Tabs syncKey="lang">
+<TabItem label="Motoko">
+
+<CodeExample example="send_http_flexible" lang="motoko">
+
+```motoko snippet="send_http_flexible/backend/main.mo#reconcile"
+```
+
+</CodeExample>
+
+</TabItem>
+<TabItem label="Rust">
 
 <CodeExample example="send_http_flexible" lang="rust">
 
@@ -154,6 +183,9 @@ Reconciling the responses is what the canister has to do with them. This example
 ```
 
 </CodeExample>
+
+</TabItem>
+</Tabs>
 
 **The delivered responses must fit 2 MiB between them.** The limit applies to the combined encoded size of every response returned after the transform, and not to each response on its own. When they do not all fit, fewer are returned, down to `min_responses`. The call fails only when even the smallest `min_responses` responses exceed the limit together.
 
@@ -189,7 +221,7 @@ Version 1 is still the default, so a call that does not set `pricing_version` ge
 | Attaching too little | rejected up front | rejected up front if it misses the base fee; otherwise runs with tighter per-node limits and may fail partway |
 | Flexible outcalls | not available | required |
 
-Which version a call gets depends on the wrapper you call through, and both compute the amount to attach for you. In Rust, the `HttpRequest` builder always selects version `2` and prices the call with `ic0.cost_http_request_v2`; `with_expected_*` narrows the reservation from the worst case to what the call is expected to consume. In Motoko, `Call.httpRequest` from the `ic` package attaches the version `1` cost using `ic0.cost_http_request`. The Rust examples above are therefore priced with version `2`, and the Motoko ones with version `1`. Do not set `pricing_version = 2` on a request you pass to `Call.httpRequest`: the wrapper would still attach the version `1` amount, which is far below what version `2` reserves, so the call would run within a budget too small to finish. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
+Both wrappers select version `2` and compute the amount to attach for you, pricing the call with `ic0.cost_http_request_v2`: the `HttpRequest` builder in Rust, and `Call.httpRequest` from the `ic` package in Motoko. The expectation setters narrow the reservation from the worst case to what the call is expected to consume. Each builder overwrites `pricing_version` with `2`, including when it starts from arguments you built yourself, so the field and the attached amount cannot disagree. Attaching a hand-picked amount instead is counterproductive: the cycles are held for the duration of the call, so a margin caps how many outcalls the canister can have in flight.
 
 ### Version 1
 
@@ -206,11 +238,22 @@ Setting `pricing_version = 2` prices the resources the call actually consumes: t
 
 Compute the recommended cycles amount to attach with `ic0.cost_http_request_v2`, passing the resources you expect the call to use. Passing the maximum of each instead gives you an amount the call cannot exhaust, but reserves far more for the duration of the call, since the maxima include a 60-second round trip and the full query instruction limit for the transform.
 
-In Rust, each `with_expected_*` on the builder replaces one of those maxima. The GET example above declares a 10-second round trip and 1 million transform instructions. On a 13-node subnet that takes the reservation from about 5.33 billion cycles down to about 136 million. What the call is charged does not change, because only the resources it consumes are billed.
+Each expectation setter on the builder (`with_expected_*` in Rust, `withExpected*` in Motoko) replaces one of those maxima. The GET example above declares a 10-second round trip and 1 million transform instructions. On a 13-node subnet that takes the reservation from about 5.33 billion cycles down to about 136 million. What the call is charged does not change, because only the resources it consumes are billed.
 
 The four expectations are not four separate limits. They size a single per-node budget, and the response size cap and response timeout the nodes run under are derived from whatever is left of it. Expecting less therefore also narrows what the call is allowed to do.
 
-The round trip and the transform instructions are the safe two to narrow, and they carry most of the saving. Their maxima are 60 seconds and the full query instruction limit, both far above what a normal call uses. Declaring a modest figure for either does not cap the call at that figure: a node derives its time and instruction limits from its whole remaining budget, most of which the byte reservations make up, so it can usually go well beyond the declared figure before running short. The two byte expectations are the ones to leave at their defaults: `max_response_bytes` for the raw response, and `max_response_bytes` plus 1 KiB for the transformed one. The extra kilobyte covers the Candid encoding of a response delivered without a transform, which is the largest content a node can deliver; a transformed response itself is capped at `max_response_bytes`. Declaring less is a bet on the server. The download cap each node applies follows its remaining budget rather than the byte expectation, so a larger response may still be downloaded, and the nodes may then be unable to fund delivering it. The call then fails at delivery, after the request has already been made. Without a transform there is no instruction expectation to narrow: the builder reserves zero for it.
+The round trip and the transform instructions are the safe two to narrow, and they carry most of the saving. Their maxima are 60 seconds and the full query instruction limit, both far above what a normal call uses. Declaring a modest figure for either does not cap the call at that figure: a node derives its time and instruction limits from its whole remaining budget, most of which the byte reservations make up, so it can usually go well beyond the declared figure before running short. The two byte expectations are the ones to leave at their defaults, with one exception below: `max_response_bytes` for the raw response, and `max_response_bytes` plus 1 KiB for the transformed one. The extra kilobyte covers the Candid encoding of a response delivered without a transform, which is the largest content a node can deliver; a transformed response itself is capped at `max_response_bytes`. Declaring less is a bet on the server. The download cap each node applies follows its remaining budget rather than the byte expectation, so a larger response may still be downloaded, and the nodes may then be unable to fund delivering it. The call then fails at delivery, after the request has already been made. Without a transform there is no instruction expectation to narrow: the builder reserves zero for it.
+
+The exception is the transformed size, and it is often the largest single saving. A delivered byte costs about 15 times a downloaded one (9,490 cycles against 650 on a 13-node subnet), so when a transform bounds its own output, declaring that bound reserves far less than the cap implies. This is the case where lowering `max_response_bytes` cannot help, because the cap still has to admit the response that arrives. Declare it only when the transform genuinely bounds its output. Delivery is paid from whatever the nodes leave unspent, so a larger output fails the call unless the rest of the budget covers it.
+
+**When the reservation is too small.** The up-front check covers the base fee only, so an under-sized attachment is accepted rather than rejected. The call then runs under tighter per-node limits and can fail partway, after the server was already contacted. Only `Out of cycles` names the cause; the other three rejects look like unrelated failures:
+
+- `No consensus could be reached. Replicas had different responses.` is the likeliest, because each node's instruction limit depends on its own elapsed time, so a marginal budget makes them diverge. It is also the message a non-deterministic transform produces, so check the reservation before rewriting the transform.
+- `Out of cycles: ...` means what the nodes left unspent cannot pay for putting any response into a block, not even the cheapest one the call could still produce.
+- `Canister http request timed out` needs both a node that never reports and a pool too small to fund delivery without its share. This reject is normally worth retrying; an under-funded call times out again.
+- `Http body exceeds size limit of <N> bytes.` can name a limit below your `max_response_bytes`, because under version 2 each node derives its download cap from the budget it has left. Raise the reservation rather than the cap.
+
+A flexible call reports both conditions as a reply instead of a reject: a node that exhausts its share counts toward `too_many_rejects`, and an exhausted pool is the `out_of_cycles` global error.
 
 See [Cycles costs](../../references/cycle-costs.md#https-outcalls) for the full pricing formulas for both versions.
 
