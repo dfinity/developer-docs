@@ -8,6 +8,10 @@ sidebar:
 
 ## Changelog {#changelog}
 
+### 0.71.0 (2026-11-30) {$0_71_0}
+* New limits for canister modules: The overall number of exports (1,100) and the
+  total number of imports (200).
+
 ### 0.70.0 (2026-10-05) {$0_70_0}
 * New variant `secp256r1` of `ecdsa_curve`, selecting threshold ECDSA on the NIST P-256 curve in
   `ecdsa_public_key` and `sign_with_ecdsa`. Key derivation follows SLIP-10 and signatures are encoded as
