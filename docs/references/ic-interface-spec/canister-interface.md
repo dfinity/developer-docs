@@ -63,9 +63,13 @@ In order for a WebAssembly module to be usable as the code for the canister, it 
 
     -   the number of all exported functions called `canister_update <name>`, `canister_query <name>`, or `canister_composite_query <name>` exceeds 1,000, or
 
+    -   the overall number of exports exceeds 1,100, or
+
     -   the sum of `<name>` lengths in all exported functions called `canister_update <name>`, `canister_query <name>`, or `canister_composite_query <name>` exceeds 20,000, or
 
-    -   the total size of the custom sections (the sum of `<name>` lengths in their names `icp:public <name>` and `icp:private <name>` plus the sum of their content lengths) exceeds 1MiB.
+    -   the total size of the custom sections (the sum of `<name>` lengths in their names `icp:public <name>` and `icp:private <name>` plus the sum of their content lengths) exceeds 1MiB, or
+
+    -   the total number of imports exceeds 200.
 
 ### Interpretation of numbers
 
