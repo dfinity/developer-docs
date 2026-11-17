@@ -24,6 +24,9 @@ Costs scale with the number of nodes in the [subnet](../concepts/network-overvie
 
 - **13-node subnet**: Standard application subnets. No scaling needed: costs are as listed.
 - **34-node subnet**: Fiduciary subnets (higher security for financial applications). Costs are approximately **2.6×** the 13-node cost.
+- **SEV-enabled subnet**: Subnets whose nodes run in a [Trusted Execution Environment](../concepts/node-infrastructure.md#trusted-execution-environments) scale by `n / 7` instead of `n / 13`. A 13-node SEV-enabled subnet costs approximately **1.86×** the listed values.
+
+[HTTPS outcall](#https-outcalls) formulas use the node count `n` directly, so they do not depend on whether SEV is enabled.
 
 See [Subnet types](subnet-types.md) for subnet-specific details.
 
@@ -39,31 +42,35 @@ USD values use the rate stated in the intro. Use cycle counts for precise budget
 | Canister creation | Create a new canister | Created canister | 500_000_000_000 | ~$0.683 | 1_307_692_307_692 | ~$1.787 |
 | Compute allocation (per % per second) | Reserved compute per second | Canister with allocation | 10_000_000 | ~$0.0000137 | 26_153_846 | ~$0.0000357 |
 | Update message execution | Per update message executed (base fee) | Target canister | 5_000_000 | ~$0.0000068 | 13_076_923 | ~$0.0000179 |
-| 1B instructions executed | Per 1B Wasm instructions (on top of base fee) | Executing canister | 1_000_000_000 | ~$0.00137 | 2_615_384_615 | ~$0.00357 |
+| 1B Wasm32 instructions executed | Per 1B instructions of a Wasm32 canister (on top of base fee) | Executing canister | 1_000_000_000 | ~$0.00137 | 2_615_384_615 | ~$0.00357 |
+| 1B Wasm64 instructions executed | Per 1B instructions of a Wasm64 canister (on top of base fee) | Executing canister | 2_000_000_000 | ~$0.00273 | 5_230_769_230 | ~$0.00715 |
 | Xnet call (request + response) | Inter-canister call overhead | Sending canister | 260_000 | ~$0.00000036 | 680_000 | ~$0.00000093 |
 | Xnet byte transmission | Per byte in inter-canister call | Sending canister | 1_000 | ~$0.00000000137 | 2_615 | ~$0.0000000036 |
 | Ingress message reception | Per ingress message received | Receiving canister | 1_200_000 | ~$0.0000016 | 3_138_461 | ~$0.0000043 |
 | Ingress byte reception | Per byte in ingress message | Receiving canister | 2_000 | ~$0.0000000027 | 5_230 | ~$0.0000000071 |
-| GiB storage per second | Storage cost per GiB per second | Canister with storage | 127_000 | ~$0.000000174 | 332_153 | ~$0.000000454 |
+| GiB storage per second | Storage cost per GiB per second | Canister with storage | 317_500 | ~$0.000000434 | 830_384 | ~$0.00000113 |
+| Canister base fee per second | Flat fee, independent of how much memory is used | Every canister with non-zero memory usage | 10_000 | ~$0.0000000137 | 26_153 | ~$0.0000000357 |
 
-**Storage cost per GiB per month (30 days):**
+**Storage cost per GiB:**
 
-| Subnet | Cycles | ~USD |
-|--------|--------|------|
-| 13-node | ~329 billion | ~$0.45 |
-| 34-node | ~861 billion | ~$1.18 |
+| Subnet | Per month (30 days) | ~USD | Per year | ~USD |
+|--------|---------------------|------|----------|------|
+| 13-node | ~823 billion | ~$1.12 | ~10 trillion | ~$13.68 |
+| 34-node | ~2.15 trillion | ~$2.94 | ~26.2 trillion | ~$35.78 |
+
+The canister base fee adds ~25.9 billion cycles (~$0.035) per month on a 13-node subnet. Storage and the base fee both count toward the cycles a canister must keep to stay above its [freezing threshold](../guides/canister-management/settings.md#freezing-threshold).
 
 ## Execution cost formula
 
-Each update message execution is charged as a base fee plus a per-instruction fee (the *Update message execution* and *1B instructions executed* rows in the Cost table above):
+Each update message execution is charged as a base fee plus a per-instruction fee (the *Update message execution* and *1B Wasm32/Wasm64 instructions executed* rows in the Cost table above):
 
-```
+```text
 total = base_fee + per_instruction_fee * num_instructions
 ```
 
 Current values (13-node subnet):
 - `base_fee` = 5_000_000 cycles (~$0.0000068 USD)
-- `per_instruction_fee` = 1 cycle (so 1B instructions = 1B cycles ≈ $0.00137 USD)
+- `per_instruction_fee` = 1 cycle for Wasm32 canisters (so 1B instructions = 1B cycles ≈ $0.00137 USD), 2 cycles for Wasm64 canisters
 
 ## Compute allocation
 
@@ -73,14 +80,14 @@ By default canisters are scheduled best-effort. Setting `compute_allocation` gua
 - **2%**: Scheduled every 50 rounds
 - **100%**: Scheduled every round
 
-Total allocatable compute capacity per subnet is 299%. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet: see the *Compute allocation* row in the [Cost table](#cost-table) above for exact figures.
+Canisters on a subnet can allocate at most 149% in total. The per-second cost is `10M cycles * allocation_percent` on a 13-node subnet: see the *Compute allocation* row in the [Cost table](#cost-table) above for exact figures.
 
 ## Storage reservation
 
 When a canister grows its memory (via `memory.grow`, `ic0.stable_grow()`, or Wasm installation), the system moves cycles from the canister's main balance into a **reserved cycles balance** to cover future storage payments.
 
 - If subnet usage is **below 750 GiB**: reservation per byte = 0 (no advance reservation).
-- If subnet usage is **above 750 GiB**: reservation per byte scales linearly from 0 up to 10 years of payments at subnet capacity (2 TiB).
+- If subnet usage is **above 750 GiB**: reservation per byte scales linearly from 0 up to about 9.5 years (300 million seconds) of payments at subnet capacity (2 TiB).
 
 Reserved cycles are non-transferable. Controllers can disable reservation by setting `reserved_cycles_limit = 0`, but opted-out canisters cannot allocate new memory when subnet usage exceeds 750 GiB.
 
@@ -118,7 +125,7 @@ These features involve outbound calls to external networks. Every node on the re
 
 HTTPS outcall costs scale with subnet size (`n` = number of nodes):
 
-```
+```text
 total_fee  = base_fee + size_fee
 base_fee   = (3_000_000 + 60_000 * n) * n
 size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
@@ -136,7 +143,7 @@ size_fee   = (400 * request_bytes + 800 * max_response_bytes) * n
 
 Calls to the EVM RPC canister use an HTTPS-outcall-based pricing structure with higher per-byte constants than standard HTTPS outcalls, scaled by the number of RPC services used for multi-provider consistency:
 
-```
+```text
 (
   5_912_000
   + 60_000 * nodes_in_subnet
@@ -153,7 +160,7 @@ An additional `10_000_000 * nodes_in_subnet * rpc_services` collateral cycles mu
 
 The SOL RPC canister prices each call using the standard HTTPS outcall formula plus a `10_000_000 cycles × n` per-node processing fee, scaled by the number of RPC providers used:
 
-```
+```text
 total_fee = (
   (3_000_000 + 60_000 * n) * n             // base HTTP outcall fee
   + (400 * request_bytes + 800 * max_response_bytes) * n  // size fee
@@ -256,4 +263,4 @@ The ICP Dashboard API is not certified: responses are unsigned and not verifiabl
 - [Subnet types](subnet-types.md): Cost multipliers per subnet type
 - [Resource limits](resource-limits.md): Instruction limits, memory caps, and message size constraints
 
-<!-- Upstream: informed by dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx, docs/references/t-sigs-how-it-works.mdx, docs/references/bitcoin-how-it-works.mdx, docs/building-apps/network-features/vetkeys/api.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/costs.mdx; dfinity/dogecoin-canister interface/src/lib.rs, docs/src/endpoints.md; dfinity/sol-rpc-canister canister/src/constants.rs, canister/src/memory/mod.rs, canister/src/http/mod.rs, integration_tests/tests/tests.rs -->
+<!-- Upstream: informed by dfinity/ic rs/config/src/subnet_config.rs, rs/cycles_account_manager/src/cycles_account_manager.rs; dfinity/portal docs/building-apps/essentials/gas-cost.mdx, docs/references/cycles-cost-formulas.mdx, docs/references/t-sigs-how-it-works.mdx, docs/references/bitcoin-how-it-works.mdx, docs/building-apps/network-features/vetkeys/api.mdx, docs/building-apps/chain-fusion/ethereum/evm-rpc/costs.mdx; dfinity/dogecoin-canister interface/src/lib.rs, docs/src/endpoints.md; dfinity/sol-rpc-canister canister/src/constants.rs, canister/src/memory/mod.rs, canister/src/http/mod.rs, integration_tests/tests/tests.rs -->
