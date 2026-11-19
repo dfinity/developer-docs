@@ -14,7 +14,7 @@ For guidance on choosing a subnet for deployment, see [Subnet selection](../guid
 | Property | What it means |
 |----------|---------------|
 | **Node count** | The number of replica nodes in the subnet. Higher node counts mean greater fault tolerance and Byzantine resistance. |
-| **Cycle cost multiplier** | Costs scale linearly with node count relative to a 13-node baseline. A subnet with n nodes costs `n/13` more per operation than a standard 13-node subnet. |
+| **Cycle cost multiplier** | Costs scale linearly with node count relative to a 13-node baseline (7 nodes on SEV-enabled subnets). A subnet with n nodes costs `n/13` times as much per operation as a standard 13-node subnet. See [Costs by subnet type](#costs-by-subnet-type) for exceptions. |
 | **Geographic distribution** | Where the nodes are located. Relevant for data sovereignty requirements. |
 | **Canister creation** | Whether arbitrary user canisters can be created on the subnet. System subnets do not allow this. |
 
@@ -113,11 +113,15 @@ icp deploy -e ic --subnet bkfrj-6k62g-dycql-7h53p-atvkj-zg4to-gaogh-netha-ptybj-
 
 ## Costs by subnet type
 
-Cycle costs scale linearly with node count. The baseline is a 13-node application subnet. For all operations:
+Cycle costs scale linearly with node count. The baseline is a 13-node application subnet. For all operations except HTTPS outcalls:
 
-```
+```text
 cost_on_n_node_subnet = base_cost × n / 13
 ```
+
+On subnets whose nodes run in a [Trusted Execution Environment](../concepts/node-infrastructure.md#trusted-execution-environments) (SEV-enabled), the baseline is 7 nodes instead: `base_cost × n / 7`, so a 13-node SEV-enabled subnet costs approximately 1.86× a standard one.
+
+HTTPS outcall fees grow faster than linearly with node count and do not depend on SEV. See [HTTPS outcalls](cycle-costs.md#https-outcalls) for their formulas.
 
 For a fiduciary subnet, the multiplier depends on the current node count: verify on the [ICP Dashboard](https://dashboard.internetcomputer.org/subnets). For example, at 34 nodes: `34 / 13 ≈ 2.615`.
 

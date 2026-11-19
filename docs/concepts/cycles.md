@@ -47,7 +47,7 @@ Compute allocation costs 10M cycles per 1% per second. Best-effort scheduling (0
 
 ### Storage
 
-Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 4T cycles. The cost is the same whether the data is in heap or stable memory.
+Storage is charged per byte per second for both Wasm heap memory and stable memory. Storing 1 GiB for one year costs approximately 10T cycles. The cost is the same whether the data is in heap or stable memory. Every canister with non-zero memory usage also pays a small flat base fee per second.
 
 When a canister allocates new storage bytes on a subnet that is more than 750 GiB full, the system moves cycles from the canister's main balance into a **reserved cycles balance** to cover future storage payments for those bytes. This reservation is non-transferable and grows linearly as the subnet fills toward its 2 TiB capacity.
 
