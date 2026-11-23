@@ -8,8 +8,7 @@ sidebar:
 
 ## Changelog {#changelog}
 
-### 0.71.0 (2026-11-XX) {$0_71_0}
-<!-- Needs human verification: date by the day dfinity/ic#12077 reaches all subnets -->
+### 0.71.0 (2026-11-23) {$0_71_0}
 * New field `args_hash` of a code deployment in the canister history, holding the SHA-256 hash of the
   argument `arg` of `install_code` (and `install_chunked_code`) that was passed to the canister's
   `canister_init` or `canister_post_upgrade` method. The field is `null` for code deployments recorded
