@@ -86,7 +86,6 @@ The following modules have been **removed** in the core package:
 
 - `AssocList` - Use `Map` or `pure/Map` instead
 - `Buffer` - Use `List` or `VarArray` instead
-- `ExperimentalStableMemory` - Deprecated
 - `Hash` - Vulnerable to hash collision attacks
 - `HashMap` - Use `Map` or `pure/Map`
 - `Heap` - Use `Map` or `Set` instead
@@ -216,12 +215,12 @@ import Debug "mo:base/Debug";
 
 persistent actor {
   // Iterate through -3, -2, -1, 0, 1, 2 (exclusive upper bound)
-  for (number in Int.range(-3, 3)) {
+  for number in Int.range(-3, 3) {
     Debug.print(debug_show number);
   };
 
   // Iterate through -3, -2, -1, 0, 1, 2, 3
-  for (number in Int.rangeInclusive(-3, 3)) {
+  for number in Int.rangeInclusive(-3, 3) {
     Debug.print(debug_show number);
   };
 }
@@ -481,12 +480,12 @@ persistent actor{
   };
 
   public func take() : async ?Item {
-    switch (Deque.popFront(deque)) {
-      case (?(item, newDeque)) {
+    switch Deque.popFront(deque) {
+      case ?(item, newDeque) {
         deque := newDeque;
         ?item;
-      };
-      case null { null };
+      }
+      case null { null }
     };
   };
 };
@@ -508,14 +507,14 @@ import Queue "mo:core/Queue";
   } {
     let queue = Queue.empty<App.Item>();
     label l loop {
-      switch (Deque.popFront(state.deque)) {
-        case (?(item, deque)) {
+      switch Deque.popFront(state.deque) {
+        case ?(item, deque) {
           Queue.pushBack(queue, item);
           state.deque := deque;
-        };
+        }
         case null {
           break l;
-        };
+        }
       };
     };
     { queue };
